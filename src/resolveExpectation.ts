@@ -1,5 +1,5 @@
 import { getPointer } from "./jsonPointer.js";
-import type { ToolRegistryEntry, VerificationRequest } from "./types.js";
+import type { ToolRegistryEntry, VerificationRequest, VerificationScalar } from "./types.js";
 
 const IDENT = /^[a-zA-Z_][a-zA-Z0-9_]*$/;
 
@@ -115,20 +115,35 @@ export function resolveVerificationRequest(
     };
   }
 
-  const requiredFields: Record<string, string> = {};
+  const requiredFields: Record<string, VerificationScalar> = {};
   for (const k of Object.keys(fieldsRaw as Record<string, unknown>)) {
     if (!IDENT.test(k)) {
       return { ok: false, code: "INVALID_IDENTIFIER", message: `requiredFields key: ${k}` };
     }
     const val = (fieldsRaw as Record<string, unknown>)[k];
-    if (typeof val !== "string") {
+    if (val === undefined) {
       return {
         ok: false,
         code: "RESOLVE_POINTER",
-        message: `requiredFields.${k} must be string`,
+        message: `requiredFields.${k} must not be undefined`,
       };
     }
-    requiredFields[k] = val;
+    if (typeof val === "object" && val !== null) {
+      return {
+        ok: false,
+        code: "RESOLVE_POINTER",
+        message: `requiredFields.${k} must be string, number, boolean, or null`,
+      };
+    }
+    if (typeof val === "string" || typeof val === "number" || typeof val === "boolean" || val === null) {
+      requiredFields[k] = val;
+    } else {
+      return {
+        ok: false,
+        code: "RESOLVE_POINTER",
+        message: `requiredFields.${k} must be string, number, boolean, or null`,
+      };
+    }
   }
 
   return {

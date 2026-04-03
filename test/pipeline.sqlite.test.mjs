@@ -62,7 +62,7 @@ describe("verifyWorkflow integration", () => {
     assert.equal(r.steps[0]?.reasons[0]?.code, "ROW_ABSENT");
   });
 
-  it("wf_partial → inconsistent / NULL_FIELD", async () => {
+  it("wf_partial → inconsistent / VALUE_MISMATCH with expected and actual", async () => {
     const r = await verifyWorkflow({
       workflowId: "wf_partial",
       eventsPath,
@@ -72,8 +72,11 @@ describe("verifyWorkflow integration", () => {
       truthReport: () => {},
     });
     assert.equal(r.status, "inconsistent");
-    assert.equal(r.steps[0]?.status, "partial");
-    assert.equal(r.steps[0]?.reasons[0]?.code, "NULL_FIELD");
+    assert.equal(r.steps[0]?.status, "inconsistent");
+    assert.equal(r.steps[0]?.reasons[0]?.code, "VALUE_MISMATCH");
+    assert.match(r.steps[0]?.reasons[0]?.message, /^Expected .+ but found .+ for field name$/);
+    assert.equal(r.steps[0]?.evidenceSummary.expected, JSON.stringify("N"));
+    assert.equal(r.steps[0]?.evidenceSummary.actual, "null");
   });
 
   it("wf_inconsistent → inconsistent / VALUE_MISMATCH", async () => {

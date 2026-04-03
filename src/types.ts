@@ -22,18 +22,19 @@ export type ToolRegistryEntry = {
   };
 };
 
+export type VerificationScalar = string | number | boolean | null;
+
 export type VerificationRequest = {
   kind: "sql_row";
   table: string;
   keyColumn: string;
   keyValue: string;
-  requiredFields: Record<string, string>;
+  requiredFields: Record<string, VerificationScalar>;
 };
 
 export type StepStatus =
   | "verified"
   | "missing"
-  | "partial"
   | "inconsistent"
   | "incomplete_verification";
 

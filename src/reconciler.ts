@@ -2,6 +2,7 @@ import { ConnectorError, fetchRowsForVerification } from "./sqlConnector.js";
 import type { SqlReadBackend } from "./sqlReadBackend.js";
 import type { DatabaseSync } from "node:sqlite";
 import type { Reason, StepStatus, VerificationRequest } from "./types.js";
+import { verificationScalarsEqual } from "./valueVerification.js";
 
 export type ReconcileOutput = {
   status: StepStatus;
@@ -40,13 +41,6 @@ export function reconcileFromRows(rows: Record<string, unknown>[], req: Verifica
       };
     }
     const actual = row[col];
-    if (actual === null || actual === undefined) {
-      return {
-        status: "partial",
-        reasons: [{ code: "NULL_FIELD", message: `Null or missing value for ${k}`, field: k }],
-        evidenceSummary: { rowCount: 1, field: k },
-      };
-    }
     if (typeof actual === "object" && actual !== null && !(actual instanceof Date)) {
       return {
         status: "incomplete_verification",
@@ -54,19 +48,20 @@ export function reconcileFromRows(rows: Record<string, unknown>[], req: Verifica
         evidenceSummary: { rowCount: 1, field: k },
       };
     }
-    const actualNorm = String(actual).trim();
-    const expectedNorm = String(req.requiredFields[k]).trim();
-    if (actualNorm !== expectedNorm) {
+
+    const expectedVal = req.requiredFields[k]!;
+    const cmp = verificationScalarsEqual(expectedVal, actual);
+    if (!cmp.ok) {
+      const message = `Expected ${cmp.expected} but found ${cmp.actual} for field ${k}`;
       return {
         status: "inconsistent",
-        reasons: [
-          {
-            code: "VALUE_MISMATCH",
-            message: `Value mismatch for ${k}`,
-            field: k,
-          },
-        ],
-        evidenceSummary: { rowCount: 1, field: k },
+        reasons: [{ code: "VALUE_MISMATCH", message, field: k }],
+        evidenceSummary: {
+          rowCount: 1,
+          field: k,
+          expected: cmp.expected,
+          actual: cmp.actual,
+        },
       };
     }
   }

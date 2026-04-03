@@ -39,7 +39,7 @@
           },
           "status": {
             "type": "string",
-            "enum": ["verified", "missing", "partial", "inconsistent", "incomplete_verification"]
+            "enum": ["verified", "missing", "inconsistent", "incomplete_verification"]
           },
           "reasons": {
             "type": "array",

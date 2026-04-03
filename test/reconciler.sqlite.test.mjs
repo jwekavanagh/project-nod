@@ -48,23 +48,67 @@ describe("reconcileSqlRow rule table", () => {
     db.close();
   });
 
-  it("NULL_FIELD partial when required column null", () => {
+  it("VALUE_MISMATCH when required column null and expected non-null (field name first)", () => {
     const db = memDb();
     db.exec("CREATE TABLE t (id TEXT PRIMARY KEY, name TEXT, status TEXT)");
     db.exec("INSERT INTO t VALUES ('1',NULL,'x')");
     const r = reconcileSqlRow(db, baseReq({ requiredFields: { name: "x", status: "x" } }));
-    assert.equal(r.status, "partial");
-    assert.equal(r.reasons[0]?.code, "NULL_FIELD");
+    assert.equal(r.status, "inconsistent");
+    assert.equal(r.reasons[0]?.code, "VALUE_MISMATCH");
+    assert.equal(r.reasons[0]?.field, "name");
+    assert.match(r.reasons[0]?.message, /^Expected .+ but found .+ for field name$/);
+    assert.equal(r.evidenceSummary.field, "name");
+    assert.equal(r.evidenceSummary.expected, JSON.stringify("x"));
+    assert.equal(r.evidenceSummary.actual, "null");
     db.close();
   });
 
-  it("VALUE_MISMATCH inconsistent", () => {
+  it("verified when expected null and column SQL NULL", () => {
+    const db = memDb();
+    db.exec("CREATE TABLE t (id TEXT PRIMARY KEY, name TEXT)");
+    db.exec("INSERT INTO t VALUES ('1',NULL)");
+    const r = reconcileSqlRow(db, baseReq({ requiredFields: { name: null } }));
+    assert.equal(r.status, "verified");
+    db.close();
+  });
+
+  it("VALUE_MISMATCH inconsistent for simple string mismatch", () => {
     const db = memDb();
     db.exec("CREATE TABLE t (id TEXT PRIMARY KEY, name TEXT)");
     db.exec("INSERT INTO t VALUES ('1','wrong')");
     const r = reconcileSqlRow(db, baseReq({ requiredFields: { name: "a" } }));
     assert.equal(r.status, "inconsistent");
     assert.equal(r.reasons[0]?.code, "VALUE_MISMATCH");
+    assert.match(r.reasons[0]?.message, /^Expected .+ but found .+ for field name$/);
+    db.close();
+  });
+
+  it("INTEGER column matches numeric expected", () => {
+    const db = memDb();
+    db.exec("CREATE TABLE t (id TEXT PRIMARY KEY, qty INTEGER NOT NULL DEFAULT 0)");
+    db.exec("INSERT INTO t (id, qty) VALUES ('1', 3)");
+    const r = reconcileSqlRow(db, baseReq({ requiredFields: { qty: 3 } }));
+    assert.equal(r.status, "verified");
+    db.close();
+  });
+
+  it("string expected matches numeric actual from INTEGER column", () => {
+    const db = memDb();
+    db.exec("CREATE TABLE t (id TEXT PRIMARY KEY, qty INTEGER NOT NULL DEFAULT 0)");
+    db.exec("INSERT INTO t (id, qty) VALUES ('1', 42)");
+    const r = reconcileSqlRow(db, baseReq({ requiredFields: { qty: "42" } }));
+    assert.equal(r.status, "verified");
+    db.close();
+  });
+
+  it("determinism: identical ReconcileOutput on repeat", () => {
+    const db = memDb();
+    db.exec("CREATE TABLE t (id TEXT PRIMARY KEY, name TEXT)");
+    db.exec("INSERT INTO t VALUES ('1','a')");
+    const req = baseReq();
+    const a = reconcileSqlRow(db, req);
+    const b = reconcileSqlRow(db, req);
+    assert.deepStrictEqual(a, b);
     db.close();
   });
 

@@ -18,6 +18,7 @@ This document is the authoritative specification for the MVP. The product verifi
 | `schemaLoad.ts` | AJV 2020-12 validators for event line, registry, workflow result |
 | `loadEvents.ts` | Read NDJSON, validate, filter `workflowId`, sort by `seq`, detect `DUPLICATE_SEQ` |
 | `resolveExpectation.ts` | Registry + params → `VerificationRequest`; `intendedEffect` template rendering (audit only) |
+| `valueVerification.ts` | Canonical display strings + `verificationScalarsEqual` (single scalar comparison table) |
 | `sqlConnector.ts` | SQLite parameterized read; lowercase column keys |
 | `sqlReadBackend.ts` | `buildSelectByKeySql`, Postgres `SqlReadBackend`, `connectPostgresVerificationClient`, `applyPostgresVerificationSessionGuards` |
 | `reconciler.ts` | `reconcileFromRows` (pure rule table), `reconcileSqlRow` (SQLite sync), `reconcileSqlRowAsync` (Postgres) |
@@ -126,7 +127,6 @@ This section is **normative**: literals and line shape match `formatWorkflowTrut
 |-------------|--------|
 | `verified` | `VERIFIED` |
 | `missing` | `FAILED_ROW_MISSING` |
-| `partial` | `UNCERTAIN_NULL_FIELD` |
 | `inconsistent` | `FAILED_VALUE_MISMATCH` |
 | `incomplete_verification` | `INCOMPLETE_CANNOT_VERIFY` |
 
@@ -176,18 +176,18 @@ Resolved internal shape:
   "table": "string",
   "keyColumn": "string",
   "keyValue": "string",
-  "requiredFields": { "col": "expectedString" }
+  "requiredFields": { "col": "string | number | boolean | null }
 }
 ```
 
-`requiredFields` values must be **strings** (MVP). Empty object = **presence-only** (row must exist).
+`requiredFields` values must be **string, number, boolean, or null** (JSON scalars at the pointer). Empty object = **presence-only** (row must exist).
 
 ### Resolver error codes → step `incomplete_verification`
 
 | Code | Meaning |
 |------|---------|
 | `UNKNOWN_TOOL` | `toolId` not in registry |
-| `RESOLVE_POINTER` | Missing pointer, wrong type, or non-string field value where required |
+| `RESOLVE_POINTER` | Missing pointer, wrong type, `undefined` value, or non-scalar (object/array) in `requiredFields` |
 | `INVALID_IDENTIFIER` | Table / column / `requiredFields` key not matching `^[a-zA-Z_][a-zA-Z0-9_]*$` |
 
 ## SQL connector contract
@@ -216,21 +216,48 @@ Let `n = rows.length` after `LIMIT 2`.
 3. `n >= 2` → `inconsistent` / `DUPLICATE_ROWS` (no field inspection).
 4. `n === 1`, row `row`, for each key `k` in sorted order, `col = k.toLowerCase()`:
    - `col` not in `row` → `incomplete_verification` / `ROW_SHAPE_MISMATCH`.
-   - `row[col]` is `null` or `undefined` → `partial` / `NULL_FIELD` (stop further checks for classification).
    - `typeof row[col] === "object"` and not `null` and not `Date` → `incomplete_verification` / `UNREADABLE_VALUE`.
-   - Compare `String(row[col]).trim()` to `String(requiredFields[k]).trim()`; unequal → `inconsistent` / `VALUE_MISMATCH`.
+   - Otherwise evaluate **`verificationScalarsEqual(requiredFields[k], row[col])`** (implemented in `valueVerification.ts`). On **no match**: `inconsistent` / `VALUE_MISMATCH`, reason message exactly **`Expected <expected> but found <actual> for field <k>`** where `<expected>` and `<actual>` are **canonical display** strings (see below), and `evidenceSummary` includes **`field`**, **`expected`**, **`actual`**, **`rowCount`: 1**.
 5. All fields pass (or `requiredFields` empty) → `verified`.
 
-No coercion beyond `String()` / `trim()`.
+### Canonical display (for message + `evidenceSummary`)
+
+Used for `<expected>` and `<actual>`:
+
+- Expected or actual **null** (including **undefined** in the row): token **`null`** (four lowercase ASCII letters, no quotes).
+- **Boolean**: **`true`** or **`false`** (lowercase).
+- **Number** (finite): **`String(n)`** in ECMAScript. **`NaN`**, **`Infinity`**, **`-Infinity`**: **`NaN`**, **`Infinity`**, **`-Infinity`** respectively.
+- **String** (expected or actual): **`JSON.stringify(s)`** (quotes and JSON escapes).
+- **BigInt** (actual): **`JSON.stringify(actual.toString())`**.
+- **Date** (actual, valid): **`JSON.stringify(actual.toISOString())`**.
+
+### Matching (`verificationScalarsEqual`) — evaluate in this order; first matching rule decides
+
+1. **Expected `null`**: **match** iff `actual === null || actual === undefined`.
+2. **Actual `null` or `undefined`**, expected not `null`: **no match**.
+3. **Expected `boolean`**: **match** iff (`typeof actual === "boolean"` && `actual === expected`) **or** (`typeof actual === "number"` && `Number.isFinite(actual)` && ((`expected === true` && `actual === 1`) || (`expected === false` && `actual === 0`))).
+4. **Expected `number`**: if `!Number.isFinite(expected)`, **no match**. Otherwise:
+   - **4a.** `typeof actual === "number"` && `Number.isFinite(actual)` && `actual === expected` → **match**.
+   - **4b.** `typeof actual === "bigint"` && `Number.isInteger(expected)` && `expected >= Number.MIN_SAFE_INTEGER` && `expected <= Number.MAX_SAFE_INTEGER` && `actual === BigInt(expected)` → **match**.
+   - **4c.** `typeof actual === "string"`: let `t = actual.trim()`. **Match** iff `JSON.parse(t)` is a finite `number`, `JSON.parse(t) === expected`, and **`JSON.stringify(JSON.parse(t)) === JSON.stringify(expected)`** (rejects strings such as `"042"` where `JSON.parse` throws).
+5. **Expected `string`**: let `e = expected.trim()`.
+   - **5a.** `typeof actual === "string"` → **match** iff `actual.trim() === e`.
+   - **5b.** `typeof actual === "number"` && `Number.isFinite(actual)` → **match** iff `e === JSON.stringify(actual)`.
+   - **5c.** `typeof actual === "boolean"` → **match** iff `e === JSON.stringify(actual)`.
+   - **5d.** `actual instanceof Date` && valid time → **match** iff `e === actual.toISOString()`.
+   - Otherwise **no match**.
+6. If no rule above matched, **no match**.
+
+Coercion is **only** what this section defines; there is no separate `String(row[col]).trim()` equality path.
 
 ## Workflow status (PRD-aligned)
 
-Step statuses: `verified` | `missing` | `partial` | `inconsistent` | `incomplete_verification`.
+Step statuses: `verified` | `missing` | `inconsistent` | `incomplete_verification`.
 
 | Workflow status | Condition |
 |-----------------|-----------|
 | `incomplete` | Any run-level code (`MALFORMED_EVENT_LINE`, `DUPLICATE_SEQ`, …), **or** zero steps, **or** any step `incomplete_verification`. |
-| `inconsistent` | Not incomplete as above, and any step in `{ missing, partial, inconsistent }`. |
+| `inconsistent` | Not incomplete as above, and any step in `{ missing, inconsistent }`. |
 | `complete` | Not incomplete, every step `verified`. |
 
 **PRD mapping:** PRD §4 “Failed” (determinate bad outcome) ↔ `inconsistent`. §4 “Incomplete” (cannot confirm) ↔ `incomplete`. §6 three bullets ↔ these three strings.
@@ -241,7 +268,7 @@ Step statuses: `verified` | `missing` | `partial` | `inconsistent` | `incomplete
 |-------|----------------------|-----------------------------------|
 | No `complete` without SQL verification | Yes — integration tests | — |
 | Postgres session read-only + SELECT-only role | Yes — `postgres-session-readonly` / `postgres-privilege` tests | — |
-| Four falsifiable step outcomes + duplicates / unknown tool / dup seq / malformed line | Yes — `npm test` | — |
+| Four step statuses + duplicates / unknown tool / dup seq / malformed line | Yes — `npm test` | — |
 | Framework-agnostic capture | Yes — NDJSON contract + examples | Integration list / adapters |
 | Manual verification steps ↓, time-to-confirm ↓, trust / re-runs | No | Metrics & study (define counters in ops) |
 

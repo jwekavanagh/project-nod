@@ -183,7 +183,7 @@ describe("formatWorkflowTruthReport", () => {
           toolId: "c",
           intendedEffect: "",
           verificationRequest: null,
-          status: "partial",
+          status: "inconsistent",
           reasons: [{ code: "P", message: "q" }],
           evidenceSummary: {},
         },
@@ -199,14 +199,8 @@ describe("formatWorkflowTruthReport", () => {
     }
   });
 
-  it("all five StepStatus values appear with correct status= token", () => {
-    const statuses = [
-      "verified",
-      "missing",
-      "partial",
-      "inconsistent",
-      "incomplete_verification",
-    ];
+  it("all four StepStatus values appear with correct status= token", () => {
+    const statuses = ["verified", "missing", "inconsistent", "incomplete_verification"];
     let seq = 0;
     const steps = statuses.map((status) => ({
       seq: seq++,

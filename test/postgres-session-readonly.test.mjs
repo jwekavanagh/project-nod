@@ -55,4 +55,44 @@ describe("Postgres session read-only (applyPostgresVerificationSessionGuards)", 
       /* cleanup */
     }
   });
+
+  it("reconcileSqlRowAsync verifies INTEGER qty default 0 on c_ok", async () => {
+    const client = await connectPostgresVerificationClient(adminUrl);
+    const backend = createPostgresSqlReadBackend(client);
+    const out = await reconcileSqlRowAsync(backend, {
+      kind: "sql_row",
+      table: "contacts",
+      keyColumn: "id",
+      keyValue: "c_ok",
+      requiredFields: { qty: 0 },
+    });
+    assert.equal(out.status, "verified");
+    try {
+      await client.end();
+    } catch {
+      /* cleanup */
+    }
+  });
+
+  it("reconcileSqlRowAsync VALUE_MISMATCH on qty with expected 1 actual 0", async () => {
+    const client = await connectPostgresVerificationClient(adminUrl);
+    const backend = createPostgresSqlReadBackend(client);
+    const out = await reconcileSqlRowAsync(backend, {
+      kind: "sql_row",
+      table: "contacts",
+      keyColumn: "id",
+      keyValue: "c_ok",
+      requiredFields: { qty: 1 },
+    });
+    assert.equal(out.status, "inconsistent");
+    assert.equal(out.reasons[0]?.code, "VALUE_MISMATCH");
+    assert.match(out.reasons[0]?.message, /^Expected .+ but found .+ for field qty$/);
+    assert.equal(out.evidenceSummary.expected, "1");
+    assert.equal(out.evidenceSummary.actual, "0");
+    try {
+      await client.end();
+    } catch {
+      /* cleanup */
+    }
+  });
 });

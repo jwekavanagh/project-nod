@@ -3,7 +3,6 @@ import type { StepStatus, WorkflowResult, WorkflowStatus } from "./types.js";
 export const STEP_STATUS_TRUTH_LABELS: Record<StepStatus, string> = {
   verified: "VERIFIED",
   missing: "FAILED_ROW_MISSING",
-  partial: "UNCERTAIN_NULL_FIELD",
   inconsistent: "FAILED_VALUE_MISMATCH",
   incomplete_verification: "INCOMPLETE_CANNOT_VERIFY",
 };
