@@ -42,6 +42,8 @@ node dist/cli.js --workflow-id wf_complete --events examples/events.ndjson --reg
 
 For the CLI, a **human-readable verification report** is written to **stderr** and the machine-readable **workflow result JSON** to **stdout** on verdict exits **0–2**; operational failures use exit **3** with a **single-line JSON error** on stderr (see [CLI operational errors](docs/execution-truth-layer.md#cli-operational-errors)). Full format and stream order are in the SSOT **[Human truth report](docs/execution-truth-layer.md#human-truth-report)**.
 
+**Cross-run comparison:** save each `WorkflowResult` JSON from stdout, then compare runs locally, e.g. `node dist/cli.js compare --prior earlier.json --current latest.json`. Semantics and I/O are defined in **[Cross-run comparison (normative)](docs/execution-truth-layer.md#cross-run-comparison-normative)**.
+
 ## Full test suite (`npm test`)
 
 `npm test` runs **`scripts/pg-ci-init.mjs`** against Postgres, then the Node/Vitest suites. Set:

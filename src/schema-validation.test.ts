@@ -2,7 +2,9 @@ import { describe, expect, it } from "vitest";
 import { readFileSync } from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
+import { buildRunComparisonReport } from "./runComparison.js";
 import { loadSchemaValidator } from "./schemaLoad.js";
+import type { StepOutcome, WorkflowResult } from "./types.js";
 
 const root = path.join(path.dirname(fileURLToPath(import.meta.url)), "..");
 
@@ -156,5 +158,37 @@ describe("JSON Schemas (SSOT)", () => {
       ],
     };
     expect(v(bad)).toBe(false);
+  });
+
+  it("validates RunComparisonReport from buildRunComparisonReport", () => {
+    const v = loadSchemaValidator("run-comparison-report");
+    const step = (seq: number, kv: string, ok: boolean): StepOutcome => ({
+      seq,
+      toolId: "t",
+      intendedEffect: "",
+      verificationRequest: {
+        kind: "sql_row",
+        table: "contacts",
+        keyColumn: "id",
+        keyValue: kv,
+        requiredFields: {},
+      },
+      status: ok ? "verified" : "missing",
+      reasons: ok ? [] : [{ code: "ROW_ABSENT", message: "m" }],
+      evidenceSummary: {},
+      repeatObservationCount: 1,
+      evaluatedObservationOrdinal: 1,
+    });
+    const r0: WorkflowResult = {
+      schemaVersion: 2,
+      workflowId: "w",
+      status: "complete",
+      runLevelCodes: [],
+      runLevelReasons: [],
+      steps: [step(0, "a", true)],
+    };
+    const r1: WorkflowResult = { ...r0, steps: [step(0, "a", true)] };
+    const report = buildRunComparisonReport([r0, r1], ["x", "y"]);
+    expect(v(report)).toBe(true);
   });
 });

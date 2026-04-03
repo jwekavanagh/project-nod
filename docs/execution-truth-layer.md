@@ -28,8 +28,9 @@ This document is the authoritative specification for the MVP. The product verifi
 | `multiEffectRollup.ts` | `rollupMultiEffectsSync` / `rollupMultiEffectsAsync`: per-effect reconcile, UTF-16 sort by effect `id`, step rollup (`verified` / `partially_verified` / `inconsistent` / `incomplete_verification`) |
 | `aggregate.ts` | Workflow status precedence |
 | `workflowTruthReport.ts` | `formatWorkflowTruthReport`, `STEP_STATUS_TRUTH_LABELS`; fixed human report grammar |
+| `runComparison.ts` | `buildRunComparisonReport`, `formatRunComparisonReport`, `logicalStepKeyFromStep`, `recurrenceSignature`; cross-run comparison |
 | `pipeline.ts` | Orchestration: `runLogicalStepsVerification` (internal), async `verifyWorkflow`, sync `verifyToolObservedStep`, `withWorkflowVerification` (SQLite `dbPath` only); default `truthReport` / `logStep` |
-| `cli.ts` | CLI entry |
+| `cli.ts` | CLI entry: legacy verify + `compare` subcommand |
 
 ### Engineer note: shared step core
 
@@ -355,6 +356,62 @@ Step statuses: `verified` | `missing` | `inconsistent` | `incomplete_verificatio
 **PRD mapping:** PRD §4 “Failed” (determinate bad outcome) ↔ `inconsistent`. §4 “Incomplete” (cannot confirm) ↔ `incomplete`. §6 three bullets ↔ these three strings. **Multi-effect:** step-level “partial success” is `partially_verified`; the workflow is still **`inconsistent`** until every step is `verified`.
 
 **Compatibility:** `WorkflowResult.schemaVersion` remains **2**; consumers must allow the new step `status` literal `partially_verified` and `verificationRequest.kind` `sql_effects` (see [`schemas/workflow-result.schema.json`](../schemas/workflow-result.schema.json)).
+
+## Cross-run comparison (normative)
+
+This section defines **cross-run comparison**: comparing saved **`WorkflowResult`** artifacts locally (no hosted backend). The machine output is **`RunComparisonReport`** (`schemas/run-comparison-report.schema.json`); behavioral semantics below are authoritative—the schema is structural only (see [`$comment`](../schemas/run-comparison-report.schema.json)).
+
+### `logicalStepKey`
+
+For a step with **`verificationRequest !== null`**:
+
+- **`sql_row`:** `sql_row|${table}|${keyColumn}|${keyValue}` (field values from the resolved request on the step outcome).
+- **`sql_effects`:** `sql_effects|` followed by one segment per effect, **sorted by effect `id` in UTF-16 lexicographic order** (same ordering as `compareUtf16Id` / object key sort elsewhere in this doc). Each segment is: `id|${id}|${table}|${keyColumn}|${keyValue}|`.
+
+**Duplicate `logicalStepKey` in one run:** If two steps produce the same key, **keep the step with the lower `seq`** for that key. Emit **`ambiguousLogicalKeyResolutions`** on the report with `chosenSeq` and `droppedSeq`.
+
+### Pairwise comparison (immediate prior vs current)
+
+Inputs are an **ordered list** of runs `R0 … R(n-1)` where **`R(n-1)` is current** and **`R(n-2)` is immediate prior** (`n ≥ 2`).
+
+**Run-level:** Let `M_prior` and `M_cur` be **multisets** of `runLevelReasons[].code`. **introducedRunLevelCodes** = multiset difference `M_cur − M_prior` (expand as a sorted list with multiplicity for JSON). **resolvedRunLevelCodes** = `M_prior − M_cur`.
+
+**Bucket A — steps with `verificationRequest !== null`:** Build `logicalStepKey → step` for each run (duplicate rule above). Align by **key**, not by `seq`. For each key:
+
+- **Intersection, both verified:** `unchangedOk`. Report `seqPrior`, `seqCurrent`, `toolIdPrior`, `toolIdCurrent` so **reordering is visible** without implying failure churn.
+- **Intersection, prior verified / current failing:** `introducedFailure`.
+- **Intersection, prior failing / current verified:** `resolvedFailure`.
+- **Intersection, both failing:** `bothFailing` with multiset differences on step-level `reasons[].code` (**introducedStepReasonCodes**, **resolvedStepReasonCodes**). For `sql_effects`, also compare each effect row in `evidenceSummary.effects` **by effect `id`**: same verified/failing and multiset reason deltas per effect. **`toolIdChanged`** is set when `toolId` differs at the same key; it does not override failure classification.
+- **Key only in prior:** `structuralRemoval` with `priorWasFailing`.
+- **Key only in current:** `structuralAddition` with `currentIsFailing`.
+
+**Bucket B — `verificationRequest === null` and failing:** Consider only steps with **`status !== "verified"`**. Compute **`recurrenceSignature`** (below) per such step. Let **P** and **C** be **multisets** of signatures (one entry per failing step; **no** within-run dedup). **introducedFailureSignatures** / **resolvedFailureSignatures** are multiset differences; **unchangedFailureInstanceCounts** lists `min(P(s), C(s))` per signature `s`.
+
+### `recurrenceSignature` (failing steps)
+
+Used for **bucket B** and **recurrence**. **Must not** include `seq` or `toolId`.
+
+Format:
+
+1. `${status}|` then step-level reason codes sorted **lexicographically (UTF-16)** with multiplicity (sort the multiset as a list of `reasons[].code` strings).
+2. For each **failing** effect in `evidenceSummary.effects` (when present), sorted by effect `id` (UTF-16), append `|e:${id}:${status}:r:` + effect reason codes sorted the same way, concatenated with commas.
+
+### Recurrence over the full window
+
+For each run index `i`, build the **set** of `recurrenceSignature` values from **all failing steps** in that run (**within-run dedup**: each signature counted once per run for membership). A signature is **recurrent** if it appears in runs at **≥ 2 distinct indices**. Report `runIndices`, `runsHitCount`, and up to **3 exemplars** `{ runIndex, seq, toolId }` per pattern (exemplars are **not** part of signature equality).
+
+### Success and failure I/O (compare subcommand)
+
+**Success:** Write **one** human summary line block to **stderr** (`formatRunComparisonReport`), then **one** JSON object to **stdout** (`RunComparisonReport`). Exit **0**.
+
+**Operational failure:** **No** comparison JSON on **stdout** (stdout empty). **Stderr** is **exactly one** JSON line: the same **`execution_truth_layer_error`** envelope as [CLI operational errors](#cli-operational-errors), with a **`COMPARE_*`** code. Exit **3**.
+
+### Cross-run comparison: implementation bindings (normative)
+
+- **CLI:** `verify-workflow compare --prior <path> [--prior <path> …] --current <path>`. Each `--prior` is a saved **`WorkflowResult`** JSON file; order is oldest → newest; **`--current`** is the last run. At least one `--prior` is required.
+- **`displayLabel`:** Integrator-supplied opaque string per run. The **reference CLI** sets **`displayLabel`** to the **basename** of each file path (never a full path in the report).
+- **Failure envelope:** Same shape and rules as § CLI operational errors; compare-specific codes live in `failureCatalog.ts` (e.g. `COMPARE_USAGE`, `COMPARE_WORKFLOW_ID_MISMATCH`, `COMPARE_INPUT_READ_FAILED`, `COMPARE_INPUT_JSON_SYNTAX`, `COMPARE_INPUT_SCHEMA_INVALID`, `COMPARE_RUN_COMPARISON_REPORT_INVALID`).
+- **Schema:** `schemas/run-comparison-report.schema.json` validates stdout on success; root **`$comment`** points to this document’s **Cross-run comparison (normative)** anchor.
 
 ## Validation matrix (what CI proves vs operations)
 

@@ -1,0 +1,327 @@
+{
+  "$id": "https://execution-truth-layer/schemas/run-comparison-report.schema.json",
+  "$comment": "Structural schema. Behavioral semantics: docs/execution-truth-layer.md#cross-run-comparison-normative",
+  "title": "RunComparisonReport",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "workflowId", "runs", "pairwise", "recurrence"],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "workflowId": { "type": "string" },
+    "runs": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["runIndex", "displayLabel"],
+        "properties": {
+          "runIndex": { "type": "integer", "minimum": 0 },
+          "displayLabel": { "type": "string" }
+        }
+      }
+    },
+    "pairwise": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "priorRunIndex",
+        "currentRunIndex",
+        "runLevel",
+        "ambiguousLogicalKeyResolutions",
+        "bucketA",
+        "bucketB"
+      ],
+      "properties": {
+        "priorRunIndex": { "type": "integer", "minimum": 0 },
+        "currentRunIndex": { "type": "integer", "minimum": 0 },
+        "runLevel": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["introducedRunLevelCodes", "resolvedRunLevelCodes"],
+          "properties": {
+            "introducedRunLevelCodes": {
+              "type": "array",
+              "items": { "type": "string" }
+            },
+            "resolvedRunLevelCodes": {
+              "type": "array",
+              "items": { "type": "string" }
+            }
+          }
+        },
+        "ambiguousLogicalKeyResolutions": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["logicalStepKey", "chosenSeq", "droppedSeq"],
+            "properties": {
+              "logicalStepKey": { "type": "string" },
+              "chosenSeq": { "type": "integer", "minimum": 0 },
+              "droppedSeq": { "type": "integer", "minimum": 0 }
+            }
+          }
+        },
+        "bucketA": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/bucketAEntry" }
+        },
+        "bucketB": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "introducedFailureSignatures",
+            "resolvedFailureSignatures",
+            "unchangedFailureInstanceCounts"
+          ],
+          "properties": {
+            "introducedFailureSignatures": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["signature", "count"],
+                "properties": {
+                  "signature": { "type": "string" },
+                  "count": { "type": "integer", "minimum": 1 }
+                }
+              }
+            },
+            "resolvedFailureSignatures": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["signature", "count"],
+                "properties": {
+                  "signature": { "type": "string" },
+                  "count": { "type": "integer", "minimum": 1 }
+                }
+              }
+            },
+            "unchangedFailureInstanceCounts": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["signature", "matchedCount"],
+                "properties": {
+                  "signature": { "type": "string" },
+                  "matchedCount": { "type": "integer", "minimum": 1 }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "recurrence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["patterns"],
+      "properties": {
+        "patterns": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["signature", "runIndices", "runsHitCount", "exemplars"],
+            "properties": {
+              "signature": { "type": "string" },
+              "runIndices": {
+                "type": "array",
+                "items": { "type": "integer", "minimum": 0 }
+              },
+              "runsHitCount": { "type": "integer", "minimum": 2 },
+              "exemplars": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": ["runIndex", "seq", "toolId"],
+                  "properties": {
+                    "runIndex": { "type": "integer", "minimum": 0 },
+                    "seq": { "type": "integer", "minimum": 0 },
+                    "toolId": { "type": "string" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "bucketAEntry": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "logicalStepKey",
+            "seqPrior",
+            "seqCurrent",
+            "toolIdPrior",
+            "toolIdCurrent"
+          ],
+          "properties": {
+            "kind": { "const": "unchangedOk" },
+            "logicalStepKey": { "type": "string" },
+            "seqPrior": { "type": "integer", "minimum": 0 },
+            "seqCurrent": { "type": "integer", "minimum": 0 },
+            "toolIdPrior": { "type": "string" },
+            "toolIdCurrent": { "type": "string" }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "logicalStepKey",
+            "seqPrior",
+            "seqCurrent",
+            "toolIdPrior",
+            "toolIdCurrent"
+          ],
+          "properties": {
+            "kind": { "const": "introducedFailure" },
+            "logicalStepKey": { "type": "string" },
+            "seqPrior": { "type": "integer", "minimum": 0 },
+            "seqCurrent": { "type": "integer", "minimum": 0 },
+            "toolIdPrior": { "type": "string" },
+            "toolIdCurrent": { "type": "string" }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "logicalStepKey",
+            "seqPrior",
+            "seqCurrent",
+            "toolIdPrior",
+            "toolIdCurrent"
+          ],
+          "properties": {
+            "kind": { "const": "resolvedFailure" },
+            "logicalStepKey": { "type": "string" },
+            "seqPrior": { "type": "integer", "minimum": 0 },
+            "seqCurrent": { "type": "integer", "minimum": 0 },
+            "toolIdPrior": { "type": "string" },
+            "toolIdCurrent": { "type": "string" }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "logicalStepKey",
+            "seqPrior",
+            "seqCurrent",
+            "toolIdPrior",
+            "toolIdCurrent",
+            "priorWasFailing"
+          ],
+          "properties": {
+            "kind": { "const": "structuralRemoval" },
+            "logicalStepKey": { "type": "string" },
+            "seqPrior": { "type": "integer", "minimum": 0 },
+            "toolIdPrior": { "type": "string" },
+            "priorWasFailing": { "type": "boolean" }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["kind", "logicalStepKey", "seqCurrent", "toolIdCurrent", "currentIsFailing"],
+          "properties": {
+            "kind": { "const": "structuralAddition" },
+            "logicalStepKey": { "type": "string" },
+            "seqCurrent": { "type": "integer", "minimum": 0 },
+            "toolIdCurrent": { "type": "string" },
+            "currentIsFailing": { "type": "boolean" }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "logicalStepKey",
+            "seqPrior",
+            "seqCurrent",
+            "toolIdPrior",
+            "toolIdCurrent",
+            "toolIdChanged",
+            "introducedStepReasonCodes",
+            "resolvedStepReasonCodes",
+            "effects"
+          ],
+          "properties": {
+            "kind": { "const": "bothFailing" },
+            "logicalStepKey": { "type": "string" },
+            "seqPrior": { "type": "integer", "minimum": 0 },
+            "seqCurrent": { "type": "integer", "minimum": 0 },
+            "toolIdPrior": { "type": "string" },
+            "toolIdCurrent": { "type": "string" },
+            "toolIdChanged": { "type": "boolean" },
+            "introducedStepReasonCodes": {
+              "type": "array",
+              "items": { "type": "string" }
+            },
+            "resolvedStepReasonCodes": {
+              "type": "array",
+              "items": { "type": "string" }
+            },
+            "effects": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "effectId",
+                  "kind",
+                  "introducedReasonCodes",
+                  "resolvedReasonCodes",
+                  "statusPrior",
+                  "statusCurrent"
+                ],
+                "properties": {
+                  "effectId": { "type": "string" },
+                  "kind": {
+                    "type": "string",
+                    "enum": [
+                      "introducedFailure",
+                      "resolvedFailure",
+                      "bothFailing",
+                      "unchangedOk"
+                    ]
+                  },
+                  "introducedReasonCodes": {
+                    "type": "array",
+                    "items": { "type": "string" }
+                  },
+                  "resolvedReasonCodes": {
+                    "type": "array",
+                    "items": { "type": "string" }
+                  },
+                  "statusPrior": {
+                    "type": ["string", "null"]
+                  },
+                  "statusCurrent": {
+                    "type": ["string", "null"]
+                  }
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  }
+}

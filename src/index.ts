@@ -16,6 +16,12 @@ export {
 } from "./resolveExpectation.js";
 export { reconcileSqlRow, reconcileSqlRowAsync } from "./reconciler.js";
 export { aggregateWorkflow } from "./aggregate.js";
+export {
+  buildRunComparisonReport,
+  formatRunComparisonReport,
+  logicalStepKeyFromStep,
+  recurrenceSignature,
+} from "./runComparison.js";
 export { formatWorkflowTruthReport, STEP_STATUS_TRUTH_LABELS } from "./workflowTruthReport.js";
 export { fetchRowsForVerification, ConnectorError } from "./sqlConnector.js";
 export {
@@ -33,4 +39,5 @@ export type {
   WorkflowResult,
   StepOutcome,
 } from "./types.js";
+export type { BucketAEntry, RunComparisonReport } from "./runComparison.js";
 export type { SqlReadBackend } from "./sqlReadBackend.js";

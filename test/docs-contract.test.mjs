@@ -67,6 +67,13 @@ const REQUIRED = [
   "Workflow result: multi-effect shape",
   "DUPLICATE_EFFECT_ID",
   "effect: id=",
+  "## Cross-run comparison (normative)",
+  "### Cross-run comparison: implementation bindings (normative)",
+  "verify-workflow compare",
+  "runComparison.ts",
+  "buildRunComparisonReport",
+  "cross-run-comparison-normative",
+  "COMPARE_WORKFLOW_ID_MISMATCH",
 ];
 
 describe("docs contract (SSOT + README)", () => {

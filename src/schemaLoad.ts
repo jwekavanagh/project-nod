@@ -23,9 +23,13 @@ function getAjv(): InstanceType<typeof Ajv2020> {
   return ajvInstance;
 }
 
-const validatorCache: Partial<Record<"event" | "tools-registry" | "workflow-result", ValidateFunction>> = {};
+const validatorCache: Partial<
+  Record<"event" | "tools-registry" | "workflow-result" | "run-comparison-report", ValidateFunction>
+> = {};
 
-export function loadSchemaValidator(name: "event" | "tools-registry" | "workflow-result"): ValidateFunction {
+export function loadSchemaValidator(
+  name: "event" | "tools-registry" | "workflow-result" | "run-comparison-report",
+): ValidateFunction {
   const cached = validatorCache[name];
   if (cached) return cached;
 
@@ -34,7 +38,9 @@ export function loadSchemaValidator(name: "event" | "tools-registry" | "workflow
       ? "event.schema.json"
       : name === "tools-registry"
         ? "tools-registry.schema.json"
-        : "workflow-result.schema.json";
+        : name === "workflow-result"
+          ? "workflow-result.schema.json"
+          : "run-comparison-report.schema.json";
   const raw = readFileSync(path.join(schemasDir(), file), "utf8");
   const schema = JSON.parse(raw) as object & { $id?: string };
   const ajv = getAjv();
