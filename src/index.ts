@@ -1,4 +1,4 @@
-export { verifyWorkflow, loadToolsRegistry } from "./pipeline.js";
+export { verifyWorkflow, loadToolsRegistry, withWorkflowVerification } from "./pipeline.js";
 export { loadEventsForWorkflow } from "./loadEvents.js";
 export {
   resolveVerificationRequest,

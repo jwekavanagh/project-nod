@@ -19,6 +19,14 @@ The first run uses bundled `examples/events.ndjson` and `examples/tools.json`. I
 
 Each JSON object printed for a workflow matches [`schemas/workflow-result.schema.json`](schemas/workflow-result.schema.json).
 
+**In-process hook (single boundary):** see [Low-friction integration (in-process)](docs/execution-truth-layer.md#low-friction-integration-in-process) in the SSOT — one `await withWorkflowVerification` at the workflow root vs. NDJSON batch when you already log to a file.
+
+Try the runnable demo (temp DB + one `observeStep`):
+
+```bash
+npm run example:workflow-hook
+```
+
 To run the same check through the CLI (after `npm run first-run` so `examples/demo.db` exists):
 
 ```bash

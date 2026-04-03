@@ -20,20 +20,43 @@ This document is the authoritative specification for the MVP. The product verifi
 | `sqlConnector.ts` | Parameterized read; lowercase column keys |
 | `reconciler.ts` | Deterministic rule table (below) |
 | `aggregate.ts` | Workflow status precedence |
-| `pipeline.ts` | Orchestration |
+| `pipeline.ts` | Orchestration: `verifyWorkflow`, `verifyToolObservedStep`, `withWorkflowVerification` |
 | `cli.ts` | CLI entry |
 
+### Engineer note: shared step core
+
+`verifyToolObservedStep` in `pipeline.ts` is shared by `withWorkflowVerification` (in-process) and `verifyWorkflow` (NDJSON batch). **Why:** One reconciliation path; batch and in-process cannot drift.
+
 ### Integrator
+
+### Low-friction integration (in-process)
+
+Primary integration for running workflows in code: **`await withWorkflowVerification(options, run)`** from `pipeline.ts` (re-exported in the package entry). The `run` callback receives **`observeStep`**; call it after each tool with one [event line](#event-line-schema) object. There is **no** public `finish` — the library closes the read-only SQLite handle in a `finally` block after `run` completes or throws.
+
+**Why:** One root boundary; library owns DB close in finally; avoids silent leaks when integrators omit a terminal call.
+
+Normative contracts:
+
+- **`observeStep` input:** Only a JavaScript **non-null object** is schema-validated against the event schema; **strings and primitives are not parsed as NDJSON**—non-objects yield **`MALFORMED_EVENT_LINE`** (same run-level meaning as a bad NDJSON line in batch mode).
+- **`withWorkflowVerification` return:** **`Promise<WorkflowResult>`** fulfilled on success; **rejected** on invalid registry/DB setup (before `run`) or if **`run`** throws or rejects — after the DB is closed in **`finally`**.
+- **Post-close `observeStep`:** If a caller keeps the injected function and uses it after the run, it throws **`Error`** with message **`Workflow verification observeStep invoked after workflow run completed`**.
+- **Parity:** Feeding the same event objects in file order as an NDJSON workflow must match **`verifyWorkflow`** on that file for the same `workflowId`, `registryPath`, and `dbPath`.
+
+### Batch and CLI (replay)
+
+For CI, audits, or logs written as NDJSON:
 
 1. To verify your checkout with bundled `examples/` artifacts, run `npm run first-run` from the repository root (see [Examples](#examples)). It builds the project, creates `examples/demo.db` from `seed.sql`, and runs two sample workflows.
 2. After **each** tool call, append one JSON object line to your NDJSON file (see [Event line schema](#event-line-schema)).
 3. Maintain `tools.json` with one entry per `toolId` your workflows emit.
-4. For your own workflows, run:
+4. Run:
 
 ```bash
 npm run build
 node dist/cli.js --workflow-id <id> --events <path> --registry <path> --db <path>
 ```
+
+**Why:** Same event contract for CI and external logs without requiring in-process wrapper.
 
 **Exit codes**
 
@@ -51,7 +74,7 @@ node dist/cli.js --workflow-id <id> --events <path> --registry <path> --db <path
 
 - DB user should be **read-only** in production.
 - SQLite file must exist when `readOnly: true` is used (Node `DatabaseSync`).
-- Redact secrets from `params` before writing events if logs are retained.
+- Redact secrets from `params` before writing events if logs are retained; **redact params in retained logs** when those logs leave the trust boundary.
 
 ## Event line schema
 
