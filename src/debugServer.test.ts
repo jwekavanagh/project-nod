@@ -4,26 +4,28 @@ import { tmpdir } from "node:os";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 import { startDebugServerOnPort, loadCorpusBundle } from "./debugServer.js";
+import { buildAgentRunRecordForBundle } from "./agentRunRecord.js";
 
 const root = join(fileURLToPath(import.meta.url), "..", "..");
 const exampleCorpus = join(root, "examples", "debug-corpus");
+const negativeCorpus = join(root, "test", "fixtures", "corpus-negative");
 
 describe("debugServer HTTP", () => {
-  it("GET /api/runs returns four items for examples corpus", async () => {
+  it("GET /api/runs returns one item for examples corpus", async () => {
     const srv = await startDebugServerOnPort(exampleCorpus, 0);
     try {
       const res = await fetch(`http://127.0.0.1:${srv.port}/api/runs?limit=500`);
       expect(res.ok).toBe(true);
       const data = (await res.json()) as { items: unknown[]; totalMatched: number };
-      expect(data.items).toHaveLength(4);
-      expect(data.totalMatched).toBe(4);
+      expect(data.items).toHaveLength(1);
+      expect(data.totalMatched).toBe(1);
     } finally {
       await srv.close();
     }
   });
 
   it("GET error run returns 200 with loadStatus error and rawPreview optional", async () => {
-    const srv = await startDebugServerOnPort(exampleCorpus, 0);
+    const srv = await startDebugServerOnPort(negativeCorpus, 0);
     try {
       const res = await fetch(`http://127.0.0.1:${srv.port}/api/runs/run_bad_json`);
       expect(res.ok).toBe(true);
@@ -36,7 +38,7 @@ describe("debugServer HTTP", () => {
   });
 
   it("GET /api/runs/:id/focus returns 409 for error row", async () => {
-    const srv = await startDebugServerOnPort(exampleCorpus, 0);
+    const srv = await startDebugServerOnPort(negativeCorpus, 0);
     try {
       const res = await fetch(`http://127.0.0.1:${srv.port}/api/runs/run_bad_json/focus`);
       expect(res.status).toBe(409);
@@ -54,9 +56,11 @@ describe("debugServer HTTP", () => {
         loadStatus: string;
         executionTrace: { nodes: unknown[] };
         workflowResult: { workflowId: string };
+        agentRunRecord: { workflowId: string };
       };
       expect(data.loadStatus).toBe("ok");
       expect(data.workflowResult.workflowId).toBe("wf_complete");
+      expect(data.agentRunRecord.workflowId).toBe("wf_complete");
       expect(Array.isArray(data.executionTrace.nodes)).toBe(true);
     } finally {
       await srv.close();
@@ -78,6 +82,18 @@ describe("debugServer HTTP", () => {
       );
       copyFileSync(join(exampleCorpus, "run_ok", "events.ndjson"), join(dir, "r1", "events.ndjson"));
       copyFileSync(join(root, "examples", "events.ndjson"), join(dir, "r2", "events.ndjson"));
+      copyFileSync(join(exampleCorpus, "run_ok", "agent-run.json"), join(dir, "r1", "agent-run.json"));
+      const wr2 = readFileSync(join(dir, "r2", "workflow-result.json"));
+      const ev2 = readFileSync(join(dir, "r2", "events.ndjson"));
+      const rec2 = buildAgentRunRecordForBundle({
+        runId: "r2",
+        workflowId: "wf_inconsistent",
+        producer: { name: "execution-truth-layer", version: "0.1.0" },
+        verifiedAt: new Date().toISOString(),
+        workflowResultBytes: wr2,
+        eventsBytes: ev2,
+      });
+      writeFileSync(join(dir, "r2", "agent-run.json"), JSON.stringify(rec2));
       const srv = await startDebugServerOnPort(dir, 0);
       try {
         const res = await fetch(`http://127.0.0.1:${srv.port}/api/compare`, {
@@ -107,6 +123,17 @@ describe("debugServer HTTP", () => {
         mkdirSync(join(dir, id), { recursive: true });
         writeFileSync(join(dir, id, "workflow-result.json"), wr);
         writeFileSync(join(dir, id, "events.ndjson"), evNdjson);
+        const wrBuf = readFileSync(join(dir, id, "workflow-result.json"));
+        const evBuf = readFileSync(join(dir, id, "events.ndjson"));
+        const rec = buildAgentRunRecordForBundle({
+          runId: id,
+          workflowId: "wf_inconsistent",
+          producer: { name: "execution-truth-layer", version: "0.1.0" },
+          verifiedAt: new Date().toISOString(),
+          workflowResultBytes: wrBuf,
+          eventsBytes: evBuf,
+        });
+        writeFileSync(join(dir, id, "agent-run.json"), JSON.stringify(rec));
       }
       const srv = await startDebugServerOnPort(dir, 0);
       try {

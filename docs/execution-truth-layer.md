@@ -15,7 +15,7 @@ This document is the authoritative specification for the MVP. The product verifi
 
 | Module | Role |
 |--------|------|
-| `schemaLoad.ts` | AJV 2020-12 validators for event line, execution trace view, registry, workflow engine/result, truth report, compare-input |
+| `schemaLoad.ts` | AJV 2020-12 validators for event line, execution trace view, registry, workflow engine/result, truth report, compare-input, **`agent-run-record`** |
 | `failureCatalog.ts` | Stable run-level literals, `formatOperationalMessage`, CLI error envelope helpers, `CLI_OPERATIONAL_CODES` |
 | `truthLayerError.ts` | `TruthLayerError` for coded I/O and registry failures |
 | `loadEvents.ts` | Read NDJSON, validate union event schema, filter `workflowId`; populate `runEvents` (capture order) and tool-only `events` via `prepareWorkflowEvents` + `eventSequenceIntegrity` |
@@ -37,13 +37,14 @@ This document is the authoritative specification for the MVP. The product verifi
 | `verificationPolicy.ts` | `VerificationPolicy` normalization/validation; `executeVerificationWithPolicySync` / `executeVerificationWithPolicyAsync` (strong vs eventual polling); `createSqlitePolicyContext` |
 | `executionTrace.ts` | `assertValidRunEventParentGraph`, `buildExecutionTraceView`, `formatExecutionTraceText`; `traceStepKind` derivation and `backwardPaths` |
 | `pipeline.ts` | Orchestration: `runLogicalStepsVerification` (internal), async `verifyWorkflow`, sync `verifyToolObservedStep`, `withWorkflowVerification` (SQLite `dbPath` only); default `truthReport` / `logStep` |
-| `cli.ts` | CLI entry: verify + `compare` + `execution-trace` + `validate-registry` + **`debug`** subcommands |
-| `debugCorpus.ts` | Debug Console corpus layout: enumerate `<corpusRoot>/<runId>/`, load outcomes (**`ok`** / **`error`**), path safety, optional **`meta.json`** |
+| `cli.ts` | CLI entry: verify (**optional **`--write-run-bundle <dir>`**), `compare`, `execution-trace`, `validate-registry`, **`debug`** |
+| `debugCorpus.ts` | Debug Console corpus layout: enumerate `<corpusRoot>/<runId>/`, load outcomes (**`ok`** / **`error`**), path safety, mandatory **`agent-run.json`** manifest with SHA-256 bindings |
 | `debugFocus.ts` | Pure **`buildFocusTargets`**: maps **`workflowTruthReport.failureAnalysis.evidence`** to trace navigation targets (tested golden vectors) |
 | `debugPatterns.ts` | **`buildCorpusPatterns`**: histograms + **`recurrenceSignature`** aggregation; optional pairwise recurrence when **`workflowId`** filter set (cap **50** runs) |
 | `debugRunFilters.ts` | Server-side **`GET /api/runs`** query parsing, pagination cursor, **`includeLoadErrors`** default **true** |
-| `debugRunIndex.ts` | **`RunListItem`** facets for filters; customer sentinel **`__unspecified__`** when **`meta.json`** omits **`customerId`** |
+| `debugRunIndex.ts` | **`RunListItem`** facets for filters; customer sentinel **`__unspecified__`** when **`agent-run.json`** omits **`customerId`** (ok rows) or on load errors |
 | `debugServer.ts` | Local HTTP on **127.0.0.1** only: JSON APIs + static **`debug-ui/`** (copied to **`dist/debug-ui/`** on build) |
+| `agentRunRecord.ts` | **`buildAgentRunRecordForBundle`**, **`sha256Hex`**; types aligned with [`schemas/agent-run-record.schema.json`](../schemas/agent-run-record.schema.json) |
 
 ### Engineer note: shared step core
 
@@ -616,25 +617,57 @@ Step statuses: `verified` | `missing` | `inconsistent` | `incomplete_verificatio
 
 **Compatibility:** Emitted **`WorkflowResult.schemaVersion`** is **8** with required **`workflowTruthReport`** and **`verificationRunContext`**. The engine-only JSON (`schemaVersion` **6**) is defined by [`schemas/workflow-engine-result.schema.json`](../schemas/workflow-engine-result.schema.json). Required **`verificationPolicy`** and **`eventSequenceIntegrity`**; non-**`verified`** steps require **`failureDiagnostic`**; consumers must allow step `status` **`uncertain`** (see [`schemas/workflow-result.schema.json`](../schemas/workflow-result.schema.json)).
 
+## Agent run record (canonical bundle)
+
+### Why
+
+The product treats each inspectable saved run as **three files** with one manifest: **`events.ndjson`** (raw capture), **`workflow-result.json`** (emitted verification), and **`agent-run.json`** (identity, optional **`customerId`** / **`capturedAt`**, **`producer`**, **`verifiedAt`**, and **SHA-256** + **byte length** for each artifact). **There is no `meta.json`** on this path—tenant metadata lives only on the manifest.
+
+### Schema
+
+Structural SSOT: [`schemas/agent-run-record.schema.json`](../schemas/agent-run-record.schema.json) (**`schemaVersion` `1`**). Artifact **`relativePath`** values are fixed by JSON Schema **`const`**: **`workflow-result.json`** and **`events.ndjson`** only.
+
+### `loadCorpusRun` verification order (normative)
+
+1. **Path safety:** resolved run directory must stay under the corpus root; otherwise **`PATH_ESCAPE`**.
+2. **Manifest presence:** missing **`agent-run.json`** → **`MISSING_AGENT_RUN_MANIFEST`**.
+3. **`JSON.parse`** manifest: failure → **`AGENT_RUN_JSON_SYNTAX`**.
+4. **AJV** validate manifest: failure → **`AGENT_RUN_INVALID`**.
+5. **Workflow result artifact, then events:** resolve path under the run directory; if file missing → **`MISSING_WORKFLOW_RESULT`** or **`MISSING_EVENTS`** respectively; else read bytes; if length ≠ manifest **`byteLength`** → **`ARTIFACT_LENGTH_MISMATCH`**; if **`sha256`** (hex, lowercase) ≠ manifest → **`ARTIFACT_INTEGRITY_MISMATCH`**.
+6. **Parse** workflow-result bytes: failure → **`WORKFLOW_RESULT_JSON`**.
+7. **Workflow-result schema + normalize:** failure → **`WORKFLOW_RESULT_INVALID`**.
+8. **`manifest.workflowId`** must equal normalized **`WorkflowResult.workflowId`**: else **`AGENT_RUN_WORKFLOW_ID_MISMATCH`**.
+9. **Events:** call **`loadEventsForWorkflow`** on **`events.ndjson`** (second disk read after step 5).
+
+**`loadStatus: ok`** is impossible without a valid manifest and steps 2–8 succeeding.
+
+### CLI (normative)
+
+After a successful **`verify-workflow`** (verdict exit **0–2**, stdout **`WorkflowResult`** schema-valid), **`--write-run-bundle <dir>`** creates the directory if needed, writes **`events.ndjson`** (byte copy of **`--events`**), **`workflow-result.json`**, then **`agent-run.json`**, using the package **`name`** / **`version`** from **`package.json`** as **`producer`**.
+
+### Implementer API
+
+**`buildAgentRunRecordForBundle`** and **`sha256Hex`** live in **`agentRunRecord.ts`** and are re-exported from the package entry.
+
 ## Debug Console (normative)
 
 On-call **interactive debugging** is supported by a **local-only** web UI served by the CLI subcommand **`verify-workflow debug --corpus <dir> [--port <n>]`**. The server binds **127.0.0.1** only (no LAN exposure in this MVP). **`npm run build`** copies static assets from **`debug-ui/`** to **`dist/debug-ui/`** next to **`dist/cli.js`**.
 
 ### Debug Console audiences
 
-- **Integrator:** Export each run as a **child directory** of the corpus root: **`<corpusRoot>/<runId>/workflow-result.json`** and **`<corpusRoot>/<runId>/events.ndjson`** (same filenames for every run). Optional **`<corpusRoot>/<runId>/meta.json`**: JSON object with optional string **`customerId`**, optional string **`capturedAt`** (ISO-8601). No other **`meta.json`** fields are required in v1.
+- **Integrator:** Export each run as a **child directory** of the corpus root with the [Agent run record (canonical bundle)](#agent-run-record-canonical-bundle): **`agent-run.json`**, **`workflow-result.json`**, and **`events.ndjson`** (fixed names). Optional manifest fields **`customerId`** and **`capturedAt`** (ISO-8601 **`date-time`**) replace the former **`meta.json`** contract.
 - **Operator:** Run **`verify-workflow debug --corpus <path>`**, open the printed **http://127.0.0.1:…/** URL. Use **Runs** (filters + pagination), **Patterns** (corpus-wide aggregates), **Compare** (multi-select). Load-failed artifacts appear as **first-class rows** (not omitted).
 - **Engineer:** Implementation modules are listed in the Engineer table under [Audiences](#audiences) (`debugCorpus.ts`, `debugFocus.ts`, `debugPatterns.ts`, `debugRunFilters.ts`, `debugRunIndex.ts`, `debugServer.ts`). **`recurrenceSignature`** for pattern aggregation is reused from **`runComparison.ts`**.
 
 ### Corpus load outcomes (normative)
 
-Every immediate child directory of **`corpusRoot`** with a safe **`runId`** (no path separators, not **`.`** or **`..`**) is enumerated. For each **`runId`**, the loader produces either **`loadStatus: "ok"`** or **`loadStatus: "error"`**. **Silent omission is forbidden.** Resolved paths must stay under the corpus root; otherwise **`PATH_ESCAPE`**. Error codes include **`MISSING_WORKFLOW_RESULT`**, **`MISSING_EVENTS`**, **`WORKFLOW_RESULT_JSON`**, **`WORKFLOW_RESULT_INVALID`**, **`META_INVALID`**, **`EVENTS_LOAD_FAILED`**.
+Every immediate child directory of **`corpusRoot`** with a safe **`runId`** (no path separators, not **`.`** or **`..`**) is enumerated. For each **`runId`**, the loader produces either **`loadStatus: "ok"`** or **`loadStatus: "error"`**. **Silent omission is forbidden.** Resolved paths must stay under the corpus root; otherwise **`PATH_ESCAPE`**. Error codes include **`MISSING_AGENT_RUN_MANIFEST`**, **`AGENT_RUN_JSON_SYNTAX`**, **`AGENT_RUN_INVALID`**, **`ARTIFACT_LENGTH_MISMATCH`**, **`ARTIFACT_INTEGRITY_MISMATCH`**, **`AGENT_RUN_WORKFLOW_ID_MISMATCH`**, **`MISSING_WORKFLOW_RESULT`**, **`MISSING_EVENTS`**, **`WORKFLOW_RESULT_JSON`**, **`WORKFLOW_RESULT_INVALID`**, **`EVENTS_LOAD_FAILED`**.
 
 **stderr:** On server start, the CLI prints one line per load error: **`[debug] corpus run "<runId>" load error <code>: <message>`** (mirrors UI-visible failures).
 
 ### `capturedAtEffective` (normative)
 
-If **`meta.capturedAt`** parses as a valid date, use that instant. **Otherwise** use **`mtimeMs`** of **`workflow-result.json`** only (no fallback to **`events.ndjson`** mtime).
+If **`agentRunRecord.capturedAt`** parses as a valid date, use that instant. **Else** if **`agentRunRecord.verifiedAt`** parses, use that. **Otherwise** use **`mtimeMs`** of **`workflow-result.json`** only (no fallback to **`events.ndjson`** mtime).
 
 ### HTTP API (normative)
 
@@ -650,13 +683,13 @@ If **`meta.capturedAt`** parses as a valid date, use that instant. **Otherwise**
 | **`failureCategory`** | Actionable category string (ok rows only) |
 | **`reasonCode`** | Exact token match against run-level codes and step reason codes on the row |
 | **`toolId`** | Ok row has a step with this **`toolId`** |
-| **`customerId`** | Exact match; use literal **`__unspecified__`** to match runs with no **`meta.customerId`** |
+| **`customerId`** | Exact match; use literal **`__unspecified__`** to match runs with no **`agentRunRecord.customerId`** (ok rows) |
 | **`timeFrom` / `timeTo`** | Inclusive range on **`capturedAtEffective`** (milliseconds since epoch) |
 | **`includeLoadErrors`** | Default **true**; if **`false`**, error rows are excluded from the listing |
 
 **Pagination:** **`limit`** default **100**, max **500**; **`cursor`** opaque (base64url JSON **`{ offset }`**). Response: **`items`**, **`nextCursor`**, **`totalMatched`**, **`filterEcho`**. Sort: **`runId`** ascending.
 
-**`GET /api/runs/:runId`** — **`200`** always for a known **`runId`**. **`ok`:** **`workflowResult`**, schema-valid **`executionTrace`**, paths, **`meta`**, **`capturedAtEffectiveMs`**. **`error`:** **`error`**, **`pathsTried`**, optional **`rawPreview`** (first ≤ 8KiB UTF-8 of the failing file when readable).
+**`GET /api/runs/:runId`** — **`200`** always for a known **`runId`**. **`ok`:** **`workflowResult`**, **`agentRunRecord`**, schema-valid **`executionTrace`**, paths (**`workflowResult`**, **`events`**, **`agentRun`**), list facets **`meta`** (derived from the manifest), **`capturedAtEffectiveMs`**. **`error`:** **`error`**, **`pathsTried`**, optional **`rawPreview`** (first ≤ 8KiB UTF-8 of the failing file when readable), empty **`meta`** in JSON.
 
 **`GET /api/runs/:runId/focus`** — **`200`** with **`{ targets: [{ kind, value, rationale }] }`** from **`buildFocusTargets`** for ok runs; **`409`** **`FOCUS_NOT_AVAILABLE`** for error rows. The browser UI must not reimplement this mapping.
 
@@ -666,7 +699,7 @@ If **`meta.capturedAt`** parses as a valid date, use that instant. **Otherwise**
 
 ### Example corpus
 
-**`examples/debug-corpus/`** ships **four** runs: one **`ok`**, three **`error`** (bad JSON, missing events, schema-invalid **`{}`**) for CI and manual smoke.
+**`examples/debug-corpus/`** ships one sealed **`ok`** run (**`run_ok`**) for CI and manual smoke. **Negative corpus fixtures** (bad JSON, missing events, schema-invalid **`{}`**) live under **`test/fixtures/corpus-negative/`** and use the same loader; they are not bundled under **`examples/debug-corpus/`**.
 
 ## Cross-run comparison (normative)
 

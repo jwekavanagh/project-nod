@@ -4,6 +4,7 @@ import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 import { buildCorpusPatterns } from "./debugPatterns.js";
 import type { CorpusRunLoadedOk, CorpusRunOutcome } from "./debugCorpus.js";
+import type { AgentRunRecord } from "./agentRunRecord.js";
 import { runListItemFromOutcome } from "./debugRunIndex.js";
 import { normalizeToEmittedWorkflowResult } from "./workflowResultNormalize.js";
 import type { WorkflowEngineResult, WorkflowResult } from "./types.js";
@@ -16,13 +17,29 @@ describe("buildCorpusPatterns", () => {
       readFileSync(path.join(root, "examples", "debug-corpus", "run_ok", "workflow-result.json"), "utf8"),
     ) as WorkflowEngineResult | WorkflowResult;
     const wr = normalizeToEmittedWorkflowResult(raw);
+    const dummyRecord = (id: string): AgentRunRecord => ({
+      schemaVersion: 1,
+      runId: id,
+      workflowId: wr.workflowId,
+      producer: { name: "execution-truth-layer", version: "0.1.0" },
+      verifiedAt: "2026-01-01T00:00:00.000Z",
+      artifacts: {
+        workflowResult: {
+          relativePath: "workflow-result.json",
+          sha256: "0".repeat(64),
+          byteLength: 0,
+        },
+        events: { relativePath: "events.ndjson", sha256: "0".repeat(64), byteLength: 0 },
+      },
+    });
     const mkOk = (id: string): CorpusRunLoadedOk => ({
       loadStatus: "ok",
       runId: id,
       workflowResult: wr,
       meta: {},
+      agentRunRecord: dummyRecord(id),
       capturedAtEffectiveMs: 1,
-      paths: { workflowResult: "", events: "" },
+      paths: { workflowResult: "", events: "", agentRun: "" },
       malformedEventLineCount: 0,
     });
     const outcomes: CorpusRunOutcome[] = [mkOk("x1"), mkOk("x2"), mkOk("x3")];

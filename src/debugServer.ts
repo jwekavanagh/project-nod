@@ -168,7 +168,7 @@ async function handleRequest(
           pathsTried: outcome.pathsTried,
           rawPreview: outcome.rawPreview,
           capturedAtEffectiveMs: outcome.capturedAtEffectiveMs,
-          meta: outcome.meta ?? {},
+          meta: {},
         });
         return;
       }
@@ -198,6 +198,7 @@ async function handleRequest(
         loadStatus: "ok",
         runId: o.runId,
         workflowResult: o.workflowResult,
+        agentRunRecord: o.agentRunRecord,
         executionTrace: trace,
         malformedEventLineCount: load.malformedEventLineCount,
         meta: o.meta,

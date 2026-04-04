@@ -1,10 +1,9 @@
 import { describe, it, before, after } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync, writeFileSync, mkdtempSync, rmSync } from "node:fs";
-import { join } from "node:path";
+import { basename, dirname, join } from "node:path";
 import { tmpdir } from "node:os";
 import { fileURLToPath } from "node:url";
-import { dirname } from "node:path";
 import { spawnSync } from "node:child_process";
 import { DatabaseSync } from "node:sqlite";
 import {
@@ -13,6 +12,7 @@ import {
 } from "../dist/failureCatalog.js";
 import { formatWorkflowTruthReport } from "../dist/workflowTruthReport.js";
 import { loadSchemaValidator } from "../dist/schemaLoad.js";
+import { loadCorpusRun, resolveCorpusRootReal } from "../dist/debugCorpus.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const root = join(__dirname, "..");
@@ -90,6 +90,41 @@ describe("CLI verify-workflow", () => {
     assert.equal(parsed.workflowId, "wf_complete");
     assert.equal(parsed.status, "complete");
     assert.equal(parsed.steps[0]?.status, "verified");
+  });
+
+  it("--write-run-bundle writes a loadable canonical bundle", () => {
+    const bundleDir = mkdtempSync(join(tmpdir(), "etl-bundle-"));
+    try {
+      const r = spawnSync(
+        process.execPath,
+        [
+          "--no-warnings",
+          cliJs,
+          "--workflow-id",
+          "wf_complete",
+          "--events",
+          eventsPath,
+          "--registry",
+          registryPath,
+          "--db",
+          dbPath,
+          "--no-truth-report",
+          "--write-run-bundle",
+          bundleDir,
+        ],
+        { encoding: "utf8", cwd: root },
+      );
+      assert.equal(r.status, 0, r.stderr);
+      const corpusRootReal = resolveCorpusRootReal(dirname(bundleDir));
+      const outcome = loadCorpusRun(corpusRootReal, basename(bundleDir));
+      assert.equal(outcome.loadStatus, "ok");
+      if (outcome.loadStatus === "ok") {
+        assert.equal(outcome.workflowResult.workflowId, "wf_complete");
+        assert.equal(outcome.agentRunRecord.workflowId, "wf_complete");
+      }
+    } finally {
+      rmSync(bundleDir, { recursive: true, force: true });
+    }
   });
 
   it("--help exits 0 and prints usage to stdout", () => {

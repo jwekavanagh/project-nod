@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "runId": "run_schema_invalid",
+  "workflowId": "wf_complete",
+  "producer": { "name": "execution-truth-layer", "version": "0.1.0" },
+  "verifiedAt": "2026-04-04T00:00:00.000Z",
+  "artifacts": {
+    "workflowResult": {
+      "relativePath": "workflow-result.json",
+      "sha256": "e3566b3a06430868d71e9287dfd6c6c520a3da027aabea01951d407ee131dc2f",
+      "byteLength": 4
+    },
+    "events": {
+      "relativePath": "events.ndjson",
+      "sha256": "63e3dd7aab40d0ec65388b939635accc366537110fbad97fa36506571734dd49",
+      "byteLength": 182
+    }
+  }
+}

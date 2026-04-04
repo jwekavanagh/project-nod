@@ -24,6 +24,7 @@ function getAjv(): InstanceType<typeof Ajv2020> {
 }
 
 export type SchemaValidatorName =
+  | "agent-run-record"
   | "event"
   | "execution-trace-view"
   | "tools-registry"
@@ -80,6 +81,8 @@ export function loadSchemaValidator(name: SchemaValidatorName): ValidateFunction
     case "workflow-result-compare-input":
       ensureCompareInputDependencies();
       return compileSchemaFile(name, "workflow-result-compare-input.schema.json");
+    case "agent-run-record":
+      return compileSchemaFile(name, "agent-run-record.schema.json");
     case "event":
       return compileSchemaFile(name, "event.schema.json");
     case "execution-trace-view":

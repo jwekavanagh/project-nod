@@ -6,20 +6,26 @@ import { loadSchemaValidator } from "./schemaLoad.js";
 import { TruthLayerError } from "./truthLayerError.js";
 import type { WorkflowResult } from "./types.js";
 import { normalizeToEmittedWorkflowResult } from "./workflowResultNormalize.js";
+import { sha256Hex, type AgentRunRecord } from "./agentRunRecord.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 export const WORKFLOW_RESULT_FILENAME = "workflow-result.json";
 export const EVENTS_FILENAME = "events.ndjson";
-export const META_FILENAME = "meta.json";
+export const AGENT_RUN_FILENAME = "agent-run.json";
 
 export const DEBUG_CORPUS_CODES = {
   PATH_ESCAPE: "PATH_ESCAPE",
+  MISSING_AGENT_RUN_MANIFEST: "MISSING_AGENT_RUN_MANIFEST",
+  AGENT_RUN_JSON_SYNTAX: "AGENT_RUN_JSON_SYNTAX",
+  AGENT_RUN_INVALID: "AGENT_RUN_INVALID",
+  ARTIFACT_LENGTH_MISMATCH: "ARTIFACT_LENGTH_MISMATCH",
+  ARTIFACT_INTEGRITY_MISMATCH: "ARTIFACT_INTEGRITY_MISMATCH",
+  AGENT_RUN_WORKFLOW_ID_MISMATCH: "AGENT_RUN_WORKFLOW_ID_MISMATCH",
   MISSING_WORKFLOW_RESULT: "MISSING_WORKFLOW_RESULT",
   MISSING_EVENTS: "MISSING_EVENTS",
   WORKFLOW_RESULT_INVALID: "WORKFLOW_RESULT_INVALID",
   WORKFLOW_RESULT_JSON: "WORKFLOW_RESULT_JSON",
-  META_INVALID: "META_INVALID",
   EVENTS_LOAD_FAILED: "EVENTS_LOAD_FAILED",
 } as const;
 
@@ -39,10 +45,11 @@ export type CorpusRunLoadedOk = {
   loadStatus: "ok";
   runId: string;
   workflowResult: WorkflowResult;
+  /** Derived from `agentRunRecord` for list facets (`customerId`, `capturedAt`). */
   meta: CorpusMeta;
+  agentRunRecord: AgentRunRecord;
   capturedAtEffectiveMs: number;
-  paths: { workflowResult: string; events: string };
-  /** From loadEventsForWorkflow — needed for trace build */
+  paths: { workflowResult: string; events: string; agentRun: string };
   malformedEventLineCount: number;
 };
 
@@ -50,16 +57,15 @@ export type CorpusRunLoadedError = {
   loadStatus: "error";
   runId: string;
   error: CorpusLoadError;
-  pathsTried: { workflowResult?: string; events?: string };
+  pathsTried: { workflowResult?: string; events?: string; agentRun?: string };
   rawPreview?: string;
   capturedAtEffectiveMs: number;
-  /** Present when `meta.json` was parsed before the failure. */
-  meta?: CorpusMeta;
 };
 
 export type CorpusRunOutcome = CorpusRunLoadedOk | CorpusRunLoadedError;
 
 const validateWorkflowResult = loadSchemaValidator("workflow-result");
+const validateAgentRunRecord = loadSchemaValidator("agent-run-record");
 
 function isSafeRunId(runId: string): boolean {
   if (runId === "." || runId === "..") return false;
@@ -99,59 +105,21 @@ function readUtf8Preview(filePath: string, maxBytes: number): string | undefined
   }
 }
 
-function parseMetaFile(metaPath: string): { ok: true; meta: CorpusMeta } | { ok: false; error: CorpusLoadError } {
-  if (!existsSync(metaPath)) return { ok: true, meta: {} };
-  let raw: string;
-  try {
-    raw = readFileSync(metaPath, "utf8");
-  } catch (e) {
-    const msg = e instanceof Error ? e.message : String(e);
-    return {
-      ok: false,
-      error: {
-        code: DEBUG_CORPUS_CODES.META_INVALID,
-        message: `Cannot read meta.json: ${msg}`,
-        path: metaPath,
-      },
-    };
-  }
-  let parsed: unknown;
-  try {
-    parsed = JSON.parse(raw) as unknown;
-  } catch (e) {
-    const msg = e instanceof Error ? e.message : String(e);
-    return {
-      ok: false,
-      error: {
-        code: DEBUG_CORPUS_CODES.META_INVALID,
-        message: `meta.json is not valid JSON: ${msg}`,
-        path: metaPath,
-      },
-    };
-  }
-  if (parsed === null || typeof parsed !== "object" || Array.isArray(parsed)) {
-    return {
-      ok: false,
-      error: {
-        code: DEBUG_CORPUS_CODES.META_INVALID,
-        message: "meta.json must be a JSON object.",
-        path: metaPath,
-      },
-    };
-  }
-  const o = parsed as Record<string, unknown>;
-  const meta: CorpusMeta = {};
-  if (typeof o.customerId === "string") meta.customerId = o.customerId;
-  if (typeof o.capturedAt === "string") meta.capturedAt = o.capturedAt;
-  return { ok: true, meta };
-}
-
-function capturedAtEffectiveMs(meta: CorpusMeta, workflowResultPath: string): number {
-  if (meta.capturedAt) {
-    const t = Date.parse(meta.capturedAt);
+function capturedAtEffectiveMs(record: AgentRunRecord, workflowResultPath: string): number {
+  if (record.capturedAt) {
+    const t = Date.parse(record.capturedAt);
     if (!Number.isNaN(t)) return t;
   }
+  const v = Date.parse(record.verifiedAt);
+  if (!Number.isNaN(v)) return v;
   return mtimeMs(workflowResultPath);
+}
+
+function metaFromRecord(record: AgentRunRecord): CorpusMeta {
+  const meta: CorpusMeta = {};
+  if (record.customerId !== undefined && record.customerId !== "") meta.customerId = record.customerId;
+  if (record.capturedAt !== undefined && record.capturedAt !== "") meta.capturedAt = record.capturedAt;
+  return meta;
 }
 
 export function resolveCorpusRootReal(corpusRoot: string): string {
@@ -191,40 +159,100 @@ export function loadCorpusRun(corpusRootReal: string, runId: string): CorpusRunO
     };
   }
 
+  const agentRunPath = path.join(runDirReal, AGENT_RUN_FILENAME);
   const workflowResultPath = path.join(runDirReal, WORKFLOW_RESULT_FILENAME);
   const eventsPath = path.join(runDirReal, EVENTS_FILENAME);
-  const metaPath = path.join(runDirReal, META_FILENAME);
 
-  if (!existsSync(workflowResultPath)) {
+  if (!existsSync(agentRunPath)) {
+    return {
+      loadStatus: "error",
+      runId,
+      error: {
+        code: DEBUG_CORPUS_CODES.MISSING_AGENT_RUN_MANIFEST,
+        message: `Missing ${AGENT_RUN_FILENAME} under run folder.`,
+        path: agentRunPath,
+      },
+      pathsTried: { agentRun: agentRunPath, workflowResult: workflowResultPath, events: eventsPath },
+      capturedAtEffectiveMs: mtimeMs(workflowResultPath),
+    };
+  }
+
+  let agentRunRaw: string;
+  try {
+    agentRunRaw = readFileSync(agentRunPath, "utf8");
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : String(e);
+    return {
+      loadStatus: "error",
+      runId,
+      error: {
+        code: DEBUG_CORPUS_CODES.AGENT_RUN_JSON_SYNTAX,
+        message: `Cannot read ${AGENT_RUN_FILENAME}: ${msg}`,
+        path: agentRunPath,
+      },
+      pathsTried: { agentRun: agentRunPath },
+      capturedAtEffectiveMs: mtimeMs(workflowResultPath),
+    };
+  }
+
+  let agentRunParsed: unknown;
+  try {
+    agentRunParsed = JSON.parse(agentRunRaw) as unknown;
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : String(e);
+    return {
+      loadStatus: "error",
+      runId,
+      error: {
+        code: DEBUG_CORPUS_CODES.AGENT_RUN_JSON_SYNTAX,
+        message: `${AGENT_RUN_FILENAME} is not valid JSON: ${msg}`,
+        path: agentRunPath,
+      },
+      pathsTried: { agentRun: agentRunPath },
+      rawPreview: readUtf8Preview(agentRunPath, 8192),
+      capturedAtEffectiveMs: mtimeMs(workflowResultPath),
+    };
+  }
+
+  if (!validateAgentRunRecord(agentRunParsed)) {
+    return {
+      loadStatus: "error",
+      runId,
+      error: {
+        code: DEBUG_CORPUS_CODES.AGENT_RUN_INVALID,
+        message: `${AGENT_RUN_FILENAME} failed agent-run-record schema validation.`,
+        path: agentRunPath,
+        details: validateAgentRunRecord.errors ?? [],
+      },
+      pathsTried: { agentRun: agentRunPath },
+      rawPreview: readUtf8Preview(agentRunPath, 8192),
+      capturedAtEffectiveMs: mtimeMs(workflowResultPath),
+    };
+  }
+
+  const record = agentRunParsed as AgentRunRecord;
+  const wrSpec = record.artifacts.workflowResult;
+  const evSpec = record.artifacts.events;
+  const wrPathResolved = path.join(runDirReal, wrSpec.relativePath);
+  const evPathResolved = path.join(runDirReal, evSpec.relativePath);
+
+  if (!existsSync(wrPathResolved)) {
     return {
       loadStatus: "error",
       runId,
       error: {
         code: DEBUG_CORPUS_CODES.MISSING_WORKFLOW_RESULT,
         message: `Missing ${WORKFLOW_RESULT_FILENAME} under run folder.`,
-        path: workflowResultPath,
+        path: wrPathResolved,
       },
-      pathsTried: { workflowResult: workflowResultPath, events: eventsPath },
+      pathsTried: { agentRun: agentRunPath, workflowResult: wrPathResolved, events: evPathResolved },
       capturedAtEffectiveMs: mtimeMs(eventsPath),
     };
   }
 
-  const metaParsed = parseMetaFile(metaPath);
-  if (!metaParsed.ok) {
-    return {
-      loadStatus: "error",
-      runId,
-      error: metaParsed.error,
-      pathsTried: { workflowResult: workflowResultPath },
-      rawPreview: readUtf8Preview(metaPath, 8192),
-      capturedAtEffectiveMs: mtimeMs(workflowResultPath),
-    };
-  }
-  const meta = metaParsed.meta;
-
-  let wrRaw: string;
+  let wrBuf: Buffer;
   try {
-    wrRaw = readFileSync(workflowResultPath, "utf8");
+    wrBuf = readFileSync(wrPathResolved);
   } catch (e) {
     const msg = e instanceof Error ? e.message : String(e);
     return {
@@ -233,16 +261,106 @@ export function loadCorpusRun(corpusRootReal: string, runId: string): CorpusRunO
       error: {
         code: DEBUG_CORPUS_CODES.MISSING_WORKFLOW_RESULT,
         message: msg,
-        path: workflowResultPath,
+        path: wrPathResolved,
       },
-      pathsTried: { workflowResult: workflowResultPath },
-      capturedAtEffectiveMs: mtimeMs(workflowResultPath),
+      pathsTried: { agentRun: agentRunPath, workflowResult: wrPathResolved },
+      capturedAtEffectiveMs: mtimeMs(wrPathResolved),
+    };
+  }
+
+  if (wrBuf.length !== wrSpec.byteLength) {
+    return {
+      loadStatus: "error",
+      runId,
+      error: {
+        code: DEBUG_CORPUS_CODES.ARTIFACT_LENGTH_MISMATCH,
+        message: `${WORKFLOW_RESULT_FILENAME} byte length does not match ${AGENT_RUN_FILENAME}.`,
+        path: wrPathResolved,
+        details: { expected: wrSpec.byteLength, actual: wrBuf.length },
+      },
+      pathsTried: { agentRun: agentRunPath, workflowResult: wrPathResolved, events: evPathResolved },
+      capturedAtEffectiveMs: mtimeMs(wrPathResolved),
+    };
+  }
+
+  if (sha256Hex(wrBuf) !== wrSpec.sha256) {
+    return {
+      loadStatus: "error",
+      runId,
+      error: {
+        code: DEBUG_CORPUS_CODES.ARTIFACT_INTEGRITY_MISMATCH,
+        message: `${WORKFLOW_RESULT_FILENAME} SHA-256 does not match ${AGENT_RUN_FILENAME}.`,
+        path: wrPathResolved,
+      },
+      pathsTried: { agentRun: agentRunPath, workflowResult: wrPathResolved, events: evPathResolved },
+      capturedAtEffectiveMs: mtimeMs(wrPathResolved),
+    };
+  }
+
+  if (!existsSync(evPathResolved)) {
+    return {
+      loadStatus: "error",
+      runId,
+      error: {
+        code: DEBUG_CORPUS_CODES.MISSING_EVENTS,
+        message: `Missing ${EVENTS_FILENAME} under run folder.`,
+        path: evPathResolved,
+      },
+      pathsTried: { agentRun: agentRunPath, workflowResult: wrPathResolved, events: evPathResolved },
+      capturedAtEffectiveMs: capturedAtEffectiveMs(record, wrPathResolved),
+    };
+  }
+
+  let evBuf: Buffer;
+  try {
+    evBuf = readFileSync(evPathResolved);
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : String(e);
+    return {
+      loadStatus: "error",
+      runId,
+      error: {
+        code: DEBUG_CORPUS_CODES.MISSING_EVENTS,
+        message: msg,
+        path: evPathResolved,
+      },
+      pathsTried: { agentRun: agentRunPath, workflowResult: wrPathResolved, events: evPathResolved },
+      capturedAtEffectiveMs: capturedAtEffectiveMs(record, wrPathResolved),
+    };
+  }
+
+  if (evBuf.length !== evSpec.byteLength) {
+    return {
+      loadStatus: "error",
+      runId,
+      error: {
+        code: DEBUG_CORPUS_CODES.ARTIFACT_LENGTH_MISMATCH,
+        message: `${EVENTS_FILENAME} byte length does not match ${AGENT_RUN_FILENAME}.`,
+        path: evPathResolved,
+        details: { expected: evSpec.byteLength, actual: evBuf.length },
+      },
+      pathsTried: { agentRun: agentRunPath, workflowResult: wrPathResolved, events: evPathResolved },
+      capturedAtEffectiveMs: capturedAtEffectiveMs(record, wrPathResolved),
+    };
+  }
+
+  if (sha256Hex(evBuf) !== evSpec.sha256) {
+    return {
+      loadStatus: "error",
+      runId,
+      error: {
+        code: DEBUG_CORPUS_CODES.ARTIFACT_INTEGRITY_MISMATCH,
+        message: `${EVENTS_FILENAME} SHA-256 does not match ${AGENT_RUN_FILENAME}.`,
+        path: evPathResolved,
+      },
+      pathsTried: { agentRun: agentRunPath, workflowResult: wrPathResolved, events: evPathResolved },
+      capturedAtEffectiveMs: capturedAtEffectiveMs(record, wrPathResolved),
     };
   }
 
   let wrParsed: unknown;
   try {
-    wrParsed = JSON.parse(wrRaw) as unknown;
+    wrParsed = JSON.parse(wrBuf.toString("utf8")) as unknown;
   } catch (e) {
     const msg = e instanceof Error ? e.message : String(e);
     return {
@@ -251,12 +369,11 @@ export function loadCorpusRun(corpusRootReal: string, runId: string): CorpusRunO
       error: {
         code: DEBUG_CORPUS_CODES.WORKFLOW_RESULT_JSON,
         message: msg,
-        path: workflowResultPath,
+        path: wrPathResolved,
       },
-      pathsTried: { workflowResult: workflowResultPath, events: eventsPath },
-      rawPreview: readUtf8Preview(workflowResultPath, 8192),
-      capturedAtEffectiveMs: mtimeMs(workflowResultPath),
-      meta,
+      pathsTried: { agentRun: agentRunPath, workflowResult: wrPathResolved, events: evPathResolved },
+      rawPreview: readUtf8Preview(wrPathResolved, 8192),
+      capturedAtEffectiveMs: capturedAtEffectiveMs(record, wrPathResolved),
     };
   }
 
@@ -267,13 +384,12 @@ export function loadCorpusRun(corpusRootReal: string, runId: string): CorpusRunO
       error: {
         code: DEBUG_CORPUS_CODES.WORKFLOW_RESULT_INVALID,
         message: "workflow-result.json failed workflow-result schema validation.",
-        path: workflowResultPath,
+        path: wrPathResolved,
         details: validateWorkflowResult.errors ?? [],
       },
-      pathsTried: { workflowResult: workflowResultPath, events: eventsPath },
-      rawPreview: readUtf8Preview(workflowResultPath, 8192),
-      capturedAtEffectiveMs: mtimeMs(workflowResultPath),
-      meta,
+      pathsTried: { agentRun: agentRunPath, workflowResult: wrPathResolved, events: evPathResolved },
+      rawPreview: readUtf8Preview(wrPathResolved, 8192),
+      capturedAtEffectiveMs: capturedAtEffectiveMs(record, wrPathResolved),
     };
   }
 
@@ -290,27 +406,26 @@ export function loadCorpusRun(corpusRootReal: string, runId: string): CorpusRunO
       error: {
         code: DEBUG_CORPUS_CODES.WORKFLOW_RESULT_INVALID,
         message: msg,
-        path: workflowResultPath,
+        path: wrPathResolved,
       },
-      pathsTried: { workflowResult: workflowResultPath, events: eventsPath },
-      rawPreview: readUtf8Preview(workflowResultPath, 8192),
-      capturedAtEffectiveMs: mtimeMs(workflowResultPath),
-      meta,
+      pathsTried: { agentRun: agentRunPath, workflowResult: wrPathResolved, events: evPathResolved },
+      rawPreview: readUtf8Preview(wrPathResolved, 8192),
+      capturedAtEffectiveMs: capturedAtEffectiveMs(record, wrPathResolved),
     };
   }
 
-  if (!existsSync(eventsPath)) {
+  if (record.workflowId !== workflowResult.workflowId) {
     return {
       loadStatus: "error",
       runId,
       error: {
-        code: DEBUG_CORPUS_CODES.MISSING_EVENTS,
-        message: `Missing ${EVENTS_FILENAME} under run folder.`,
-        path: eventsPath,
+        code: DEBUG_CORPUS_CODES.AGENT_RUN_WORKFLOW_ID_MISMATCH,
+        message: `${AGENT_RUN_FILENAME} workflowId does not match workflow-result.json.`,
+        path: agentRunPath,
+        details: { manifest: record.workflowId, result: workflowResult.workflowId },
       },
-      pathsTried: { workflowResult: workflowResultPath, events: eventsPath },
-      capturedAtEffectiveMs: capturedAtEffectiveMs(meta, workflowResultPath),
-      meta,
+      pathsTried: { agentRun: agentRunPath, workflowResult: wrPathResolved, events: evPathResolved },
+      capturedAtEffectiveMs: capturedAtEffectiveMs(record, wrPathResolved),
     };
   }
 
@@ -328,10 +443,9 @@ export function loadCorpusRun(corpusRootReal: string, runId: string): CorpusRunO
           path: eventsPath,
           details: { truthLayerCode: e.code },
         },
-        pathsTried: { workflowResult: workflowResultPath, events: eventsPath },
+        pathsTried: { agentRun: agentRunPath, workflowResult: wrPathResolved, events: eventsPath },
         rawPreview: readUtf8Preview(eventsPath, 8192),
-        capturedAtEffectiveMs: capturedAtEffectiveMs(meta, workflowResultPath),
-        meta,
+        capturedAtEffectiveMs: capturedAtEffectiveMs(record, wrPathResolved),
       };
     }
     const msg = e instanceof Error ? e.message : String(e);
@@ -343,10 +457,9 @@ export function loadCorpusRun(corpusRootReal: string, runId: string): CorpusRunO
         message: msg,
         path: eventsPath,
       },
-      pathsTried: { workflowResult: workflowResultPath, events: eventsPath },
+      pathsTried: { agentRun: agentRunPath, workflowResult: wrPathResolved, events: eventsPath },
       rawPreview: readUtf8Preview(eventsPath, 8192),
-      capturedAtEffectiveMs: capturedAtEffectiveMs(meta, workflowResultPath),
-      meta,
+      capturedAtEffectiveMs: capturedAtEffectiveMs(record, wrPathResolved),
     };
   }
 
@@ -354,9 +467,10 @@ export function loadCorpusRun(corpusRootReal: string, runId: string): CorpusRunO
     loadStatus: "ok",
     runId,
     workflowResult,
-    meta,
-    capturedAtEffectiveMs: capturedAtEffectiveMs(meta, workflowResultPath),
-    paths: { workflowResult: workflowResultPath, events: eventsPath },
+    meta: metaFromRecord(record),
+    agentRunRecord: record,
+    capturedAtEffectiveMs: capturedAtEffectiveMs(record, wrPathResolved),
+    paths: { workflowResult: wrPathResolved, events: eventsPath, agentRun: agentRunPath },
     malformedEventLineCount: load.malformedEventLineCount,
   };
 }

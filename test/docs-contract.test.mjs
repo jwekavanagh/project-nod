@@ -143,6 +143,13 @@ const REQUIRED = [
   "PATTERNS_COMPARE_TOO_MANY",
   "buildFocusTargets",
   "examples/debug-corpus/",
+  "## Agent run record (canonical bundle)",
+  "## Canonical agent run bundle",
+  "agent-run.json",
+  "agent-run-record.schema.json",
+  "MISSING_AGENT_RUN_MANIFEST",
+  "--write-run-bundle",
+  "test/fixtures/corpus-negative/",
 ];
 
 describe("docs contract (SSOT + README)", () => {

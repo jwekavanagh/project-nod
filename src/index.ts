@@ -113,3 +113,27 @@ export type {
 } from "./types.js";
 export type { BucketAEntry, RunComparisonReport } from "./runComparison.js";
 export type { SqlReadBackend } from "./sqlReadBackend.js";
+export {
+  buildAgentRunRecordForBundle,
+  sha256Hex,
+  EVENTS_RELATIVE,
+  WORKFLOW_RESULT_RELATIVE,
+} from "./agentRunRecord.js";
+export type { AgentRunRecord } from "./agentRunRecord.js";
+export {
+  AGENT_RUN_FILENAME,
+  DEBUG_CORPUS_CODES,
+  EVENTS_FILENAME,
+  WORKFLOW_RESULT_FILENAME,
+  loadAllCorpusRuns,
+  loadCorpusRun,
+  listCorpusRunIds,
+  resolveCorpusRootReal,
+} from "./debugCorpus.js";
+export type {
+  CorpusLoadError,
+  CorpusMeta,
+  CorpusRunLoadedError,
+  CorpusRunLoadedOk,
+  CorpusRunOutcome,
+} from "./debugCorpus.js";

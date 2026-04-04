@@ -1,6 +1,7 @@
 #!/usr/bin/env node
-import { readFileSync, statSync } from "fs";
+import { mkdirSync, readFileSync, statSync, writeFileSync } from "fs";
 import path from "path";
+import { fileURLToPath } from "url";
 import {
   CLI_OPERATIONAL_CODES,
   cliErrorEnvelope,
@@ -28,6 +29,12 @@ import {
   logCorpusLoadErrors,
   startDebugServerOnPort,
 } from "./debugServer.js";
+import {
+  AGENT_RUN_FILENAME,
+  EVENTS_FILENAME,
+  WORKFLOW_RESULT_FILENAME,
+} from "./debugCorpus.js";
+import { buildAgentRunRecordForBundle } from "./agentRunRecord.js";
 
 function argValue(args: string[], name: string): string | undefined {
   const i = args.indexOf(name);
@@ -64,6 +71,7 @@ Provide exactly one of --db or --postgres-url.
 
 Optional output:
   --no-truth-report   For verdict exits 0–2, do not print the human truth report to stderr (stderr empty). stdout WorkflowResult JSON is unchanged. Exit 3 stderr is unchanged (single-line JSON envelope).
+  --write-run-bundle <dir>   After a successful verify (schema-valid WorkflowResult), write a canonical run directory: events.ndjson (byte copy of --events), workflow-result.json (emitted result), agent-run.json (SHA-256 manifest). Directory is created if missing. Requires exit 0–2 (operational failure skips the write).
 
 Exit codes:
   0  workflow status complete
@@ -269,6 +277,38 @@ Exit codes:
 
 function writeCliError(code: string, message: string): void {
   console.error(cliErrorEnvelope(code, message));
+}
+
+function readPackageIdentity(): { name: string; version: string } {
+  const pkgPath = path.join(path.dirname(fileURLToPath(import.meta.url)), "..", "package.json");
+  const raw = readFileSync(pkgPath, "utf8");
+  const pkg = JSON.parse(raw) as { name?: string; version?: string };
+  const name = typeof pkg.name === "string" && pkg.name.length > 0 ? pkg.name : "execution-truth-layer";
+  const version = typeof pkg.version === "string" && pkg.version.length > 0 ? pkg.version : "0.0.0";
+  return { name, version };
+}
+
+function writeCanonicalRunBundle(options: {
+  outDir: string;
+  eventsSourcePath: string;
+  workflowResult: import("./types.js").WorkflowResult;
+}): void {
+  const resolved = path.resolve(options.outDir);
+  const eventsBytes = readFileSync(path.resolve(options.eventsSourcePath));
+  const workflowResultBytes = Buffer.from(JSON.stringify(options.workflowResult), "utf8");
+  mkdirSync(resolved, { recursive: true });
+  writeFileSync(path.join(resolved, EVENTS_FILENAME), eventsBytes);
+  writeFileSync(path.join(resolved, WORKFLOW_RESULT_FILENAME), workflowResultBytes);
+  const { name, version } = readPackageIdentity();
+  const record = buildAgentRunRecordForBundle({
+    runId: path.basename(resolved),
+    workflowId: options.workflowResult.workflowId,
+    producer: { name, version },
+    verifiedAt: new Date().toISOString(),
+    workflowResultBytes,
+    eventsBytes,
+  });
+  writeFileSync(path.join(resolved, AGENT_RUN_FILENAME), `${JSON.stringify(record, null, 2)}\n`);
 }
 
 function usageValidateRegistry(): string {
@@ -625,6 +665,7 @@ async function main(): Promise<void> {
   }
 
   const noTruthReport = args.includes("--no-truth-report");
+  const writeRunBundleDir = argValue(args, "--write-run-bundle");
 
   let result;
   try {
@@ -655,6 +696,20 @@ async function main(): Promise<void> {
       JSON.stringify(validateResult.errors ?? []),
     );
     process.exit(3);
+  }
+
+  if (writeRunBundleDir !== undefined) {
+    try {
+      writeCanonicalRunBundle({
+        outDir: writeRunBundleDir,
+        eventsSourcePath: eventsPath,
+        workflowResult: result,
+      });
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : String(e);
+      writeCliError(CLI_OPERATIONAL_CODES.INTERNAL_ERROR, formatOperationalMessage(msg));
+      process.exit(3);
+    }
   }
 
   console.log(JSON.stringify(result));

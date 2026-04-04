@@ -40,7 +40,7 @@ export function runListItemFromOutcome(outcome: CorpusRunOutcome, runIndex: numb
       runId: outcome.runId,
       loadStatus: "error",
       toolIds: [],
-      customerId: effectiveCustomerId(outcome.meta),
+      customerId: effectiveCustomerId(undefined),
       primaryReasonCodes: [outcome.error.code],
       capturedAtEffectiveMs: outcome.capturedAtEffectiveMs,
       error: { code: outcome.error.code, message: outcome.error.message },

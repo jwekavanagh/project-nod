@@ -83,6 +83,10 @@ node dist/cli.js --workflow-id <id> --events <path> --registry <path> --postgres
 
 **In-process (SQLite only):** **`npm run example:workflow-hook`** — **`await withWorkflowVerification`** at the workflow root; see **[Low-friction integration (in-process)](docs/execution-truth-layer.md#low-friction-integration-in-process)**.
 
+## Canonical agent run bundle
+
+Saved runs that the Debug Console (or **`loadCorpusRun`**) can load as **`ok`** require **three files** per run directory: **`events.ndjson`**, **`workflow-result.json`**, and **`agent-run.json`** (a SHA-256 manifest—no separate **`meta.json`**). After **`verify-workflow`**, emit that layout with **`--write-run-bundle <dir>`**. Full contract, loader order, and error codes: **[Agent run record (canonical bundle)](docs/execution-truth-layer.md#agent-run-record-canonical-bundle)**.
+
 ## Authoritative specification
 
 **[docs/execution-truth-layer.md](docs/execution-truth-layer.md)** is the single source of truth for schemas, CLI I/O, Postgres guards, and module roles.
@@ -91,7 +95,7 @@ node dist/cli.js --workflow-id <id> --events <path> --registry <path> --postgres
 
 ## Automation and CLI (short)
 
-For **`verify-workflow`**, a **human-readable verification report** is written to **stderr** and the machine-readable **workflow result JSON** to **stdout** on verdict exits **0–2**; operational failures use exit **3** with a **single-line JSON error** on stderr (see [CLI operational errors](docs/execution-truth-layer.md#cli-operational-errors)). Full format: **[Human truth report](docs/execution-truth-layer.md#human-truth-report)**. Use **`--no-truth-report`** for empty stderr on verdict paths when piping logs. Exit codes: **0** complete, **1** inconsistent, **2** incomplete, **3** operational.
+For **`verify-workflow`**, a **human-readable verification report** is written to **stderr** and the machine-readable **workflow result JSON** to **stdout** on verdict exits **0–2**; operational failures use exit **3** with a **single-line JSON error** on stderr (see [CLI operational errors](docs/execution-truth-layer.md#cli-operational-errors)). Full format: **[Human truth report](docs/execution-truth-layer.md#human-truth-report)**. Use **`--no-truth-report`** for empty stderr on verdict paths when piping logs. Use **`--write-run-bundle <dir>`** on verdict exits **0–2** to write a sealed **[canonical bundle](docs/execution-truth-layer.md#agent-run-record-canonical-bundle)**. Exit codes: **0** complete, **1** inconsistent, **2** incomplete, **3** operational.
 
 After **`npm start`**, replay the demo workflows:
 
