@@ -1,4 +1,5 @@
-export type ToolObservedEvent = {
+/** v1 wire line: `tool_observed` without `runEventId`. */
+export type ToolObservedEventV1 = {
   schemaVersion: 1;
   workflowId: string;
   seq: number;
@@ -7,6 +8,75 @@ export type ToolObservedEvent = {
   params: Record<string, unknown>;
   timestamp?: string;
 };
+
+/** v2 wire line: same tool fields plus stable graph ids. */
+export type ToolObservedEventV2 = {
+  schemaVersion: 2;
+  workflowId: string;
+  runEventId: string;
+  parentRunEventId?: string;
+  type: "tool_observed";
+  seq: number;
+  toolId: string;
+  params: Record<string, unknown>;
+  timestamp?: string;
+};
+
+export type ToolObservedEvent = ToolObservedEventV1 | ToolObservedEventV2;
+
+export type ModelTurnRunEvent = {
+  schemaVersion: 2;
+  workflowId: string;
+  runEventId: string;
+  parentRunEventId?: string;
+  type: "model_turn";
+  status: "completed" | "error" | "aborted" | "incomplete";
+  summary?: string;
+  timestamp?: string;
+};
+
+export type RetrievalRunEvent = {
+  schemaVersion: 2;
+  workflowId: string;
+  runEventId: string;
+  parentRunEventId?: string;
+  type: "retrieval";
+  source: string;
+  status: "ok" | "empty" | "error";
+  querySummary?: string;
+  hitCount?: number;
+  timestamp?: string;
+};
+
+export type ControlRunEvent = {
+  schemaVersion: 2;
+  workflowId: string;
+  runEventId: string;
+  parentRunEventId?: string;
+  type: "control";
+  controlKind: "branch" | "loop" | "interrupt" | "gate" | "run_completed";
+  label?: string;
+  decision?: "taken" | "skipped";
+  timestamp?: string;
+};
+
+export type ToolSkippedRunEvent = {
+  schemaVersion: 2;
+  workflowId: string;
+  runEventId: string;
+  parentRunEventId?: string;
+  type: "tool_skipped";
+  toolId: string;
+  reason: string;
+  timestamp?: string;
+};
+
+export type RunEvent =
+  | ToolObservedEvent
+  | ModelTurnRunEvent
+  | RetrievalRunEvent
+  | ControlRunEvent
+  | ToolSkippedRunEvent;
 
 /** Registry row verification (table, key, requiredFields pointers) without discriminant. */
 export type SqlRowVerificationSpec = {
@@ -170,8 +240,63 @@ export type WorkflowResult = Omit<WorkflowEngineResult, "schemaVersion"> & {
   workflowTruthReport: WorkflowTruthReport;
 };
 
+export type TraceStepKind =
+  | "skipped"
+  | "branch_taken"
+  | "branch_skipped"
+  | "failed"
+  | "success"
+  | "neutral"
+  | "divergent_observations"
+  | "repeated_observation";
+
+export type ExecutionTraceVerificationLink = {
+  stepIndex: number;
+  seq: number;
+  engineStepStatus: StepStatus;
+  truthOutcomeLabel: string;
+};
+
+export type ExecutionTraceNode = {
+  ingestIndex: number;
+  runEventId: string;
+  wireSchemaVersion: 1 | 2;
+  wireType: RunEvent["type"];
+  parentRunEventId: string | null;
+  traceStepKind: TraceStepKind;
+  toolSeq: number | null;
+  toolId: string | null;
+  verificationLink: ExecutionTraceVerificationLink | null;
+};
+
+export type ExecutionTraceBackwardPath =
+  | {
+      pathKind: "workflow_terminal";
+      seedRunEventId: string;
+      ancestorRunEventIds: string[];
+    }
+  | {
+      pathKind: "verification_step";
+      seedRunEventId: string;
+      ancestorRunEventIds: string[];
+      stepIndex: number;
+      seq: number;
+    };
+
+export type ExecutionTraceView = {
+  schemaVersion: 1;
+  workflowId: string;
+  runCompletion: "completed" | "unknown_or_interrupted";
+  malformedEventLineCount: number;
+  nodes: ExecutionTraceNode[];
+  backwardPaths: ExecutionTraceBackwardPath[];
+};
+
 export type LoadEventsResult = {
+  /** `tool_observed` only, sorted for verification (`prepareWorkflowEvents`). */
   events: ToolObservedEvent[];
+  /** All valid run events for the workflow in file / capture order. */
+  runEvents: RunEvent[];
   runLevelReasons: Reason[];
   eventSequenceIntegrity: EventSequenceIntegrity;
   /** NDJSON lines that failed JSON parse or event schema (same rules as batch load). */

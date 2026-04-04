@@ -1,0 +1,122 @@
+{
+  "$id": "https://execution-truth-layer/schemas/execution-trace-view.schema.json",
+  "title": "ExecutionTraceView",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "workflowId",
+    "runCompletion",
+    "malformedEventLineCount",
+    "nodes",
+    "backwardPaths"
+  ],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "workflowId": { "type": "string", "minLength": 1 },
+    "runCompletion": {
+      "type": "string",
+      "enum": ["completed", "unknown_or_interrupted"]
+    },
+    "malformedEventLineCount": { "type": "integer", "minimum": 0 },
+    "nodes": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/traceNode" }
+    },
+    "backwardPaths": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/backwardPath" }
+    }
+  },
+  "$defs": {
+    "traceNode": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "ingestIndex",
+        "runEventId",
+        "wireSchemaVersion",
+        "wireType",
+        "parentRunEventId",
+        "traceStepKind",
+        "toolSeq",
+        "toolId",
+        "verificationLink"
+      ],
+      "properties": {
+        "ingestIndex": { "type": "integer", "minimum": 0 },
+        "runEventId": { "type": "string", "minLength": 1 },
+        "wireSchemaVersion": { "type": "integer", "enum": [1, 2] },
+        "wireType": { "type": "string", "minLength": 1 },
+        "parentRunEventId": { "type": ["string", "null"] },
+        "traceStepKind": {
+          "type": "string",
+          "enum": [
+            "skipped",
+            "branch_taken",
+            "branch_skipped",
+            "failed",
+            "success",
+            "neutral",
+            "divergent_observations",
+            "repeated_observation"
+          ]
+        },
+        "toolSeq": {
+          "oneOf": [{ "type": "integer", "minimum": 0 }, { "type": "null" }]
+        },
+        "toolId": { "type": ["string", "null"] },
+        "verificationLink": {
+          "oneOf": [
+            { "type": "null" },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["stepIndex", "seq", "engineStepStatus", "truthOutcomeLabel"],
+              "properties": {
+                "stepIndex": { "type": "integer", "minimum": 0 },
+                "seq": { "type": "integer", "minimum": 0 },
+                "engineStepStatus": { "type": "string", "minLength": 1 },
+                "truthOutcomeLabel": { "type": "string", "minLength": 1 }
+              }
+            }
+          ]
+        }
+      }
+    },
+    "backwardPath": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["pathKind", "seedRunEventId", "ancestorRunEventIds"],
+          "properties": {
+            "pathKind": { "const": "workflow_terminal" },
+            "seedRunEventId": { "type": "string", "minLength": 1 },
+            "ancestorRunEventIds": {
+              "type": "array",
+              "minItems": 1,
+              "items": { "type": "string", "minLength": 1 }
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["pathKind", "seedRunEventId", "ancestorRunEventIds", "stepIndex", "seq"],
+          "properties": {
+            "pathKind": { "const": "verification_step" },
+            "seedRunEventId": { "type": "string", "minLength": 1 },
+            "ancestorRunEventIds": {
+              "type": "array",
+              "minItems": 1,
+              "items": { "type": "string", "minLength": 1 }
+            },
+            "stepIndex": { "type": "integer", "minimum": 0 },
+            "seq": { "type": "integer", "minimum": 0 }
+          }
+        }
+      ]
+    }
+  }
+}

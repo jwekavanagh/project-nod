@@ -10,6 +10,8 @@ import {
   buildRunComparisonReport,
   formatRunComparisonReport,
 } from "./runComparison.js";
+import { buildExecutionTraceView, formatExecutionTraceText } from "./executionTrace.js";
+import { loadEventsForWorkflow } from "./loadEvents.js";
 import { verifyWorkflow } from "./pipeline.js";
 import {
   formatRegistryValidationHumanReport,
@@ -71,7 +73,175 @@ Exit codes:
   Validate tools registry JSON (and optionally resolution vs events) without a database.
   See docs/execution-truth-layer.md (Registry validation).
 
+  verify-workflow execution-trace --workflow-id <id> --events <path> [--workflow-result <path>] [--format json|text]
+  Emit ExecutionTraceView JSON or text (see docs/execution-truth-layer.md).
+
   --help, -h  print this message and exit 0`;
+}
+
+function usageExecutionTrace(): string {
+  return `Usage:
+  verify-workflow execution-trace --workflow-id <id> --events <path> [--workflow-result <path>] [--format json|text]
+
+Exit codes:
+  0  success (stdout: ExecutionTraceView JSON or text; stderr empty)
+  3  operational failure (stderr: JSON envelope only; stdout empty)
+
+  --help, -h  print this message and exit 0`;
+}
+
+function assertExecutionTraceArgsWellFormed(args: string[]): void {
+  const allowed = new Set([
+    "--workflow-id",
+    "--events",
+    "--workflow-result",
+    "--format",
+    "--help",
+    "-h",
+  ]);
+  for (let i = 0; i < args.length; i++) {
+    const a = args[i]!;
+    if (a === "-h" || a === "--help") continue;
+    if (!a.startsWith("--")) {
+      throw new TruthLayerError(
+        CLI_OPERATIONAL_CODES.EXECUTION_TRACE_USAGE,
+        `Unexpected argument: ${a}`,
+      );
+    }
+    if (!allowed.has(a)) {
+      throw new TruthLayerError(
+        CLI_OPERATIONAL_CODES.EXECUTION_TRACE_USAGE,
+        `Unknown option: ${a}`,
+      );
+    }
+    if (a === "--workflow-id" || a === "--events" || a === "--workflow-result" || a === "--format") {
+      const v = args[i + 1];
+      if (v === undefined || v.startsWith("--")) {
+        throw new TruthLayerError(
+          CLI_OPERATIONAL_CODES.EXECUTION_TRACE_USAGE,
+          `Missing value after ${a}.`,
+        );
+      }
+      i++;
+    }
+  }
+}
+
+function runExecutionTraceSubcommand(args: string[]): void {
+  if (args.includes("--help") || args.includes("-h")) {
+    console.log(usageExecutionTrace());
+    process.exit(0);
+  }
+
+  try {
+    assertExecutionTraceArgsWellFormed(args);
+  } catch (e) {
+    if (e instanceof TruthLayerError) {
+      writeCliError(e.code, e.message);
+      process.exit(3);
+    }
+    throw e;
+  }
+
+  const workflowId = argValue(args, "--workflow-id");
+  const eventsPath = argValue(args, "--events");
+  const workflowResultPath = argValue(args, "--workflow-result");
+  const formatRaw = argValue(args, "--format") ?? "json";
+  if (formatRaw !== "json" && formatRaw !== "text") {
+    writeCliError(
+      CLI_OPERATIONAL_CODES.EXECUTION_TRACE_USAGE,
+      '--format must be "json" or "text".',
+    );
+    process.exit(3);
+  }
+
+  if (!workflowId || !eventsPath) {
+    writeCliError(
+      CLI_OPERATIONAL_CODES.EXECUTION_TRACE_USAGE,
+      "Missing required --workflow-id or --events path.",
+    );
+    process.exit(3);
+  }
+
+  let load;
+  try {
+    load = loadEventsForWorkflow(eventsPath, workflowId);
+  } catch (e) {
+    if (e instanceof TruthLayerError) {
+      writeCliError(e.code, e.message);
+      process.exit(3);
+    }
+    const msg = e instanceof Error ? e.message : String(e);
+    writeCliError(CLI_OPERATIONAL_CODES.INTERNAL_ERROR, formatOperationalMessage(msg));
+    process.exit(3);
+  }
+
+  let workflowResult: WorkflowResult | undefined;
+  if (workflowResultPath) {
+    let raw: string;
+    try {
+      raw = readFileSync(workflowResultPath, "utf8");
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : String(e);
+      writeCliError(CLI_OPERATIONAL_CODES.COMPARE_INPUT_READ_FAILED, formatOperationalMessage(msg));
+      process.exit(3);
+    }
+    let parsed: unknown;
+    try {
+      parsed = JSON.parse(raw) as unknown;
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : String(e);
+      writeCliError(CLI_OPERATIONAL_CODES.COMPARE_INPUT_JSON_SYNTAX, formatOperationalMessage(msg));
+      process.exit(3);
+    }
+    try {
+      workflowResult = normalizeToEmittedWorkflowResult(
+        parsed as WorkflowEngineResult | WorkflowResult,
+      );
+    } catch (e) {
+      if (e instanceof TruthLayerError) {
+        writeCliError(e.code, e.message);
+        process.exit(3);
+      }
+      const msg = e instanceof Error ? e.message : String(e);
+      writeCliError(CLI_OPERATIONAL_CODES.INTERNAL_ERROR, formatOperationalMessage(msg));
+      process.exit(3);
+    }
+  }
+
+  let view;
+  try {
+    view = buildExecutionTraceView({
+      workflowId,
+      runEvents: load.runEvents,
+      malformedEventLineCount: load.malformedEventLineCount,
+      workflowResult,
+    });
+  } catch (e) {
+    if (e instanceof TruthLayerError) {
+      writeCliError(e.code, e.message);
+      process.exit(3);
+    }
+    const msg = e instanceof Error ? e.message : String(e);
+    writeCliError(CLI_OPERATIONAL_CODES.INTERNAL_ERROR, formatOperationalMessage(msg));
+    process.exit(3);
+  }
+
+  const validateTrace = loadSchemaValidator("execution-trace-view");
+  if (!validateTrace(view)) {
+    writeCliError(
+      CLI_OPERATIONAL_CODES.INTERNAL_ERROR,
+      JSON.stringify(validateTrace.errors ?? []),
+    );
+    process.exit(3);
+  }
+
+  if (formatRaw === "text") {
+    process.stdout.write(formatExecutionTraceText(view));
+  } else {
+    console.log(JSON.stringify(view));
+  }
+  process.exit(0);
 }
 
 function usageCompare(): string {
@@ -330,6 +500,11 @@ async function main(): Promise<void> {
   const args = process.argv.slice(2);
   if (args[0] === "compare") {
     runCompareSubcommand(args.slice(1));
+    return;
+  }
+
+  if (args[0] === "execution-trace") {
+    runExecutionTraceSubcommand(args.slice(1));
     return;
   }
 

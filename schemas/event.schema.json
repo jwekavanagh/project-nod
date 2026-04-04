@@ -1,16 +1,111 @@
 {
   "$id": "https://execution-truth-layer/schemas/event.schema.json",
-  "title": "ToolObservedEvent",
-  "type": "object",
-  "additionalProperties": false,
-  "required": ["schemaVersion", "workflowId", "seq", "type", "toolId", "params"],
-  "properties": {
-    "schemaVersion": { "const": 1 },
-    "workflowId": { "type": "string", "minLength": 1 },
-    "seq": { "type": "integer", "minimum": 0 },
-    "type": { "const": "tool_observed" },
-    "toolId": { "type": "string", "minLength": 1 },
-    "params": { "type": "object" },
-    "timestamp": { "type": "string" }
-  }
+  "title": "WorkflowRunEvent",
+  "oneOf": [
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["schemaVersion", "workflowId", "seq", "type", "toolId", "params"],
+      "properties": {
+        "schemaVersion": { "const": 1 },
+        "workflowId": { "type": "string", "minLength": 1 },
+        "seq": { "type": "integer", "minimum": 0 },
+        "type": { "const": "tool_observed" },
+        "toolId": { "type": "string", "minLength": 1 },
+        "params": { "type": "object" },
+        "timestamp": { "type": "string" }
+      }
+    },
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["schemaVersion", "workflowId", "runEventId", "type", "seq", "toolId", "params"],
+      "properties": {
+        "schemaVersion": { "const": 2 },
+        "workflowId": { "type": "string", "minLength": 1 },
+        "runEventId": { "type": "string", "minLength": 1 },
+        "parentRunEventId": { "type": "string", "minLength": 1 },
+        "type": { "const": "tool_observed" },
+        "seq": { "type": "integer", "minimum": 0 },
+        "toolId": { "type": "string", "minLength": 1 },
+        "params": { "type": "object" },
+        "timestamp": { "type": "string" }
+      }
+    },
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["schemaVersion", "workflowId", "runEventId", "type", "status"],
+      "properties": {
+        "schemaVersion": { "const": 2 },
+        "workflowId": { "type": "string", "minLength": 1 },
+        "runEventId": { "type": "string", "minLength": 1 },
+        "parentRunEventId": { "type": "string", "minLength": 1 },
+        "type": { "const": "model_turn" },
+        "status": {
+          "type": "string",
+          "enum": ["completed", "error", "aborted", "incomplete"]
+        },
+        "summary": { "type": "string" },
+        "timestamp": { "type": "string" }
+      }
+    },
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["schemaVersion", "workflowId", "runEventId", "type", "source", "status"],
+      "properties": {
+        "schemaVersion": { "const": 2 },
+        "workflowId": { "type": "string", "minLength": 1 },
+        "runEventId": { "type": "string", "minLength": 1 },
+        "parentRunEventId": { "type": "string", "minLength": 1 },
+        "type": { "const": "retrieval" },
+        "source": { "type": "string", "minLength": 1 },
+        "status": {
+          "type": "string",
+          "enum": ["ok", "empty", "error"]
+        },
+        "querySummary": { "type": "string" },
+        "hitCount": { "type": "integer", "minimum": 0 },
+        "timestamp": { "type": "string" }
+      }
+    },
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["schemaVersion", "workflowId", "runEventId", "type", "controlKind"],
+      "properties": {
+        "schemaVersion": { "const": 2 },
+        "workflowId": { "type": "string", "minLength": 1 },
+        "runEventId": { "type": "string", "minLength": 1 },
+        "parentRunEventId": { "type": "string", "minLength": 1 },
+        "type": { "const": "control" },
+        "controlKind": {
+          "type": "string",
+          "enum": ["branch", "loop", "interrupt", "gate", "run_completed"]
+        },
+        "label": { "type": "string" },
+        "decision": {
+          "type": "string",
+          "enum": ["taken", "skipped"]
+        },
+        "timestamp": { "type": "string" }
+      }
+    },
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["schemaVersion", "workflowId", "runEventId", "type", "toolId", "reason"],
+      "properties": {
+        "schemaVersion": { "const": 2 },
+        "workflowId": { "type": "string", "minLength": 1 },
+        "runEventId": { "type": "string", "minLength": 1 },
+        "parentRunEventId": { "type": "string", "minLength": 1 },
+        "type": { "const": "tool_skipped" },
+        "toolId": { "type": "string", "minLength": 1 },
+        "reason": { "type": "string" },
+        "timestamp": { "type": "string" }
+      }
+    }
+  ]
 }

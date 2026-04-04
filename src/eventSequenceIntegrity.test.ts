@@ -11,7 +11,7 @@ function ev(overrides: Partial<ToolObservedEvent> & Pick<ToolObservedEvent, "seq
     type: "tool_observed",
     params: {},
     ...overrides,
-  };
+  } as ToolObservedEvent;
 }
 
 describe("analyzeEventSequenceIntegrity", () => {

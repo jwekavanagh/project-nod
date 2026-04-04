@@ -79,6 +79,8 @@ Postgres: exactly one of **`--db`** or **`--postgres-url`**:
 node dist/cli.js --workflow-id <id> --events <path> --registry <path> --postgres-url "postgresql://user:pass@host:5432/dbname"
 ```
 
+**Execution trace (model + tools + control in one NDJSON):** `node dist/cli.js execution-trace --workflow-id <id> --events <path>` emits **`ExecutionTraceView`** JSON (optional `--workflow-result` / `--format text`). Spec: [End-to-end execution visibility](docs/execution-truth-layer.md#end-to-end-execution-visibility-normative).
+
 **In-process (SQLite only):** **`npm run example:workflow-hook`** — **`await withWorkflowVerification`** at the workflow root; see **[Low-friction integration (in-process)](docs/execution-truth-layer.md#low-friction-integration-in-process)**.
 
 ## Authoritative specification

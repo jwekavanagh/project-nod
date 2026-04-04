@@ -1,5 +1,6 @@
 import { DatabaseSync } from "node:sqlite";
 import { aggregateWorkflow } from "./aggregate.js";
+import { isToolObservedRunEvent } from "./executionTrace.js";
 import { loadEventsForWorkflow } from "./loadEvents.js";
 import { prepareWorkflowEvents } from "./prepareWorkflowEvents.js";
 import { planLogicalSteps, type LogicalStepPlan } from "./planLogicalSteps.js";
@@ -19,6 +20,7 @@ import {
 import type {
   Reason,
   StepOutcome,
+  RunEvent,
   ToolObservedEvent,
   ToolRegistryEntry,
   VerificationDatabase,
@@ -403,6 +405,7 @@ class WorkflowVerificationSession {
   private readonly logStep: (line: object) => void;
   private readonly verificationPolicy: VerificationPolicy;
   private readonly bufferedEvents: ToolObservedEvent[] = [];
+  private readonly bufferedRunEvents: RunEvent[] = [];
   private readonly runLevelReasons: Reason[] = [];
   private observeForbidden = false;
   private dbOpen = true;
@@ -433,11 +436,14 @@ class WorkflowVerificationSession {
       this.runLevelReasons.push(runLevelIssue("MALFORMED_EVENT_LINE"));
       return undefined;
     }
-    const ev = value as ToolObservedEvent;
+    const ev = value as RunEvent;
     if (ev.workflowId !== this.workflowId) {
       return undefined;
     }
-    this.bufferedEvents.push(ev);
+    this.bufferedRunEvents.push(ev);
+    if (isToolObservedRunEvent(ev)) {
+      this.bufferedEvents.push(ev);
+    }
     return undefined;
   }
 

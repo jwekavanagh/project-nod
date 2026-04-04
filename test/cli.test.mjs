@@ -419,4 +419,55 @@ describe("CLI verify-workflow", () => {
       assert.equal(err.code, "REGISTRY_READ_FAILED");
     });
   });
+
+  describe("execution-trace subcommand", () => {
+    const traceEventsPath = join(root, "examples", "trace-run.ndjson");
+
+    it("emits valid ExecutionTraceView JSON; stderr empty", () => {
+      const r = spawnSync(
+        process.execPath,
+        [
+          "--no-warnings",
+          cliJs,
+          "execution-trace",
+          "--workflow-id",
+          "wtrace",
+          "--events",
+          traceEventsPath,
+        ],
+        { encoding: "utf8", cwd: root },
+      );
+      assert.equal(r.status, 0, r.stderr);
+      assert.equal(r.stderr, "");
+      const view = JSON.parse(r.stdout.trim());
+      const v = loadSchemaValidator("execution-trace-view");
+      assert.equal(v(view), true);
+    });
+
+    it("duplicate runEventId → exit 3 TRACE_DUPLICATE_RUN_EVENT_ID; stdout empty", () => {
+      const bad = join(dir, "dup-trace.ndjson");
+      writeFileSync(
+        bad,
+        '{"schemaVersion":2,"workflowId":"wdup","runEventId":"x","type":"model_turn","status":"completed"}\n' +
+          '{"schemaVersion":2,"workflowId":"wdup","runEventId":"x","type":"model_turn","status":"completed"}\n',
+      );
+      const r = spawnSync(
+        process.execPath,
+        [
+          "--no-warnings",
+          cliJs,
+          "execution-trace",
+          "--workflow-id",
+          "wdup",
+          "--events",
+          bad,
+        ],
+        { encoding: "utf8", cwd: root },
+      );
+      assert.equal(r.status, 3);
+      assert.equal(r.stdout.trim(), "");
+      const err = JSON.parse(r.stderr.trim());
+      assert.equal(err.code, CLI_OPERATIONAL_CODES.TRACE_DUPLICATE_RUN_EVENT_ID);
+    });
+  });
 });

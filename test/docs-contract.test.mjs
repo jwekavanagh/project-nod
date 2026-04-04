@@ -112,6 +112,17 @@ const REQUIRED = [
   "## The problem (and cost of ignoring it)",
   "## Is this for you?",
   "## How this differs from logs, tests, and observability",
+  "## End-to-end execution visibility (normative)",
+  "execution-trace-view.schema.json",
+  "buildExecutionTraceView",
+  "runEvents",
+  "verify-workflow execution-trace",
+  "TRACE_DUPLICATE_RUN_EVENT_ID",
+  "ExecutionTraceView",
+  "executionTrace.ts",
+  "EXECUTION_TRACE_USAGE",
+  "TRACE_UNKNOWN_PARENT_RUN_EVENT_ID",
+  "TRACE_PARENT_FORWARD_REFERENCE",
 ];
 
 describe("docs contract (SSOT + README)", () => {

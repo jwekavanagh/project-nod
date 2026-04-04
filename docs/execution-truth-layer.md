@@ -15,10 +15,10 @@ This document is the authoritative specification for the MVP. The product verifi
 
 | Module | Role |
 |--------|------|
-| `schemaLoad.ts` | AJV 2020-12 validators for event line, registry, workflow engine/result, truth report, compare-input |
+| `schemaLoad.ts` | AJV 2020-12 validators for event line, execution trace view, registry, workflow engine/result, truth report, compare-input |
 | `failureCatalog.ts` | Stable run-level literals, `formatOperationalMessage`, CLI error envelope helpers, `CLI_OPERATIONAL_CODES` |
 | `truthLayerError.ts` | `TruthLayerError` for coded I/O and registry failures |
-| `loadEvents.ts` | Read NDJSON, validate, filter `workflowId`; delegate sort + `eventSequenceIntegrity` to `prepareWorkflowEvents` |
+| `loadEvents.ts` | Read NDJSON, validate union event schema, filter `workflowId`; populate `runEvents` (capture order) and tool-only `events` via `prepareWorkflowEvents` + `eventSequenceIntegrity` |
 | `prepareWorkflowEvents.ts` | Sole ingest `stableSortEventsBySeq`; attaches `eventSequenceIntegrity` |
 | `eventSequenceIntegrity.ts` | Pure analysis of capture order vs `seq` and optional `timestamp` monotonicity (seq-sorted order) |
 | `planLogicalSteps.ts` | Stable sort, group by `seq`, canonical params equality, divergence vs last observation |
@@ -34,8 +34,9 @@ This document is the authoritative specification for the MVP. The product verifi
 | `workflowResultNormalize.ts` | `normalizeToEmittedWorkflowResult`, `workflowEngineResultFromEmitted` (compare v5/v6 inputs) |
 | `runComparison.ts` | `buildRunComparisonReport`, `formatRunComparisonReport`, `logicalStepKeyFromStep`, `recurrenceSignature`; cross-run comparison |
 | `verificationPolicy.ts` | `VerificationPolicy` normalization/validation; `executeVerificationWithPolicySync` / `executeVerificationWithPolicyAsync` (strong vs eventual polling); `createSqlitePolicyContext` |
+| `executionTrace.ts` | `assertValidRunEventParentGraph`, `buildExecutionTraceView`, `formatExecutionTraceText`; `traceStepKind` derivation and `backwardPaths` |
 | `pipeline.ts` | Orchestration: `runLogicalStepsVerification` (internal), async `verifyWorkflow`, sync `verifyToolObservedStep`, `withWorkflowVerification` (SQLite `dbPath` only); default `truthReport` / `logStep` |
-| `cli.ts` | CLI entry: legacy verify + `compare` subcommand |
+| `cli.ts` | CLI entry: legacy verify + `compare` + `execution-trace` + `validate-registry` subcommands |
 
 ### Engineer note: shared step core
 
@@ -151,7 +152,7 @@ When the CLI exits **3**, **stderr** is exactly **one** UTF-8 line: a JSON objec
 
 - `schemaVersion`: **1**
 - `kind`: **`execution_truth_layer_error`**
-- `code`: one of **`CLI_USAGE`**, **`REGISTRY_READ_FAILED`**, **`REGISTRY_JSON_SYNTAX`**, **`REGISTRY_SCHEMA_INVALID`**, **`REGISTRY_DUPLICATE_TOOL_ID`**, **`EVENTS_READ_FAILED`**, **`SQLITE_DATABASE_OPEN_FAILED`**, **`POSTGRES_CLIENT_SETUP_FAILED`**, **`WORKFLOW_RESULT_SCHEMA_INVALID`**, **`VERIFICATION_POLICY_INVALID`**, **`VALIDATE_REGISTRY_USAGE`**, **`INTERNAL_ERROR`**, plus compare-subcommand codes (**`COMPARE_USAGE`**, **`COMPARE_INPUT_READ_FAILED`**, **`COMPARE_WORKFLOW_TRUTH_MISMATCH`**, …) as documented under [Cross-run comparison](#cross-run-comparison-normative)
+- `code`: one of **`CLI_USAGE`**, **`REGISTRY_READ_FAILED`**, **`REGISTRY_JSON_SYNTAX`**, **`REGISTRY_SCHEMA_INVALID`**, **`REGISTRY_DUPLICATE_TOOL_ID`**, **`EVENTS_READ_FAILED`**, **`SQLITE_DATABASE_OPEN_FAILED`**, **`POSTGRES_CLIENT_SETUP_FAILED`**, **`WORKFLOW_RESULT_SCHEMA_INVALID`**, **`VERIFICATION_POLICY_INVALID`**, **`VALIDATE_REGISTRY_USAGE`**, **`INTERNAL_ERROR`**, plus compare-subcommand codes (**`COMPARE_USAGE`**, **`COMPARE_INPUT_READ_FAILED`**, **`COMPARE_WORKFLOW_TRUTH_MISMATCH`**, …) as documented under [Cross-run comparison](#cross-run-comparison-normative), plus **`execution-trace`** codes (**`EXECUTION_TRACE_USAGE`**, **`TRACE_DUPLICATE_RUN_EVENT_ID`**, **`TRACE_UNKNOWN_PARENT_RUN_EVENT_ID`**, **`TRACE_PARENT_FORWARD_REFERENCE`**, …)
 - `message`: human-readable text after whitespace normalization and truncation (max **2048** JavaScript string length; see `formatOperationalMessage` in `failureCatalog.ts`)
 
 **stdout** must be empty on exit **3**. Automation should key on **`code`**, not exact **`message`**, for driver-dependent errors.
@@ -280,14 +281,18 @@ Reason codes for **`eventSequenceIntegrity`** (wire **`message`** strings) are S
 
 File: [`schemas/event.schema.json`](../schemas/event.schema.json).
 
-Required fields per line:
+The file is a **`oneOf`** union:
 
-- `schemaVersion`: `1`
-- `workflowId`, `seq` (non-negative integer, monotonic per workflow in normal operation)
-- `type`: `tool_observed`
-- `toolId`, `params` (object)
+- **`schemaVersion` `1`**, **`type` `tool_observed`**: legacy tool line (no `runEventId`). Same required fields as before: `workflowId`, `seq`, `toolId`, `params`.
+- **`schemaVersion` `2`**: every branch requires `workflowId`, `runEventId` (non-empty string), and `type`. Optional `parentRunEventId` (non-empty string when present) must reference the **`runEventId` of a strictly earlier line** in the same workflow’s `runEvents` capture order (see [End-to-end execution visibility](#end-to-end-execution-visibility-normative)). **`v1` `tool_observed` lines do not have a wire `runEventId` and cannot be referenced as `parentRunEventId` targets**; use **`schemaVersion` `2` `tool_observed`** to link causality through a tool call.
 
-**Not allowed on the event (MVP):** `expectation` / `verification` objects — the resolver must derive verification from the registry.
+**`type` values (v2):** `tool_observed` (also requires `seq`, `toolId`, `params`), `model_turn` (`status`: `completed` \| `error` \| `aborted` \| `incomplete`), `retrieval` (`source`, `status`: `ok` \| `empty` \| `error`), `control` (`controlKind`: `branch` \| `loop` \| `interrupt` \| `gate` \| `run_completed`; optional `label`; optional `decision`: `taken` \| `skipped` for branch/gate), `tool_skipped` (`toolId`, `reason`).
+
+**SQL verification** consumes only **`type` `tool_observed`** lines (v1 or v2); other types are ignored for reconciliation but appear in **`runEvents`** and execution traces.
+
+**Not allowed on the event:** `expectation` / `verification` objects — the resolver must derive verification from the registry.
+
+**Optional summaries:** `model_turn.summary`, `retrieval.querySummary`, etc. may contain sensitive text; **redact** before retention outside the trust boundary (same policy as `params`).
 
 ### Retry and repeated seq
 
@@ -301,6 +306,49 @@ Multiple event lines with the same `workflowId` and **`seq`** are treated as **r
 - Any other value: sentinel `"__non_json_params:" + typeof value + "__"` (never equal to normal JSON-derived strings).
 
 Two observations **match** iff `toolId` is `===` and `canonicalJsonForParams(params_a) === canonicalJsonForParams(params_b)`.
+
+## End-to-end execution visibility (normative)
+
+**Purpose:** Reconstruct the full capture-ordered execution path (model turns, retrieval, control, tool skipped, tool observed) and walk backward from the terminal event and from each verified step.
+
+**Loader (`loadEventsForWorkflow`) — single ingest rule:** For each non-empty physical NDJSON line: if `JSON.parse` throws **or** the line fails the event union schema **or** (after parse) `workflowId` does not match the requested id → on parse/schema failure increment **`malformedEventLineCount`**, append **`MALFORMED_EVENT_LINE`** to **`runLevelReasons`**, and **do not** append to **`runEvents`** or the tool candidate list; on `workflowId` mismatch only, skip the line without counting malformed. Otherwise append to **`runEvents`** in encounter order, and if `type === "tool_observed"` also append to the tool candidate list. Then **`events`** = `prepareWorkflowEvents(toolCandidates).eventsSorted` (seq-sorted tools only); **`eventSequenceIntegrity`** is computed from those tool candidates only. **`runEvents`** is in **capture order** for the filtered workflow.
+
+**`LoadEventsResult`:** **`events`** — tool observations only, sorted for verification (unchanged meaning for existing callers). **`runEvents`** — all valid union events for the workflow in capture order.
+
+**Trace artifact:** [`schemas/execution-trace-view.schema.json`](../schemas/execution-trace-view.schema.json). TypeScript: `buildExecutionTraceView({ workflowId, runEvents, malformedEventLineCount, workflowResult? })` in **`executionTrace.ts`**. Output **`ExecutionTraceView`**: `schemaVersion` **1**, `workflowId`, `runCompletion` (`completed` iff the last node by capture order is `control` with `controlKind` **`run_completed`**; else `unknown_or_interrupted`), **`malformedEventLineCount`** (same integer as the loader), **`nodes[]`**, **`backwardPaths[]`**.
+
+**`nodes[]`:** One node per `runEvents` entry. **`runEventId`**: wire `runEventId` for v2; for v1 `tool_observed`, synthetic **`syn:${ingestIndex}`** (display and path walking only — **never** valid on the wire as `parentRunEventId`). **`parentRunEventId`**: wire parent when valid; else `null`. **`traceStepKind`** is derived by first matching row in the table below (tool logical-step metadata from `planLogicalSteps` on the tool-only subsequence).
+
+| Condition | `traceStepKind` |
+|-----------|-----------------|
+| `tool_skipped` | `skipped` |
+| `control`, `branch` or `gate`, `decision` `taken` | `branch_taken` |
+| `control`, `branch` or `gate`, `decision` `skipped` | `branch_skipped` |
+| `model_turn`, `status` `error` | `failed` |
+| `model_turn`, `status` `completed` | `success` |
+| `model_turn`, `status` `aborted` or `incomplete` | `failed` |
+| `retrieval`, `status` `error` | `failed` |
+| `retrieval`, `status` `ok` | `success` |
+| `retrieval`, `status` `empty` | `neutral` |
+| `control`, `interrupt` | `failed` |
+| `control`, `run_completed` | `success` |
+| `control`, `loop` | `neutral` |
+| `tool_observed`, logical step **divergent**, this line is **last** in capture order for that `seq` | `divergent_observations` |
+| `tool_observed`, `repeatObservationCount > 1`, not last in capture order for that `seq` | `repeated_observation` |
+| `tool_observed`, last for `seq`, `WorkflowResult` supplied, step **verified** | `success` |
+| `tool_observed`, last for `seq`, `WorkflowResult` supplied, step not verified | `failed` |
+| `tool_observed`, last for `seq`, no `WorkflowResult` | `neutral` |
+| (else) | `neutral` |
+
+**`verificationLink` on a node:** Set only on the **evaluated** `tool_observed` line for each `seq` (last in capture order among tools with that `seq`) when **`workflowResult`** was passed into `buildExecutionTraceView`; copies `stepIndex`, `seq`, `engineStepStatus` (`WorkflowResult.steps[i].status`), `truthOutcomeLabel` (`workflowTruthReport.steps[i].outcomeLabel`). Otherwise `null`.
+
+**`backwardPaths`:** Always includes **`workflow_terminal`** when `nodes.length > 0`: `seedRunEventId` is the last node’s `runEventId`, `ancestorRunEventIds` is `[seed, parent(seed), …, root]` following **`parentRunEventId`** on nodes. When **`workflowResult`** is supplied, append one **`verification_step`** per `steps[i]` that has a matching `tool_observed` for `steps[i].seq` (seed = evaluated observation for that `seq`, same ancestor walk). Ordering: `workflow_terminal` first, then **`verification_step`** rows in ascending `stepIndex`.
+
+**CLI:** `verify-workflow execution-trace --workflow-id <id> --events <path> [--workflow-result <path>] [--format json|text]`. Success: stdout = `ExecutionTraceView` JSON or `formatExecutionTraceText` output; stderr empty; exit **0**. Operational failure (usage, graph validation, read/parse errors): stderr = one-line `cliErrorEnvelope`; stdout empty; exit **3**.
+
+**In-process:** `observeStep` accepts the same union; **`withWorkflowVerification`** buffers all valid events in capture order and feeds only `tool_observed` into verification (same as batch).
+
+**Module binding:** `executionTrace.ts`, `loadEvents.ts`, `execution-trace-view.schema.json`, `event.schema.json`.
 
 ## Tool registry
 

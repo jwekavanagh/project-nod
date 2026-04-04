@@ -1,0 +1,3 @@
+{"schemaVersion":2,"workflowId":"wtrace","runEventId":"m1","type":"model_turn","status":"completed","summary":"plan"}
+{"schemaVersion":2,"workflowId":"wtrace","runEventId":"t1","parentRunEventId":"m1","type":"tool_observed","seq":0,"toolId":"crm.upsert_contact","params":{"id":"c_ok","name":"Alice"}}
+{"schemaVersion":2,"workflowId":"wtrace","runEventId":"c1","parentRunEventId":"t1","type":"control","controlKind":"run_completed"}

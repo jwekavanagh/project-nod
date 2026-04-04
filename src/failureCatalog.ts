@@ -31,6 +31,14 @@ export const CLI_OPERATIONAL_CODES = {
   EVENTUAL_MODE_NOT_SUPPORTED_IN_PROCESS_HOOK: "EVENTUAL_MODE_NOT_SUPPORTED_IN_PROCESS_HOOK",
   /** Registry validation CLI / `validateToolsRegistry` usage (see SSOT section Registry validation). */
   VALIDATE_REGISTRY_USAGE: "VALIDATE_REGISTRY_USAGE",
+  /** `execution-trace` CLI usage (flags, format). */
+  EXECUTION_TRACE_USAGE: "EXECUTION_TRACE_USAGE",
+  /** Duplicate `runEventId` among v2 run events for one workflow. */
+  TRACE_DUPLICATE_RUN_EVENT_ID: "TRACE_DUPLICATE_RUN_EVENT_ID",
+  /** `parentRunEventId` does not match any prior wire `runEventId`. */
+  TRACE_UNKNOWN_PARENT_RUN_EVENT_ID: "TRACE_UNKNOWN_PARENT_RUN_EVENT_ID",
+  /** `parentRunEventId` references an event that is not strictly earlier in capture order. */
+  TRACE_PARENT_FORWARD_REFERENCE: "TRACE_PARENT_FORWARD_REFERENCE",
 } as const;
 
 /** Same literal as step `incomplete_verification` for divergent retries (SSOT + registry validation). */

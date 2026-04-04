@@ -11,6 +11,13 @@ export type {
   ResolutionSkipped,
   StructuralIssue,
 } from "./registryValidation.js";
+export {
+  assertValidRunEventParentGraph,
+  buildExecutionTraceView,
+  formatExecutionTraceText,
+  isToolObservedRunEvent,
+} from "./executionTrace.js";
+export type { BuildExecutionTraceViewInput } from "./executionTrace.js";
 export { loadEventsForWorkflow } from "./loadEvents.js";
 export { TruthLayerError } from "./truthLayerError.js";
 export {
@@ -61,9 +68,22 @@ export {
   createPostgresSqlReadBackend,
 } from "./sqlReadBackend.js";
 export type {
+  ControlRunEvent,
+  ExecutionTraceBackwardPath,
+  ExecutionTraceNode,
+  ExecutionTraceVerificationLink,
+  ExecutionTraceView,
   FailureDiagnostic,
+  LoadEventsResult,
+  ModelTurnRunEvent,
   Reason,
+  RetrievalRunEvent,
+  RunEvent,
   ToolObservedEvent,
+  ToolObservedEventV1,
+  ToolObservedEventV2,
+  ToolSkippedRunEvent,
+  TraceStepKind,
   ToolRegistryEntry,
   VerificationRequest,
   VerificationDatabase,

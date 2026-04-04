@@ -18,6 +18,31 @@ describe("JSON Schemas (SSOT)", () => {
     expect(v(line)).toBe(true);
   });
 
+  it("validates v2 model_turn run event", () => {
+    const v = loadSchemaValidator("event");
+    const line = {
+      schemaVersion: 2,
+      workflowId: "w",
+      runEventId: "m1",
+      type: "model_turn",
+      status: "completed",
+    };
+    expect(v(line)).toBe(true);
+  });
+
+  it("validates ExecutionTraceView minimal shape", () => {
+    const v = loadSchemaValidator("execution-trace-view");
+    const view = {
+      schemaVersion: 1,
+      workflowId: "w",
+      runCompletion: "unknown_or_interrupted",
+      malformedEventLineCount: 0,
+      nodes: [],
+      backwardPaths: [],
+    };
+    expect(v(view)).toBe(true);
+  });
+
   it("rejects event with embedded expectation", () => {
     const v = loadSchemaValidator("event");
     const bad = {
