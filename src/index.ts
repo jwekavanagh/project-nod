@@ -56,6 +56,7 @@ export {
   createPostgresSqlReadBackend,
 } from "./sqlReadBackend.js";
 export type {
+  FailureDiagnostic,
   Reason,
   ToolObservedEvent,
   ToolRegistryEntry,

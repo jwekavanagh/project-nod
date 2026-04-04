@@ -25,6 +25,7 @@ describe("reconcileSqlRow rule table", () => {
     const r = reconcileSqlRow(db, baseReq());
     assert.equal(r.status, "missing");
     assert.equal(r.reasons[0]?.code, "ROW_ABSENT");
+    assert.match(r.reasons[0]?.message ?? "", /No row matched key \(table=t id=1\)/);
     db.close();
   });
 
@@ -35,6 +36,7 @@ describe("reconcileSqlRow rule table", () => {
     const r = reconcileSqlRow(db, baseReq());
     assert.equal(r.status, "inconsistent");
     assert.equal(r.reasons[0]?.code, "DUPLICATE_ROWS");
+    assert.match(r.reasons[0]?.message ?? "", /More than one row matched key \(table=t id=1\)/);
     db.close();
   });
 
@@ -56,7 +58,7 @@ describe("reconcileSqlRow rule table", () => {
     assert.equal(r.status, "inconsistent");
     assert.equal(r.reasons[0]?.code, "VALUE_MISMATCH");
     assert.equal(r.reasons[0]?.field, "name");
-    assert.match(r.reasons[0]?.message, /^Expected .+ but found .+ for field name$/);
+    assert.match(r.reasons[0]?.message, /^Expected .+ but found .+ for field name \(table=t id=1\)$/);
     assert.equal(r.evidenceSummary.field, "name");
     assert.equal(r.evidenceSummary.expected, JSON.stringify("x"));
     assert.equal(r.evidenceSummary.actual, "null");
@@ -79,7 +81,7 @@ describe("reconcileSqlRow rule table", () => {
     const r = reconcileSqlRow(db, baseReq({ requiredFields: { name: "a" } }));
     assert.equal(r.status, "inconsistent");
     assert.equal(r.reasons[0]?.code, "VALUE_MISMATCH");
-    assert.match(r.reasons[0]?.message, /^Expected .+ but found .+ for field name$/);
+    assert.match(r.reasons[0]?.message, /^Expected .+ but found .+ for field name \(table=t id=1\)$/);
     db.close();
   });
 

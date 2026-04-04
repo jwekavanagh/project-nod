@@ -11,20 +11,28 @@ export type ReconcileOutput = {
   evidenceSummary: Record<string, unknown>;
 };
 
+function rowKeyContext(req: VerificationRequest): string {
+  const t = formatOperationalMessage(req.table);
+  const col = formatOperationalMessage(req.keyColumn);
+  const kv = formatOperationalMessage(req.keyValue);
+  return `table=${t} ${col}=${kv}`;
+}
+
 /** Pure rule table after rows are fetched (shared by SQLite and Postgres paths). */
 export function reconcileFromRows(rows: Record<string, unknown>[], req: VerificationRequest): ReconcileOutput {
   const n = rows.length;
+  const ctx = rowKeyContext(req);
   if (n === 0) {
     return {
       status: "missing",
-      reasons: [{ code: "ROW_ABSENT", message: "No row matched key" }],
+      reasons: [{ code: "ROW_ABSENT", message: `No row matched key (${ctx})` }],
       evidenceSummary: { rowCount: 0 },
     };
   }
   if (n >= 2) {
     return {
       status: "inconsistent",
-      reasons: [{ code: "DUPLICATE_ROWS", message: "More than one row matched key" }],
+      reasons: [{ code: "DUPLICATE_ROWS", message: `More than one row matched key (${ctx})` }],
       evidenceSummary: { rowCount: n },
     };
   }
@@ -37,7 +45,7 @@ export function reconcileFromRows(rows: Record<string, unknown>[], req: Verifica
     if (!(col in row)) {
       return {
         status: "incomplete_verification",
-        reasons: [{ code: "ROW_SHAPE_MISMATCH", message: `Column not in row: ${k}` }],
+        reasons: [{ code: "ROW_SHAPE_MISMATCH", message: `Column not in row: ${k} (${ctx})` }],
         evidenceSummary: { rowCount: 1, rowKeys: Object.keys(row) },
       };
     }
@@ -45,7 +53,7 @@ export function reconcileFromRows(rows: Record<string, unknown>[], req: Verifica
     if (typeof actual === "object" && actual !== null && !(actual instanceof Date)) {
       return {
         status: "incomplete_verification",
-        reasons: [{ code: "UNREADABLE_VALUE", message: `Non-scalar value for ${k}`, field: k }],
+        reasons: [{ code: "UNREADABLE_VALUE", message: `Non-scalar value for ${k} (${ctx})`, field: k }],
         evidenceSummary: { rowCount: 1, field: k },
       };
     }
@@ -53,7 +61,7 @@ export function reconcileFromRows(rows: Record<string, unknown>[], req: Verifica
     const expectedVal = req.requiredFields[k]!;
     const cmp = verificationScalarsEqual(expectedVal, actual);
     if (!cmp.ok) {
-      const message = `Expected ${cmp.expected} but found ${cmp.actual} for field ${k}`;
+      const message = `Expected ${cmp.expected} but found ${cmp.actual} for field ${k} (${ctx})`;
       return {
         status: "inconsistent",
         reasons: [{ code: "VALUE_MISMATCH", message, field: k }],

@@ -1,5 +1,5 @@
 {
-  "schemaVersion": 4,
+  "schemaVersion": 5,
   "workflowId": "wf_multi_all_fail",
   "status": "inconsistent",
   "runLevelCodes": [],
@@ -60,7 +60,7 @@
             "reasons": [
               {
                 "code": "ROW_ABSENT",
-                "message": "No row matched key"
+                "message": "No row matched key (table=contacts id=missing_one)"
               }
             ],
             "evidenceSummary": {
@@ -73,7 +73,7 @@
             "reasons": [
               {
                 "code": "ROW_ABSENT",
-                "message": "No row matched key"
+                "message": "No row matched key (table=contacts id=missing_two)"
               }
             ],
             "evidenceSummary": {
@@ -83,7 +83,8 @@
         ]
       },
       "repeatObservationCount": 1,
-      "evaluatedObservationOrdinal": 1
+      "evaluatedObservationOrdinal": 1,
+      "failureDiagnostic": "workflow_execution"
     }
   ]
 }

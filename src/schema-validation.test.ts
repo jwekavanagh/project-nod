@@ -40,7 +40,7 @@ describe("JSON Schemas (SSOT)", () => {
   it("validates workflow result shape from golden pipeline output", () => {
     const v = loadSchemaValidator("workflow-result");
     const result = {
-      schemaVersion: 4,
+      schemaVersion: 5,
       workflowId: "wf_complete",
       status: "complete",
       runLevelCodes: [],
@@ -77,7 +77,7 @@ describe("JSON Schemas (SSOT)", () => {
   it("validates multi-effect workflow result (sql_effects + evidenceSummary.effects)", () => {
     const v = loadSchemaValidator("workflow-result");
     const result = {
-      schemaVersion: 4,
+      schemaVersion: 5,
       workflowId: "wf_multi",
       status: "inconsistent",
       runLevelCodes: [],
@@ -128,13 +128,19 @@ describe("JSON Schemas (SSOT)", () => {
               {
                 id: "b",
                 status: "inconsistent",
-                reasons: [{ code: "VALUE_MISMATCH", message: "Expected \"B\" but found \"X\" for field name" }],
+                reasons: [
+                  {
+                    code: "VALUE_MISMATCH",
+                    message: 'Expected "B" but found "X" for field name (table=contacts id=c2)',
+                  },
+                ],
                 evidenceSummary: { rowCount: 1, field: "name" },
               },
             ],
           },
           repeatObservationCount: 1,
           evaluatedObservationOrdinal: 1,
+          failureDiagnostic: "workflow_execution",
         },
       ],
     };
@@ -144,7 +150,7 @@ describe("JSON Schemas (SSOT)", () => {
   it("rejects single-effect step evidenceSummary with effectCount", () => {
     const v = loadSchemaValidator("workflow-result");
     const bad = {
-      schemaVersion: 4,
+      schemaVersion: 5,
       workflowId: "w",
       status: "complete",
       runLevelCodes: [],
@@ -196,9 +202,10 @@ describe("JSON Schemas (SSOT)", () => {
       evidenceSummary: {},
       repeatObservationCount: 1,
       evaluatedObservationOrdinal: 1,
+      ...(ok ? {} : { failureDiagnostic: "workflow_execution" as const }),
     });
     const r0: WorkflowResult = {
-      schemaVersion: 4,
+      schemaVersion: 5,
       workflowId: "w",
       status: "complete",
       runLevelCodes: [],

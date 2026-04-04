@@ -29,6 +29,7 @@ This document is the authoritative specification for the MVP. The product verifi
 | `reconciler.ts` | `reconcileFromRows` (pure rule table), `reconcileSqlRow` (SQLite sync), `reconcileSqlRowAsync` (Postgres) |
 | `multiEffectRollup.ts` | `rollupMultiEffectsSync` / `rollupMultiEffectsAsync`: per-effect reconcile, UTF-16 sort by effect `id`, step rollup (`verified` / `partially_verified` / `inconsistent` / `incomplete_verification`) |
 | `aggregate.ts` | Workflow status precedence |
+| `verificationDiagnostics.ts` | Pinned step `failureDiagnostic`; `formatVerificationTargetSummary`; run/event-sequence `category:` helpers for human report (internal; not re-exported from package entry) |
 | `workflowTruthReport.ts` | `formatWorkflowTruthReport`, `STEP_STATUS_TRUTH_LABELS`, `TRUST_LINE_EVENT_SEQUENCE_IRREGULAR_SUFFIX`; fixed human report grammar |
 | `runComparison.ts` | `buildRunComparisonReport`, `formatRunComparisonReport`, `logicalStepKeyFromStep`, `recurrenceSignature`; cross-run comparison |
 | `verificationPolicy.ts` | `VerificationPolicy` normalization/validation; `executeVerificationWithPolicySync` / `executeVerificationWithPolicyAsync` (strong vs eventual polling); `createSqlitePolicyContext` |
@@ -95,7 +96,7 @@ node dist/cli.js --workflow-id <id> --events <path> --registry <path> --postgres
 
 **I/O order (CLI — verdict paths 0/1/2):** **`verifyWorkflow`** emits the human report via default **`truthReport`** to **stderr** first, then the CLI writes **stdout**. So: **stderr (human) → stdout (JSON)**.
 
-**stdout:** Single JSON object matching `schemas/workflow-result.schema.json` (`schemaVersion` **`4`**; required **`verificationPolicy`** `{ consistencyMode, verificationWindowMs, pollIntervalMs }`; required **`eventSequenceIntegrity`**; includes required **`runLevelReasons`** alongside **`runLevelCodes`**; each step includes **`repeatObservationCount`** and **`evaluatedObservationOrdinal`**).
+**stdout:** Single JSON object matching `schemas/workflow-result.schema.json` (`schemaVersion` **`5`**; required **`verificationPolicy`** `{ consistencyMode, verificationWindowMs, pollIntervalMs }`; required **`eventSequenceIntegrity`**; includes required **`runLevelReasons`** alongside **`runLevelCodes`**; each step includes **`repeatObservationCount`** and **`evaluatedObservationOrdinal`**; each non-**`verified`** step includes required **`failureDiagnostic`** — see [Verification diagnostics](#verification-diagnostics-normative)).
 
 **Verification policy (CLI):** Default is **`strong`** (single read per check). For **`eventual`**, pass **`--consistency eventual`** plus required **`--verification-window-ms`** and **`--poll-interval-ms`** (integers ≥ 1, **`pollIntervalMs` ≤ `verificationWindowMs`**). With **`strong`**, do not pass the millisecond flags. See [Verification policy (normative)](#verification-policy-normative).
 
@@ -126,6 +127,26 @@ This section is **normative**: literals and line shape match `formatWorkflowTrut
 - **Run-level lines:** Each line uses **`runLevelReasons`** from `WorkflowResult`: `code` + `message` from each `Reason` (same literals as `failureCatalog.ts` for catalog-defined codes).
 - **No trailing newline inside the returned string:** The default `truthReport` implementation appends `\n` when writing to stderr.
 
+## Verification diagnostics (normative)
+
+**Why:** Operators need a stable three-way distinction (workflow execution vs verification setup vs observation uncertainty) without parsing free-text `reason` lines alone.
+
+**JSON (`WorkflowResult.steps[]`):** For each step with **`status !== "verified"`**, **`failureDiagnostic`** is **required** and is one of:
+
+| Value | Meaning |
+|-------|--------|
+| `workflow_execution` | Determinate mismatch against readable DB state, divergent retries for the same `seq`, or partial multi-effect failure. |
+| `verification_setup` | Cannot reliably run or interpret the check (registry resolution, unknown tool in registry, connector errors, row shape unreadable, multi-effect incomplete rollup). |
+| `observation_uncertainty` | Eventual consistency: step status **`uncertain`**. |
+
+**Verified steps** must **omit** **`failureDiagnostic`** (schema forbids the property).
+
+**Classification** is implemented in **`verificationDiagnostics.ts`** (`failureDiagnosticForStep`): `incomplete_verification` reasons are mapped in fixed precedence (e.g. **`RETRY_OBSERVATIONS_DIVERGE`** → `workflow_execution`; **`MULTI_EFFECT_INCOMPLETE`** → `verification_setup`; registry/resolve and reconciler incomplete codes → `verification_setup`).
+
+**Human report (`category:`):** After each run-level reason line and each irregular `event_sequence` reason line, one line `    category: ` + the same string as above (`workflow_execution` for all current SSOT run-level and event-sequence codes). For each step with **`status !== "verified"`**, after **`observations:`**, one line `    category: ` + that step’s **`failureDiagnostic`**. When **`formatVerificationTargetSummary`** returns non-null, the next line is `    verify_target: ` + that one-line summary (table/key and required field names; truncated like operational messages).
+
+**Migration from schema v4:** Bump consumers to **`schemaVersion` 5**; for each step, if **`status !== "verified"`**, read **`failureDiagnostic`**.
+
 **Grammar (UTF-8; lines separated by `\n` only; returned string has no trailing `\n`)**
 
 1. **Header — exactly three lines**
@@ -140,13 +161,13 @@ This section is **normative**: literals and line shape match `formatWorkflowTrut
 
 2. **Run-level**
    - If `runLevelReasons` is empty: line exactly `run_level: (none)`.
-   - Otherwise: line `run_level:` then one line per entry in **`runLevelReasons`** order, each `  - ` + `reason.code` + `: ` + `reason.message` (trimmed for display consistency with step reasons).
+   - Otherwise: line `run_level:` then for each entry in **`runLevelReasons`** order: line `  - ` + `reason.code` + `: ` + `reason.message` (trimmed), then line `    category: ` + `workflow_execution` (four spaces before `category:`).
    - `runLevelCodes[i]` always equals `runLevelReasons[i].code` (derived from `runLevelReasons` at aggregation). When there are no matching events for the workflow id, the library appends **`NO_STEPS_FOR_WORKFLOW`** with message `No tool_observed events for this workflow id after filtering.`
    - Catalog literal for **`MALFORMED_EVENT_LINE`**: `Event line was missing, invalid JSON, or failed schema validation for a tool observation.`
 
 3. **Event sequence integrity**
    - Immediately after the **run-level** block: if **`eventSequenceIntegrity.kind`** is **`normal`**, line exactly `event_sequence: normal`.
-   - If **`kind`** is **`irregular`**: line `event_sequence: irregular`, then one line per entry in **`eventSequenceIntegrity.reasons`** in array order, each `  - ` + `reason.code` + `: ` + `reason.message` (trimmed), matching the same formatting as run-level reason lines.
+   - If **`kind`** is **`irregular`**: line `event_sequence: irregular`, then for each entry in **`eventSequenceIntegrity.reasons`** in array order: line `  - ` + `reason.code` + `: ` + `reason.message` (trimmed), then line `    category: ` + `workflow_execution`.
    - **Codes and messages** for these reasons are defined in **`EVENT_SEQUENCE_MESSAGES`** and **`eventSequenceTimestampNotMonotonicReason`** in `failureCatalog.ts` (SSOT for wire `message` strings).
 
 4. **Steps**
@@ -163,6 +184,7 @@ This section is **normative**: literals and line shape match `formatWorkflowTrut
 | `uncertain` | `UNCERTAIN_NOT_OBSERVED_WITHIN_WINDOW` |
 
    - Immediately after that header line: exactly one line `    observations: evaluated=` + decimal `evaluatedObservationOrdinal` + ` of ` + decimal `repeatObservationCount` + ` in_capture_order` (four spaces before `observations:`; no trailing spaces; no period).
+   - If **`status !== "verified"`**: next line `    category: ` + that step’s **`failureDiagnostic`** (must match JSON). If a non-null verification target summary is defined for the step’s **`verificationRequest`**, the following line is `    verify_target: ` + that summary; otherwise no `verify_target:` line.
    - For each reason: `    reason: [` + code + `] ` + trimmed message, or `(no message)` if the message is empty after trim; if `field` is set and non-empty, append ` field=` + field value.
    - If `intendedEffect` is non-empty after trim: `    intended: ` + single-line text (each `\r`/`\n` replaced by ASCII space, runs of spaces collapsed, trimmed).
    - **Multi-effect steps:** when `evidenceSummary.effects` is present (see [Workflow result: multi-effect shape](#workflow-result-multi-effect-shape)), after `intended:` (if any), emit one line per effect in **UTF-16 lexicographic order of effect `id`** (same comparator as `canonicalJsonForParams` object keys): `    effect: id=` + id + ` status=` + per-effect label, where per-effect labels use the same mapping as the table above **except** `partially_verified` does not appear at the effect level. For each effect with non-empty `reasons`, emit `      reason: [` + code + `] ` + message (six spaces before `reason:`), with optional ` field=` as for step-level reasons.
@@ -445,7 +467,7 @@ Step statuses: `verified` | `missing` | `inconsistent` | `incomplete_verificatio
 
 **PRD mapping:** PRD §4 “Failed” (determinate bad outcome) ↔ `inconsistent`. §4 “Incomplete” (cannot confirm) ↔ `incomplete`. §6 three bullets ↔ these three strings. **Multi-effect:** step-level “partial success” is `partially_verified`; the workflow is still **`inconsistent`** until every step is `verified`.
 
-**Compatibility:** `WorkflowResult.schemaVersion` is **4**; required **`verificationPolicy`** and **`eventSequenceIntegrity`**; consumers must allow step `status` **`uncertain`** (see [`schemas/workflow-result.schema.json`](../schemas/workflow-result.schema.json)).
+**Compatibility:** `WorkflowResult.schemaVersion` is **5**; required **`verificationPolicy`** and **`eventSequenceIntegrity`**; non-**`verified`** steps require **`failureDiagnostic`**; consumers must allow step `status` **`uncertain`** (see [`schemas/workflow-result.schema.json`](../schemas/workflow-result.schema.json)).
 
 ## Cross-run comparison (normative)
 

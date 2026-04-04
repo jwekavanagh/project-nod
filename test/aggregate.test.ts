@@ -33,7 +33,7 @@ describe("WorkflowAggregator precedence", () => {
       eventSeqNormal,
     );
     expect(r.status).toBe("complete");
-    expect(r.schemaVersion).toBe(4);
+    expect(r.schemaVersion).toBe(5);
     expect(r.eventSequenceIntegrity).toEqual(eventSeqNormal);
     expect(r.runLevelReasons).toEqual([]);
     expect(r.runLevelCodes).toEqual([]);
@@ -56,7 +56,12 @@ describe("WorkflowAggregator precedence", () => {
       "w",
       [
         step({ seq: 0, toolId: "t", status: "missing" }),
-        step({ seq: 1, toolId: "t", status: "incomplete_verification" }),
+        step({
+          seq: 1,
+          toolId: "t",
+          status: "incomplete_verification",
+          reasons: [{ code: "CONNECTOR_ERROR", message: "db" }],
+        }),
       ],
       [],
       strongPolicy,

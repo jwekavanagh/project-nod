@@ -52,12 +52,13 @@ describe("verifyWorkflow integration", () => {
       truthReport: () => {},
     });
     assert.equal(r.status, "complete");
+    assert.equal(r.steps[0]?.failureDiagnostic, undefined);
     assert.equal(r.steps[0]?.status, "verified");
     assert.deepStrictEqual(r.verificationPolicy, strongPolicy);
     assert.deepStrictEqual(r.eventSequenceIntegrity, { kind: "normal" });
   });
 
-  it("wf_complete eventual wiring → complete, schema v4 policy echoed", async () => {
+  it("wf_complete eventual wiring → complete, schema v5 policy echoed", async () => {
     const r = await verifyWorkflow({
       workflowId: "wf_complete",
       eventsPath,
@@ -71,7 +72,7 @@ describe("verifyWorkflow integration", () => {
         pollIntervalMs: 100,
       },
     });
-    assert.equal(r.schemaVersion, 4);
+    assert.equal(r.schemaVersion, 5);
     assert.equal(r.status, "complete");
     assert.equal(r.steps[0]?.status, "verified");
     assert.deepStrictEqual(r.verificationPolicy, {
@@ -93,6 +94,7 @@ describe("verifyWorkflow integration", () => {
     assert.equal(r.status, "inconsistent");
     assert.equal(r.steps[0]?.status, "missing");
     assert.equal(r.steps[0]?.reasons[0]?.code, "ROW_ABSENT");
+    assert.equal(r.steps[0]?.failureDiagnostic, "workflow_execution");
   });
 
   it("wf_partial → inconsistent / VALUE_MISMATCH with expected and actual", async () => {
@@ -107,9 +109,10 @@ describe("verifyWorkflow integration", () => {
     assert.equal(r.status, "inconsistent");
     assert.equal(r.steps[0]?.status, "inconsistent");
     assert.equal(r.steps[0]?.reasons[0]?.code, "VALUE_MISMATCH");
-    assert.match(r.steps[0]?.reasons[0]?.message, /^Expected .+ but found .+ for field name$/);
+    assert.match(r.steps[0]?.reasons[0]?.message, /^Expected .+ but found .+ for field name/);
     assert.equal(r.steps[0]?.evidenceSummary.expected, JSON.stringify("N"));
     assert.equal(r.steps[0]?.evidenceSummary.actual, "null");
+    assert.equal(r.steps[0]?.failureDiagnostic, "workflow_execution");
   });
 
   it("wf_inconsistent → inconsistent / VALUE_MISMATCH", async () => {
@@ -162,7 +165,7 @@ describe("verifyWorkflow integration", () => {
       logStep: noopLog,
       truthReport: () => {},
     });
-    assert.equal(r.schemaVersion, 4);
+    assert.equal(r.schemaVersion, 5);
     assert.equal(r.status, "complete");
     assert.equal(r.steps.length, 1);
     assert.equal(r.steps[0]?.status, "verified");
@@ -186,6 +189,7 @@ describe("verifyWorkflow integration", () => {
     assert.equal(r.steps[0]?.reasons[0]?.code, "RETRY_OBSERVATIONS_DIVERGE");
     assert.equal(r.steps[0]?.repeatObservationCount, 2);
     assert.equal(r.steps[0]?.evaluatedObservationOrdinal, 2);
+    assert.equal(r.steps[0]?.failureDiagnostic, "workflow_execution");
   });
 
   it("determinism: identical JSON on repeat verifyWorkflow", async () => {

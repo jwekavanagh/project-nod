@@ -42,6 +42,7 @@ event_sequence: normal
 steps:
   - seq=0 tool=crm.upsert_contact status=FAILED_ROW_MISSING
     observations: evaluated=1 of 1 in_capture_order
+    category: workflow_execution
     reason: [ROW_ABSENT] No row matched key
     intended: Upsert contact "missing_id" with fields {"name":"X","status":"Y"}`;
 
@@ -53,6 +54,7 @@ event_sequence: normal
 steps:
   - seq=0 tool=nope.tool status=INCOMPLETE_CANNOT_VERIFY
     observations: evaluated=1 of 1 in_capture_order
+    category: verification_setup
     reason: [UNKNOWN_TOOL] Unknown toolId: nope.tool
     intended: Unknown tool: nope.tool`;
 
@@ -65,7 +67,9 @@ workflow_status: incomplete
 trust: NOT TRUSTED: Verification is incomplete; the workflow cannot be fully confirmed.
 run_level:
   - MALFORMED_EVENT_LINE: ${MALFORMED_MSG}
+    category: workflow_execution
   - NO_STEPS_FOR_WORKFLOW: ${NO_STEPS_MSG}
+    category: workflow_execution
 event_sequence: normal
 steps:`;
 
@@ -74,6 +78,7 @@ workflow_status: incomplete
 trust: NOT TRUSTED: Verification is incomplete; the workflow cannot be fully confirmed.
 run_level:
   - NO_STEPS_FOR_WORKFLOW: ${NO_STEPS_MSG}
+    category: workflow_execution
 event_sequence: normal
 steps:`;
 
@@ -82,6 +87,7 @@ workflow_status: complete
 trust: TRUSTED: Every step matched the database under the configured verification rules.
 run_level:
   - UNKNOWN_CODE_X: Unknown run-level code (forward compatibility).
+    category: workflow_execution
 event_sequence: normal
 steps:
   - seq=0 tool=t status=VERIFIED
@@ -95,12 +101,13 @@ event_sequence: normal
 steps:
   - seq=0 tool=t status=UNCERTAIN_NOT_OBSERVED_WITHIN_WINDOW
     observations: evaluated=1 of 1 in_capture_order
+    category: observation_uncertainty
     reason: [ROW_NOT_OBSERVED_WITHIN_WINDOW] No row within window`;
 
 describe("formatWorkflowTruthReport", () => {
   it("golden complete / inconsistent missing / incomplete unknown tool", () => {
     const complete = {
-      schemaVersion: 4,
+      schemaVersion: 5,
       workflowId: "wf_complete",
       status: "complete",
       runLevelCodes: [],
@@ -124,7 +131,7 @@ describe("formatWorkflowTruthReport", () => {
     assert.equal(normTruthText(formatWorkflowTruthReport(complete)), normTruthText(GOLDEN_COMPLETE));
 
     const missing = {
-      schemaVersion: 4,
+      schemaVersion: 5,
       workflowId: "wf_missing",
       status: "inconsistent",
       runLevelCodes: [],
@@ -148,7 +155,7 @@ describe("formatWorkflowTruthReport", () => {
     assert.equal(normTruthText(formatWorkflowTruthReport(missing)), normTruthText(GOLDEN_MISSING));
 
     const unknownTool = {
-      schemaVersion: 4,
+      schemaVersion: 5,
       workflowId: "wf_unknown_tool",
       status: "incomplete",
       runLevelCodes: [],
@@ -178,7 +185,7 @@ describe("formatWorkflowTruthReport", () => {
   it("irregular event_sequence extends trust line and lists capture reason", () => {
     const captureReason = eventSequenceIssue("CAPTURE_ORDER_NOT_MONOTONIC_IN_SEQ");
     const r = {
-      schemaVersion: 4,
+      schemaVersion: 5,
       workflowId: "w",
       status: "complete",
       runLevelCodes: [],
@@ -214,11 +221,12 @@ describe("formatWorkflowTruthReport", () => {
     );
     assert.ok(out.includes("event_sequence: irregular\n"));
     assert.ok(out.includes(`  - ${captureReason.code}: ${captureReason.message}`));
+    assert.ok(out.includes(`    category: workflow_execution`));
   });
 
   it("golden malformed run-level and empty steps", () => {
     const malformed = {
-      schemaVersion: 4,
+      schemaVersion: 5,
       workflowId: "wf_complete",
       status: "incomplete",
       runLevelCodes: ["MALFORMED_EVENT_LINE", "NO_STEPS_FOR_WORKFLOW"],
@@ -233,7 +241,7 @@ describe("formatWorkflowTruthReport", () => {
     assert.equal(normTruthText(formatWorkflowTruthReport(malformed)), normTruthText(GOLDEN_MALFORMED));
 
     const empty = {
-      schemaVersion: 4,
+      schemaVersion: 5,
       workflowId: "no_such_workflow",
       status: "incomplete",
       runLevelCodes: ["NO_STEPS_FOR_WORKFLOW"],
@@ -247,7 +255,7 @@ describe("formatWorkflowTruthReport", () => {
 
   it("unknown run-level code uses fallback explanation", () => {
     const r = {
-      schemaVersion: 4,
+      schemaVersion: 5,
       workflowId: "w",
       status: "complete",
       runLevelCodes: ["UNKNOWN_CODE_X"],
@@ -275,7 +283,7 @@ describe("formatWorkflowTruthReport", () => {
 
   it("multi-step: each step line uses STEP_STATUS_TRUTH_LABELS", () => {
     const result = {
-      schemaVersion: 4,
+      schemaVersion: 5,
       workflowId: "multi",
       status: "inconsistent",
       runLevelCodes: [],
@@ -338,7 +346,7 @@ describe("formatWorkflowTruthReport", () => {
 
   it("uncertain-only step uses dedicated trust line and label", () => {
     const uncertain = {
-      schemaVersion: 4,
+      schemaVersion: 5,
       workflowId: "wf_uncertain",
       status: "incomplete",
       runLevelCodes: [],
@@ -372,19 +380,28 @@ describe("formatWorkflowTruthReport", () => {
       "uncertain",
     ];
     let seq = 0;
+    const reasonFor = (status) => {
+      if (status === "verified") return [];
+      if (status === "missing") return [{ code: "ROW_ABSENT", message: "m" }];
+      if (status === "inconsistent") return [{ code: "VALUE_MISMATCH", message: "m" }];
+      if (status === "incomplete_verification") return [{ code: "CONNECTOR_ERROR", message: "m" }];
+      if (status === "partially_verified") return [{ code: "MULTI_EFFECT_PARTIAL", message: "m" }];
+      if (status === "uncertain") return [{ code: "ROW_NOT_OBSERVED_WITHIN_WINDOW", message: "m" }];
+      return [];
+    };
     const steps = statuses.map((status) => ({
       seq: seq++,
       toolId: "t",
       intendedEffect: "",
       verificationRequest: null,
       status,
-      reasons: [],
+      reasons: reasonFor(status),
       evidenceSummary: {},
       repeatObservationCount: 1,
       evaluatedObservationOrdinal: 1,
     }));
     const r = {
-      schemaVersion: 4,
+      schemaVersion: 5,
       workflowId: "s",
       status: "incomplete",
       runLevelCodes: [],
@@ -401,7 +418,7 @@ describe("formatWorkflowTruthReport", () => {
 
   it("run-level reason message is trimmed; whitespace-only becomes (no message)", () => {
     const trimmed = {
-      schemaVersion: 4,
+      schemaVersion: 5,
       workflowId: "w",
       status: "complete",
       runLevelCodes: ["X"],
@@ -413,7 +430,7 @@ describe("formatWorkflowTruthReport", () => {
     assert.ok(formatWorkflowTruthReport(trimmed).includes("  - X: hello"));
 
     const blank = {
-      schemaVersion: 4,
+      schemaVersion: 5,
       workflowId: "w",
       status: "complete",
       runLevelCodes: ["Y"],
@@ -427,7 +444,7 @@ describe("formatWorkflowTruthReport", () => {
 
   it("empty reason message renders (no message)", () => {
     const r = {
-      schemaVersion: 4,
+      schemaVersion: 5,
       workflowId: "w",
       status: "incomplete",
       runLevelCodes: [],
@@ -441,7 +458,7 @@ describe("formatWorkflowTruthReport", () => {
           intendedEffect: "",
           verificationRequest: null,
           status: "incomplete_verification",
-          reasons: [{ code: "C", message: "   " }],
+          reasons: [{ code: "CONNECTOR_ERROR", message: "   " }],
           evidenceSummary: {},
           repeatObservationCount: 1,
           evaluatedObservationOrdinal: 1,
@@ -449,12 +466,12 @@ describe("formatWorkflowTruthReport", () => {
       ],
     };
     const out = formatWorkflowTruthReport(r);
-    assert.ok(out.includes("reason: [C] (no message)"));
+    assert.ok(out.includes("reason: [CONNECTOR_ERROR] (no message)"));
   });
 
   it("reason with field appends field=", () => {
     const r = {
-      schemaVersion: 4,
+      schemaVersion: 5,
       workflowId: "w",
       status: "incomplete",
       runLevelCodes: [],
@@ -468,19 +485,19 @@ describe("formatWorkflowTruthReport", () => {
           intendedEffect: "",
           verificationRequest: null,
           status: "incomplete_verification",
-          reasons: [{ code: "E", message: "msg", field: "col" }],
+          reasons: [{ code: "CONNECTOR_ERROR", message: "msg", field: "col" }],
           evidenceSummary: {},
           repeatObservationCount: 1,
           evaluatedObservationOrdinal: 1,
         },
       ],
     };
-    assert.ok(formatWorkflowTruthReport(r).includes("reason: [E] msg field=col"));
+    assert.ok(formatWorkflowTruthReport(r).includes("reason: [CONNECTOR_ERROR] msg field=col"));
   });
 
   it("newlines in toolId sanitized", () => {
     const r = {
-      schemaVersion: 4,
+      schemaVersion: 5,
       workflowId: "w",
       status: "complete",
       runLevelCodes: [],
@@ -506,7 +523,7 @@ describe("formatWorkflowTruthReport", () => {
 
   it("intendedEffect newlines collapsed to single line", () => {
     const r = {
-      schemaVersion: 4,
+      schemaVersion: 5,
       workflowId: "w",
       status: "complete",
       runLevelCodes: [],

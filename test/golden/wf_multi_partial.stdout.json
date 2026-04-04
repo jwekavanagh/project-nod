@@ -1,5 +1,5 @@
 {
-  "schemaVersion": 4,
+  "schemaVersion": 5,
   "workflowId": "wf_multi_partial",
   "status": "inconsistent",
   "runLevelCodes": [],
@@ -68,7 +68,7 @@
             "reasons": [
               {
                 "code": "VALUE_MISMATCH",
-                "message": "Expected \"Alice\" but found null for field name",
+                "message": "Expected \"Alice\" but found null for field name (table=contacts id=c_partial)",
                 "field": "name"
               }
             ],
@@ -82,7 +82,8 @@
         ]
       },
       "repeatObservationCount": 1,
-      "evaluatedObservationOrdinal": 1
+      "evaluatedObservationOrdinal": 1,
+      "failureDiagnostic": "workflow_execution"
     }
   ]
 }

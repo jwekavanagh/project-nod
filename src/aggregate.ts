@@ -1,4 +1,5 @@
 import { runLevelIssue } from "./failureCatalog.js";
+import { enrichStepsWithFailureDiagnostics } from "./verificationDiagnostics.js";
 import type {
   EventSequenceIntegrity,
   Reason,
@@ -38,14 +39,16 @@ export function aggregateWorkflow(
     status = "incomplete";
   }
 
+  const enrichedSteps = enrichStepsWithFailureDiagnostics(steps);
+
   return {
-    schemaVersion: 4,
+    schemaVersion: 5,
     workflowId,
     status,
     runLevelCodes: [...runLevelCodes],
     runLevelReasons: [...runLevelReasons],
     verificationPolicy,
     eventSequenceIntegrity,
-    steps,
+    steps: enrichedSteps,
   };
 }

@@ -1,3 +1,9 @@
+import {
+  failureDiagnosticForEventSequenceCode,
+  failureDiagnosticForRunLevelCode,
+  failureDiagnosticForStep,
+  formatVerificationTargetSummary,
+} from "./verificationDiagnostics.js";
 import type { Reason, StepStatus, WorkflowResult, WorkflowStatus } from "./types.js";
 
 export const STEP_STATUS_TRUTH_LABELS: Record<StepStatus, string> = {
@@ -108,6 +114,7 @@ export function formatWorkflowTruthReport(result: WorkflowResult): string {
       const msg = r.message.trim();
       const human = msg.length > 0 ? msg : "(no message)";
       lines.push(`  - ${r.code}: ${human}`);
+      lines.push(`    category: ${failureDiagnosticForRunLevelCode(r.code)}`);
     }
   }
 
@@ -119,6 +126,7 @@ export function formatWorkflowTruthReport(result: WorkflowResult): string {
       const msg = r.message.trim();
       const human = msg.length > 0 ? msg : "(no message)";
       lines.push(`  - ${r.code}: ${human}`);
+      lines.push(`    category: ${failureDiagnosticForEventSequenceCode(r.code)}`);
     }
   }
 
@@ -130,6 +138,14 @@ export function formatWorkflowTruthReport(result: WorkflowResult): string {
     lines.push(
       `    observations: evaluated=${s.evaluatedObservationOrdinal} of ${s.repeatObservationCount} in_capture_order`,
     );
+    if (s.status !== "verified") {
+      const cat = s.failureDiagnostic ?? failureDiagnosticForStep(s);
+      lines.push(`    category: ${cat}`);
+      const vt = formatVerificationTargetSummary(s.verificationRequest);
+      if (vt !== null) {
+        lines.push(`    verify_target: ${vt}`);
+      }
+    }
     for (const r of s.reasons) {
       const msg = r.message.trim();
       const human = msg.length > 0 ? msg : "(no message)";

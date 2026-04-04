@@ -39,6 +39,7 @@ import {
   resolveVerificationPolicyInput,
   type PolicyReconcileContext,
 } from "./verificationPolicy.js";
+import { withFailureDiagnostic } from "./verificationDiagnostics.js";
 
 function defaultTruthReportToStderr(report: string): void {
   process.stderr.write(`${report}\n`);
@@ -93,6 +94,7 @@ function logStepOutcome(
     evidenceSummary: outcome.evidenceSummary,
     repeatObservationCount: outcome.repeatObservationCount,
     evaluatedObservationOrdinal: outcome.evaluatedObservationOrdinal,
+    ...(outcome.failureDiagnostic !== undefined ? { failureDiagnostic: outcome.failureDiagnostic } : {}),
   });
 }
 
@@ -121,8 +123,9 @@ export function verifyToolObservedStep(options: {
       repeatObservationCount,
       evaluatedObservationOrdinal,
     };
-    logStepOutcome(logStep, workflowId, outcome);
-    return outcome;
+    const finalized = withFailureDiagnostic(outcome);
+    logStepOutcome(logStep, workflowId, finalized);
+    return finalized;
   }
 
   const intendedEffect = renderIntendedEffect(entry.effectDescriptionTemplate, ev.params);
@@ -139,8 +142,9 @@ export function verifyToolObservedStep(options: {
       repeatObservationCount,
       evaluatedObservationOrdinal,
     };
-    logStepOutcome(logStep, workflowId, outcome);
-    return outcome;
+    const finalized = withFailureDiagnostic(outcome);
+    logStepOutcome(logStep, workflowId, finalized);
+    return finalized;
   }
 
   const exec = executeVerificationWithPolicySync(db, resolved, verificationPolicy);
@@ -155,8 +159,9 @@ export function verifyToolObservedStep(options: {
     repeatObservationCount,
     evaluatedObservationOrdinal,
   };
-  logStepOutcome(logStep, workflowId, outcome);
-  return outcome;
+  const finalized = withFailureDiagnostic(outcome);
+  logStepOutcome(logStep, workflowId, finalized);
+  return finalized;
 }
 
 async function verifyToolObservedStepAsync(options: {
@@ -184,8 +189,9 @@ async function verifyToolObservedStepAsync(options: {
       repeatObservationCount,
       evaluatedObservationOrdinal,
     };
-    logStepOutcome(logStep, workflowId, outcome);
-    return outcome;
+    const finalized = withFailureDiagnostic(outcome);
+    logStepOutcome(logStep, workflowId, finalized);
+    return finalized;
   }
 
   const intendedEffect = renderIntendedEffect(entry.effectDescriptionTemplate, ev.params);
@@ -202,8 +208,9 @@ async function verifyToolObservedStepAsync(options: {
       repeatObservationCount,
       evaluatedObservationOrdinal,
     };
-    logStepOutcome(logStep, workflowId, outcome);
-    return outcome;
+    const finalized = withFailureDiagnostic(outcome);
+    logStepOutcome(logStep, workflowId, finalized);
+    return finalized;
   }
 
   const exec = await executeVerificationWithPolicyAsync(resolved, verificationPolicy, ctx);
@@ -218,8 +225,9 @@ async function verifyToolObservedStepAsync(options: {
     repeatObservationCount,
     evaluatedObservationOrdinal,
   };
-  logStepOutcome(logStep, workflowId, outcome);
-  return outcome;
+  const finalized = withFailureDiagnostic(outcome);
+  logStepOutcome(logStep, workflowId, finalized);
+  return finalized;
 }
 
 function runLogicalStepsVerificationSync(options: {
@@ -236,8 +244,9 @@ function runLogicalStepsVerificationSync(options: {
     const n = plan.repeatObservationCount;
     if (plan.divergent) {
       const outcome = buildDivergentStepOutcome(plan, options.registry);
-      logStepOutcome(options.logStep, options.workflowId, outcome);
-      out.push(outcome);
+      const finalized = withFailureDiagnostic(outcome);
+      logStepOutcome(options.logStep, options.workflowId, finalized);
+      out.push(finalized);
       continue;
     }
     out.push(
@@ -269,8 +278,9 @@ async function runLogicalStepsVerificationAsync(options: {
     const n = plan.repeatObservationCount;
     if (plan.divergent) {
       const outcome = buildDivergentStepOutcome(plan, options.registry);
-      logStepOutcome(options.logStep, options.workflowId, outcome);
-      out.push(outcome);
+      const finalized = withFailureDiagnostic(outcome);
+      logStepOutcome(options.logStep, options.workflowId, finalized);
+      out.push(finalized);
       continue;
     }
     out.push(

@@ -78,6 +78,12 @@ export type VerificationPolicy = {
 
 export type Reason = { code: string; message: string; field?: string };
 
+/** Present on wire when `status !== "verified"`; omitted when verified (schema v5). */
+export type FailureDiagnostic =
+  | "workflow_execution"
+  | "verification_setup"
+  | "observation_uncertainty";
+
 export type StepOutcome = {
   seq: number;
   toolId: string;
@@ -90,6 +96,8 @@ export type StepOutcome = {
   repeatObservationCount: number;
   /** 1-based; equals repeatObservationCount (last in capture order is evaluated). */
   evaluatedObservationOrdinal: number;
+  /** Required when status is not verified; must be absent when status is verified. */
+  failureDiagnostic?: FailureDiagnostic;
 };
 
 export type WorkflowStatus = "complete" | "incomplete" | "inconsistent";
@@ -99,7 +107,7 @@ export type EventSequenceIntegrity =
   | { kind: "irregular"; reasons: Reason[] };
 
 export type WorkflowResult = {
-  schemaVersion: 4;
+  schemaVersion: 5;
   workflowId: string;
   status: WorkflowStatus;
   runLevelCodes: string[];

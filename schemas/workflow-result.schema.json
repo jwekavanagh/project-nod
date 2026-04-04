@@ -14,7 +14,7 @@
     "eventSequenceIntegrity"
   ],
   "properties": {
-    "schemaVersion": { "const": 4 },
+    "schemaVersion": { "const": 5 },
     "workflowId": { "type": "string" },
     "status": {
       "type": "string",
@@ -189,7 +189,30 @@
               "additionalProperties": true
             },
             "repeatObservationCount": { "type": "integer", "minimum": 1 },
-            "evaluatedObservationOrdinal": { "type": "integer", "minimum": 1 }
+            "evaluatedObservationOrdinal": { "type": "integer", "minimum": 1 },
+            "failureDiagnostic": {
+              "type": "string",
+              "enum": [
+                "workflow_execution",
+                "verification_setup",
+                "observation_uncertainty"
+              ]
+            }
+          }
+        },
+        {
+          "if": {
+            "type": "object",
+            "required": ["status"],
+            "properties": { "status": { "const": "verified" } }
+          },
+          "then": {
+            "type": "object",
+            "properties": { "failureDiagnostic": false }
+          },
+          "else": {
+            "type": "object",
+            "required": ["failureDiagnostic"]
           }
         },
         {

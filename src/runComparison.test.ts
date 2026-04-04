@@ -39,13 +39,14 @@ function sqlRowStep(
     evidenceSummary: {},
     repeatObservationCount: 1,
     evaluatedObservationOrdinal: 1,
+    ...(verified ? {} : { failureDiagnostic: "workflow_execution" as const }),
   };
 }
 
 function wf(steps: StepOutcome[], id = "wf_cmp"): WorkflowResult {
   const bad = steps.some((s) => s.status !== "verified");
   return {
-    schemaVersion: 4,
+    schemaVersion: 5,
     workflowId: id,
     status: bad ? "inconsistent" : "complete",
     runLevelCodes: [],
@@ -165,6 +166,7 @@ describe("runComparison", () => {
       evidenceSummary: { effects: [effectRow] },
       repeatObservationCount: 1,
       evaluatedObservationOrdinal: 1,
+      failureDiagnostic: "workflow_execution",
     };
     const report = buildRunComparisonReport([wf([step]), wf([{ ...step }])], ["p", "c"]);
     assertReportValid(report);
@@ -205,6 +207,7 @@ describe("runComparison", () => {
       evidenceSummary: {},
       repeatObservationCount: 1,
       evaluatedObservationOrdinal: 1,
+      failureDiagnostic: "verification_setup",
     });
     const r0 = wf([nullFail(0, "x")]);
     const r1 = wf([nullFail(0, "x"), nullFail(1, "y")]);
