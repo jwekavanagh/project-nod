@@ -23,6 +23,7 @@ import {
   formatRunComparisonReport,
 } from "./runComparison.js";
 import type { WorkflowResult } from "./types.js";
+import { buildWorkflowVerdictSurface } from "./workflowTruthReport.js";
 
 const validateTrace = loadSchemaValidator("execution-trace-view");
 const validateCompareReport = loadSchemaValidator("run-comparison-report");
@@ -198,6 +199,7 @@ async function handleRequest(
         loadStatus: "ok",
         runId: o.runId,
         workflowResult: o.workflowResult,
+        workflowVerdictSurface: buildWorkflowVerdictSurface(o.workflowResult),
         agentRunRecord: o.agentRunRecord,
         executionTrace: trace,
         malformedEventLineCount: load.malformedEventLineCount,

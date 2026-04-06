@@ -135,6 +135,28 @@ tr.selected {
   margin-bottom: 1rem;
   font-size: 0.85rem;
 }
+.verdict-panel {
+  background: #1a2332;
+  border: 1px solid #388bfd;
+  padding: 0.85rem 1rem;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
+}
+.verdict-panel .verdict-status {
+  font-weight: 600;
+  font-size: 1rem;
+  margin-bottom: 0.35rem;
+}
+.verdict-panel .verdict-trust {
+  color: #8b949e;
+  margin-bottom: 0.6rem;
+  line-height: 1.4;
+}
+.verdict-panel .verdict-counts {
+  font-size: 0.8rem;
+  color: #c9d1d9;
+}
 .trace-step {
   padding: 0.35rem 0.5rem;
   margin: 0.2rem 0;

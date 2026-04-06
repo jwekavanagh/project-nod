@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import { mkdirSync, readFileSync, statSync, writeFileSync } from "fs";
+import { readFileSync, statSync } from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
 import {
@@ -29,12 +29,7 @@ import {
   logCorpusLoadErrors,
   startDebugServerOnPort,
 } from "./debugServer.js";
-import {
-  AGENT_RUN_FILENAME,
-  EVENTS_FILENAME,
-  WORKFLOW_RESULT_FILENAME,
-} from "./debugCorpus.js";
-import { buildAgentRunRecordForBundle } from "./agentRunRecord.js";
+import { writeAgentRunBundle } from "./agentRunBundle.js";
 import { COMPARE_INPUT_RUN_LEVEL_INCONSISTENT_MESSAGE } from "./runLevelDriftMessages.js";
 import { isV9RunLevelCodesInconsistent } from "./workflowRunLevelConsistency.js";
 
@@ -288,29 +283,6 @@ function readPackageIdentity(): { name: string; version: string } {
   const name = typeof pkg.name === "string" && pkg.name.length > 0 ? pkg.name : "execution-truth-layer";
   const version = typeof pkg.version === "string" && pkg.version.length > 0 ? pkg.version : "0.0.0";
   return { name, version };
-}
-
-function writeCanonicalRunBundle(options: {
-  outDir: string;
-  eventsSourcePath: string;
-  workflowResult: import("./types.js").WorkflowResult;
-}): void {
-  const resolved = path.resolve(options.outDir);
-  const eventsBytes = readFileSync(path.resolve(options.eventsSourcePath));
-  const workflowResultBytes = Buffer.from(JSON.stringify(options.workflowResult), "utf8");
-  mkdirSync(resolved, { recursive: true });
-  writeFileSync(path.join(resolved, EVENTS_FILENAME), eventsBytes);
-  writeFileSync(path.join(resolved, WORKFLOW_RESULT_FILENAME), workflowResultBytes);
-  const { name, version } = readPackageIdentity();
-  const record = buildAgentRunRecordForBundle({
-    runId: path.basename(resolved),
-    workflowId: options.workflowResult.workflowId,
-    producer: { name, version },
-    verifiedAt: new Date().toISOString(),
-    workflowResultBytes,
-    eventsBytes,
-  });
-  writeFileSync(path.join(resolved, AGENT_RUN_FILENAME), `${JSON.stringify(record, null, 2)}\n`);
 }
 
 function usageValidateRegistry(): string {
@@ -709,10 +681,12 @@ async function main(): Promise<void> {
 
   if (writeRunBundleDir !== undefined) {
     try {
-      writeCanonicalRunBundle({
+      writeAgentRunBundle({
         outDir: writeRunBundleDir,
-        eventsSourcePath: eventsPath,
+        eventsNdjson: readFileSync(path.resolve(eventsPath)),
         workflowResult: result,
+        producer: readPackageIdentity(),
+        verifiedAt: new Date().toISOString(),
       });
     } catch (e) {
       const msg = e instanceof Error ? e.message : String(e);

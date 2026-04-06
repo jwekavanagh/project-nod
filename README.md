@@ -89,7 +89,7 @@ node dist/cli.js --workflow-id <id> --events <path> --registry <path> --postgres
 
 ## Canonical agent run bundle
 
-Saved runs that the Debug Console (or **`loadCorpusRun`**) can load as **`ok`** require **three files** per run directory: **`events.ndjson`**, **`workflow-result.json`**, and **`agent-run.json`** (a SHA-256 manifest—no separate **`meta.json`**). After **`verify-workflow`**, emit that layout with **`--write-run-bundle <dir>`**. Full contract, loader order, and error codes: **[Agent run record (canonical bundle)](docs/execution-truth-layer.md#agent-run-record-canonical-bundle)**.
+Saved runs that the Debug Console (or **`loadCorpusRun`**) can load as **`ok`** require **three files** per run directory: **`events.ndjson`**, **`workflow-result.json`**, and **`agent-run.json`** (a SHA-256 manifest—no separate **`meta.json`**). After **`verify-workflow`**, emit that layout with **`--write-run-bundle <dir>`** or **`writeAgentRunBundle`** from the package entry. Full contract, **`workflowVerdictSurface`**, programmatic retrieve path, and error codes: **[Slice 5 — workflow verdict and audit](docs/execution-truth-layer.md#slice-5-workflow-verdict-and-audit)** and **[Agent run record (canonical bundle)](docs/execution-truth-layer.md#agent-run-record-canonical-bundle)**.
 
 ## Authoritative specification
 

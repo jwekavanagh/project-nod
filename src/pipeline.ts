@@ -37,6 +37,7 @@ import {
   runLevelIssue,
 } from "./failureCatalog.js";
 import { TruthLayerError } from "./truthLayerError.js";
+import { writeAgentRunBundle } from "./agentRunBundle.js";
 import {
   finalizeEmittedWorkflowResult,
   formatWorkflowTruthReport,
@@ -509,6 +510,15 @@ class WorkflowVerificationSession {
     );
     return { ...base, verificationRunContext: buildVerificationRunContext(this.bufferedRunEvents) };
   }
+
+  /** NDJSON bytes: one `JSON.stringify(event)` plus newline per `observeStep` enqueue, in buffer order. */
+  captureNdjsonUtf8(): Buffer {
+    const parts: string[] = [];
+    for (const ev of this.bufferedRunEvents) {
+      parts.push(`${JSON.stringify(ev)}\n`);
+    }
+    return Buffer.from(parts.join(""), "utf8");
+  }
 }
 
 export async function withWorkflowVerification(
@@ -519,6 +529,8 @@ export async function withWorkflowVerification(
     verificationPolicy?: VerificationPolicy;
     logStep?: (line: object) => void;
     truthReport?: (report: string) => void;
+    /** Writes canonical bundle after successful verification (`runId` = basename of `outDir`). */
+    persistBundle?: { outDir: string };
   },
   run: (observeStep: (value: unknown) => void) => void | Promise<void>,
 ): Promise<WorkflowResult> {
@@ -535,6 +547,7 @@ export async function withWorkflowVerification(
   let session: WorkflowVerificationSession | undefined;
   let runFailure: unknown;
   let engine: WorkflowEngineResult | undefined;
+  let eventsNdjsonBytes: Buffer | undefined;
   try {
     const registry = loadToolsRegistry(options.registryPath);
     let db: DatabaseSync;
@@ -547,6 +560,7 @@ export async function withWorkflowVerification(
     session = new WorkflowVerificationSession(options.workflowId, registry, db, log, verificationPolicy);
     await Promise.resolve(run((v) => session!.observeStep(v)));
     engine = session.buildWorkflowResult();
+    eventsNdjsonBytes = session.captureNdjsonUtf8();
   } catch (e) {
     runFailure = e;
   } finally {
@@ -556,5 +570,13 @@ export async function withWorkflowVerification(
     throw runFailure;
   }
   truthReport(formatWorkflowTruthReport(engine!));
-  return finalizeEmittedWorkflowResult(engine!);
+  const result = finalizeEmittedWorkflowResult(engine!);
+  if (options.persistBundle !== undefined) {
+    writeAgentRunBundle({
+      outDir: options.persistBundle.outDir,
+      eventsNdjson: eventsNdjsonBytes ?? Buffer.alloc(0),
+      workflowResult: result,
+    });
+  }
+  return result;
 }

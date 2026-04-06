@@ -102,6 +102,21 @@ function escapeHtml(s) {
     .replace(/"/g, "&quot;");
 }
 
+function formatVerdictSurface(vs) {
+  if (!vs || typeof vs !== "object") return "";
+  const counts = vs.stepStatusCounts || {};
+  const parts = Object.entries(counts)
+    .filter(([, n]) => n > 0)
+    .map(([k, n]) => `${k}: ${n}`);
+  const countsLine = parts.length ? parts.join(" · ") : "(no steps)";
+  return `
+      <div class="verdict-panel" role="region" aria-label="Workflow verdict">
+        <div class="verdict-status">Workflow status: <code>${escapeHtml(vs.status)}</code></div>
+        <div class="verdict-trust">${escapeHtml(vs.trustSummary || "")}</div>
+        <div class="verdict-counts">Step outcomes: ${escapeHtml(countsLine)}</div>
+      </div>`;
+}
+
 async function openDetail(runId) {
   const drawer = document.getElementById("detail-drawer");
   const body = document.getElementById("detail-body");
@@ -131,6 +146,7 @@ async function openDetail(runId) {
     } catch (e) {
       focusHtml = `<p class="meta">Focus: ${escapeHtml(e.message)}</p>`;
     }
+    const verdictHtml = formatVerdictSurface(data.workflowVerdictSurface);
     const steps = (data.executionTrace?.nodes || []).map((n, i) => {
       const seq = n.toolSeq ?? n.verificationLink?.seq;
       const seqKey = seq != null ? `seq:${seq}` : "";
@@ -143,6 +159,7 @@ async function openDetail(runId) {
       return `<div class="trace-step ${hit ? "focus-hit" : ""}" data-idx="${i}">${escapeHtml(JSON.stringify(n))}</div>`;
     });
     body.innerHTML = `
+      ${verdictHtml}
       ${focusHtml}
       <h3>Trace nodes</h3>
       ${steps.join("") || "<p>(no trace nodes)</p>"}

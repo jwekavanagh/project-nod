@@ -5,6 +5,8 @@ import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 import { startDebugServerOnPort, loadCorpusBundle } from "./debugServer.js";
 import { buildAgentRunRecordForBundle } from "./agentRunRecord.js";
+import { buildWorkflowVerdictSurface } from "./workflowTruthReport.js";
+import type { WorkflowResult } from "./types.js";
 
 const root = join(fileURLToPath(import.meta.url), "..", "..");
 const exampleCorpus = join(root, "examples", "debug-corpus");
@@ -55,13 +57,24 @@ describe("debugServer HTTP", () => {
       const data = (await res.json()) as {
         loadStatus: string;
         executionTrace: { nodes: unknown[] };
-        workflowResult: { workflowId: string };
+        workflowResult: { workflowId: string; status: string; steps: unknown[] };
+        workflowVerdictSurface: {
+          status: string;
+          trustSummary: string;
+          stepStatusCounts: Record<string, number>;
+        };
         agentRunRecord: { workflowId: string };
       };
       expect(data.loadStatus).toBe("ok");
       expect(data.workflowResult.workflowId).toBe("wf_complete");
       expect(data.agentRunRecord.workflowId).toBe("wf_complete");
       expect(Array.isArray(data.executionTrace.nodes)).toBe(true);
+      expect(data.workflowVerdictSurface.status).toBe(data.workflowResult.status);
+      const expectedSurface = buildWorkflowVerdictSurface(data.workflowResult as WorkflowResult);
+      expect(data.workflowVerdictSurface.trustSummary).toBe(expectedSurface.trustSummary);
+      expect(data.workflowVerdictSurface.stepStatusCounts).toEqual(expectedSurface.stepStatusCounts);
+      const sum = Object.values(data.workflowVerdictSurface.stepStatusCounts).reduce((a, b) => a + b, 0);
+      expect(sum).toBe(data.workflowResult.steps.length);
     } finally {
       await srv.close();
     }

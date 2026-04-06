@@ -28,6 +28,40 @@ This subsection maps **outcome verification** product acceptance criteria to thi
 
 **Proof in repo:** Requirement-level black-box tests live in `src/verificationAgainstSystemState.requirements.test.ts` (Vitest), using `verifyWorkflow` and SQLite seeded from `examples/seed.sql` only. Slice 3 coverage includes tests **H–L** (multi-effect partial / all-fail / all-pass, actionable feedback, human report substrings) and **Negative:** complete workflow `failureAnalysis === null`.
 
+## Slice 5: Workflow verdict and audit
+
+This subsection maps **workflow-level verdict** and **auditable run records** acceptance criteria to this MVP. **Structural SSOT** for emitted JSON is unchanged ([`schemas/workflow-result.schema.json`](../schemas/workflow-result.schema.json), [`schemas/workflow-truth-report.schema.json`](../schemas/workflow-truth-report.schema.json), [`schemas/agent-run-record.schema.json`](../schemas/agent-run-record.schema.json)).
+
+| Acceptance theme | Where it appears in the product |
+|------------------|----------------------------------|
+| **Overall workflow result** after evaluating observed steps | Machine: **`WorkflowResult.status`** (`complete` \| `incomplete` \| `inconsistent`) and **`workflowTruthReport.workflowStatus`** (same value). Human: first **`trust:`** line of the [Human truth report](#human-truth-report). |
+| **Verdict reflects step verification outcomes** | `status` is produced only by **`aggregateWorkflow`** from step statuses, run-level reasons, and empty-step rules—see [Workflow status](#workflow-status-prd-aligned). |
+| **Distinguish complete vs incomplete vs inconsistent** | The three `WorkflowStatus` values above; CLI exit **0** / **1** / **2** respectively on verdict paths. Debug Console lists **`status`** per run; run detail includes **`workflowVerdictSurface`**. |
+| **Verdict supported by step-level evidence** | Authoritative: **`WorkflowResult.steps[]`** and **`workflowTruthReport.steps[]`**. Review helper: **`workflowVerdictSurface`** on **`GET /api/runs/:id`** (ok loads)—`status`, **`trustSummary`** (same string as **`workflowTruthReport.trustSummary`**), **`stepStatusCounts`** (count per `StepStatus`, all keys present). Implemented by **`buildWorkflowVerdictSurface`** in `workflowTruthReport.ts` only—clients must not re-derive. |
+| **Preserve execution + verification for a run** | Canonical **three-file directory**: **`events.ndjson`** (bytes observed or product-serialized), **`workflow-result.json`**, **`agent-run.json`** manifest with SHA-256 + byte lengths. Writer: **`writeAgentRunBundle`** in `agentRunBundle.ts` (CLI **`--write-run-bundle`** calls it). |
+| **Link execution to verification consistently** | **`agent-run.json`** binds **`workflowId`**, artifact relative paths, **`sha256`**, **`byteLength`** for each file—see [Agent run record (canonical bundle)](#agent-run-record-canonical-bundle). |
+| **Retrieve and review a past run** | **Programmatic:** **`loadCorpusRun(corpusRoot, runId)`** (package export)—**`loadStatus === "ok"`** yields **`workflowResult`**, **`agentRunRecord`**, **`paths`**. **Interactive:** **`verify-workflow debug --corpus <dir>`** and Debug Console; **`GET /api/runs/:id`** returns **`workflowResult`**, **`workflowVerdictSurface`**, **`executionTrace`**, etc. **Offline:** open **`workflow-result.json`** / **`events.ndjson`** on disk. |
+| **Empty `events.ndjson`** | A **zero-byte** `events.ndjson` is valid when the manifest records **`byteLength` 0** and the SHA-256 of the empty buffer. It means “no captured lines in this bundle,” not “workflow succeeded.” |
+
+### Slice 5 — Engineer
+
+- **`agentRunBundle.ts`**: **`writeAgentRunBundle`** writes each final file via a temp name in the run directory then **rename** into place. Order: **`events.ndjson`** → **`workflow-result.json`** → **`agent-run.json`** (manifest last). On failure mid-write, temp files for the current attempt are removed; a crash can still leave an invalid directory until the next successful write—loaders return **`ARTIFACT_*`** / parse errors as today.
+- **`workflowTruthReport.ts`**: **`buildWorkflowVerdictSurface(WorkflowResult)`** for API/UI only.
+- **`pipeline.ts`**: **`withWorkflowVerification`** optional **`persistBundle: { outDir }`**. After a successful run, **`captureNdjsonUtf8()`** serializes **`bufferedRunEvents`** in strict **`observeStep` enqueue order** (`JSON.stringify(event) + "\n"` per line), then **`writeAgentRunBundle`** is called with the **final** **`WorkflowResult`** (v11 + truth report). No bundle is written if **`run`** throws or **`buildWorkflowResult`** fails.
+
+### Slice 5 — Integrator
+
+- **Preserve:** **`writeAgentRunBundle({ outDir, eventsNdjson, workflowResult })`** or CLI **`--write-run-bundle <dir>`** (`runId` = basename of resolved `outDir`).
+- **Retrieve:** **`loadCorpusRun(resolveCorpusRootReal(corpusRoot), runId)`**; treat **`ok`** as the normative “this directory is a consistent bundle.”
+- **In-process audit:** pass **`persistBundle`** on **`withWorkflowVerification`**, or build **`eventsNdjson`** yourself and call **`writeAgentRunBundle`** after **`finalizeEmittedWorkflowResult`** (or use the fulfilled **`WorkflowResult`** from the hook).
+
+### Slice 5 — Operator
+
+- Debug Console run detail shows **workflow status**, **trust summary**, and **non-zero step outcome counts** from **`workflowVerdictSurface`** before raw JSON.
+- Do not treat a folder as trusted until **`loadCorpusRun`** returns **`ok`** (or the Debug list shows **`loadStatus` ok**). Tampering yields **`ARTIFACT_INTEGRITY_MISMATCH`** / **`ARTIFACT_LENGTH_MISMATCH`** / **`WORKFLOW_RESULT_*`** as documented under corpus load outcomes.
+
+**Proof in repo:** `src/agentRunBundle.test.ts` (round-trip, empty events, integrity negative), `src/workflowVerdictSurface.test.ts`, `src/withWorkflowVerification.persistBundle.test.ts`, `src/debugServer.test.ts` (**`workflowVerdictSurface`** on run detail).
+
 ## Audiences
 
 ### Engineer
@@ -58,7 +92,8 @@ This subsection maps **outcome verification** product acceptance criteria to thi
 | `aggregate.ts` | Workflow status precedence |
 | `actionableFailure.ts` | Actionable failure **`category`** / **`severity`** (workflow + operational), compare **`categoryHistogram`** / **`actionableCategoryRecurrence`**, P-CAT-1–4 and workflow S-1–S4; **`productionStepReasonCodeToActionableCategory`** + operational severity table |
 | `verificationDiagnostics.ts` | Pinned step `failureDiagnostic`; `formatVerificationTargetSummary`; run/event-sequence `category:` helpers for human report (internal; not re-exported from package entry) |
-| `workflowTruthReport.ts` | `buildWorkflowTruthReport`, `finalizeEmittedWorkflowResult`, `formatWorkflowTruthReportStruct`, `formatWorkflowTruthReport`, `HUMAN_REPORT_RESULT_PHRASE`, `STEP_STATUS_TRUTH_LABELS`, `TRUST_LINE_EVENT_SEQUENCE_IRREGULAR_SUFFIX`; human report text is rendering of structured truth with plain `result=` / `detail:` lines |
+| `agentRunBundle.ts` | `writeAgentRunBundle` — canonical three-file run directory with per-file temp+rename; used by CLI `--write-run-bundle` and optional `withWorkflowVerification` `persistBundle` |
+| `workflowTruthReport.ts` | `buildWorkflowTruthReport`, `buildWorkflowVerdictSurface`, `finalizeEmittedWorkflowResult`, `formatWorkflowTruthReportStruct`, `formatWorkflowTruthReport`, `HUMAN_REPORT_RESULT_PHRASE`, `STEP_STATUS_TRUTH_LABELS`, `TRUST_LINE_EVENT_SEQUENCE_IRREGULAR_SUFFIX`; human report text is rendering of structured truth with plain `result=` / `detail:` lines |
 | `executionPathFindings.ts` | `buildExecutionPathFindings`, `buildExecutionPathSummary`, `ACTION_INPUT_REASON_CODES`, `RECONCILER_STEP_REASON_CODES` — execution-path layer orthogonal to SQL reconciliation (internal; not re-exported from package entry) |
 | `workflowResultNormalize.ts` | `normalizeToEmittedWorkflowResult`, `workflowEngineResultFromEmitted` (compare ingress: engine **v7** / frozen **v9** / stdout **v11**; strip legacy **`runLevelCodes`**; inject empty **`verificationRunContext`** where needed) |
 | `runComparison.ts` | `buildRunComparisonReport`, `formatRunComparisonReport`, `logicalStepKeyFromStep`, `recurrenceSignature`; cross-run comparison |

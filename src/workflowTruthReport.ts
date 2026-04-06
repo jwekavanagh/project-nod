@@ -254,6 +254,37 @@ export function finalizeEmittedWorkflowResult(engine: WorkflowEngineResult): Wor
   };
 }
 
+const ALL_STEP_STATUSES: StepStatus[] = [
+  "verified",
+  "missing",
+  "inconsistent",
+  "incomplete_verification",
+  "partially_verified",
+  "uncertain",
+];
+
+/** Derived review surface for APIs/UI; authoritative detail remains `steps` / truth `steps`. */
+export type WorkflowVerdictSurface = {
+  status: WorkflowStatus;
+  trustSummary: string;
+  stepStatusCounts: Record<StepStatus, number>;
+};
+
+export function buildWorkflowVerdictSurface(workflowResult: WorkflowResult): WorkflowVerdictSurface {
+  const stepStatusCounts = Object.fromEntries(ALL_STEP_STATUSES.map((k) => [k, 0])) as Record<
+    StepStatus,
+    number
+  >;
+  for (const step of workflowResult.steps) {
+    stepStatusCounts[step.status] += 1;
+  }
+  return {
+    status: workflowResult.status,
+    trustSummary: workflowResult.workflowTruthReport.trustSummary,
+    stepStatusCounts,
+  };
+}
+
 export function formatWorkflowTruthReportStruct(truth: WorkflowTruthReport): string {
   const lines: string[] = [];
 

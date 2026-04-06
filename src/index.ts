@@ -60,6 +60,7 @@ export {
 } from "./runComparison.js";
 export {
   buildWorkflowTruthReport,
+  buildWorkflowVerdictSurface,
   finalizeEmittedWorkflowResult,
   formatWorkflowTruthReport,
   formatWorkflowTruthReportStruct,
@@ -68,6 +69,9 @@ export {
   TRUST_LINE_UNCERTAIN_WITHIN_WINDOW,
   TRUST_LINE_EVENT_SEQUENCE_IRREGULAR_SUFFIX,
 } from "./workflowTruthReport.js";
+export type { WorkflowVerdictSurface } from "./workflowTruthReport.js";
+export { writeAgentRunBundle } from "./agentRunBundle.js";
+export type { WriteAgentRunBundleOptions } from "./agentRunBundle.js";
 export { workflowEngineResultFromEmitted, normalizeToEmittedWorkflowResult } from "./workflowResultNormalize.js";
 export {
   DEFAULT_VERIFICATION_POLICY,
