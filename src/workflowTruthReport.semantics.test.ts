@@ -45,10 +45,9 @@ function verifiedStep(seq: number, toolId: string): StepOutcome {
 describe("buildWorkflowTruthReport (formatter-independent semantics)", () => {
   it("complete all verified: trust line and VERIFIED labels", () => {
     const engine: WorkflowEngineResult = {
-      schemaVersion: 6,
+      schemaVersion: 7,
       workflowId: "w",
       status: "complete",
-      runLevelCodes: [],
       runLevelReasons: [],
       verificationPolicy: strongPolicy,
       eventSequenceIntegrity: { kind: "normal" },
@@ -95,10 +94,9 @@ describe("buildWorkflowTruthReport (formatter-independent semantics)", () => {
       failureDiagnostic: "workflow_execution",
     };
     const engine: WorkflowEngineResult = {
-      schemaVersion: 6,
+      schemaVersion: 7,
       workflowId: "w",
       status: "inconsistent",
-      runLevelCodes: [],
       runLevelReasons: [],
       verificationPolicy: strongPolicy,
       eventSequenceIntegrity: { kind: "normal" },
@@ -121,10 +119,9 @@ describe("buildWorkflowTruthReport (formatter-independent semantics)", () => {
 
   it("run-level issue: runLevelIssues mirror reasons with categories", () => {
     const engine: WorkflowEngineResult = {
-      schemaVersion: 6,
+      schemaVersion: 7,
       workflowId: "w",
       status: "incomplete",
-      runLevelCodes: ["NO_STEPS_FOR_WORKFLOW"],
       runLevelReasons: [
         { code: "NO_STEPS_FOR_WORKFLOW", message: "No tool_observed events for this workflow id after filtering." },
       ],
@@ -169,10 +166,9 @@ describe("buildWorkflowTruthReport (formatter-independent semantics)", () => {
       failureDiagnostic: "observation_uncertainty",
     };
     const engine: WorkflowEngineResult = {
-      schemaVersion: 6,
+      schemaVersion: 7,
       workflowId: "w",
       status: "incomplete",
-      runLevelCodes: [],
       runLevelReasons: [],
       verificationPolicy: strongPolicy,
       eventSequenceIntegrity: { kind: "normal" },

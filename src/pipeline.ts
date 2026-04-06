@@ -47,6 +47,7 @@ import {
 } from "./verificationPolicy.js";
 import { withFailureDiagnostic } from "./verificationDiagnostics.js";
 import { buildVerificationRunContext } from "./verificationRunContext.js";
+import { SQL_VERIFICATION_OUTCOME_CODE } from "./wireReasonCodes.js";
 
 function defaultTruthReportToStderr(report: string): void {
   process.stderr.write(`${report}\n`);
@@ -75,7 +76,7 @@ function buildDivergentStepOutcome(
     status: "incomplete_verification",
     reasons: [
       {
-        code: "RETRY_OBSERVATIONS_DIVERGE",
+        code: SQL_VERIFICATION_OUTCOME_CODE.RETRY_OBSERVATIONS_DIVERGE,
         message: RETRY_OBSERVATIONS_DIVERGE_MESSAGE,
       },
     ],
@@ -125,7 +126,7 @@ export function verifyToolObservedStep(options: {
       intendedEffect: `Unknown tool: ${ev.toolId}`,
       verificationRequest: null,
       status: "incomplete_verification",
-      reasons: [{ code: "UNKNOWN_TOOL", message: `Unknown toolId: ${ev.toolId}` }],
+      reasons: [{ code: SQL_VERIFICATION_OUTCOME_CODE.UNKNOWN_TOOL, message: `Unknown toolId: ${ev.toolId}` }],
       evidenceSummary: {},
       repeatObservationCount,
       evaluatedObservationOrdinal,
@@ -191,7 +192,7 @@ async function verifyToolObservedStepAsync(options: {
       intendedEffect: `Unknown tool: ${ev.toolId}`,
       verificationRequest: null,
       status: "incomplete_verification",
-      reasons: [{ code: "UNKNOWN_TOOL", message: `Unknown toolId: ${ev.toolId}` }],
+      reasons: [{ code: SQL_VERIFICATION_OUTCOME_CODE.UNKNOWN_TOOL, message: `Unknown toolId: ${ev.toolId}` }],
       evidenceSummary: {},
       repeatObservationCount,
       evaluatedObservationOrdinal,

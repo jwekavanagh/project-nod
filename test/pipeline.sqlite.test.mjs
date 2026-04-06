@@ -58,7 +58,7 @@ describe("verifyWorkflow integration", () => {
     assert.deepStrictEqual(r.eventSequenceIntegrity, { kind: "normal" });
   });
 
-  it("wf_complete eventual wiring → complete, schema v6 policy echoed", async () => {
+  it("wf_complete eventual wiring → complete, engine schema v7 policy echoed", async () => {
     const r = await verifyWorkflow({
       workflowId: "wf_complete",
       eventsPath,
@@ -72,7 +72,7 @@ describe("verifyWorkflow integration", () => {
         pollIntervalMs: 100,
       },
     });
-    assert.equal(r.schemaVersion, 9);
+    assert.equal(r.schemaVersion, 10);
     assert.equal(r.status, "complete");
     assert.equal(r.steps[0]?.status, "verified");
     assert.deepStrictEqual(r.verificationPolicy, {
@@ -165,13 +165,13 @@ describe("verifyWorkflow integration", () => {
       logStep: noopLog,
       truthReport: () => {},
     });
-    assert.equal(r.schemaVersion, 9);
+    assert.equal(r.schemaVersion, 10);
     assert.equal(r.status, "complete");
     assert.equal(r.steps.length, 1);
     assert.equal(r.steps[0]?.status, "verified");
     assert.equal(r.steps[0]?.repeatObservationCount, 2);
     assert.equal(r.steps[0]?.evaluatedObservationOrdinal, 2);
-    assert.ok(!r.runLevelCodes.includes("DUPLICATE_SEQ"));
+    assert.ok(!r.runLevelReasons.map((x) => x.code).includes("DUPLICATE_SEQ"));
   });
 
   it("wf_divergent_retry → RETRY_OBSERVATIONS_DIVERGE", async () => {
@@ -358,7 +358,10 @@ describe("verifyWorkflow integration", () => {
       truthReport: () => {},
     });
     assert.equal(r.status, "incomplete");
-    assert.deepStrictEqual(r.runLevelCodes, ["MALFORMED_EVENT_LINE", "NO_STEPS_FOR_WORKFLOW"]);
+    assert.deepStrictEqual(r.runLevelReasons.map((x) => x.code), [
+      "MALFORMED_EVENT_LINE",
+      "NO_STEPS_FOR_WORKFLOW",
+    ]);
     assert.equal(r.runLevelReasons.length, 2);
   });
 
@@ -373,7 +376,7 @@ describe("verifyWorkflow integration", () => {
     });
     assert.equal(r.status, "incomplete");
     assert.equal(r.steps.length, 0);
-    assert.deepStrictEqual(r.runLevelCodes, ["NO_STEPS_FOR_WORKFLOW"]);
+    assert.deepStrictEqual(r.runLevelReasons.map((x) => x.code), ["NO_STEPS_FOR_WORKFLOW"]);
     assert.equal(r.runLevelReasons[0]?.code, "NO_STEPS_FOR_WORKFLOW");
   });
 

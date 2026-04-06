@@ -21,8 +21,6 @@ export function aggregateWorkflow(
   if (steps.length === 0) {
     runLevelReasons.push(runLevelIssue("NO_STEPS_FOR_WORKFLOW"));
   }
-  const runLevelCodes = runLevelReasons.map((r) => r.code);
-
   let status: WorkflowStatus;
 
   const hasIncompleteStep = steps.some((s) => s.status === "incomplete_verification");
@@ -30,7 +28,7 @@ export function aggregateWorkflow(
     (s) => s.status === "missing" || s.status === "inconsistent" || s.status === "partially_verified",
   );
 
-  if (runLevelCodes.length > 0 || steps.length === 0 || hasIncompleteStep) {
+  if (runLevelReasons.length > 0 || steps.length === 0 || hasIncompleteStep) {
     status = "incomplete";
   } else if (hasBadRealWorld) {
     status = "inconsistent";
@@ -43,10 +41,9 @@ export function aggregateWorkflow(
   const enrichedSteps = enrichStepsWithFailureDiagnostics(steps);
 
   return {
-    schemaVersion: 6,
+    schemaVersion: 7,
     workflowId,
     status,
-    runLevelCodes: [...runLevelCodes],
     runLevelReasons: [...runLevelReasons],
     verificationPolicy,
     eventSequenceIntegrity,

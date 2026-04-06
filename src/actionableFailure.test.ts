@@ -23,10 +23,9 @@ const strongPolicy = {
 
 function baseEngine(partial: Partial<WorkflowEngineResult>): WorkflowEngineResult {
   return {
-    schemaVersion: 6,
+    schemaVersion: 7,
     workflowId: "w",
     status: "incomplete",
-    runLevelCodes: [],
     runLevelReasons: [],
     verificationPolicy: strongPolicy,
     eventSequenceIntegrity: { kind: "normal" },

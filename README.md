@@ -51,7 +51,11 @@ npm install
 npm start
 ```
 
-**`npm start`** (same as **`npm run first-run`**) builds, seeds **`examples/demo.db`** from **`examples/seed.sql`**, then runs two workflows from bundled **`examples/events.ndjson`** and **`examples/tools.json`:**
+**`npm install`** does **not** run TypeScript compilation (there is no **`prepare`** hook). After clone, run **`npm run build`** before **`node dist/cli.js`** so **`dist/`** exists and FailureOrigin types are synced from the schema.
+
+**`npm start`** runs **`npm run build`** then **`node scripts/first-run.mjs`**: it seeds **`examples/demo.db`** from **`examples/seed.sql`**, then runs two workflows from bundled **`examples/events.ndjson`** and **`examples/tools.json`** (below). **`npm run first-run`** alone only runs that demo step—use it when **`dist/`** is already built.
+
+**Workflow result stdout:** emitted JSON uses **`schemaVersion` `10`**. The **`runLevelCodes`** property is **not** present on v10 objects; use **`runLevelReasons[].code`** when you need run-level codes. Frozen **v9** documents (with **`runLevelCodes`**) exist **only** for compare ingress and corpus bundles—see [`schemas/workflow-result-v9.schema.json`](schemas/workflow-result-v9.schema.json) and compare-input **`oneOf`** in [`schemas/workflow-result-compare-input.schema.json`](schemas/workflow-result-compare-input.schema.json) (**engine v7 → frozen v9 → stdout v10**). CI machine I/O contract: [`test/ci-workflow-truth-postgres-contract.test.mjs`](test/ci-workflow-truth-postgres-contract.test.mjs) / **`npm run test:workflow-truth-contract`**.
 
 1. **`wf_complete`** — the log matches the database → **complete** / **verified** in the JSON.
 2. **`wf_missing`** — the log claims a contact id that **does not exist** in the DB → **inconsistent** / **missing** with reason code **`ROW_ABSENT`** in the JSON (a failure that is easy to miss if you only read the agent’s narrative).
@@ -128,7 +132,7 @@ npm run test:ci
 
 ## Advanced topics (normative detail only in SSOT)
 
-Schema versions (**`schemaVersion` `9`** on emitted **`WorkflowResult`**, engine shape **`6`**, truth subtree **`schemaVersion` `4`** with **`failureAnalysis`**, **`actionableFailure`**, **`executionPathFindings`**, **`executionPathSummary`**, and **`verificationRunContext`**), **`workflowTruthReport`**, **`verificationPolicy`**, **`eventSequenceIntegrity`**, **`failureDiagnostic`**, CLI stderr envelope **`schemaVersion` `2`** with **`failureDiagnosis`** (including **`actionableFailure`**), **`verify-workflow compare`** inputs and **`RunComparisonReport`** v2 actionable aggregates, **strong** vs **eventual** consistency, Postgres session guards, and **`test:workflow-truth-contract`** / **`ci-workflow-truth-postgres-contract.test.mjs`** are specified in **[docs/execution-truth-layer.md](docs/execution-truth-layer.md)**—not duplicated here.
+Schema versions (**`schemaVersion` `10`** on emitted **`WorkflowResult`** without **`runLevelCodes`**, engine shape **`7`**, truth subtree **`schemaVersion` `4`** with **`failureAnalysis`**, **`actionableFailure`**, **`executionPathFindings`**, **`executionPathSummary`**, and **`verificationRunContext`**), **`workflowTruthReport`**, **`verificationPolicy`**, **`eventSequenceIntegrity`**, **`failureDiagnostic`**, CLI stderr envelope **`schemaVersion` `2`** with **`failureDiagnosis`** (including **`actionableFailure`**), **`verify-workflow compare`** inputs (**`workflow-result-compare-input.schema.json`**: engine v7 / frozen v9 / stdout v10) and **`RunComparisonReport`** v2 actionable aggregates, **strong** vs **eventual** consistency, Postgres session guards, and **`test:workflow-truth-contract`** / **`ci-workflow-truth-postgres-contract.test.mjs`** are specified in **[docs/execution-truth-layer.md](docs/execution-truth-layer.md)**—not duplicated here.
 
 ## License
 

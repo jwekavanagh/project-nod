@@ -6,6 +6,9 @@
       "$ref": "https://execution-truth-layer/schemas/workflow-engine-result.schema.json"
     },
     {
+      "$ref": "https://execution-truth-layer/schemas/workflow-result-v9.schema.json"
+    },
+    {
       "$ref": "https://execution-truth-layer/schemas/workflow-result.schema.json"
     }
   ]

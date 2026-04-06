@@ -3,7 +3,10 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { loadEventsForWorkflow } from "./loadEvents.js";
 import { loadSchemaValidator } from "./schemaLoad.js";
+import { CLI_OPERATIONAL_CODES } from "./cliOperationalCodes.js";
 import { TruthLayerError } from "./truthLayerError.js";
+import { WORKFLOW_RESULT_RUN_LEVEL_CODES_MISMATCH_MESSAGE } from "./runLevelDriftMessages.js";
+import { isV9RunLevelCodesInconsistent } from "./workflowRunLevelConsistency.js";
 import type { WorkflowResult } from "./types.js";
 import { normalizeToEmittedWorkflowResult } from "./workflowResultNormalize.js";
 import { sha256Hex, type AgentRunRecord } from "./agentRunRecord.js";
@@ -65,6 +68,7 @@ export type CorpusRunLoadedError = {
 export type CorpusRunOutcome = CorpusRunLoadedOk | CorpusRunLoadedError;
 
 const validateWorkflowResult = loadSchemaValidator("workflow-result");
+const validateWorkflowResultV9 = loadSchemaValidator("workflow-result-v9");
 const validateAgentRunRecord = loadSchemaValidator("agent-run-record");
 
 function isSafeRunId(runId: string): boolean {
@@ -377,7 +381,29 @@ export function loadCorpusRun(corpusRootReal: string, runId: string): CorpusRunO
     };
   }
 
-  if (!validateWorkflowResult(wrParsed)) {
+  if (isV9RunLevelCodesInconsistent(wrParsed)) {
+    return {
+      loadStatus: "error",
+      runId,
+      error: {
+        code: CLI_OPERATIONAL_CODES.WORKFLOW_RESULT_RUN_LEVEL_CODES_MISMATCH,
+        message: WORKFLOW_RESULT_RUN_LEVEL_CODES_MISMATCH_MESSAGE,
+        path: wrPathResolved,
+      },
+      pathsTried: { agentRun: agentRunPath, workflowResult: wrPathResolved, events: evPathResolved },
+      rawPreview: readUtf8Preview(wrPathResolved, 8192),
+      capturedAtEffectiveMs: capturedAtEffectiveMs(record, wrPathResolved),
+    };
+  }
+
+  const wrSchemaVersion = (wrParsed as { schemaVersion?: unknown }).schemaVersion;
+  const wrValid =
+    wrSchemaVersion === 9 ? validateWorkflowResultV9(wrParsed) : validateWorkflowResult(wrParsed);
+  if (!wrValid) {
+    const details =
+      wrSchemaVersion === 9
+        ? (validateWorkflowResultV9.errors ?? [])
+        : (validateWorkflowResult.errors ?? []);
     return {
       loadStatus: "error",
       runId,
@@ -385,7 +411,7 @@ export function loadCorpusRun(corpusRootReal: string, runId: string): CorpusRunO
         code: DEBUG_CORPUS_CODES.WORKFLOW_RESULT_INVALID,
         message: "workflow-result.json failed workflow-result schema validation.",
         path: wrPathResolved,
-        details: validateWorkflowResult.errors ?? [],
+        details,
       },
       pathsTried: { agentRun: agentRunPath, workflowResult: wrPathResolved, events: evPathResolved },
       rawPreview: readUtf8Preview(wrPathResolved, 8192),

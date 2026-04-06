@@ -35,6 +35,8 @@ import {
   WORKFLOW_RESULT_FILENAME,
 } from "./debugCorpus.js";
 import { buildAgentRunRecordForBundle } from "./agentRunRecord.js";
+import { COMPARE_INPUT_RUN_LEVEL_INCONSISTENT_MESSAGE } from "./runLevelDriftMessages.js";
+import { isV9RunLevelCodesInconsistent } from "./workflowRunLevelConsistency.js";
 
 function argValue(args: string[], name: string): string | undefined {
   const i = args.indexOf(name);
@@ -489,6 +491,13 @@ function runCompareSubcommand(args: string[]): void {
     } catch (e) {
       const msg = e instanceof Error ? e.message : String(e);
       writeCliError(CLI_OPERATIONAL_CODES.COMPARE_INPUT_JSON_SYNTAX, formatOperationalMessage(msg));
+      process.exit(3);
+    }
+    if (isV9RunLevelCodesInconsistent(parsed)) {
+      writeCliError(
+        CLI_OPERATIONAL_CODES.COMPARE_INPUT_RUN_LEVEL_INCONSISTENT,
+        COMPARE_INPUT_RUN_LEVEL_INCONSISTENT_MESSAGE,
+      );
       process.exit(3);
     }
     if (!validateCompareInput(parsed)) {

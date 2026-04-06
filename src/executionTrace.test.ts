@@ -148,10 +148,9 @@ describe("buildExecutionTraceView", () => {
       },
     ];
     const engine: WorkflowEngineResult = {
-      schemaVersion: 6,
+      schemaVersion: 7,
       workflowId: "w",
       status: "complete",
-      runLevelCodes: [],
       runLevelReasons: [],
       verificationPolicy: {
         consistencyMode: "strong",

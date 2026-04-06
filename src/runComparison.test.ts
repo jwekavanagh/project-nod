@@ -5,6 +5,7 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 import { CLI_OPERATIONAL_CODES } from "./failureCatalog.js";
+import { COMPARE_INPUT_RUN_LEVEL_INCONSISTENT_MESSAGE } from "./runLevelDriftMessages.js";
 import { loadSchemaValidator } from "./schemaLoad.js";
 import {
   buildRunComparisonReport,
@@ -51,10 +52,9 @@ function sqlRowStep(
 function wf(steps: StepOutcome[], id = "wf_cmp"): WorkflowResult {
   const bad = steps.some((s) => s.status !== "verified");
   const engine: WorkflowEngineResult = {
-    schemaVersion: 6,
+    schemaVersion: 7,
     workflowId: id,
     status: bad ? "inconsistent" : "complete",
-    runLevelCodes: [],
     runLevelReasons: [],
     verificationPolicy: {
       consistencyMode: "strong",
@@ -131,12 +131,10 @@ describe("runComparison", () => {
         { code: "A", message: "a" },
         { code: "A", message: "a2" },
       ],
-      runLevelCodes: ["A", "A"],
     };
     const r1: WorkflowResult = {
       ...wf([sqlRowStep(0, "t", "x", true)]),
       runLevelReasons: [{ code: "A", message: "a" }],
-      runLevelCodes: ["A"],
     };
     const report = buildRunComparisonReport([r0, r1], ["a", "b"]);
     assertReportValid(report);
@@ -261,10 +259,9 @@ describe("runComparison", () => {
 
   it("actionableCategoryRecurrence: streaks and indices along compare order", () => {
     const engMalformed = (): WorkflowEngineResult => ({
-      schemaVersion: 6,
+      schemaVersion: 7,
       workflowId: "w",
       status: "incomplete",
-      runLevelCodes: ["MALFORMED_EVENT_LINE"],
       runLevelReasons: [{ code: "MALFORMED_EVENT_LINE", message: "bad" }],
       verificationPolicy: {
         consistencyMode: "strong",
@@ -276,10 +273,9 @@ describe("runComparison", () => {
       steps: [],
     });
     const engDup = (): WorkflowEngineResult => ({
-      schemaVersion: 6,
+      schemaVersion: 7,
       workflowId: "w",
       status: "inconsistent",
-      runLevelCodes: [],
       runLevelReasons: [],
       verificationPolicy: {
         consistencyMode: "strong",
@@ -350,6 +346,37 @@ describe("runComparison", () => {
       const v = loadSchemaValidator("run-comparison-report");
       expect(v(JSON.parse(out))).toBe(true);
       expect(proc.stderr).toContain("cross_run_comparison:");
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
+  it("CLI compare v9 runLevel drift: exit 3 COMPARE_INPUT_RUN_LEVEL_INCONSISTENT", () => {
+    const golden = JSON.parse(
+      readFileSync(join(root, "test", "golden", "wf_multi_ok.stdout.json"), "utf8"),
+    ) as WorkflowResult;
+    const dir = mkdtempSync(join(tmpdir(), "etl-cmp-rl-"));
+    try {
+      const drifting = {
+        ...golden,
+        schemaVersion: 9,
+        runLevelCodes: ["A"],
+        runLevelReasons: [{ code: "B", message: "mismatch" }],
+      };
+      const p1 = join(dir, "bad.json");
+      const p2 = join(dir, "ok.json");
+      writeFileSync(p1, JSON.stringify(drifting));
+      writeFileSync(p2, JSON.stringify(golden));
+      const proc = spawnSync(
+        process.execPath,
+        ["--no-warnings", cliJs, "compare", "--prior", p1, "--current", p2],
+        { encoding: "utf8", cwd: root },
+      );
+      expect(proc.status).toBe(3);
+      expect(proc.stdout.trim()).toBe("");
+      const err = JSON.parse(proc.stderr.trim());
+      expect(err.code).toBe(CLI_OPERATIONAL_CODES.COMPARE_INPUT_RUN_LEVEL_INCONSISTENT);
+      expect(err.message).toBe(COMPARE_INPUT_RUN_LEVEL_INCONSISTENT_MESSAGE);
     } finally {
       rmSync(dir, { recursive: true, force: true });
     }

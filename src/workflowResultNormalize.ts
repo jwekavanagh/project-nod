@@ -12,9 +12,12 @@ export function workflowEngineResultFromEmitted(emitted: WorkflowResult): Workfl
     verificationRunContext: ctxIn,
     ...rest
   } = emitted;
+  const { runLevelCodes: _dropLegacyRunLevelCodes, ...engineFields } = rest as typeof rest & {
+    runLevelCodes?: string[];
+  };
   return {
-    ...rest,
-    schemaVersion: 6,
+    ...engineFields,
+    schemaVersion: 7,
     verificationRunContext: ctxIn ?? createEmptyVerificationRunContext(),
   };
 }
@@ -34,7 +37,7 @@ export function normalizeToEmittedWorkflowResult(
     const { schemaVersion: _s, ...rest } = p5;
     return finalizeEmittedWorkflowResult({
       ...rest,
-      schemaVersion: 6,
+      schemaVersion: 7,
       verificationRunContext: createEmptyVerificationRunContext(),
     });
   }

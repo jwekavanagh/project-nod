@@ -31,9 +31,11 @@ export type SchemaValidatorName =
   | "workflow-engine-result"
   | "workflow-truth-report"
   | "workflow-result"
+  | "workflow-result-v9"
   | "workflow-result-compare-input"
   | "run-comparison-report"
-  | "registry-validation-result";
+  | "registry-validation-result"
+  | "cli-error-envelope";
 
 const validatorCache: Partial<Record<SchemaValidatorName, ValidateFunction>> = {};
 
@@ -66,7 +68,12 @@ function ensureWorkflowEmittedDependencies(): void {
 /** Ensures all branches of compare-input are registered before compiling compare-input. */
 function ensureCompareInputDependencies(): void {
   ensureWorkflowEmittedDependencies();
+  compileSchemaFile("workflow-result-v9", "workflow-result-v9.schema.json");
   compileSchemaFile("workflow-result", "workflow-result.schema.json");
+}
+
+function ensureWorkflowTruthForWireRefs(): void {
+  compileSchemaFile("workflow-truth-report", "workflow-truth-report.schema.json");
 }
 
 export function loadSchemaValidator(name: SchemaValidatorName): ValidateFunction {
@@ -78,9 +85,15 @@ export function loadSchemaValidator(name: SchemaValidatorName): ValidateFunction
     case "workflow-result":
       ensureWorkflowEmittedDependencies();
       return compileSchemaFile(name, "workflow-result.schema.json");
+    case "workflow-result-v9":
+      ensureWorkflowEmittedDependencies();
+      return compileSchemaFile(name, "workflow-result-v9.schema.json");
     case "workflow-result-compare-input":
       ensureCompareInputDependencies();
       return compileSchemaFile(name, "workflow-result-compare-input.schema.json");
+    case "cli-error-envelope":
+      ensureWorkflowTruthForWireRefs();
+      return compileSchemaFile(name, "cli-error-envelope.schema.json");
     case "agent-run-record":
       return compileSchemaFile(name, "agent-run-record.schema.json");
     case "event":
@@ -90,6 +103,7 @@ export function loadSchemaValidator(name: SchemaValidatorName): ValidateFunction
     case "tools-registry":
       return compileSchemaFile(name, "tools-registry.schema.json");
     case "run-comparison-report":
+      ensureWorkflowTruthForWireRefs();
       return compileSchemaFile(name, "run-comparison-report.schema.json");
     case "registry-validation-result":
       return compileSchemaFile(name, "registry-validation-result.schema.json");

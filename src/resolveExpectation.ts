@@ -8,6 +8,7 @@ import type {
 } from "./types.js";
 import { CLI_OPERATIONAL_CODES } from "./failureCatalog.js";
 import { TruthLayerError } from "./truthLayerError.js";
+import { REGISTRY_RESOLVER_CODE } from "./wireReasonCodes.js";
 
 const IDENT = /^[a-zA-Z_][a-zA-Z0-9_]*$/;
 
@@ -29,19 +30,35 @@ function resolveStringSpec(
   if ("const" in spec) {
     const v = spec.const;
     if (typeof v !== "string" || v.length === 0) {
-      return { ok: false, code: "CONST_STRING_EMPTY", message: `${label}: const must be non-empty string` };
+      return {
+        ok: false,
+        code: REGISTRY_RESOLVER_CODE.CONST_STRING_EMPTY,
+        message: `${label}: const must be non-empty string`,
+      };
     }
     return { ok: true, value: v };
   }
   const got = getPointer(params, spec.pointer);
   if (got === undefined || got === null) {
-    return { ok: false, code: "STRING_SPEC_POINTER_MISSING", message: `${label}: missing at ${spec.pointer}` };
+    return {
+      ok: false,
+      code: REGISTRY_RESOLVER_CODE.STRING_SPEC_POINTER_MISSING,
+      message: `${label}: missing at ${spec.pointer}`,
+    };
   }
   if (typeof got !== "string") {
-    return { ok: false, code: "STRING_SPEC_TYPE", message: `${label}: expected string at ${spec.pointer}` };
+    return {
+      ok: false,
+      code: REGISTRY_RESOLVER_CODE.STRING_SPEC_TYPE,
+      message: `${label}: expected string at ${spec.pointer}`,
+    };
   }
   if (got.length === 0) {
-    return { ok: false, code: "STRING_SPEC_EMPTY", message: `${label}: empty string at ${spec.pointer}` };
+    return {
+      ok: false,
+      code: REGISTRY_RESOLVER_CODE.STRING_SPEC_EMPTY,
+      message: `${label}: empty string at ${spec.pointer}`,
+    };
   }
   return { ok: true, value: got };
 }
@@ -57,14 +74,22 @@ function resolveKeyValue(
     const ptr = (spec as { pointer: string }).pointer;
     const got = getPointer(params, ptr);
     if (got === undefined || got === null) {
-      return { ok: false, code: "KEY_VALUE_POINTER_MISSING", message: `key.value missing at ${ptr}` };
+      return {
+        ok: false,
+        code: REGISTRY_RESOLVER_CODE.KEY_VALUE_POINTER_MISSING,
+        message: `key.value missing at ${ptr}`,
+      };
     }
     if (typeof got === "object") {
-      return { ok: false, code: "KEY_VALUE_NOT_SCALAR", message: `key.value must be scalar at ${ptr}` };
+      return {
+        ok: false,
+        code: REGISTRY_RESOLVER_CODE.KEY_VALUE_NOT_SCALAR,
+        message: `key.value must be scalar at ${ptr}`,
+      };
     }
     return { ok: true, value: String(got) };
   }
-  return { ok: false, code: "KEY_VALUE_SPEC_INVALID", message: "key.value: invalid spec" };
+  return { ok: false, code: REGISTRY_RESOLVER_CODE.KEY_VALUE_SPEC_INVALID, message: "key.value: invalid spec" };
 }
 
 function resolveSqlRowSpec(
@@ -82,13 +107,17 @@ function resolveSqlRowSpec(
             if (got === undefined || got === null || typeof got !== "string" || got.length === 0) {
               return {
                 ok: false as const,
-                code: "TABLE_POINTER_INVALID",
+                code: REGISTRY_RESOLVER_CODE.TABLE_POINTER_INVALID,
                 message: `${labelPrefix}table: expected non-empty string at ${tptr}`,
               };
             }
             return { ok: true as const, value: got };
           })()
-        : { ok: false as const, code: "TABLE_SPEC_INVALID", message: `${labelPrefix}table: invalid spec` };
+        : {
+            ok: false as const,
+            code: REGISTRY_RESOLVER_CODE.TABLE_SPEC_INVALID,
+            message: `${labelPrefix}table: invalid spec`,
+          };
 
   if (!tableRes.ok) return tableRes;
 
@@ -100,24 +129,32 @@ function resolveSqlRowSpec(
   }
 
   if (!IDENT.test(tableRes.value)) {
-    return { ok: false, code: "INVALID_IDENTIFIER", message: `${labelPrefix}table: ${tableRes.value}` };
+    return {
+      ok: false,
+      code: REGISTRY_RESOLVER_CODE.INVALID_IDENTIFIER,
+      message: `${labelPrefix}table: ${tableRes.value}`,
+    };
   }
   if (!IDENT.test(colRes.value)) {
-    return { ok: false, code: "INVALID_IDENTIFIER", message: `${labelPrefix}key.column: ${colRes.value}` };
+    return {
+      ok: false,
+      code: REGISTRY_RESOLVER_CODE.INVALID_IDENTIFIER,
+      message: `${labelPrefix}key.column: ${colRes.value}`,
+    };
   }
 
   const fieldsRaw = getPointer(params, spec.requiredFields.pointer);
   if (fieldsRaw === undefined || fieldsRaw === null) {
     return {
       ok: false,
-      code: "REQUIRED_FIELDS_POINTER_MISSING",
+      code: REGISTRY_RESOLVER_CODE.REQUIRED_FIELDS_POINTER_MISSING,
       message: `${labelPrefix}requiredFields missing at ${spec.requiredFields.pointer}`,
     };
   }
   if (typeof fieldsRaw !== "object" || Array.isArray(fieldsRaw)) {
     return {
       ok: false,
-      code: "REQUIRED_FIELDS_NOT_OBJECT",
+      code: REGISTRY_RESOLVER_CODE.REQUIRED_FIELDS_NOT_OBJECT,
       message: `${labelPrefix}requiredFields must be object at ${spec.requiredFields.pointer}`,
     };
   }
@@ -125,20 +162,24 @@ function resolveSqlRowSpec(
   const requiredFields: Record<string, VerificationScalar> = {};
   for (const k of Object.keys(fieldsRaw as Record<string, unknown>)) {
     if (!IDENT.test(k)) {
-      return { ok: false, code: "INVALID_IDENTIFIER", message: `${labelPrefix}requiredFields key: ${k}` };
+      return {
+        ok: false,
+        code: REGISTRY_RESOLVER_CODE.INVALID_IDENTIFIER,
+        message: `${labelPrefix}requiredFields key: ${k}`,
+      };
     }
     const val = (fieldsRaw as Record<string, unknown>)[k];
     if (val === undefined) {
       return {
         ok: false,
-        code: "REQUIRED_FIELDS_VALUE_UNDEFINED",
+        code: REGISTRY_RESOLVER_CODE.REQUIRED_FIELDS_VALUE_UNDEFINED,
         message: `${labelPrefix}requiredFields.${k} must not be undefined`,
       };
     }
     if (typeof val === "object" && val !== null) {
       return {
         ok: false,
-        code: "REQUIRED_FIELDS_VALUE_NOT_SCALAR",
+        code: REGISTRY_RESOLVER_CODE.REQUIRED_FIELDS_VALUE_NOT_SCALAR,
         message: `${labelPrefix}requiredFields.${k} must be string, number, boolean, or null`,
       };
     }
@@ -147,7 +188,7 @@ function resolveSqlRowSpec(
     } else {
       return {
         ok: false,
-        code: "REQUIRED_FIELDS_VALUE_NOT_SCALAR",
+        code: REGISTRY_RESOLVER_CODE.REQUIRED_FIELDS_VALUE_NOT_SCALAR,
         message: `${labelPrefix}requiredFields.${k} must be string, number, boolean, or null`,
       };
     }
@@ -181,7 +222,11 @@ export function resolveVerificationRequest(entry: ToolRegistryEntry, params: Rec
     return { ok: true, verificationKind: "sql_row", request: row.request };
   }
   if (v.kind !== "sql_effects") {
-    return { ok: false, code: "UNSUPPORTED_VERIFICATION_KIND", message: "unsupported verification kind" };
+    return {
+      ok: false,
+      code: REGISTRY_RESOLVER_CODE.UNSUPPORTED_VERIFICATION_KIND,
+      message: "unsupported verification kind",
+    };
   }
 
   const seen = new Set<string>();
@@ -190,7 +235,7 @@ export function resolveVerificationRequest(entry: ToolRegistryEntry, params: Rec
     if (seen.has(item.id)) {
       return {
         ok: false,
-        code: "DUPLICATE_EFFECT_ID",
+        code: REGISTRY_RESOLVER_CODE.DUPLICATE_EFFECT_ID,
         message: `Duplicate effect id in registry: ${item.id}`,
       };
     }

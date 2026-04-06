@@ -1,6 +1,6 @@
 {
-  "$id": "https://execution-truth-layer/schemas/workflow-result.schema.json",
-  "title": "WorkflowResult",
+  "$id": "https://execution-truth-layer/schemas/workflow-result-v9.schema.json",
+  "title": "WorkflowResultV9",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -8,6 +8,7 @@
     "workflowId",
     "status",
     "steps",
+    "runLevelCodes",
     "runLevelReasons",
     "verificationPolicy",
     "eventSequenceIntegrity",
@@ -15,11 +16,15 @@
     "workflowTruthReport"
   ],
   "properties": {
-    "schemaVersion": { "const": 10 },
+    "schemaVersion": { "const": 9 },
     "workflowId": { "type": "string" },
     "status": {
       "type": "string",
       "enum": ["complete", "incomplete", "inconsistent"]
+    },
+    "runLevelCodes": {
+      "type": "array",
+      "items": { "type": "string" }
     },
     "runLevelReasons": {
       "type": "array",

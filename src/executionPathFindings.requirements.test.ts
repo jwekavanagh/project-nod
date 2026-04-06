@@ -25,8 +25,7 @@ function baseEngine(
     Pick<WorkflowEngineResult, "workflowId" | "status" | "steps">,
 ): WorkflowEngineResult {
   return {
-    schemaVersion: 6,
-    runLevelCodes: [],
+    schemaVersion: 7,
     runLevelReasons: [],
     verificationPolicy: strongPolicy,
     eventSequenceIntegrity: { kind: "normal" },

@@ -247,7 +247,7 @@ export function buildWorkflowTruthReport(engine: WorkflowEngineResult): Workflow
 export function finalizeEmittedWorkflowResult(engine: WorkflowEngineResult): WorkflowResult {
   return {
     ...engine,
-    schemaVersion: 9,
+    schemaVersion: 10,
     workflowTruthReport: buildWorkflowTruthReport(engine),
   };
 }

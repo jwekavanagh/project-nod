@@ -22,19 +22,10 @@
       "properties": {
         "summary": { "type": "string", "maxLength": 2048 },
         "primaryOrigin": {
-          "type": "string",
-          "enum": [
-            "decision_making",
-            "inputs",
-            "retrieval",
-            "tool_use",
-            "workflow_flow",
-            "downstream_system_state"
-          ]
+          "$ref": "https://execution-truth-layer/schemas/workflow-truth-report.schema.json#/$defs/failureOrigin"
         },
         "confidence": {
-          "type": "string",
-          "enum": ["high", "medium", "low"]
+          "$ref": "https://execution-truth-layer/schemas/workflow-truth-report.schema.json#/$defs/failureConfidence"
         },
         "evidence": {
           "type": "array",
@@ -49,28 +40,7 @@
           }
         },
         "actionableFailure": {
-          "type": "object",
-          "additionalProperties": false,
-          "required": ["category", "severity"],
-          "properties": {
-            "category": {
-              "type": "string",
-              "enum": [
-                "decision_error",
-                "bad_input",
-                "retrieval_failure",
-                "control_flow_problem",
-                "state_inconsistency",
-                "downstream_execution_failure",
-                "ambiguous",
-                "unclassified"
-              ]
-            },
-            "severity": {
-              "type": "string",
-              "enum": ["high", "medium", "low"]
-            }
-          }
+          "$ref": "https://execution-truth-layer/schemas/workflow-truth-report.schema.json#/$defs/actionableFailure"
         }
       }
     }

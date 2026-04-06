@@ -8,22 +8,17 @@
     "workflowId",
     "status",
     "steps",
-    "runLevelCodes",
     "runLevelReasons",
     "verificationPolicy",
     "eventSequenceIntegrity",
     "verificationRunContext"
   ],
   "properties": {
-    "schemaVersion": { "const": 6 },
+    "schemaVersion": { "const": 7 },
     "workflowId": { "type": "string" },
     "status": {
       "type": "string",
       "enum": ["complete", "incomplete", "inconsistent"]
-    },
-    "runLevelCodes": {
-      "type": "array",
-      "items": { "type": "string" }
     },
     "runLevelReasons": {
       "type": "array",

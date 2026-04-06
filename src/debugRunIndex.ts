@@ -22,7 +22,7 @@ export type RunListItem = {
 
 function primaryCodesFromResult(r: WorkflowResult): string[] {
   const set = new Set<string>();
-  for (const c of r.runLevelCodes) set.add(c);
+  for (const c of r.runLevelReasons.map((x) => x.code)) set.add(c);
   for (const s of r.steps) {
     const first = s.reasons[0]?.code;
     if (first) set.add(first);

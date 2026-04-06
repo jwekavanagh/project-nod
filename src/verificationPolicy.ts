@@ -13,6 +13,7 @@ import type {
   VerificationRequest,
 } from "./types.js";
 import { TruthLayerError } from "./truthLayerError.js";
+import { SQL_VERIFICATION_OUTCOME_CODE } from "./wireReasonCodes.js";
 
 export const DEFAULT_VERIFICATION_POLICY: VerificationPolicy = {
   consistencyMode: "strong",
@@ -159,7 +160,7 @@ function buildUncertainSqlRow(
     status: "uncertain",
     reasons: [
       {
-        code: "ROW_NOT_OBSERVED_WITHIN_WINDOW",
+        code: SQL_VERIFICATION_OUTCOME_CODE.ROW_NOT_OBSERVED_WITHIN_WINDOW,
         message:
           "No row matched the key within the verification window; replication or processing delay is possible.",
       },
@@ -206,7 +207,7 @@ function buildUncertainSqlEffects(
     status: "uncertain",
     reasons: [
       {
-        code: "MULTI_EFFECT_UNCERTAIN_WITHIN_WINDOW",
+        code: SQL_VERIFICATION_OUTCOME_CODE.MULTI_EFFECT_UNCERTAIN_WITHIN_WINDOW,
         message: `Not all effects were observable within the verification window; replication or processing delay is possible (effects: ${rows
           .map((r) => r.id)
           .sort(compareUtf16Id)

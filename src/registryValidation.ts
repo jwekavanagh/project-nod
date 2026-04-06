@@ -11,6 +11,7 @@ import { buildRegistryMap, resolveVerificationRequest } from "./resolveExpectati
 import { loadSchemaValidator } from "./schemaLoad.js";
 import { TruthLayerError } from "./truthLayerError.js";
 import type { ToolRegistryEntry } from "./types.js";
+import { REGISTRY_VALIDATION_CODE } from "./wireReasonCodes.js";
 
 const validateToolsRegistrySchema = loadSchemaValidator("tools-registry");
 
@@ -37,7 +38,7 @@ export type ResolutionSkipped = {
   workflowId: string;
   seq: number;
   toolId: string;
-  code: "RETRY_OBSERVATIONS_DIVERGE";
+  code: typeof REGISTRY_VALIDATION_CODE.RETRY_OBSERVATIONS_DIVERGE;
   message: string;
 };
 
@@ -127,7 +128,7 @@ export function formatRegistryValidationHumanReport(result: RegistryValidationRe
     lines.push(`- structural (${s.kind}): ${s.message}`);
   }
   for (const r of sortedResolutionIssues(result.resolutionIssues)) {
-    if (r.code === "NO_STEPS_FOR_WORKFLOW") {
+    if (r.code === REGISTRY_VALIDATION_CODE.NO_STEPS_FOR_WORKFLOW) {
       lines.push(`- resolution (${r.code}): ${r.message}`);
     } else {
       lines.push(
@@ -224,7 +225,7 @@ export function validateToolsRegistry(input: {
         resolutionIssues: [
           {
             workflowId: wfid,
-            code: "NO_STEPS_FOR_WORKFLOW",
+            code: REGISTRY_VALIDATION_CODE.NO_STEPS_FOR_WORKFLOW,
             message: RUN_LEVEL_MESSAGES.NO_STEPS_FOR_WORKFLOW,
             seq: null,
             toolId: null,
@@ -245,7 +246,7 @@ export function validateToolsRegistry(input: {
           workflowId: wfid,
           seq: plan.seq,
           toolId: last.toolId,
-          code: "RETRY_OBSERVATIONS_DIVERGE",
+          code: REGISTRY_VALIDATION_CODE.RETRY_OBSERVATIONS_DIVERGE,
           message: RETRY_OBSERVATIONS_DIVERGE_MESSAGE,
         });
         continue;
@@ -254,7 +255,7 @@ export function validateToolsRegistry(input: {
       if (!entry) {
         resolutionIssues.push({
           workflowId: wfid,
-          code: "UNKNOWN_TOOL",
+          code: REGISTRY_VALIDATION_CODE.UNKNOWN_TOOL,
           message: `Unknown toolId: ${last.toolId}`,
           seq: last.seq,
           toolId: last.toolId,

@@ -1,11 +1,4 @@
-/** Shared FailureOrigin literals (no runtime deps). Schema + catalog must stay aligned. */
-export const FAILURE_ORIGINS = [
-  "decision_making",
-  "inputs",
-  "retrieval",
-  "tool_use",
-  "workflow_flow",
-  "downstream_system_state",
-] as const;
+/** Re-exports generated FailureOrigin literals (schema is sole authority; see scripts/sync-failure-origin-from-schema.mjs). */
 
-export type FailureOrigin = (typeof FAILURE_ORIGINS)[number];
+export type { FailureOrigin } from "./failureOriginTypes.generated.js";
+export { FAILURE_ORIGINS } from "./failureOriginTypes.generated.js";

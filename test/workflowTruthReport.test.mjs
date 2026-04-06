@@ -167,11 +167,10 @@ steps:
 describe("formatWorkflowTruthReport", () => {
   it("golden complete / inconsistent missing / incomplete unknown tool", () => {
     const complete = {
-      schemaVersion: 6,
+      schemaVersion: 7,
       verificationRunContext: emptyCtx,
       workflowId: "wf_complete",
       status: "complete",
-      runLevelCodes: [],
       runLevelReasons: [],
       verificationPolicy: vp,
       eventSequenceIntegrity: { kind: "normal" },
@@ -192,11 +191,10 @@ describe("formatWorkflowTruthReport", () => {
     assert.equal(normTruthText(formatWorkflowTruthReport(complete)), normTruthText(GOLDEN_COMPLETE));
 
     const missing = {
-      schemaVersion: 6,
+      schemaVersion: 7,
       verificationRunContext: emptyCtx,
       workflowId: "wf_missing",
       status: "inconsistent",
-      runLevelCodes: [],
       runLevelReasons: [],
       verificationPolicy: vp,
       eventSequenceIntegrity: { kind: "normal" },
@@ -217,11 +215,10 @@ describe("formatWorkflowTruthReport", () => {
     assert.equal(normTruthText(formatWorkflowTruthReport(missing)), normTruthText(GOLDEN_MISSING));
 
     const unknownTool = {
-      schemaVersion: 6,
+      schemaVersion: 7,
       verificationRunContext: emptyCtx,
       workflowId: "wf_unknown_tool",
       status: "incomplete",
-      runLevelCodes: [],
       runLevelReasons: [],
       verificationPolicy: vp,
       eventSequenceIntegrity: { kind: "normal" },
@@ -248,11 +245,10 @@ describe("formatWorkflowTruthReport", () => {
   it("irregular event_sequence extends trust line and lists capture reason", () => {
     const captureReason = eventSequenceIssue("CAPTURE_ORDER_NOT_MONOTONIC_IN_SEQ");
     const r = {
-      schemaVersion: 6,
+      schemaVersion: 7,
       verificationRunContext: emptyCtx,
       workflowId: "w",
       status: "complete",
-      runLevelCodes: [],
       runLevelReasons: [],
       verificationPolicy: vp,
       eventSequenceIntegrity: {
@@ -288,11 +284,10 @@ describe("formatWorkflowTruthReport", () => {
 
   it("golden malformed run-level and empty steps", () => {
     const malformed = {
-      schemaVersion: 6,
+      schemaVersion: 7,
       verificationRunContext: emptyCtx,
       workflowId: "wf_complete",
       status: "incomplete",
-      runLevelCodes: ["MALFORMED_EVENT_LINE", "NO_STEPS_FOR_WORKFLOW"],
       runLevelReasons: [
         { code: "MALFORMED_EVENT_LINE", message: MALFORMED_MSG },
         { code: "NO_STEPS_FOR_WORKFLOW", message: NO_STEPS_MSG },
@@ -304,11 +299,10 @@ describe("formatWorkflowTruthReport", () => {
     assert.equal(normTruthText(formatWorkflowTruthReport(malformed)), normTruthText(GOLDEN_MALFORMED));
 
     const empty = {
-      schemaVersion: 6,
+      schemaVersion: 7,
       verificationRunContext: emptyCtx,
       workflowId: "no_such_workflow",
       status: "incomplete",
-      runLevelCodes: ["NO_STEPS_FOR_WORKFLOW"],
       runLevelReasons: [{ code: "NO_STEPS_FOR_WORKFLOW", message: NO_STEPS_MSG }],
       verificationPolicy: vp,
       eventSequenceIntegrity: { kind: "normal" },
@@ -319,11 +313,10 @@ describe("formatWorkflowTruthReport", () => {
 
   it("unknown run-level code uses fallback explanation", () => {
     const r = {
-      schemaVersion: 6,
+      schemaVersion: 7,
       verificationRunContext: emptyCtx,
       workflowId: "w",
       status: "complete",
-      runLevelCodes: ["UNKNOWN_CODE_X"],
       runLevelReasons: [
         { code: "UNKNOWN_CODE_X", message: "Unknown run-level code (forward compatibility)." },
       ],
@@ -348,11 +341,10 @@ describe("formatWorkflowTruthReport", () => {
 
   it("multi-step: each step line uses HUMAN_REPORT_RESULT_PHRASE for result=", () => {
     const result = {
-      schemaVersion: 6,
+      schemaVersion: 7,
       verificationRunContext: emptyCtx,
       workflowId: "multi",
       status: "inconsistent",
-      runLevelCodes: [],
       runLevelReasons: [],
       verificationPolicy: vp,
       eventSequenceIntegrity: { kind: "normal" },
@@ -413,11 +405,10 @@ describe("formatWorkflowTruthReport", () => {
 
   it("uncertain-only step uses dedicated trust line and label", () => {
     const uncertain = {
-      schemaVersion: 6,
+      schemaVersion: 7,
       verificationRunContext: emptyCtx,
       workflowId: "wf_uncertain",
       status: "incomplete",
-      runLevelCodes: [],
       runLevelReasons: [],
       verificationPolicy: vp,
       eventSequenceIntegrity: { kind: "normal" },
@@ -469,11 +460,10 @@ describe("formatWorkflowTruthReport", () => {
       evaluatedObservationOrdinal: 1,
     }));
     const r = {
-      schemaVersion: 6,
+      schemaVersion: 7,
       verificationRunContext: emptyCtx,
       workflowId: "s",
       status: "incomplete",
-      runLevelCodes: [],
       runLevelReasons: [],
       verificationPolicy: vp,
       eventSequenceIntegrity: { kind: "normal" },
@@ -488,11 +478,10 @@ describe("formatWorkflowTruthReport", () => {
 
   it("run-level reason message is trimmed; whitespace-only becomes (no message)", () => {
     const trimmed = {
-      schemaVersion: 6,
+      schemaVersion: 7,
       verificationRunContext: emptyCtx,
       workflowId: "w",
       status: "complete",
-      runLevelCodes: ["X"],
       runLevelReasons: [{ code: "X", message: "  hello  " }],
       verificationPolicy: vp,
       eventSequenceIntegrity: { kind: "normal" },
@@ -502,11 +491,10 @@ describe("formatWorkflowTruthReport", () => {
     assert.ok(formatWorkflowTruthReport(trimmed).includes("reference_code: X"));
 
     const blank = {
-      schemaVersion: 6,
+      schemaVersion: 7,
       verificationRunContext: emptyCtx,
       workflowId: "w",
       status: "complete",
-      runLevelCodes: ["Y"],
       runLevelReasons: [{ code: "Y", message: "   \t  " }],
       verificationPolicy: vp,
       eventSequenceIntegrity: { kind: "normal" },
@@ -518,11 +506,10 @@ describe("formatWorkflowTruthReport", () => {
 
   it("empty reason message renders (no message)", () => {
     const r = {
-      schemaVersion: 6,
+      schemaVersion: 7,
       verificationRunContext: emptyCtx,
       workflowId: "w",
       status: "incomplete",
-      runLevelCodes: [],
       runLevelReasons: [],
       verificationPolicy: vp,
       eventSequenceIntegrity: { kind: "normal" },
@@ -547,11 +534,10 @@ describe("formatWorkflowTruthReport", () => {
 
   it("reason with field appends field=", () => {
     const r = {
-      schemaVersion: 6,
+      schemaVersion: 7,
       verificationRunContext: emptyCtx,
       workflowId: "w",
       status: "incomplete",
-      runLevelCodes: [],
       runLevelReasons: [],
       verificationPolicy: vp,
       eventSequenceIntegrity: { kind: "normal" },
@@ -576,11 +562,10 @@ describe("formatWorkflowTruthReport", () => {
 
   it("newlines in toolId sanitized", () => {
     const r = {
-      schemaVersion: 6,
+      schemaVersion: 7,
       verificationRunContext: emptyCtx,
       workflowId: "w",
       status: "complete",
-      runLevelCodes: [],
       runLevelReasons: [],
       verificationPolicy: vp,
       eventSequenceIntegrity: { kind: "normal" },
@@ -603,11 +588,10 @@ describe("formatWorkflowTruthReport", () => {
 
   it("intendedEffect newlines collapsed to single line", () => {
     const r = {
-      schemaVersion: 6,
+      schemaVersion: 7,
       verificationRunContext: emptyCtx,
       workflowId: "w",
       status: "complete",
-      runLevelCodes: [],
       runLevelReasons: [],
       verificationPolicy: vp,
       eventSequenceIntegrity: { kind: "normal" },

@@ -28,10 +28,9 @@ function engine(
 ): WorkflowEngineResult {
   const { verificationRunContext: ctx, ...rest } = partial;
   return {
-    schemaVersion: 6,
+    schemaVersion: 7,
     workflowId: "w",
     status: "incomplete",
-    runLevelCodes: [],
     runLevelReasons: [],
     verificationPolicy: strongPolicy,
     eventSequenceIntegrity: { kind: "normal" },
@@ -47,7 +46,6 @@ describe("buildFailureAnalysis precedence", () => {
       engine({
         status: "inconsistent",
         runLevelReasons: [{ code: "NO_STEPS_FOR_WORKFLOW", message: "m" }],
-        runLevelCodes: ["NO_STEPS_FOR_WORKFLOW"],
         steps: [
           step({
             seq: 0,

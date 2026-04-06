@@ -69,10 +69,9 @@ describe("JSON Schemas (SSOT)", () => {
   it("validates workflow result shape from golden pipeline output", () => {
     const v = loadSchemaValidator("workflow-result");
     const engine: WorkflowEngineResult = {
-      schemaVersion: 6,
+      schemaVersion: 7,
       workflowId: "wf_complete",
       status: "complete",
-      runLevelCodes: [],
       runLevelReasons: [],
       verificationPolicy: {
         consistencyMode: "strong",
@@ -107,10 +106,9 @@ describe("JSON Schemas (SSOT)", () => {
   it("validates multi-effect workflow result (sql_effects + evidenceSummary.effects)", () => {
     const v = loadSchemaValidator("workflow-result");
     const engine: WorkflowEngineResult = {
-      schemaVersion: 6,
+      schemaVersion: 7,
       workflowId: "wf_multi",
       status: "inconsistent",
-      runLevelCodes: [],
       runLevelReasons: [],
       verificationPolicy: {
         consistencyMode: "strong",
@@ -181,10 +179,9 @@ describe("JSON Schemas (SSOT)", () => {
   it("rejects single-effect step evidenceSummary with effectCount", () => {
     const v = loadSchemaValidator("workflow-engine-result");
     const bad = {
-      schemaVersion: 6,
+      schemaVersion: 7,
       workflowId: "w",
       status: "complete",
-      runLevelCodes: [],
       runLevelReasons: [],
       verificationPolicy: {
         consistencyMode: "strong",
@@ -237,10 +234,9 @@ describe("JSON Schemas (SSOT)", () => {
       ...(ok ? {} : { failureDiagnostic: "workflow_execution" as const }),
     });
     const engine0: WorkflowEngineResult = {
-      schemaVersion: 6,
+      schemaVersion: 7,
       workflowId: "w",
       status: "complete",
-      runLevelCodes: [],
       runLevelReasons: [],
       verificationPolicy: {
         consistencyMode: "strong",
@@ -264,10 +260,9 @@ describe("JSON Schemas (SSOT)", () => {
     const vTruth = loadSchemaValidator("workflow-truth-report");
     const vResult = loadSchemaValidator("workflow-result");
     const engine: WorkflowEngineResult = {
-      schemaVersion: 6,
+      schemaVersion: 7,
       workflowId: "wf_complete",
       status: "complete",
-      runLevelCodes: [],
       runLevelReasons: [],
       verificationPolicy: {
         consistencyMode: "strong",
@@ -307,7 +302,6 @@ describe("JSON Schemas (SSOT)", () => {
       schemaVersion: 5,
       workflowId: "w",
       status: "complete",
-      runLevelCodes: [],
       runLevelReasons: [],
       verificationPolicy: {
         consistencyMode: "strong",
@@ -320,13 +314,12 @@ describe("JSON Schemas (SSOT)", () => {
     expect(v(v5only)).toBe(false);
   });
 
-  it("workflow-result-compare-input accepts v6 engine and v9 emitted", () => {
+  it("workflow-result-compare-input accepts v7 engine, v9 frozen, and v10 emitted", () => {
     const vCmp = loadSchemaValidator("workflow-result-compare-input");
     const engine: WorkflowEngineResult = {
-      schemaVersion: 6,
+      schemaVersion: 7,
       workflowId: "w",
       status: "complete",
-      runLevelCodes: [],
       runLevelReasons: [],
       verificationPolicy: {
         consistencyMode: "strong",
@@ -356,7 +349,72 @@ describe("JSON Schemas (SSOT)", () => {
       ],
     };
     expect(vCmp(engine)).toBe(true);
-    expect(vCmp(finalizeEmittedWorkflowResult(engine))).toBe(true);
+    const emitted = finalizeEmittedWorkflowResult(engine);
+    expect(vCmp(emitted)).toBe(true);
+    const v9Compat = {
+      ...emitted,
+      schemaVersion: 9,
+      runLevelCodes: emitted.runLevelReasons.map((r) => r.code),
+    };
+    expect(vCmp(v9Compat)).toBe(true);
+  });
+
+  it("workflow-result v10 rejects stray runLevelCodes", () => {
+    const v = loadSchemaValidator("workflow-result");
+    const engine: WorkflowEngineResult = {
+      schemaVersion: 7,
+      workflowId: "w",
+      status: "complete",
+      runLevelReasons: [],
+      verificationPolicy: {
+        consistencyMode: "strong",
+        verificationWindowMs: 0,
+        pollIntervalMs: 0,
+      },
+      eventSequenceIntegrity: { kind: "normal" },
+      verificationRunContext: emptyCtx,
+      steps: [
+        {
+          seq: 0,
+          toolId: "t",
+          intendedEffect: "",
+          verificationRequest: {
+            kind: "sql_row",
+            table: "c",
+            keyColumn: "id",
+            keyValue: "1",
+            requiredFields: {},
+          },
+          status: "verified",
+          reasons: [],
+          evidenceSummary: {},
+          repeatObservationCount: 1,
+          evaluatedObservationOrdinal: 1,
+        },
+      ],
+    };
+    const good = finalizeEmittedWorkflowResult(engine);
+    expect(v(good)).toBe(true);
+    const bad = { ...good, runLevelCodes: [] as string[] };
+    expect(v(bad)).toBe(false);
+  });
+
+  it("cli-error-envelope minimal instance validates", () => {
+    const v = loadSchemaValidator("cli-error-envelope");
+    const env = {
+      schemaVersion: 2,
+      kind: "execution_truth_layer_error",
+      code: "CLI_USAGE",
+      message: "test",
+      failureDiagnosis: {
+        summary: "s",
+        primaryOrigin: "workflow_flow",
+        confidence: "high",
+        evidence: [{ referenceCode: "CLI_USAGE" }],
+        actionableFailure: { category: "bad_input", severity: "low" },
+      },
+    };
+    expect(v(env)).toBe(true);
   });
 
   it("validates registry-validation-result (golden objects)", () => {

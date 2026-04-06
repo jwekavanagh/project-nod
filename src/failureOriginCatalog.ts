@@ -1,11 +1,13 @@
 /**
  * Single source of truth for code → FailureOrigin mappings.
- * FailureOrigin literals: `failureOriginTypes.ts`. JSON Schema enum parity: failureOriginSchemaParity.test.ts.
+ * FailureOrigin literals: generated `failureOriginTypes.generated.ts` (schema sync). Operational values: `operationalDisposition.ts`.
  */
 
 import { CLI_OPERATIONAL_CODES, type OperationalCode } from "./cliOperationalCodes.js";
+import { OPERATIONAL_DISPOSITION } from "./operationalDisposition.js";
 import type { FailureOrigin } from "./failureOriginTypes.js";
 import { RESOLVE_FAILURE_CODES } from "./resolveFailureCodes.js";
+import { SQL_VERIFICATION_OUTCOME_CODE } from "./wireReasonCodes.js";
 
 export type { FailureOrigin } from "./failureOriginTypes.js";
 export { FAILURE_ORIGINS } from "./failureOriginTypes.js";
@@ -29,22 +31,22 @@ export const REASON_CODE_TO_ORIGIN: Record<string, FailureOrigin> = {
   [STEP_NO_REASON_CODE]: WORKFLOW_FLOW,
   [TEST_BLOCKING_CODE]: WORKFLOW_FLOW,
 
-  ROW_ABSENT: DOWNSTREAM,
-  DUPLICATE_ROWS: DOWNSTREAM,
-  VALUE_MISMATCH: DOWNSTREAM,
-  ROW_NOT_OBSERVED_WITHIN_WINDOW: DOWNSTREAM,
-  MULTI_EFFECT_UNCERTAIN_WITHIN_WINDOW: DOWNSTREAM,
+  [SQL_VERIFICATION_OUTCOME_CODE.ROW_ABSENT]: DOWNSTREAM,
+  [SQL_VERIFICATION_OUTCOME_CODE.DUPLICATE_ROWS]: DOWNSTREAM,
+  [SQL_VERIFICATION_OUTCOME_CODE.VALUE_MISMATCH]: DOWNSTREAM,
+  [SQL_VERIFICATION_OUTCOME_CODE.ROW_NOT_OBSERVED_WITHIN_WINDOW]: DOWNSTREAM,
+  [SQL_VERIFICATION_OUTCOME_CODE.MULTI_EFFECT_UNCERTAIN_WITHIN_WINDOW]: DOWNSTREAM,
 
-  CONNECTOR_ERROR: DOWNSTREAM,
-  ROW_SHAPE_MISMATCH: DOWNSTREAM,
-  UNREADABLE_VALUE: DOWNSTREAM,
+  [SQL_VERIFICATION_OUTCOME_CODE.CONNECTOR_ERROR]: DOWNSTREAM,
+  [SQL_VERIFICATION_OUTCOME_CODE.ROW_SHAPE_MISMATCH]: DOWNSTREAM,
+  [SQL_VERIFICATION_OUTCOME_CODE.UNREADABLE_VALUE]: DOWNSTREAM,
 
-  UNKNOWN_TOOL: TOOL_USE,
-  RETRY_OBSERVATIONS_DIVERGE: TOOL_USE,
+  [SQL_VERIFICATION_OUTCOME_CODE.UNKNOWN_TOOL]: TOOL_USE,
+  [SQL_VERIFICATION_OUTCOME_CODE.RETRY_OBSERVATIONS_DIVERGE]: TOOL_USE,
 
-  MULTI_EFFECT_PARTIAL: DOWNSTREAM,
-  MULTI_EFFECT_ALL_FAILED: DOWNSTREAM,
-  MULTI_EFFECT_INCOMPLETE: DOWNSTREAM,
+  [SQL_VERIFICATION_OUTCOME_CODE.MULTI_EFFECT_PARTIAL]: DOWNSTREAM,
+  [SQL_VERIFICATION_OUTCOME_CODE.MULTI_EFFECT_ALL_FAILED]: DOWNSTREAM,
+  [SQL_VERIFICATION_OUTCOME_CODE.MULTI_EFFECT_INCOMPLETE]: DOWNSTREAM,
 
   ...Object.fromEntries([...RESOLVE_FAILURE_CODES].map((c) => [c, INPUTS])) as Record<string, FailureOrigin>,
 };
@@ -60,70 +62,27 @@ export const EVENT_SEQUENCE_CODE_TO_ORIGIN: Record<string, FailureOrigin> = {
   TIMESTAMP_NOT_MONOTONIC_WITH_SEQ_SORT_ORDER: WORKFLOW_FLOW,
 };
 
-const OP = {
-  inputs: INPUTS,
-  downstream: DOWNSTREAM,
-  workflow_flow: WORKFLOW_FLOW,
-} as const;
+function operationalMaps(): {
+  origin: Record<OperationalCode, FailureOrigin>;
+  summary: Record<OperationalCode, string>;
+} {
+  const origin = {} as Record<OperationalCode, FailureOrigin>;
+  const summary = {} as Record<OperationalCode, string>;
+  for (const code of Object.values(CLI_OPERATIONAL_CODES) as OperationalCode[]) {
+    const row = OPERATIONAL_DISPOSITION[code];
+    origin[code] = row.origin;
+    summary[code] = row.summary;
+  }
+  return { origin, summary };
+}
+
+const _op = operationalMaps();
 
 /** Every CLI_OPERATIONAL_CODES value → FailureOrigin. */
-export const OPERATIONAL_CODE_TO_ORIGIN: Record<OperationalCode, FailureOrigin> = {
-  [CLI_OPERATIONAL_CODES.CLI_USAGE]: OP.inputs,
-  [CLI_OPERATIONAL_CODES.REGISTRY_READ_FAILED]: OP.inputs,
-  [CLI_OPERATIONAL_CODES.REGISTRY_JSON_SYNTAX]: OP.inputs,
-  [CLI_OPERATIONAL_CODES.REGISTRY_SCHEMA_INVALID]: OP.inputs,
-  [CLI_OPERATIONAL_CODES.REGISTRY_DUPLICATE_TOOL_ID]: OP.inputs,
-  [CLI_OPERATIONAL_CODES.EVENTS_READ_FAILED]: OP.inputs,
-  [CLI_OPERATIONAL_CODES.SQLITE_DATABASE_OPEN_FAILED]: OP.downstream,
-  [CLI_OPERATIONAL_CODES.POSTGRES_CLIENT_SETUP_FAILED]: OP.downstream,
-  [CLI_OPERATIONAL_CODES.WORKFLOW_RESULT_SCHEMA_INVALID]: OP.workflow_flow,
-  [CLI_OPERATIONAL_CODES.INTERNAL_ERROR]: OP.workflow_flow,
-  [CLI_OPERATIONAL_CODES.COMPARE_USAGE]: OP.workflow_flow,
-  [CLI_OPERATIONAL_CODES.COMPARE_INSUFFICIENT_RUNS]: OP.workflow_flow,
-  [CLI_OPERATIONAL_CODES.COMPARE_WORKFLOW_ID_MISMATCH]: OP.workflow_flow,
-  [CLI_OPERATIONAL_CODES.COMPARE_INPUT_READ_FAILED]: OP.inputs,
-  [CLI_OPERATIONAL_CODES.COMPARE_INPUT_JSON_SYNTAX]: OP.inputs,
-  [CLI_OPERATIONAL_CODES.COMPARE_INPUT_SCHEMA_INVALID]: OP.inputs,
-  [CLI_OPERATIONAL_CODES.COMPARE_WORKFLOW_TRUTH_MISMATCH]: OP.workflow_flow,
-  [CLI_OPERATIONAL_CODES.COMPARE_RUN_COMPARISON_REPORT_INVALID]: OP.workflow_flow,
-  [CLI_OPERATIONAL_CODES.VERIFICATION_POLICY_INVALID]: OP.inputs,
-  [CLI_OPERATIONAL_CODES.EVENTUAL_MODE_NOT_SUPPORTED_IN_PROCESS_HOOK]: OP.workflow_flow,
-  [CLI_OPERATIONAL_CODES.VALIDATE_REGISTRY_USAGE]: OP.workflow_flow,
-  [CLI_OPERATIONAL_CODES.EXECUTION_TRACE_USAGE]: OP.workflow_flow,
-  [CLI_OPERATIONAL_CODES.TRACE_DUPLICATE_RUN_EVENT_ID]: OP.workflow_flow,
-  [CLI_OPERATIONAL_CODES.TRACE_UNKNOWN_PARENT_RUN_EVENT_ID]: OP.workflow_flow,
-  [CLI_OPERATIONAL_CODES.TRACE_PARENT_FORWARD_REFERENCE]: OP.workflow_flow,
-};
+export const OPERATIONAL_CODE_TO_ORIGIN: Record<OperationalCode, FailureOrigin> = _op.origin;
 
 /** Short operational diagnosis summaries (single line, truncation-safe). */
-export const OPERATIONAL_CODE_TO_SUMMARY: Record<OperationalCode, string> = {
-  [CLI_OPERATIONAL_CODES.CLI_USAGE]: "Invalid or incomplete CLI arguments for verify-workflow.",
-  [CLI_OPERATIONAL_CODES.REGISTRY_READ_FAILED]: "Tools registry file could not be read.",
-  [CLI_OPERATIONAL_CODES.REGISTRY_JSON_SYNTAX]: "Tools registry JSON could not be parsed.",
-  [CLI_OPERATIONAL_CODES.REGISTRY_SCHEMA_INVALID]: "Tools registry failed schema validation.",
-  [CLI_OPERATIONAL_CODES.REGISTRY_DUPLICATE_TOOL_ID]: "Tools registry contains duplicate toolId entries.",
-  [CLI_OPERATIONAL_CODES.EVENTS_READ_FAILED]: "Events file could not be read.",
-  [CLI_OPERATIONAL_CODES.SQLITE_DATABASE_OPEN_FAILED]: "SQLite verification database could not be opened.",
-  [CLI_OPERATIONAL_CODES.POSTGRES_CLIENT_SETUP_FAILED]: "Postgres verification client could not be established.",
-  [CLI_OPERATIONAL_CODES.WORKFLOW_RESULT_SCHEMA_INVALID]: "Emitted workflow result failed JSON schema validation.",
-  [CLI_OPERATIONAL_CODES.INTERNAL_ERROR]: "Unexpected internal error in the execution truth layer.",
-  [CLI_OPERATIONAL_CODES.COMPARE_USAGE]: "Invalid or incomplete arguments for verify-workflow compare.",
-  [CLI_OPERATIONAL_CODES.COMPARE_INSUFFICIENT_RUNS]: "compare requires at least two WorkflowResult inputs.",
-  [CLI_OPERATIONAL_CODES.COMPARE_WORKFLOW_ID_MISMATCH]: "Compared WorkflowResult files use different workflowId values.",
-  [CLI_OPERATIONAL_CODES.COMPARE_INPUT_READ_FAILED]: "A compare input file could not be read.",
-  [CLI_OPERATIONAL_CODES.COMPARE_INPUT_JSON_SYNTAX]: "A compare input file is not valid JSON.",
-  [CLI_OPERATIONAL_CODES.COMPARE_INPUT_SCHEMA_INVALID]: "A compare input file failed WorkflowResult schema validation.",
-  [CLI_OPERATIONAL_CODES.COMPARE_WORKFLOW_TRUTH_MISMATCH]: "Saved workflowTruthReport does not match recomputation from engine fields.",
-  [CLI_OPERATIONAL_CODES.COMPARE_RUN_COMPARISON_REPORT_INVALID]: "Run comparison report failed schema validation.",
-  [CLI_OPERATIONAL_CODES.VERIFICATION_POLICY_INVALID]: "Verification policy arguments are invalid.",
-  [CLI_OPERATIONAL_CODES.EVENTUAL_MODE_NOT_SUPPORTED_IN_PROCESS_HOOK]:
-    "In-process verification does not support eventual consistency; use batch verifyWorkflow.",
-  [CLI_OPERATIONAL_CODES.VALIDATE_REGISTRY_USAGE]: "Invalid or incomplete arguments for validate-registry.",
-  [CLI_OPERATIONAL_CODES.EXECUTION_TRACE_USAGE]: "Invalid or incomplete arguments for execution-trace.",
-  [CLI_OPERATIONAL_CODES.TRACE_DUPLICATE_RUN_EVENT_ID]: "Duplicate runEventId in execution trace input.",
-  [CLI_OPERATIONAL_CODES.TRACE_UNKNOWN_PARENT_RUN_EVENT_ID]: "parentRunEventId does not reference a prior event.",
-  [CLI_OPERATIONAL_CODES.TRACE_PARENT_FORWARD_REFERENCE]: "parentRunEventId references an event that is not strictly earlier.",
-};
+export const OPERATIONAL_CODE_TO_SUMMARY: Record<OperationalCode, string> = _op.summary;
 
 export function originForStepReasonCode(code: string): FailureOrigin {
   const o = REASON_CODE_TO_ORIGIN[code];

@@ -1,7 +1,9 @@
+import { createHash } from "node:crypto";
 import { copyFileSync, mkdirSync, readFileSync, writeFileSync, rmSync, mkdtempSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { describe, expect, it } from "vitest";
+import { CLI_OPERATIONAL_CODES } from "./cliOperationalCodes.js";
 import {
   DEBUG_CORPUS_CODES,
   isPathUnderRoot,
@@ -10,6 +12,7 @@ import {
   loadCorpusRun,
   resolveCorpusRootReal,
 } from "./debugCorpus.js";
+import { WORKFLOW_RESULT_RUN_LEVEL_CODES_MISMATCH_MESSAGE } from "./runLevelDriftMessages.js";
 import { fileURLToPath } from "node:url";
 
 const root = join(fileURLToPath(import.meta.url), "..", "..");
@@ -131,6 +134,43 @@ describe("debugCorpus", () => {
       expect(o.loadStatus).toBe("error");
       if (o.loadStatus === "error") {
         expect(o.error.code).toBe(DEBUG_CORPUS_CODES.PATH_ESCAPE);
+      }
+    } finally {
+      rmSync(base, { recursive: true, force: true });
+    }
+  });
+
+  it("v9 workflow-result runLevel drift yields WORKFLOW_RESULT_RUN_LEVEL_CODES_MISMATCH", () => {
+    const base = mkdtempSync(join(tmpdir(), "etl-corpus-rl-"));
+    try {
+      const runDir = join(base, "drift");
+      mkdirSync(runDir, { recursive: true });
+      copyFileSync(join(runOkDir, "events.ndjson"), join(runDir, "events.ndjson"));
+      const wrParsed = JSON.parse(readFileSync(join(runOkDir, "workflow-result.json"), "utf8")) as Record<
+        string,
+        unknown
+      >;
+      const drifting = {
+        ...wrParsed,
+        schemaVersion: 9,
+        runLevelCodes: ["A"],
+        runLevelReasons: [{ code: "B", message: "mismatch" }],
+      };
+      const wrBody = JSON.stringify(drifting);
+      writeFileSync(join(runDir, "workflow-result.json"), wrBody);
+      const wrBuf = readFileSync(join(runDir, "workflow-result.json"));
+      const ar = JSON.parse(readFileSync(join(runOkDir, "agent-run.json"), "utf8")) as {
+        artifacts: { workflowResult: { sha256: string; byteLength: number } };
+      };
+      ar.artifacts.workflowResult.sha256 = createHash("sha256").update(wrBuf).digest("hex");
+      ar.artifacts.workflowResult.byteLength = wrBuf.length;
+      writeFileSync(join(runDir, "agent-run.json"), JSON.stringify(ar));
+      const rootReal = resolveCorpusRootReal(base);
+      const o = loadCorpusRun(rootReal, "drift");
+      expect(o.loadStatus).toBe("error");
+      if (o.loadStatus === "error") {
+        expect(o.error.code).toBe(CLI_OPERATIONAL_CODES.WORKFLOW_RESULT_RUN_LEVEL_CODES_MISMATCH);
+        expect(o.error.message).toBe(WORKFLOW_RESULT_RUN_LEVEL_CODES_MISMATCH_MESSAGE);
       }
     } finally {
       rmSync(base, { recursive: true, force: true });

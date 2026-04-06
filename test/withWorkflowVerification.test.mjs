@@ -156,7 +156,7 @@ describe("withWorkflowVerification", () => {
       },
     );
     assert.equal(result.status, "incomplete");
-    assert.ok(result.runLevelCodes.includes("MALFORMED_EVENT_LINE"));
+    assert.ok(result.runLevelReasons.map((x) => x.code).includes("MALFORMED_EVENT_LINE"));
     assert.equal(result.steps.length, 0);
   });
 
@@ -168,7 +168,7 @@ describe("withWorkflowVerification", () => {
       },
     );
     assert.equal(result.status, "incomplete");
-    assert.ok(result.runLevelCodes.includes("MALFORMED_EVENT_LINE"));
+    assert.ok(result.runLevelReasons.map((x) => x.code).includes("MALFORMED_EVENT_LINE"));
     assert.equal(result.steps.length, 0);
   });
 

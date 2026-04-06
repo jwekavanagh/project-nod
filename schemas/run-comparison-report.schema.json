@@ -37,7 +37,14 @@
         "required": ["runIndex", "category", "severity"],
         "properties": {
           "runIndex": { "type": "integer", "minimum": 0 },
-          "category": { "type": "string" },
+          "category": {
+            "oneOf": [
+              {
+                "$ref": "https://execution-truth-layer/schemas/workflow-truth-report.schema.json#/$defs/actionableFailureCategory"
+              },
+              { "const": "complete" }
+            ]
+          },
           "severity": { "type": "string", "enum": ["high", "medium", "low"] }
         }
       }
@@ -49,7 +56,14 @@
         "additionalProperties": false,
         "required": ["category", "count"],
         "properties": {
-          "category": { "type": "string" },
+          "category": {
+            "oneOf": [
+              {
+                "$ref": "https://execution-truth-layer/schemas/workflow-truth-report.schema.json#/$defs/actionableFailureCategory"
+              },
+              { "const": "complete" }
+            ]
+          },
           "count": { "type": "integer", "minimum": 0 }
         }
       }
@@ -66,7 +80,9 @@
           "maxConsecutiveRunStreak"
         ],
         "properties": {
-          "category": { "type": "string" },
+          "category": {
+            "$ref": "https://execution-truth-layer/schemas/workflow-truth-report.schema.json#/$defs/actionableFailureCategory"
+          },
           "runIndicesAscending": {
             "type": "array",
             "items": { "type": "integer", "minimum": 0 }

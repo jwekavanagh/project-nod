@@ -1,25 +1,11 @@
 import { createEmptyVerificationRunContext } from "./verificationRunContext.js";
 import type { ExecutionPathEvidenceItem, ExecutionPathFinding, StepOutcome, WorkflowEngineResult } from "./types.js";
+import { REGISTRY_RESOLVER_CODE, SQL_VERIFICATION_OUTCOME_CODE, UNKNOWN_TOOL } from "./wireReasonCodes.js";
 
 /** Reason codes from `resolveExpectation` / registry resolution + pipeline `UNKNOWN_TOOL`. */
 export const ACTION_INPUT_REASON_CODES: ReadonlySet<string> = new Set([
-  "UNKNOWN_TOOL",
-  "CONST_STRING_EMPTY",
-  "STRING_SPEC_POINTER_MISSING",
-  "STRING_SPEC_TYPE",
-  "STRING_SPEC_EMPTY",
-  "KEY_VALUE_POINTER_MISSING",
-  "KEY_VALUE_NOT_SCALAR",
-  "KEY_VALUE_SPEC_INVALID",
-  "TABLE_POINTER_INVALID",
-  "TABLE_SPEC_INVALID",
-  "INVALID_IDENTIFIER",
-  "REQUIRED_FIELDS_POINTER_MISSING",
-  "REQUIRED_FIELDS_NOT_OBJECT",
-  "REQUIRED_FIELDS_VALUE_UNDEFINED",
-  "REQUIRED_FIELDS_VALUE_NOT_SCALAR",
-  "UNSUPPORTED_VERIFICATION_KIND",
-  "DUPLICATE_EFFECT_ID",
+  UNKNOWN_TOOL,
+  ...Object.values(REGISTRY_RESOLVER_CODE),
 ]);
 
 /**
@@ -27,16 +13,7 @@ export const ACTION_INPUT_REASON_CODES: ReadonlySet<string> = new Set([
  * Execution-path findings must never use these as top-level `finding.code`
  * and must not emit path rows driven solely by these (remain on SQL axis).
  */
-export const RECONCILER_STEP_REASON_CODES: ReadonlySet<string> = new Set([
-  "ROW_ABSENT",
-  "VALUE_MISMATCH",
-  "ROW_NOT_OBSERVED_WITHIN_WINDOW",
-  "DUPLICATE_ROWS",
-  "MULTI_EFFECT_PARTIAL",
-  "MULTI_EFFECT_ALL_FAILED",
-  "MULTI_EFFECT_INCOMPLETE",
-  "MULTI_EFFECT_UNCERTAIN_WITHIN_WINDOW",
-]);
+export const RECONCILER_STEP_REASON_CODES: ReadonlySet<string> = new Set(Object.values(SQL_VERIFICATION_OUTCOME_CODE));
 
 /** Every allowed top-level execution-path finding `code` (for tests / validation). */
 export const EXECUTION_PATH_FINDING_CODES: ReadonlySet<string> = new Set([
@@ -55,6 +32,11 @@ export const EXECUTION_PATH_FINDING_CODES: ReadonlySet<string> = new Set([
   "LAST_EVENT_MODEL_ABNORMAL",
   "RUN_LEVEL_INGEST_ISSUES",
   "EVENT_SEQUENCE_IRREGULAR",
+]);
+
+/** Step reason strings that are also legitimate top-level path `finding.code` values (not SQL-axis leaks). */
+const RECONCILER_CODE_OK_AS_PATH_FINDING_CODE: ReadonlySet<string> = new Set([
+  SQL_VERIFICATION_OUTCOME_CODE.RETRY_OBSERVATIONS_DIVERGE,
 ]);
 
 function pushFinding(
@@ -257,7 +239,7 @@ export function buildExecutionPathFindings(engine: WorkflowEngineResult): Execut
             codes: [primary],
           },
         });
-      } else if (primary === "RETRY_OBSERVATIONS_DIVERGE") {
+      } else if (primary === SQL_VERIFICATION_OUTCOME_CODE.RETRY_OBSERVATIONS_DIVERGE) {
         pushFinding(out, {
           code: "RETRY_OBSERVATIONS_DIVERGE",
           severity: "medium",
@@ -327,7 +309,10 @@ export function buildExecutionPathFindings(engine: WorkflowEngineResult): Execut
     if (!EXECUTION_PATH_FINDING_CODES.has(f.code)) {
       throw new Error(`Internal error: unknown execution path finding code ${f.code}`);
     }
-    if (RECONCILER_STEP_REASON_CODES.has(f.code)) {
+    if (
+      RECONCILER_STEP_REASON_CODES.has(f.code) &&
+      !RECONCILER_CODE_OK_AS_PATH_FINDING_CODE.has(f.code)
+    ) {
       throw new Error(`Internal error: reconciler code leaked into path finding: ${f.code}`);
     }
   }

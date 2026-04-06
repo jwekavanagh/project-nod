@@ -124,6 +124,10 @@
         "downstream_system_state"
       ]
     },
+    "failureConfidence": {
+      "type": "string",
+      "enum": ["high", "medium", "low"]
+    },
     "failureAnalysisEvidence": {
       "type": "object",
       "additionalProperties": false,
@@ -194,10 +198,7 @@
       "properties": {
         "summary": { "type": "string", "maxLength": 2048 },
         "primaryOrigin": { "$ref": "#/$defs/failureOrigin" },
-        "confidence": {
-          "type": "string",
-          "enum": ["high", "medium", "low"]
-        },
+        "confidence": { "$ref": "#/$defs/failureConfidence" },
         "unknownReasonCodes": {
           "type": "array",
           "items": { "type": "string" }

@@ -3,6 +3,7 @@ import { reconcileSqlRow, reconcileSqlRowAsync } from "./reconciler.js";
 import type { SqlReadBackend } from "./sqlReadBackend.js";
 import type { Reason, ResolvedEffect, SqlEffectsVerificationPayload, StepStatus, VerificationScalar } from "./types.js";
 import { compareUtf16Id } from "./resolveExpectation.js";
+import { SQL_VERIFICATION_OUTCOME_CODE } from "./wireReasonCodes.js";
 
 export type MultiEffectRollupOutput = {
   verificationRequest: SqlEffectsVerificationPayload;
@@ -61,7 +62,7 @@ function buildRollup(
     const ids = incomplete.map((e) => e.id).sort(compareUtf16Id);
     reasons = [
       {
-        code: "MULTI_EFFECT_INCOMPLETE",
+        code: SQL_VERIFICATION_OUTCOME_CODE.MULTI_EFFECT_INCOMPLETE,
         message: `Incomplete verification for effects: ${ids.join(", ")}`,
       },
     ];
@@ -73,7 +74,7 @@ function buildRollup(
     const ids = effectRows.map((e) => e.id).sort(compareUtf16Id);
     reasons = [
       {
-        code: "MULTI_EFFECT_ALL_FAILED",
+        code: SQL_VERIFICATION_OUTCOME_CODE.MULTI_EFFECT_ALL_FAILED,
         message: `All ${n} effects failed: ${ids.join(", ")}`,
       },
     ];
@@ -85,7 +86,7 @@ function buildRollup(
       .sort(compareUtf16Id);
     reasons = [
       {
-        code: "MULTI_EFFECT_PARTIAL",
+        code: SQL_VERIFICATION_OUTCOME_CODE.MULTI_EFFECT_PARTIAL,
         message: `Verified ${verified.length} of ${n} effects; not verified: ${bad.join(", ")}`,
       },
     ];

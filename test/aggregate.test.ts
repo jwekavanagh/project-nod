@@ -33,10 +33,9 @@ describe("WorkflowAggregator precedence", () => {
       eventSeqNormal,
     );
     expect(r.status).toBe("complete");
-    expect(r.schemaVersion).toBe(6);
+    expect(r.schemaVersion).toBe(7);
     expect(r.eventSequenceIntegrity).toEqual(eventSeqNormal);
     expect(r.runLevelReasons).toEqual([]);
-    expect(r.runLevelCodes).toEqual([]);
   });
 
   it("incomplete when run-level reasons non-empty even if steps verified", () => {
@@ -48,7 +47,7 @@ describe("WorkflowAggregator precedence", () => {
       eventSeqNormal,
     );
     expect(r.status).toBe("incomplete");
-    expect(r.runLevelCodes).toEqual(["TEST_BLOCKING_CODE"]);
+    expect(r.runLevelReasons.map((x) => x.code)).toEqual(["TEST_BLOCKING_CODE"]);
   });
 
   it("incomplete when any incomplete_verification", () => {
@@ -96,7 +95,6 @@ describe("WorkflowAggregator precedence", () => {
   it("incomplete when zero steps adds NO_STEPS_FOR_WORKFLOW", () => {
     const r = aggregateWorkflow("w", [], [], strongPolicy, eventSeqNormal);
     expect(r.status).toBe("incomplete");
-    expect(r.runLevelCodes).toEqual(["NO_STEPS_FOR_WORKFLOW"]);
     expect(r.runLevelReasons.map((x) => x.code)).toEqual(["NO_STEPS_FOR_WORKFLOW"]);
     expect(r.eventSequenceIntegrity).toEqual(eventSeqNormal);
   });

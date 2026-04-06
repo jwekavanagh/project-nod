@@ -278,12 +278,11 @@ export type CliFailureDiagnosis = {
   actionableFailure: ActionableFailure;
 };
 
-/** Aggregated engine payload before truth report attachment (`schemaVersion` 6). */
+/** Aggregated engine payload before truth report attachment (`schemaVersion` 7). */
 export type WorkflowEngineResult = {
-  schemaVersion: 6;
+  schemaVersion: 7;
   workflowId: string;
   status: WorkflowStatus;
-  runLevelCodes: string[];
   runLevelReasons: Reason[];
   verificationPolicy: VerificationPolicy;
   eventSequenceIntegrity: EventSequenceIntegrity;
@@ -369,9 +368,9 @@ export type WorkflowTruthReport = {
   executionPathSummary: string;
 };
 
-/** Emitted verification result on stdout / public API (`schemaVersion` 9). */
+/** Emitted verification result on stdout / public API (`schemaVersion` 10). */
 export type WorkflowResult = Omit<WorkflowEngineResult, "schemaVersion"> & {
-  schemaVersion: 9;
+  schemaVersion: 10;
   workflowTruthReport: WorkflowTruthReport;
 };
 

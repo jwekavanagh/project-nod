@@ -219,10 +219,9 @@ describe("stderr category parity with JSON failureDiagnostic", () => {
       requiredFields: { a: "b" },
     };
     const result = {
-      schemaVersion: 6 as const,
+      schemaVersion: 7 as const,
       workflowId: "w",
       status: "inconsistent" as const,
-      runLevelCodes: [] as string[],
       runLevelReasons: [] as { code: string; message: string }[],
       verificationPolicy: { consistencyMode: "strong" as const, verificationWindowMs: 0, pollIntervalMs: 0 },
       eventSequenceIntegrity: { kind: "normal" as const },

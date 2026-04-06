@@ -10,7 +10,8 @@ import {
   STEP_NO_REASON_CODE,
   TEST_BLOCKING_CODE,
 } from "./failureOriginCatalog.js";
-import { RESOLVE_FAILURE_CODES } from "./resolveFailureCodes.js";
+import { OPERATIONAL_DISPOSITION } from "./operationalDisposition.js";
+import { REGISTRY_RESOLVER_CODE, SQL_VERIFICATION_OUTCOME_CODE } from "./wireReasonCodes.js";
 import type {
   ActionableFailure,
   ActionableFailureCategory,
@@ -55,29 +56,26 @@ const RUN_CONTEXT_CODE_TO_CATEGORY: Record<string, ActionableFailureCategory> = 
 
 /** Production step primary reason codes only — never run-level codes (`RUN_LEVEL_CODE_TO_ORIGIN` minus overlaps like `TEST_BLOCKING_CODE`). */
 const STEP_CODE_TO_CATEGORY: Record<string, ActionableFailureCategory> = {
-  RETRY_OBSERVATIONS_DIVERGE: "decision_error",
-  UNKNOWN_TOOL: "bad_input",
-  ROW_ABSENT: "state_inconsistency",
-  VALUE_MISMATCH: "state_inconsistency",
-  DUPLICATE_ROWS: "state_inconsistency",
-  ROW_NOT_OBSERVED_WITHIN_WINDOW: "downstream_execution_failure",
-  MULTI_EFFECT_UNCERTAIN_WITHIN_WINDOW: "downstream_execution_failure",
-  CONNECTOR_ERROR: "downstream_execution_failure",
-  ROW_SHAPE_MISMATCH: "downstream_execution_failure",
-  UNREADABLE_VALUE: "downstream_execution_failure",
-  MULTI_EFFECT_PARTIAL: "downstream_execution_failure",
-  MULTI_EFFECT_ALL_FAILED: "downstream_execution_failure",
-  MULTI_EFFECT_INCOMPLETE: "bad_input",
+  [SQL_VERIFICATION_OUTCOME_CODE.RETRY_OBSERVATIONS_DIVERGE]: "decision_error",
+  [SQL_VERIFICATION_OUTCOME_CODE.UNKNOWN_TOOL]: "bad_input",
+  [SQL_VERIFICATION_OUTCOME_CODE.ROW_ABSENT]: "state_inconsistency",
+  [SQL_VERIFICATION_OUTCOME_CODE.VALUE_MISMATCH]: "state_inconsistency",
+  [SQL_VERIFICATION_OUTCOME_CODE.DUPLICATE_ROWS]: "state_inconsistency",
+  [SQL_VERIFICATION_OUTCOME_CODE.ROW_NOT_OBSERVED_WITHIN_WINDOW]: "downstream_execution_failure",
+  [SQL_VERIFICATION_OUTCOME_CODE.MULTI_EFFECT_UNCERTAIN_WITHIN_WINDOW]: "downstream_execution_failure",
+  [SQL_VERIFICATION_OUTCOME_CODE.CONNECTOR_ERROR]: "downstream_execution_failure",
+  [SQL_VERIFICATION_OUTCOME_CODE.ROW_SHAPE_MISMATCH]: "downstream_execution_failure",
+  [SQL_VERIFICATION_OUTCOME_CODE.UNREADABLE_VALUE]: "downstream_execution_failure",
+  [SQL_VERIFICATION_OUTCOME_CODE.MULTI_EFFECT_PARTIAL]: "downstream_execution_failure",
+  [SQL_VERIFICATION_OUTCOME_CODE.MULTI_EFFECT_ALL_FAILED]: "downstream_execution_failure",
+  [SQL_VERIFICATION_OUTCOME_CODE.MULTI_EFFECT_INCOMPLETE]: "bad_input",
   [STEP_NO_REASON_CODE]: "control_flow_problem",
   [TEST_BLOCKING_CODE]: "control_flow_problem",
 };
 
-function initResolveCodes(): void {
-  for (const c of RESOLVE_FAILURE_CODES) {
-    STEP_CODE_TO_CATEGORY[c] = "bad_input";
-  }
+for (const c of Object.values(REGISTRY_RESOLVER_CODE)) {
+  STEP_CODE_TO_CATEGORY[c] = "bad_input";
 }
-initResolveCodes();
 
 /** Classify a production step primary reason code (P-CAT-4 tables D/E); excludes ambiguous/unclassified. */
 export function productionStepReasonCodeToActionableCategory(code: string): ActionableFailureCategory {
@@ -174,62 +172,27 @@ export function deriveActionableFailureWorkflow(
   };
 }
 
-/** Operational code → actionable category (CLI envelope). */
-export const OPERATIONAL_CODE_TO_ACTIONABLE_CATEGORY: Record<OperationalCode, ActionableFailureCategory> = {
-  [CLI_OPERATIONAL_CODES.CLI_USAGE]: "bad_input",
-  [CLI_OPERATIONAL_CODES.REGISTRY_READ_FAILED]: "bad_input",
-  [CLI_OPERATIONAL_CODES.REGISTRY_JSON_SYNTAX]: "bad_input",
-  [CLI_OPERATIONAL_CODES.REGISTRY_SCHEMA_INVALID]: "bad_input",
-  [CLI_OPERATIONAL_CODES.REGISTRY_DUPLICATE_TOOL_ID]: "bad_input",
-  [CLI_OPERATIONAL_CODES.EVENTS_READ_FAILED]: "bad_input",
-  [CLI_OPERATIONAL_CODES.SQLITE_DATABASE_OPEN_FAILED]: "downstream_execution_failure",
-  [CLI_OPERATIONAL_CODES.POSTGRES_CLIENT_SETUP_FAILED]: "downstream_execution_failure",
-  [CLI_OPERATIONAL_CODES.WORKFLOW_RESULT_SCHEMA_INVALID]: "control_flow_problem",
-  [CLI_OPERATIONAL_CODES.INTERNAL_ERROR]: "control_flow_problem",
-  [CLI_OPERATIONAL_CODES.COMPARE_USAGE]: "bad_input",
-  [CLI_OPERATIONAL_CODES.COMPARE_INSUFFICIENT_RUNS]: "control_flow_problem",
-  [CLI_OPERATIONAL_CODES.COMPARE_WORKFLOW_ID_MISMATCH]: "control_flow_problem",
-  [CLI_OPERATIONAL_CODES.COMPARE_INPUT_READ_FAILED]: "bad_input",
-  [CLI_OPERATIONAL_CODES.COMPARE_INPUT_JSON_SYNTAX]: "bad_input",
-  [CLI_OPERATIONAL_CODES.COMPARE_INPUT_SCHEMA_INVALID]: "bad_input",
-  [CLI_OPERATIONAL_CODES.COMPARE_WORKFLOW_TRUTH_MISMATCH]: "control_flow_problem",
-  [CLI_OPERATIONAL_CODES.COMPARE_RUN_COMPARISON_REPORT_INVALID]: "control_flow_problem",
-  [CLI_OPERATIONAL_CODES.VERIFICATION_POLICY_INVALID]: "bad_input",
-  [CLI_OPERATIONAL_CODES.EVENTUAL_MODE_NOT_SUPPORTED_IN_PROCESS_HOOK]: "control_flow_problem",
-  [CLI_OPERATIONAL_CODES.VALIDATE_REGISTRY_USAGE]: "bad_input",
-  [CLI_OPERATIONAL_CODES.EXECUTION_TRACE_USAGE]: "bad_input",
-  [CLI_OPERATIONAL_CODES.TRACE_DUPLICATE_RUN_EVENT_ID]: "control_flow_problem",
-  [CLI_OPERATIONAL_CODES.TRACE_UNKNOWN_PARENT_RUN_EVENT_ID]: "control_flow_problem",
-  [CLI_OPERATIONAL_CODES.TRACE_PARENT_FORWARD_REFERENCE]: "control_flow_problem",
-};
+function operationalActionableMaps(): {
+  category: Record<OperationalCode, ActionableFailureCategory>;
+  severity: Record<OperationalCode, ActionableFailureSeverity>;
+} {
+  const category = {} as Record<OperationalCode, ActionableFailureCategory>;
+  const severity = {} as Record<OperationalCode, ActionableFailureSeverity>;
+  for (const code of Object.values(CLI_OPERATIONAL_CODES) as OperationalCode[]) {
+    const row = OPERATIONAL_DISPOSITION[code];
+    category[code] = row.actionableCategory;
+    severity[code] = row.actionableSeverity;
+  }
+  return { category, severity };
+}
 
-export const OPERATIONAL_CODE_TO_SEVERITY: Record<OperationalCode, ActionableFailureSeverity> = {
-  [CLI_OPERATIONAL_CODES.CLI_USAGE]: "low",
-  [CLI_OPERATIONAL_CODES.REGISTRY_READ_FAILED]: "medium",
-  [CLI_OPERATIONAL_CODES.REGISTRY_JSON_SYNTAX]: "medium",
-  [CLI_OPERATIONAL_CODES.REGISTRY_SCHEMA_INVALID]: "medium",
-  [CLI_OPERATIONAL_CODES.REGISTRY_DUPLICATE_TOOL_ID]: "medium",
-  [CLI_OPERATIONAL_CODES.EVENTS_READ_FAILED]: "high",
-  [CLI_OPERATIONAL_CODES.SQLITE_DATABASE_OPEN_FAILED]: "high",
-  [CLI_OPERATIONAL_CODES.POSTGRES_CLIENT_SETUP_FAILED]: "high",
-  [CLI_OPERATIONAL_CODES.WORKFLOW_RESULT_SCHEMA_INVALID]: "medium",
-  [CLI_OPERATIONAL_CODES.INTERNAL_ERROR]: "high",
-  [CLI_OPERATIONAL_CODES.COMPARE_USAGE]: "low",
-  [CLI_OPERATIONAL_CODES.COMPARE_INSUFFICIENT_RUNS]: "low",
-  [CLI_OPERATIONAL_CODES.COMPARE_WORKFLOW_ID_MISMATCH]: "medium",
-  [CLI_OPERATIONAL_CODES.COMPARE_INPUT_READ_FAILED]: "medium",
-  [CLI_OPERATIONAL_CODES.COMPARE_INPUT_JSON_SYNTAX]: "medium",
-  [CLI_OPERATIONAL_CODES.COMPARE_INPUT_SCHEMA_INVALID]: "medium",
-  [CLI_OPERATIONAL_CODES.COMPARE_WORKFLOW_TRUTH_MISMATCH]: "medium",
-  [CLI_OPERATIONAL_CODES.COMPARE_RUN_COMPARISON_REPORT_INVALID]: "medium",
-  [CLI_OPERATIONAL_CODES.VERIFICATION_POLICY_INVALID]: "low",
-  [CLI_OPERATIONAL_CODES.EVENTUAL_MODE_NOT_SUPPORTED_IN_PROCESS_HOOK]: "medium",
-  [CLI_OPERATIONAL_CODES.VALIDATE_REGISTRY_USAGE]: "low",
-  [CLI_OPERATIONAL_CODES.EXECUTION_TRACE_USAGE]: "low",
-  [CLI_OPERATIONAL_CODES.TRACE_DUPLICATE_RUN_EVENT_ID]: "medium",
-  [CLI_OPERATIONAL_CODES.TRACE_UNKNOWN_PARENT_RUN_EVENT_ID]: "medium",
-  [CLI_OPERATIONAL_CODES.TRACE_PARENT_FORWARD_REFERENCE]: "medium",
-};
+const _opAct = operationalActionableMaps();
+
+/** Operational code → actionable category (CLI envelope). */
+export const OPERATIONAL_CODE_TO_ACTIONABLE_CATEGORY: Record<OperationalCode, ActionableFailureCategory> =
+  _opAct.category;
+
+export const OPERATIONAL_CODE_TO_SEVERITY: Record<OperationalCode, ActionableFailureSeverity> = _opAct.severity;
 
 export function deriveActionableFailureOperational(code: string): ActionableFailure {
   const c = code as OperationalCode;
@@ -269,6 +232,7 @@ export function maxConsecutiveStreak(sortedUniqueIndices: number[]): number {
 export function buildActionableCategoryRecurrence(perRun: PerRunActionable[]): ActionableCategoryRecurrenceRow[] {
   const byCat = new Map<string, number[]>();
   for (const r of perRun) {
+    if (r.category === "complete") continue;
     const arr = byCat.get(r.category) ?? [];
     arr.push(r.runIndex);
     byCat.set(r.category, arr);

@@ -1,4 +1,5 @@
 import { formatOperationalMessage } from "./failureCatalog.js";
+import { SQL_VERIFICATION_OUTCOME_CODE } from "./wireReasonCodes.js";
 import { ConnectorError, fetchRowsForVerification } from "./sqlConnector.js";
 import type { SqlReadBackend } from "./sqlReadBackend.js";
 import type { DatabaseSync } from "node:sqlite";
@@ -25,14 +26,14 @@ export function reconcileFromRows(rows: Record<string, unknown>[], req: Verifica
   if (n === 0) {
     return {
       status: "missing",
-      reasons: [{ code: "ROW_ABSENT", message: `No row matched key (${ctx})` }],
+      reasons: [{ code: SQL_VERIFICATION_OUTCOME_CODE.ROW_ABSENT, message: `No row matched key (${ctx})` }],
       evidenceSummary: { rowCount: 0 },
     };
   }
   if (n >= 2) {
     return {
       status: "inconsistent",
-      reasons: [{ code: "DUPLICATE_ROWS", message: `More than one row matched key (${ctx})` }],
+      reasons: [{ code: SQL_VERIFICATION_OUTCOME_CODE.DUPLICATE_ROWS, message: `More than one row matched key (${ctx})` }],
       evidenceSummary: { rowCount: n },
     };
   }
@@ -45,7 +46,9 @@ export function reconcileFromRows(rows: Record<string, unknown>[], req: Verifica
     if (!(col in row)) {
       return {
         status: "incomplete_verification",
-        reasons: [{ code: "ROW_SHAPE_MISMATCH", message: `Column not in row: ${k} (${ctx})` }],
+        reasons: [
+          { code: SQL_VERIFICATION_OUTCOME_CODE.ROW_SHAPE_MISMATCH, message: `Column not in row: ${k} (${ctx})` },
+        ],
         evidenceSummary: { rowCount: 1, rowKeys: Object.keys(row) },
       };
     }
@@ -53,7 +56,13 @@ export function reconcileFromRows(rows: Record<string, unknown>[], req: Verifica
     if (typeof actual === "object" && actual !== null && !(actual instanceof Date)) {
       return {
         status: "incomplete_verification",
-        reasons: [{ code: "UNREADABLE_VALUE", message: `Non-scalar value for ${k} (${ctx})`, field: k }],
+        reasons: [
+          {
+            code: SQL_VERIFICATION_OUTCOME_CODE.UNREADABLE_VALUE,
+            message: `Non-scalar value for ${k} (${ctx})`,
+            field: k,
+          },
+        ],
         evidenceSummary: { rowCount: 1, field: k },
       };
     }
@@ -64,7 +73,7 @@ export function reconcileFromRows(rows: Record<string, unknown>[], req: Verifica
       const message = `Expected ${cmp.expected} but found ${cmp.actual} for field ${k} (${ctx})`;
       return {
         status: "inconsistent",
-        reasons: [{ code: "VALUE_MISMATCH", message, field: k }],
+        reasons: [{ code: SQL_VERIFICATION_OUTCOME_CODE.VALUE_MISMATCH, message, field: k }],
         evidenceSummary: {
           rowCount: 1,
           field: k,
@@ -90,7 +99,7 @@ export function reconcileSqlRow(db: DatabaseSync, req: VerificationRequest): Rec
     if (e instanceof ConnectorError) {
       return {
         status: "incomplete_verification",
-        reasons: [{ code: "CONNECTOR_ERROR", message: formatOperationalMessage(e.message) }],
+        reasons: [{ code: SQL_VERIFICATION_OUTCOME_CODE.CONNECTOR_ERROR, message: formatOperationalMessage(e.message) }],
         evidenceSummary: { rowCount: null, error: true },
       };
     }
@@ -110,7 +119,7 @@ export async function reconcileSqlRowAsync(
     if (e instanceof ConnectorError) {
       return {
         status: "incomplete_verification",
-        reasons: [{ code: "CONNECTOR_ERROR", message: formatOperationalMessage(e.message) }],
+        reasons: [{ code: SQL_VERIFICATION_OUTCOME_CODE.CONNECTOR_ERROR, message: formatOperationalMessage(e.message) }],
         evidenceSummary: { rowCount: null, error: true },
       };
     }

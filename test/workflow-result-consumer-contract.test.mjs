@@ -1,5 +1,5 @@
 /**
- * Legacy stdout shape: required keys for 0.x consumers plus runLevelReasons.
+ * WorkflowResult stdout: required keys for consumers plus runLevelReasons (v10).
  */
 import { describe, it, before, after } from "node:test";
 import assert from "node:assert/strict";
@@ -56,7 +56,6 @@ describe("WorkflowResult consumer contract (CLI stdout)", () => {
       "schemaVersion",
       "workflowId",
       "status",
-      "runLevelCodes",
       "steps",
       "runLevelReasons",
       "verificationPolicy",
@@ -65,15 +64,12 @@ describe("WorkflowResult consumer contract (CLI stdout)", () => {
     ]) {
       assert.ok(k in parsed, `missing key ${k}`);
     }
-    assert.equal(parsed.schemaVersion, 9);
+    assert.equal(parsed.schemaVersion, 10);
     assert.equal(typeof parsed.schemaVersion, "number");
     assert.equal(typeof parsed.workflowId, "string");
     assert.equal(typeof parsed.status, "string");
-    assert.ok(Array.isArray(parsed.runLevelCodes));
     assert.ok(Array.isArray(parsed.runLevelReasons));
     assert.ok(Array.isArray(parsed.steps));
     assert.equal(parsed.runLevelReasons.length, 0);
-    assert.equal(parsed.runLevelCodes.length, 0);
-    assert.equal(parsed.runLevelCodes.length, parsed.runLevelReasons.length);
   });
 });
