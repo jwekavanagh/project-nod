@@ -11,7 +11,7 @@ import { formatWorkflowTruthReportStruct } from "./workflowTruthReport.js";
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const repoRoot = join(__dirname, "..");
 
-describe("Slice 2–3: verification against system state (requirements)", () => {
+describe("Verification against system state (requirements)", () => {
   let dir: string;
   let dbPath: string;
   const eventsPath = join(repoRoot, "examples", "events.ndjson");
@@ -21,7 +21,7 @@ describe("Slice 2–3: verification against system state (requirements)", () => 
   const validateEvent = loadSchemaValidator("event");
 
   beforeAll(() => {
-    dir = mkdtempSync(join(tmpdir(), "etl-slice2-"));
+    dir = mkdtempSync(join(tmpdir(), "etl-verify-outcome-"));
     dbPath = join(dir, "verify.db");
     const sql = readFileSync(join(repoRoot, "examples", "seed.sql"), "utf8");
     const db = new DatabaseSync(dbPath);
@@ -83,12 +83,12 @@ describe("Slice 2–3: verification against system state (requirements)", () => 
   });
 
   it("C: success-shaped params do not imply verified without row", async () => {
-    const p = join(dir, "slice2_fake_ok.ndjson");
+    const p = join(dir, "verify_fake_ok.ndjson");
     writeFileSync(
       p,
       `${JSON.stringify({
         schemaVersion: 1,
-        workflowId: "wf_slice2_fake_ok",
+        workflowId: "wf_verify_fake_ok",
         seq: 0,
         type: "tool_observed",
         toolId: "crm.upsert_contact",
@@ -100,7 +100,7 @@ describe("Slice 2–3: verification against system state (requirements)", () => 
       })}\n`,
     );
     const r = await verifyWorkflow({
-      workflowId: "wf_slice2_fake_ok",
+      workflowId: "wf_verify_fake_ok",
       eventsPath: p,
       registryPath,
       database: sqliteDb(),
@@ -146,7 +146,7 @@ describe("Slice 2–3: verification against system state (requirements)", () => 
   it("F: multi-step — which step failed", async () => {
     const ev0 = {
       schemaVersion: 1,
-      workflowId: "wf_slice2_twostep",
+      workflowId: "wf_verify_twostep",
       seq: 0,
       type: "tool_observed" as const,
       toolId: "crm.upsert_contact",
@@ -154,16 +154,16 @@ describe("Slice 2–3: verification against system state (requirements)", () => 
     };
     const ev1 = {
       schemaVersion: 1,
-      workflowId: "wf_slice2_twostep",
+      workflowId: "wf_verify_twostep",
       seq: 1,
       type: "tool_observed" as const,
       toolId: "crm.upsert_contact",
       params: { recordId: "missing_id", fields: { name: "X", status: "Y" } },
     };
-    const p = join(dir, "slice2_twostep.ndjson");
+    const p = join(dir, "verify_twostep.ndjson");
     writeFileSync(p, `${JSON.stringify(ev0)}\n${JSON.stringify(ev1)}\n`);
     const r = await verifyWorkflow({
-      workflowId: "wf_slice2_twostep",
+      workflowId: "wf_verify_twostep",
       eventsPath: p,
       registryPath,
       database: sqliteDb(),
@@ -209,18 +209,18 @@ describe("Slice 2–3: verification against system state (requirements)", () => 
   }
 
   it("H: multi-effect partial — some effects verified, one missing", async () => {
-    const p = join(dir, "slice3_multi_partial.ndjson");
+    const p = join(dir, "multi_partial.ndjson");
     writeFileSync(
       p,
-      multiEvent("wf_slice3_multi_partial", {
-        primaryRecordId: "c_slice3_multi_partial_ok",
+      multiEvent("wf_multi_partial", {
+        primaryRecordId: "c_multi_partial_ok",
         primaryFields: { name: "PartialPrimary", status: "active" },
-        secondaryRecordId: "c_slice3_multi_partial_missing",
+        secondaryRecordId: "c_multi_partial_missing",
         secondaryFields: { name: "X", status: "y" },
       }),
     );
     const r = await verifyWorkflow({
-      workflowId: "wf_slice3_multi_partial",
+      workflowId: "wf_multi_partial",
       eventsPath: p,
       registryPath,
       database: sqliteDb(),
@@ -250,18 +250,18 @@ describe("Slice 2–3: verification against system state (requirements)", () => 
   });
 
   it("I: multi-effect all failed", async () => {
-    const p = join(dir, "slice3_multi_all_fail.ndjson");
+    const p = join(dir, "multi_all_fail.ndjson");
     writeFileSync(
       p,
-      multiEvent("wf_slice3_multi_all_fail", {
-        primaryRecordId: "c_slice3_multi_fail_a",
+      multiEvent("wf_multi_all_fail", {
+        primaryRecordId: "c_multi_fail_a",
         primaryFields: { name: "X", status: "y" },
-        secondaryRecordId: "c_slice3_multi_fail_b",
+        secondaryRecordId: "c_multi_fail_b",
         secondaryFields: { name: "X", status: "y" },
       }),
     );
     const r = await verifyWorkflow({
-      workflowId: "wf_slice3_multi_all_fail",
+      workflowId: "wf_multi_all_fail",
       eventsPath: p,
       registryPath,
       database: sqliteDb(),
@@ -277,18 +277,18 @@ describe("Slice 2–3: verification against system state (requirements)", () => 
   });
 
   it("J: multi-effect all verified", async () => {
-    const p = join(dir, "slice3_multi_ok.ndjson");
+    const p = join(dir, "multi_ok.ndjson");
     writeFileSync(
       p,
-      multiEvent("wf_slice3_multi_ok", {
-        primaryRecordId: "c_slice3_multi_pass_a",
+      multiEvent("wf_multi_ok", {
+        primaryRecordId: "c_multi_pass_a",
         primaryFields: { name: "Alice2", status: "active" },
-        secondaryRecordId: "c_slice3_multi_pass_b",
+        secondaryRecordId: "c_multi_pass_b",
         secondaryFields: { name: "Bob2", status: "active" },
       }),
     );
     const r = await verifyWorkflow({
-      workflowId: "wf_slice3_multi_ok",
+      workflowId: "wf_multi_ok",
       eventsPath: p,
       registryPath,
       database: sqliteDb(),
@@ -323,18 +323,18 @@ describe("Slice 2–3: verification against system state (requirements)", () => 
   });
 
   it("L: actionable feedback — multi-effect partial driver", async () => {
-    const p = join(dir, "slice3_multi_partial_L.ndjson");
+    const p = join(dir, "multi_partial_L.ndjson");
     writeFileSync(
       p,
-      multiEvent("wf_slice3_multi_partial_L", {
-        primaryRecordId: "c_slice3_multi_partial_ok",
+      multiEvent("wf_multi_partial_L", {
+        primaryRecordId: "c_multi_partial_ok",
         primaryFields: { name: "PartialPrimary", status: "active" },
-        secondaryRecordId: "c_slice3_multi_partial_missing",
+        secondaryRecordId: "c_multi_partial_missing",
         secondaryFields: { name: "X", status: "y" },
       }),
     );
     const r = await verifyWorkflow({
-      workflowId: "wf_slice3_multi_partial_L",
+      workflowId: "wf_multi_partial_L",
       eventsPath: p,
       registryPath,
       database: sqliteDb(),

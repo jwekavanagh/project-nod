@@ -20,8 +20,8 @@ describe("WorkflowResult stdout schemaVersion 13", () => {
     const src = readFileSync(join(root, "src", "workflowTruthReport.ts"), "utf8");
     const fnStart = src.indexOf("export function finalizeEmittedWorkflowResult");
     assert.ok(fnStart >= 0);
-    const fnSlice = src.slice(fnStart, fnStart + 800);
-    const matches = [...fnSlice.matchAll(/schemaVersion:\s*13/g)];
+    const fnExcerpt = src.slice(fnStart, fnStart + 800);
+    const matches = [...fnExcerpt.matchAll(/schemaVersion:\s*13/g)];
     assert.equal(matches.length, 1, "expected single schemaVersion: 13 in finalizeEmittedWorkflowResult");
   });
 

@@ -635,7 +635,7 @@ Change \`src/tracked.ts\`.
 describe("loadPlanTransitionRules", () => {
   it("Cursor-like front matter without planValidation and no citations yields INSUFFICIENT_SPEC", () => {
     const md = `---
-name: Slice
+name: Example plan
 overview: x
 todos: []
 isProject: false
@@ -654,7 +654,7 @@ isProject: false
 
   it("derived_citations: zero Repository transition heading and one backtick path yields requireMatchingRow rules", () => {
     const md = `---
-name: Slice
+name: Example plan
 overview: x
 isProject: false
 ---
@@ -679,7 +679,7 @@ Change \`src/only.ts\`.
 
   it("derived_citations: two backtick paths yield two requireMatchingRow rules in path sort order", () => {
     const md = `---
-name: Slice
+name: Example plan
 overview: x
 isProject: false
 ---

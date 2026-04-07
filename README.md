@@ -91,7 +91,7 @@ node dist/cli.js --workflow-id <id> --events <path> --registry <path> --postgres
 
 ## Canonical agent run bundle
 
-Saved runs that the Debug Console (or **`loadCorpusRun`**) can load as **`ok`** require **three files** per run directory: **`events.ndjson`**, **`workflow-result.json`**, and **`agent-run.json`** (a SHA-256 manifest—no separate **`meta.json`**). After **`verify-workflow`**, emit that layout with **`--write-run-bundle <dir>`** or **`writeAgentRunBundle`** from the package entry. Full contract, **`workflowVerdictSurface`**, programmatic retrieve path, and error codes: **[Slice 5 — workflow verdict and audit](docs/execution-truth-layer.md#slice-5-workflow-verdict-and-audit)** and **[Agent run record (canonical bundle)](docs/execution-truth-layer.md#agent-run-record-canonical-bundle)**.
+Saved runs that the Debug Console (or **`loadCorpusRun`**) can load as **`ok`** require **three files** per run directory: **`events.ndjson`**, **`workflow-result.json`**, and **`agent-run.json`** (a SHA-256 manifest—no separate **`meta.json`**). After **`verify-workflow`**, emit that layout with **`--write-run-bundle <dir>`** or **`writeAgentRunBundle`** from the package entry. Full contract, **`workflowVerdictSurface`**, programmatic retrieve path, and error codes: **[Workflow verdict and audit](docs/execution-truth-layer.md#workflow-verdict-and-audit)** and **[Agent run record (canonical bundle)](docs/execution-truth-layer.md#agent-run-record-canonical-bundle)**.
 
 ## Authoritative specification
 
@@ -111,9 +111,9 @@ node dist/cli.js --workflow-id wf_complete --events examples/events.ndjson --reg
 
 **Cross-run comparison:** `node dist/cli.js compare --prior earlier.json --current latest.json` — [Cross-run comparison (normative)](docs/execution-truth-layer.md#cross-run-comparison-normative).
 
-## Slice 6 — Compare and trust surfaces
+## Compare and trust surfaces
 
-Compare **stdout** is **`RunComparisonReport`** with **`schemaVersion` `4`** only (see [Cross-run comparison (normative)](docs/execution-truth-layer.md#cross-run-comparison-normative) for breaking change from saved v2 compare outputs). The Debug Console serves **server-rendered HTML** for the compare panel and run-trust panel (`comparePanelHtml`, `runTrustPanelHtml`); success response key sets are specified in [Slice 6 — Compare runs + independent verification](docs/execution-truth-layer.md#slice-6--compare-runs--independent-verification) in the SSOT. End-to-end UI coverage: **`npm run test:debug-ui`** (Playwright; **`npm run test:ci`** installs Chromium and runs it last).
+Compare **stdout** is **`RunComparisonReport`** with **`schemaVersion` `4`** only (see [Cross-run comparison (normative)](docs/execution-truth-layer.md#cross-run-comparison-normative) for breaking change from saved v2 compare outputs). The Debug Console serves **server-rendered HTML** for the compare panel and run-trust panel (`comparePanelHtml`, `runTrustPanelHtml`); success response key sets are specified in [Compare runs and independent verification](docs/execution-truth-layer.md#compare-runs-and-independent-verification) in the SSOT. End-to-end UI coverage: **`npm run test:debug-ui`** (Playwright; **`npm run test:ci`** installs Chromium and runs it last).
 
 **Plan transition (git + plan markdown):** `node dist/cli.js plan-transition --repo <dir> --before <ref> --after <ref> --plan <path>` — validates `git diff -z --name-status` against rules from YAML front matter **`planValidation`**, a **`## Repository transition validation`** body YAML fence ([`plan-validation-core.schema.json`](schemas/plan-validation-core.schema.json)), or **derived path citations** from obligation **H2** sections (Implementation / Testing / Documentation / Validation) and **`todos[].content`** when neither is present (each cited path must appear in the diff — see SSOT). Emits **`WorkflowResult`** (default **`workflowId` `wf_plan_transition`**). Requires **Git ≥ 2.30.0**. Spec: [Plan transition validation (normative)](docs/execution-truth-layer.md#plan-transition-validation-normative).
 

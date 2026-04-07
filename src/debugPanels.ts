@@ -17,7 +17,7 @@ function formatPlanTransitionEvidenceSummary(ev: Record<string, unknown>): strin
   return json.length <= max ? json : `${json.slice(0, max - 3)}...`;
 }
 
-/** Single formatter for trust panel SQL evidence column (Slice 6); plan-transition uses git diff evidence. */
+/** Single formatter for trust panel SQL evidence column (Debug compare/trust UI); plan-transition uses git diff evidence. */
 export function formatSqlEvidenceDetailForTrustPanel(step: StepOutcome): string {
   if (step.evidenceSummary && (step.evidenceSummary as { planTransition?: boolean }).planTransition === true) {
     return formatPlanTransitionEvidenceSummary(step.evidenceSummary as Record<string, unknown>);
@@ -128,7 +128,7 @@ export function renderRunTrustPanelHtml(wf: WorkflowResult): string {
   const findings = wf.workflowTruthReport.executionPathFindings;
   const summary = wf.workflowTruthReport.executionPathSummary.trim();
   // "No concerns" = no path findings. `executionPathSummary` may still be non-empty for v1
-  // informational text that is not a user-facing finding list (Slice 6 HTML contract).
+  // informational text that is not a user-facing finding list (compare/trust HTML contract).
   const hasConcerns = findings.length > 0;
 
   let executionPathInner: string;

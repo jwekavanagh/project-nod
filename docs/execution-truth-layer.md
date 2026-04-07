@@ -9,7 +9,7 @@ This document is the authoritative specification for the MVP. The product verifi
 - **SQLite via `node:sqlite`**: Read-only `SELECT` against a file path gives reproducible ground truth in CI. The reference plan named `better-sqlite3`; this repo uses Node’s built-in module (**Node ≥ 22.13**) to avoid native compilation on constrained environments while preserving the same reconciliation rules as Postgres (see [SQL connector contract](#sql-connector-contract)).
 - **Postgres via `pg` (batch/CLI only)**: `verifyWorkflow` can target PostgreSQL using a single `pg.Client` per run, session read-only guards (`applyPostgresVerificationSessionGuards`), then verification `SELECT`s only. The in-process hook does **not** use Postgres (see [Postgres verification (batch and CLI)](#postgres-verification-batch-and-cli)).
 
-## Product requirements: outcome verification (Slice 2–3)
+## Product requirements: outcome verification
 
 This subsection maps **outcome verification** product acceptance criteria to this MVP’s emitted artifacts. **Structural SSOT** remains [`schemas/workflow-result.schema.json`](../schemas/workflow-result.schema.json) and [`schemas/workflow-truth-report.schema.json`](../schemas/workflow-truth-report.schema.json); do not treat the bullets below as a second field catalog.
 
@@ -23,12 +23,12 @@ This subsection maps **outcome verification** product acceptance criteria to thi
 | **Wrong values** | Typically `VALUE_MISMATCH` (and `evidenceSummary.expected` / `actual` / `field`) → step `inconsistent` → truth `FAILED_VALUE_MISMATCH`. |
 | **Duplicate rows at key** | `DUPLICATE_ROWS` → step `inconsistent`. |
 | **Which step** in a multi-step workflow | `steps[].seq`, `steps[].toolId`; truth report steps align by `seq`. |
-| **Slice 3 — Partial multi-effect completion** | Registry `sql_effects` (≥2 row checks): step `partially_verified` / `MULTI_EFFECT_PARTIAL` when some effects `verified` and others `missing` or `inconsistent`; `inconsistent` / `MULTI_EFFECT_ALL_FAILED` when all fail; per-effect rows in `WorkflowResult.steps[].evidenceSummary.effects` and `workflowTruthReport.steps[].effects` (each with `outcomeLabel`, `reasons`). Step-level rollup `reasons[0].message` includes a **Per effect:** clause listing `effectId (firstReasonCode)` for each failed effect (see [Step rollup (multi-effect only)](#workflow-result-multi-effect-shape)). Workflow status remains `inconsistent` when any step is `partially_verified` ([Workflow status](#workflow-status-prd-aligned)). Example tool: `crm.upsert_contact_multi` in [`examples/tools.json`](../examples/tools.json). |
-| **Slice 3 — Actionable verification failure feedback** | **Why / what failed:** `WorkflowResult.steps[].reasons` and per-effect `reasons` in `evidenceSummary.effects`; **human stderr:** `detail:` / `reference_code:` under each step and effect ([Human truth report](#human-truth-report)). **Step + expectation + observation:** `workflowTruthReport.steps[]` has `seq`, `toolId`, `verifyTarget`, `intendedEffect.narrative`, `observedExecution.paramsCanonical`. **Kinds for action:** `outcomeLabel`, `failureDiagnostic` on each non-verified step, `reasons[].code`, plus `workflowTruthReport.failureAnalysis` (`summary`, `primaryOrigin`, `evidence` with `scope` `step` / `effect`, `actionableFailure.category` / `severity`). When the driver step’s first reason is a multi-effect rollup code (`MULTI_EFFECT_*`), `failureAnalysis.summary` (P5) appends a sentence pointing operators to **`workflowTruthReport.steps[].effects`** for authoritative per-effect outcomes. |
+| **Partial multi-effect completion** | Registry `sql_effects` (≥2 row checks): step `partially_verified` / `MULTI_EFFECT_PARTIAL` when some effects `verified` and others `missing` or `inconsistent`; `inconsistent` / `MULTI_EFFECT_ALL_FAILED` when all fail; per-effect rows in `WorkflowResult.steps[].evidenceSummary.effects` and `workflowTruthReport.steps[].effects` (each with `outcomeLabel`, `reasons`). Step-level rollup `reasons[0].message` includes a **Per effect:** clause listing `effectId (firstReasonCode)` for each failed effect (see [Step rollup (multi-effect only)](#workflow-result-multi-effect-shape)). Workflow status remains `inconsistent` when any step is `partially_verified` ([Workflow status](#workflow-status-prd-aligned)). Example tool: `crm.upsert_contact_multi` in [`examples/tools.json`](../examples/tools.json). |
+| **Actionable verification failure feedback** | **Why / what failed:** `WorkflowResult.steps[].reasons` and per-effect `reasons` in `evidenceSummary.effects`; **human stderr:** `detail:` / `reference_code:` under each step and effect ([Human truth report](#human-truth-report)). **Step + expectation + observation:** `workflowTruthReport.steps[]` has `seq`, `toolId`, `verifyTarget`, `intendedEffect.narrative`, `observedExecution.paramsCanonical`. **Kinds for action:** `outcomeLabel`, `failureDiagnostic` on each non-verified step, `reasons[].code`, plus `workflowTruthReport.failureAnalysis` (`summary`, `primaryOrigin`, `evidence` with `scope` `step` / `effect`, `actionableFailure.category` / `severity`). When the driver step’s first reason is a multi-effect rollup code (`MULTI_EFFECT_*`), `failureAnalysis.summary` (P5) appends a sentence pointing operators to **`workflowTruthReport.steps[].effects`** for authoritative per-effect outcomes. |
 
-**Proof in repo:** Requirement-level black-box tests live in `src/verificationAgainstSystemState.requirements.test.ts` (Vitest), using `verifyWorkflow` and SQLite seeded from `examples/seed.sql` only. Slice 3 coverage includes tests **H–L** (multi-effect partial / all-fail / all-pass, actionable feedback, human report substrings) and **Negative:** complete workflow `failureAnalysis === null`.
+**Proof in repo:** Requirement-level black-box tests live in `src/verificationAgainstSystemState.requirements.test.ts` (Vitest), using `verifyWorkflow` and SQLite seeded from `examples/seed.sql` only. Multi-effect and operator-feedback coverage includes tests **H–L** (multi-effect partial / all-fail / all-pass, actionable feedback, human report substrings) and **Negative:** complete workflow `failureAnalysis === null`.
 
-## Slice 5: Workflow verdict and audit
+## Workflow verdict and audit
 
 This subsection maps **workflow-level verdict** and **auditable run records** acceptance criteria to this MVP. **Structural SSOT** for emitted JSON is unchanged ([`schemas/workflow-result.schema.json`](../schemas/workflow-result.schema.json), [`schemas/workflow-truth-report.schema.json`](../schemas/workflow-truth-report.schema.json), [`schemas/agent-run-record.schema.json`](../schemas/agent-run-record.schema.json)).
 
@@ -43,37 +43,37 @@ This subsection maps **workflow-level verdict** and **auditable run records** ac
 | **Retrieve and review a past run** | **Programmatic:** **`loadCorpusRun(corpusRoot, runId)`** (package export)—**`loadStatus === "ok"`** yields **`workflowResult`**, **`agentRunRecord`**, **`paths`**. **Interactive:** **`verify-workflow debug --corpus <dir>`** and Debug Console; **`GET /api/runs/:id`** returns **`workflowResult`**, **`workflowVerdictSurface`**, **`executionTrace`**, etc. **Offline:** open **`workflow-result.json`** / **`events.ndjson`** on disk. |
 | **Empty `events.ndjson`** | A **zero-byte** `events.ndjson` is valid when the manifest records **`byteLength` 0** and the SHA-256 of the empty buffer. It means “no captured lines in this bundle,” not “workflow succeeded.” |
 
-### Slice 5 — Engineer
+### Workflow verdict — Engineer
 
 - **`agentRunBundle.ts`**: **`writeAgentRunBundle`** writes each final file via a temp name in the run directory then **rename** into place. Order: **`events.ndjson`** → **`workflow-result.json`** → **`agent-run.json`** (manifest last). On failure mid-write, temp files for the current attempt are removed; a crash can still leave an invalid directory until the next successful write—loaders return **`ARTIFACT_*`** / parse errors as today.
 - **`workflowTruthReport.ts`**: **`buildWorkflowVerdictSurface(WorkflowResult)`** for API/UI only.
 - **`pipeline.ts`**: **`withWorkflowVerification`** optional **`persistBundle: { outDir }`**. After a successful run, **`captureNdjsonUtf8()`** serializes **`bufferedRunEvents`** in strict **`observeStep` enqueue order** (`JSON.stringify(event) + "\n"` per line), then **`writeAgentRunBundle`** is called with the **final** **`WorkflowResult`** (v13 + truth report). No bundle is written if **`run`** throws or **`buildWorkflowResult`** fails.
 
-### Slice 5 — Integrator
+### Workflow verdict — Integrator
 
 - **Preserve:** **`writeAgentRunBundle({ outDir, eventsNdjson, workflowResult })`** or CLI **`--write-run-bundle <dir>`** (`runId` = basename of resolved `outDir`).
 - **Retrieve:** **`loadCorpusRun(resolveCorpusRootReal(corpusRoot), runId)`**; treat **`ok`** as the normative “this directory is a consistent bundle.”
 - **In-process audit:** pass **`persistBundle`** on **`withWorkflowVerification`**, or build **`eventsNdjson`** yourself and call **`writeAgentRunBundle`** after **`finalizeEmittedWorkflowResult`** (or use the fulfilled **`WorkflowResult`** from the hook).
 
-### Slice 5 — Operator
+### Workflow verdict — Operator
 
 - Debug Console run detail shows **workflow status**, **trust summary**, and **non-zero step outcome counts** from **`workflowVerdictSurface`** before raw JSON.
 - Do not treat a folder as trusted until **`loadCorpusRun`** returns **`ok`** (or the Debug list shows **`loadStatus` ok**). Tampering yields **`ARTIFACT_INTEGRITY_MISMATCH`** / **`ARTIFACT_LENGTH_MISMATCH`** / **`WORKFLOW_RESULT_*`** as documented under corpus load outcomes.
 
 **Proof in repo:** `src/agentRunBundle.test.ts` (round-trip, empty events, integrity negative), `src/workflowVerdictSurface.test.ts`, `src/withWorkflowVerification.persistBundle.test.ts`, `src/debugServer.test.ts` (**`workflowVerdictSurface`** on run detail).
 
-## Slice 6 — Compare runs + independent verification
+## Compare runs and independent verification
 
 This subsection maps **multi-run compare**, **reliability/read highlights**, and **independent SQL trust** acceptance criteria to emitted artifacts and the Debug Console. **Structural SSOT** for compare stdout is [`schemas/run-comparison-report.schema.json`](../schemas/run-comparison-report.schema.json) (**`schemaVersion` `4`**). **No** second compare JSON view-model is defined for Debug UI: compare and trust panels are **HTML strings** only on HTTP success paths.
 
 | Acceptance theme | Where it appears in the product |
 |------------------|----------------------------------|
-| **9.1** Multiple workflow results in one compare | `buildRunComparisonReport` over ordered normalized **`WorkflowResult[]`** (length ≥ 2); CLI **`compare`**; **`POST /api/compare`**. Proof: `src/slice6.compare.ac.test.ts` **`AC_9_1_multi_run_compare_emits_schema_v4`**. |
+| **9.1** Multiple workflow results in one compare | `buildRunComparisonReport` over ordered normalized **`WorkflowResult[]`** (length ≥ 2); CLI **`compare`**; **`POST /api/compare`**. Proof: `src/compare.acceptance.test.ts` **`AC_9_1_multi_run_compare_emits_schema_v4`**. |
 | **9.2** Introduced / resolved / recurring highlights | Required **`compareHighlights`** on **`RunComparisonReport` v4**; HTML lists derived only in **`renderComparePanelHtml`**. Proof: **`AC_9_2_compareHighlights_match_fixture`**. |
 | **9.3** Review differences in UI | Compare tab assigns **`comparePanelHtml`** to **`innerHTML`** (no browser-side recompute). Proof: `test/debug-ui/ac-9-3.spec.ts` **`AC_9_3_compare_panel_markup`**. |
-| **9.4** Reliability headline when window vs pairwise diverge | Required **`reliabilityAssessment`** ( **`headlineVerdict`**, **`headlineRationale`** ); pinned golden `test/fixtures/debug-ui-slice6/headline-ac-9-4.json`. Proof: **`AC_9_4_headlineVerdict_window_pairwise_divergence`**. |
+| **9.4** Reliability headline when window vs pairwise diverge | Required **`reliabilityAssessment`** ( **`headlineVerdict`**, **`headlineRationale`** ); pinned golden `test/fixtures/debug-ui-compare/headline-ac-9-4.json`. Proof: **`AC_9_4_headlineVerdict_window_pairwise_divergence`**. |
 | **10.1–10.2** Trust from read-only SQL, not model narrative | `verifyWorkflow` + registry + DB for **`wf_missing`**: **`ROW_ABSENT`**, **`FAILED_ROW_MISSING`**, zero rows. Proof: `src/verificationAgainstSystemState.requirements.test.ts` **`AC_10_1_AC_10_2_independent_sql_evidence_not_execution_narrative`**. |
-| **10.3** SQL evidence column in trust table | **`formatSqlEvidenceDetailForTrustPanel`** → **`td[data-etl-field="sql-evidence"]`**; substring drift guard `test/fixtures/debug-ui-slice6/expected-strings.json`. Proof: `test/debug-ui/ac-10-3.spec.ts`. |
+| **10.3** SQL evidence column in trust table | **`formatSqlEvidenceDetailForTrustPanel`** → **`td[data-etl-field="sql-evidence"]`**; substring drift guard `test/fixtures/debug-ui-compare/expected-strings.json`. Proof: `test/debug-ui/ac-10-3.spec.ts`. |
 | **10.4** Execution-path findings vs empty | **`renderRunTrustPanelHtml`**: **`li[data-etl-finding-code]`** vs **`p[data-etl-execution-path-empty]`** (exact copy in **`expected-strings.json`**). Proof: `test/debug-ui/ac-10-4.spec.ts` **`AC_10_4_execution_path`**. |
 
 ### Debug API (normative success shapes)
@@ -106,13 +106,13 @@ Types: **`runTrustPanelHtml`** non-empty string (from **`renderRunTrustPanelHtml
 | **`tr[data-etl-alignment-warning="true"]`** | Truth/engine seq misalignment |
 | **`section[data-etl-section="execution-path"]`**, **`p[data-etl-execution-path-empty]`**, **`p[data-etl-execution-path-summary]`**, **`ol[data-etl-list="execution-findings"]`**, **`li[data-etl-finding-code]`** | Execution-path rollup |
 
-### Slice 6 — Engineer
+### Compare and trust panels — Engineer
 
 - **`debugPanels.ts`**: **`renderComparePanelHtml`**, **`renderRunTrustPanelHtml`**, **`formatSqlEvidenceDetailForTrustPanel`** — sole producers of compare/trust HTML for Debug UI.
 - **`runComparison.ts`**: **`buildRunComparisonReport`**, **`formatRunComparisonReport`** (v4 **`reliabilityAssessment`**, **`compareHighlights`**, per-run **`recommendedAction`** / **`automationSafe`**).
 - **`debug-ui/app.js`**: assigns **`comparePanelHtml`** / **`runTrustPanelHtml`** to **`innerHTML`** only.
 
-**Drift guard:** `test/fixtures/debug-ui-slice6/expected-strings.json` is the only source for Playwright substring assertions (and matching Vitest checks).
+**Drift guard:** `test/fixtures/debug-ui-compare/expected-strings.json` is the only source for Playwright substring assertions (and matching Vitest checks).
 
 ## Plan transition validation (normative)
 
@@ -308,7 +308,7 @@ Exit codes match batch verify (**0** / **1** / **2** / **3**). Operational codes
 | `debugRunFilters.ts` | Server-side **`GET /api/runs`** query parsing, pagination cursor, **`includeLoadErrors`** default **true**, **`hasPathFindings`** filter |
 | `debugRunIndex.ts` | **`RunListItem`** facets for filters (**`pathFindingCodes`** from truth report); customer sentinel **`__unspecified__`** when **`agent-run.json`** omits **`customerId`** (ok rows) or on load errors |
 | `debugServer.ts` | Local HTTP on **127.0.0.1** only: JSON APIs + static **`debug-ui/`** (copied to **`dist/debug-ui/`** on build) |
-| `debugPanels.ts` | **`renderComparePanelHtml`**, **`renderRunTrustPanelHtml`**, **`formatSqlEvidenceDetailForTrustPanel`** — server-only HTML for Slice 6 compare/trust panels; plan-transition basis line + evidence serialization when **`workflowId === wf_plan_transition`** |
+| `debugPanels.ts` | **`renderComparePanelHtml`**, **`renderRunTrustPanelHtml`**, **`formatSqlEvidenceDetailForTrustPanel`** — server-only HTML for compare/trust Debug panels; plan-transition basis line + evidence serialization when **`workflowId === wf_plan_transition`** |
 | `agentRunRecord.ts` | **`buildAgentRunRecordForBundle`**, **`sha256Hex`**; types aligned with [`schemas/agent-run-record.schema.json`](../schemas/agent-run-record.schema.json) |
 
 ### Integrator (stdout JSON)

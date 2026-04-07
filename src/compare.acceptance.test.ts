@@ -38,7 +38,7 @@ function sqlRowStep(
   };
 }
 
-function wf(steps: StepOutcome[], id = "wf_slice6_ac"): WorkflowResult {
+function wf(steps: StepOutcome[], id = "wf_compare_ac"): WorkflowResult {
   const bad = steps.some((s) => s.status !== "verified");
   const engine: WorkflowEngineResult = {
     schemaVersion: 7,
@@ -57,7 +57,7 @@ function wf(steps: StepOutcome[], id = "wf_slice6_ac"): WorkflowResult {
   return finalizeEmittedWorkflowResult(engine);
 }
 
-describe("Slice 6 compare acceptance tests", () => {
+describe("Run comparison acceptance tests", () => {
   const v = loadSchemaValidator("run-comparison-report");
 
   it("AC_9_1_multi_run_compare_emits_schema_v4", () => {
@@ -87,7 +87,7 @@ describe("Slice 6 compare acceptance tests", () => {
     expect(report.reliabilityAssessment.windowTrend).toBe("unchanged");
     expect(report.reliabilityAssessment.pairwiseTrend).toBe("improving");
     const golden = JSON.parse(
-      readFileSync(join(root, "test/fixtures/debug-ui-slice6/headline-ac-9-4.json"), "utf8"),
+      readFileSync(join(root, "test/fixtures/debug-ui-compare/headline-ac-9-4.json"), "utf8"),
     ) as { headlineVerdict: string; headlineRationale: string };
     expect(report.reliabilityAssessment.headlineVerdict).toBe(golden.headlineVerdict);
     expect(report.reliabilityAssessment.headlineRationale).toBe(golden.headlineRationale);

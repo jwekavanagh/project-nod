@@ -11,7 +11,7 @@ import type { WorkflowResult } from "./types.js";
 const root = join(fileURLToPath(import.meta.url), "..", "..");
 const exampleCorpus = join(root, "examples", "debug-corpus");
 const negativeCorpus = join(root, "test", "fixtures", "corpus-negative");
-const slice6Corpus = join(root, "test", "fixtures", "debug-ui-slice6");
+const compareDebugCorpus = join(root, "test", "fixtures", "debug-ui-compare");
 
 function sortedKeys(obj: object): string[] {
   return Object.keys(obj).sort((a, b) => a.localeCompare(b));
@@ -190,7 +190,7 @@ describe("debugServer HTTP", () => {
   });
 
   it("debug_api_POST_compare_200_json_has_exact_keys", async () => {
-    const srv = await startDebugServerOnPort(slice6Corpus, 0);
+    const srv = await startDebugServerOnPort(compareDebugCorpus, 0);
     try {
       const res = await fetch(`http://127.0.0.1:${srv.port}/api/compare`, {
         method: "POST",
@@ -212,7 +212,7 @@ describe("debugServer HTTP", () => {
   });
 
   it("debug_api_GET_run_detail_ok_json_has_exact_keys", async () => {
-    const srv = await startDebugServerOnPort(slice6Corpus, 0);
+    const srv = await startDebugServerOnPort(compareDebugCorpus, 0);
     try {
       const res = await fetch(`http://127.0.0.1:${srv.port}/api/runs/run_a`);
       expect(res.ok).toBe(true);

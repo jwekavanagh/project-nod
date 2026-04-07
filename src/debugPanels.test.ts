@@ -167,13 +167,13 @@ describe("debugPanels", () => {
 
   it("renderRunTrustPanelHtml matches expected-strings for fixture run_path_empty", () => {
     const raw = readFileSync(
-      join(root, "test/fixtures/debug-ui-slice6/run_path_empty/workflow-result.json"),
+      join(root, "test/fixtures/debug-ui-compare/run_path_empty/workflow-result.json"),
       "utf8",
     );
     const w = JSON.parse(raw) as WorkflowResult;
     const html = renderRunTrustPanelHtml(w);
     const exp = JSON.parse(
-      readFileSync(join(root, "test/fixtures/debug-ui-slice6/expected-strings.json"), "utf8"),
+      readFileSync(join(root, "test/fixtures/debug-ui-compare/expected-strings.json"), "utf8"),
     ) as { executionPathEmpty: string };
     expect(html).toContain(exp.executionPathEmpty);
     expect(html).toContain('data-etl-execution-path-empty');
@@ -181,7 +181,7 @@ describe("debugPanels", () => {
 
   it("EXECUTION_PATH_EMPTY constant matches expected-strings.json", () => {
     const exp = JSON.parse(
-      readFileSync(join(root, "test/fixtures/debug-ui-slice6/expected-strings.json"), "utf8"),
+      readFileSync(join(root, "test/fixtures/debug-ui-compare/expected-strings.json"), "utf8"),
     ) as { executionPathEmpty: string };
     expect(EXECUTION_PATH_EMPTY).toBe(exp.executionPathEmpty);
   });

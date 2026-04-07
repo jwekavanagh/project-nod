@@ -1,13 +1,14 @@
 {
-  "plans/plan-transition_validation_slice_91ae04db.plan.md": [
-    "schemas/plan-validation-frontmatter.schema.json",
-    "src/schemaLoad.ts"
+  "plans/compare_and_trust_3d5ea6c8.plan.md": [
+    "src/debugPanels.test.ts",
+    "src/debugPanels.ts",
+    "src/debugServer.test.ts"
   ],
-  "plans/slice_2_outcome_verification_107174c5.plan.md": [
+  "plans/outcome_verification_107174c5.plan.md": [
     "docs/execution-truth-layer.md",
     "src/verificationAgainstSystemState.requirements.test.ts"
   ],
-  "plans/slice_3_partial_effects_feedback_730cddce.plan.md": [
+  "plans/partial_effects_feedback_730cddce.plan.md": [
     "docs/execution-truth-layer.md",
     "examples/seed.sql",
     "src/failureAnalysis.ts",
@@ -15,15 +16,14 @@
     "src/multiEffectRollup.ts",
     "src/verificationAgainstSystemState.requirements.test.ts"
   ],
-  "plans/slice_5_verdict_audit_ec74ff93.plan.md": [
+  "plans/plan-transition_validation_91ae04db.plan.md": [
+    "schemas/plan-validation-frontmatter.schema.json",
+    "src/schemaLoad.ts"
+  ],
+  "plans/verdict_audit_ec74ff93.plan.md": [
     "src/agentRunBundle.ts",
     "src/cli.ts",
     "src/pipeline.ts",
     "src/workflowTruthReport.ts"
-  ],
-  "plans/slice_6_compare_and_trust_3d5ea6c8.plan.md": [
-    "src/debugPanels.test.ts",
-    "src/debugPanels.ts",
-    "src/debugServer.test.ts"
   ]
 }
