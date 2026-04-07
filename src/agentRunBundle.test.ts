@@ -2,10 +2,15 @@ import { readFileSync, writeFileSync, mkdtempSync, rmSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { fileURLToPath } from "node:url";
+import { generateKeyPairSync } from "node:crypto";
 import { describe, expect, it } from "vitest";
 import { writeAgentRunBundle } from "./agentRunBundle.js";
 import { sha256Hex } from "./agentRunRecord.js";
-import { DEBUG_CORPUS_CODES, loadCorpusRun, resolveCorpusRootReal } from "./debugCorpus.js";
+import {
+  DEBUG_CORPUS_CODES,
+  loadCorpusRun,
+  resolveCorpusRootReal,
+} from "./debugCorpus.js";
 import type { WorkflowResult } from "./types.js";
 
 const root = join(fileURLToPath(import.meta.url), "..", "..");
@@ -89,6 +94,37 @@ describe("writeAgentRunBundle", () => {
       expect(loaded.loadStatus).toBe("error");
       if (loaded.loadStatus !== "error") return;
       expect(loaded.error.code).toBe(DEBUG_CORPUS_CODES.ARTIFACT_INTEGRITY_MISMATCH);
+    } finally {
+      rmSync(parent, { recursive: true, force: true });
+    }
+  });
+
+  it("signed bundle round-trip: loadCorpusRun ok and schemaVersion 2", () => {
+    const wf = JSON.parse(readFileSync(join(runOk, "workflow-result.json"), "utf8")) as WorkflowResult;
+    const evBytes = readFileSync(join(runOk, "events.ndjson"));
+    const parent = mkdtempSync(join(tmpdir(), "etl-bundle-signed-"));
+    const runId = "signed_rt";
+    const outDir = join(parent, runId);
+    const { privateKey } = generateKeyPairSync("ed25519");
+    const privatePem = privateKey.export({ type: "pkcs8", format: "pem" }) as string;
+    const keyPath = join(parent, "key.pem");
+    writeFileSync(keyPath, privatePem, "utf8");
+    try {
+      writeAgentRunBundle({
+        outDir,
+        eventsNdjson: evBytes,
+        workflowResult: wf,
+        producer: { name: "execution-truth-layer", version: "test" },
+        verifiedAt: "2026-04-04T12:00:00.000Z",
+        ed25519PrivateKeyPemPath: keyPath,
+      });
+      const loaded = loadCorpusRun(resolveCorpusRootReal(parent), runId);
+      expect(loaded.loadStatus).toBe("ok");
+      if (loaded.loadStatus === "ok" && loaded.agentRunRecord.schemaVersion === 2) {
+        expect(loaded.agentRunRecord.artifacts.workflowResultSignature.relativePath).toBe(
+          "workflow-result.sig.json",
+        );
+      }
     } finally {
       rmSync(parent, { recursive: true, force: true });
     }

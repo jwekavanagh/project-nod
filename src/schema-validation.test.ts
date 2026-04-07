@@ -499,4 +499,59 @@ describe("JSON Schemas (SSOT)", () => {
       }),
     ).toBe(true);
   });
+
+  it("validates agent-run-record-v1 minimal manifest", () => {
+    const v = loadSchemaValidator("agent-run-record-v1");
+    const sha =
+      "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
+    const doc = {
+      schemaVersion: 1,
+      runId: "r",
+      workflowId: "w",
+      producer: { name: "p", version: "1" },
+      verifiedAt: "2026-01-01T00:00:00.000Z",
+      artifacts: {
+        workflowResult: { relativePath: "workflow-result.json", sha256: sha, byteLength: 0 },
+        events: { relativePath: "events.ndjson", sha256: sha, byteLength: 0 },
+      },
+    };
+    expect(v(doc)).toBe(true);
+  });
+
+  it("validates agent-run-record-v2 minimal manifest", () => {
+    const v = loadSchemaValidator("agent-run-record-v2");
+    const sha =
+      "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
+    const doc = {
+      schemaVersion: 2,
+      runId: "r",
+      workflowId: "w",
+      producer: { name: "p", version: "1" },
+      verifiedAt: "2026-01-01T00:00:00.000Z",
+      artifacts: {
+        workflowResult: { relativePath: "workflow-result.json", sha256: sha, byteLength: 0 },
+        events: { relativePath: "events.ndjson", sha256: sha, byteLength: 0 },
+        workflowResultSignature: {
+          relativePath: "workflow-result.sig.json",
+          sha256: sha,
+          byteLength: 1,
+        },
+      },
+    };
+    expect(v(doc)).toBe(true);
+  });
+
+  it("validates workflow-result-signature sidecar shape", () => {
+    const v = loadSchemaValidator("workflow-result-signature");
+    const pem = "-----BEGIN PUBLIC KEY-----\nMCowBQYDK2VwAyEA\n-----END PUBLIC KEY-----\n";
+    const doc = {
+      algorithm: "ed25519",
+      schemaVersion: 1,
+      signatureBase64: "AA==",
+      signedContentSha256Hex:
+        "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      signingPublicKeySpkiPem: pem,
+    };
+    expect(v(doc)).toBe(true);
+  });
 });

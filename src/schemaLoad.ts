@@ -24,7 +24,9 @@ function getAjv(): InstanceType<typeof Ajv2020> {
 }
 
 export type SchemaValidatorName =
-  | "agent-run-record"
+  | "agent-run-record-v1"
+  | "agent-run-record-v2"
+  | "workflow-result-signature"
   | "event"
   | "execution-trace-view"
   | "tools-registry"
@@ -95,8 +97,12 @@ export function loadSchemaValidator(name: SchemaValidatorName): ValidateFunction
     case "cli-error-envelope":
       ensureWorkflowTruthForWireRefs();
       return compileSchemaFile(name, "cli-error-envelope.schema.json");
-    case "agent-run-record":
-      return compileSchemaFile(name, "agent-run-record.schema.json");
+    case "agent-run-record-v1":
+      return compileSchemaFile(name, "agent-run-record-v1.schema.json");
+    case "agent-run-record-v2":
+      return compileSchemaFile(name, "agent-run-record-v2.schema.json");
+    case "workflow-result-signature":
+      return compileSchemaFile(name, "workflow-result-signature.schema.json");
     case "event":
       return compileSchemaFile(name, "event.schema.json");
     case "execution-trace-view":

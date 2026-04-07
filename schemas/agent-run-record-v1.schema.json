@@ -1,0 +1,51 @@
+{
+  "$id": "https://execution-truth-layer/schemas/agent-run-record-v1.schema.json",
+  "title": "AgentRunRecordV1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "runId", "workflowId", "producer", "verifiedAt", "artifacts"],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "runId": { "type": "string", "minLength": 1 },
+    "workflowId": { "type": "string", "minLength": 1 },
+    "producer": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "version"],
+      "properties": {
+        "name": { "type": "string", "minLength": 1 },
+        "version": { "type": "string", "minLength": 1 }
+      }
+    },
+    "verifiedAt": { "type": "string", "format": "date-time" },
+    "customerId": { "type": "string" },
+    "capturedAt": { "type": "string", "format": "date-time" },
+    "artifacts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["workflowResult", "events"],
+      "properties": {
+        "workflowResult": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["relativePath", "sha256", "byteLength"],
+          "properties": {
+            "relativePath": { "const": "workflow-result.json" },
+            "sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+            "byteLength": { "type": "integer", "minimum": 0 }
+          }
+        },
+        "events": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["relativePath", "sha256", "byteLength"],
+          "properties": {
+            "relativePath": { "const": "events.ndjson" },
+            "sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+            "byteLength": { "type": "integer", "minimum": 0 }
+          }
+        }
+      }
+    }
+  }
+}

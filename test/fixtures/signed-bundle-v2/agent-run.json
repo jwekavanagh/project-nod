@@ -1,0 +1,27 @@
+{
+  "runId": "signed-bundle-v2",
+  "workflowId": "wf_complete",
+  "producer": {
+    "name": "execution-truth-layer",
+    "version": "0.1.0"
+  },
+  "verifiedAt": "2026-04-07T12:00:00.000Z",
+  "schemaVersion": 2,
+  "artifacts": {
+    "workflowResult": {
+      "relativePath": "workflow-result.json",
+      "sha256": "f8b980bd301ad0d1ee3b00b7ac6de8fb17a66f22c48e1dd18109a693677e0124",
+      "byteLength": 1992
+    },
+    "events": {
+      "relativePath": "events.ndjson",
+      "sha256": "24af387aef1e701e77eabb172fe16d6a3dfb4837301ec46d7c1f69802943fc39",
+      "byteLength": 181
+    },
+    "workflowResultSignature": {
+      "relativePath": "workflow-result.sig.json",
+      "sha256": "6e30820e80ef7df3b155d5b512f977c61a8287141ed07e560f6fe95f7e7ed63c",
+      "byteLength": 388
+    }
+  }
+}

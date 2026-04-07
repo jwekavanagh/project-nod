@@ -23,7 +23,7 @@ describe("agentRunRecord", () => {
       workflowResultBytes: wr,
       eventsBytes: ev,
     });
-    const v = loadSchemaValidator("agent-run-record");
+    const v = loadSchemaValidator("agent-run-record-v1");
     expect(v(rec)).toBe(true);
     expect(rec.artifacts.workflowResult.relativePath).toBe("workflow-result.json");
     expect(rec.artifacts.events.relativePath).toBe("events.ndjson");
@@ -49,7 +49,7 @@ describe("agentRunRecord", () => {
         },
       },
     } as unknown as AgentRunRecord;
-    const v = loadSchemaValidator("agent-run-record");
+    const v = loadSchemaValidator("agent-run-record-v1");
     expect(v(rec)).toBe(false);
   });
 });

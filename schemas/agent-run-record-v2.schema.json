@@ -1,11 +1,11 @@
 {
-  "$id": "https://execution-truth-layer/schemas/agent-run-record.schema.json",
-  "title": "AgentRunRecord",
+  "$id": "https://execution-truth-layer/schemas/agent-run-record-v2.schema.json",
+  "title": "AgentRunRecordV2",
   "type": "object",
   "additionalProperties": false,
   "required": ["schemaVersion", "runId", "workflowId", "producer", "verifiedAt", "artifacts"],
   "properties": {
-    "schemaVersion": { "const": 1 },
+    "schemaVersion": { "const": 2 },
     "runId": { "type": "string", "minLength": 1 },
     "workflowId": { "type": "string", "minLength": 1 },
     "producer": {
@@ -23,7 +23,7 @@
     "artifacts": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["workflowResult", "events"],
+      "required": ["workflowResult", "events", "workflowResultSignature"],
       "properties": {
         "workflowResult": {
           "type": "object",
@@ -41,6 +41,16 @@
           "required": ["relativePath", "sha256", "byteLength"],
           "properties": {
             "relativePath": { "const": "events.ndjson" },
+            "sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+            "byteLength": { "type": "integer", "minimum": 0 }
+          }
+        },
+        "workflowResultSignature": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["relativePath", "sha256", "byteLength"],
+          "properties": {
+            "relativePath": { "const": "workflow-result.sig.json" },
             "sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
             "byteLength": { "type": "integer", "minimum": 0 }
           }

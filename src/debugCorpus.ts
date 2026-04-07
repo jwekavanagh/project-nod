@@ -15,6 +15,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 export const WORKFLOW_RESULT_FILENAME = "workflow-result.json";
 export const EVENTS_FILENAME = "events.ndjson";
+export const WORKFLOW_RESULT_SIG_FILENAME = "workflow-result.sig.json";
 export const AGENT_RUN_FILENAME = "agent-run.json";
 
 export const DEBUG_CORPUS_CODES = {
@@ -26,6 +27,7 @@ export const DEBUG_CORPUS_CODES = {
   ARTIFACT_INTEGRITY_MISMATCH: "ARTIFACT_INTEGRITY_MISMATCH",
   AGENT_RUN_WORKFLOW_ID_MISMATCH: "AGENT_RUN_WORKFLOW_ID_MISMATCH",
   MISSING_WORKFLOW_RESULT: "MISSING_WORKFLOW_RESULT",
+  MISSING_WORKFLOW_RESULT_SIGNATURE: "MISSING_WORKFLOW_RESULT_SIGNATURE",
   MISSING_EVENTS: "MISSING_EVENTS",
   WORKFLOW_RESULT_INVALID: "WORKFLOW_RESULT_INVALID",
   WORKFLOW_RESULT_JSON: "WORKFLOW_RESULT_JSON",
@@ -69,7 +71,32 @@ export type CorpusRunOutcome = CorpusRunLoadedOk | CorpusRunLoadedError;
 
 const validateWorkflowResult = loadSchemaValidator("workflow-result");
 const validateWorkflowResultV9 = loadSchemaValidator("workflow-result-v9");
-const validateAgentRunRecord = loadSchemaValidator("agent-run-record");
+const validateAgentRunRecordV1 = loadSchemaValidator("agent-run-record-v1");
+const validateAgentRunRecordV2 = loadSchemaValidator("agent-run-record-v2");
+
+function validateAgentRunManifest(
+  parsed: unknown,
+):
+  | { ok: true; record: import("./agentRunRecord.js").AgentRunRecord }
+  | { ok: false; errors: unknown } {
+  const sv = (parsed as { schemaVersion?: unknown }).schemaVersion;
+  if (sv === 2) {
+    if (!validateAgentRunRecordV2(parsed)) {
+      return { ok: false, errors: validateAgentRunRecordV2.errors ?? [] };
+    }
+    return { ok: true, record: parsed as import("./agentRunRecord.js").AgentRunRecord };
+  }
+  if (sv === 1) {
+    if (!validateAgentRunRecordV1(parsed)) {
+      return { ok: false, errors: validateAgentRunRecordV1.errors ?? [] };
+    }
+    return { ok: true, record: parsed as import("./agentRunRecord.js").AgentRunRecord };
+  }
+  return {
+    ok: false,
+    errors: [{ message: `Unsupported agent-run.json schemaVersion: ${String(sv)}` }],
+  };
+}
 
 function isSafeRunId(runId: string): boolean {
   if (runId === "." || runId === "..") return false;
@@ -218,7 +245,8 @@ export function loadCorpusRun(corpusRootReal: string, runId: string): CorpusRunO
     };
   }
 
-  if (!validateAgentRunRecord(agentRunParsed)) {
+  const manifestResult = validateAgentRunManifest(agentRunParsed);
+  if (!manifestResult.ok) {
     return {
       loadStatus: "error",
       runId,
@@ -226,7 +254,7 @@ export function loadCorpusRun(corpusRootReal: string, runId: string): CorpusRunO
         code: DEBUG_CORPUS_CODES.AGENT_RUN_INVALID,
         message: `${AGENT_RUN_FILENAME} failed agent-run-record schema validation.`,
         path: agentRunPath,
-        details: validateAgentRunRecord.errors ?? [],
+        details: manifestResult.errors,
       },
       pathsTried: { agentRun: agentRunPath },
       rawPreview: readUtf8Preview(agentRunPath, 8192),
@@ -234,7 +262,7 @@ export function loadCorpusRun(corpusRootReal: string, runId: string): CorpusRunO
     };
   }
 
-  const record = agentRunParsed as AgentRunRecord;
+  const record = manifestResult.record;
   const wrSpec = record.artifacts.workflowResult;
   const evSpec = record.artifacts.events;
   const wrPathResolved = path.join(runDirReal, wrSpec.relativePath);
@@ -360,6 +388,72 @@ export function loadCorpusRun(corpusRootReal: string, runId: string): CorpusRunO
       pathsTried: { agentRun: agentRunPath, workflowResult: wrPathResolved, events: evPathResolved },
       capturedAtEffectiveMs: capturedAtEffectiveMs(record, wrPathResolved),
     };
+  }
+
+  if (record.schemaVersion === 2) {
+    const sigSpec = record.artifacts.workflowResultSignature;
+    const sigPathResolved = path.join(runDirReal, sigSpec.relativePath);
+    if (!existsSync(sigPathResolved)) {
+      return {
+        loadStatus: "error",
+        runId,
+        error: {
+          code: DEBUG_CORPUS_CODES.MISSING_WORKFLOW_RESULT_SIGNATURE,
+          message: `Missing ${WORKFLOW_RESULT_SIG_FILENAME} under run folder.`,
+          path: sigPathResolved,
+        },
+        pathsTried: {
+          agentRun: agentRunPath,
+          workflowResult: wrPathResolved,
+          events: evPathResolved,
+        },
+        capturedAtEffectiveMs: capturedAtEffectiveMs(record, wrPathResolved),
+      };
+    }
+    let sigBuf: Buffer;
+    try {
+      sigBuf = readFileSync(sigPathResolved);
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : String(e);
+      return {
+        loadStatus: "error",
+        runId,
+        error: {
+          code: DEBUG_CORPUS_CODES.MISSING_WORKFLOW_RESULT_SIGNATURE,
+          message: msg,
+          path: sigPathResolved,
+        },
+        pathsTried: { agentRun: agentRunPath, workflowResult: wrPathResolved, events: evPathResolved },
+        capturedAtEffectiveMs: capturedAtEffectiveMs(record, wrPathResolved),
+      };
+    }
+    if (sigBuf.length !== sigSpec.byteLength) {
+      return {
+        loadStatus: "error",
+        runId,
+        error: {
+          code: DEBUG_CORPUS_CODES.ARTIFACT_LENGTH_MISMATCH,
+          message: `${WORKFLOW_RESULT_SIG_FILENAME} byte length does not match ${AGENT_RUN_FILENAME}.`,
+          path: sigPathResolved,
+          details: { expected: sigSpec.byteLength, actual: sigBuf.length },
+        },
+        pathsTried: { agentRun: agentRunPath, workflowResult: wrPathResolved, events: evPathResolved },
+        capturedAtEffectiveMs: capturedAtEffectiveMs(record, wrPathResolved),
+      };
+    }
+    if (sha256Hex(sigBuf) !== sigSpec.sha256) {
+      return {
+        loadStatus: "error",
+        runId,
+        error: {
+          code: DEBUG_CORPUS_CODES.ARTIFACT_INTEGRITY_MISMATCH,
+          message: `${WORKFLOW_RESULT_SIG_FILENAME} SHA-256 does not match ${AGENT_RUN_FILENAME}.`,
+          path: sigPathResolved,
+        },
+        pathsTried: { agentRun: agentRunPath, workflowResult: wrPathResolved, events: evPathResolved },
+        capturedAtEffectiveMs: capturedAtEffectiveMs(record, wrPathResolved),
+      };
+    }
   }
 
   let wrParsed: unknown;

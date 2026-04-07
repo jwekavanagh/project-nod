@@ -1,0 +1,20 @@
+{
+  "$id": "https://execution-truth-layer/schemas/workflow-result-signature.schema.json",
+  "title": "WorkflowResultSignature",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "algorithm",
+    "schemaVersion",
+    "signatureBase64",
+    "signedContentSha256Hex",
+    "signingPublicKeySpkiPem"
+  ],
+  "properties": {
+    "algorithm": { "const": "ed25519" },
+    "schemaVersion": { "const": 1 },
+    "signatureBase64": { "type": "string", "minLength": 1 },
+    "signedContentSha256Hex": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "signingPublicKeySpkiPem": { "type": "string", "minLength": 32 }
+  }
+}
