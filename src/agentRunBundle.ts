@@ -13,8 +13,10 @@ import {
   AGENT_RUN_FILENAME,
   EVENTS_FILENAME,
   WORKFLOW_RESULT_FILENAME,
+  WORKFLOW_RESULT_SIG_FILENAME,
 } from "./debugCorpus.js";
 import type { WorkflowResult } from "./types.js";
+import { buildWorkflowResultSigSidecarBytes } from "./workflowResultSignature.js";
 
 export type WriteAgentRunBundleOptions = {
   outDir: string;
@@ -24,6 +26,10 @@ export type WriteAgentRunBundleOptions = {
   producer?: { name: string; version: string };
   /** Defaults to `new Date().toISOString()`. */
   verifiedAt?: string;
+  /**
+   * PKCS#8 PEM Ed25519 private key path. When set, writes `workflow-result.sig.json` and manifest schemaVersion 2.
+   */
+  ed25519PrivateKeyPemPath?: string;
 };
 
 function readPackageIdentity(): { name: string; version: string } {
@@ -67,9 +73,23 @@ function atomicWriteFileSync(dir: string, finalName: string, data: Buffer): void
   }
 }
 
+function rollbackSignedFinals(resolved: string, written: string[]): void {
+  for (const name of [...written].reverse()) {
+    const p = path.join(resolved, name);
+    if (existsSync(p)) {
+      try {
+        unlinkSync(p);
+      } catch {
+        /* ignore */
+      }
+    }
+  }
+}
+
 /**
- * Writes canonical run bundle: `events.ndjson`, `workflow-result.json`, `agent-run.json`.
- * Rename order: events → workflow-result → manifest (last).
+ * Writes canonical run bundle: `events.ndjson`, `workflow-result.json`, optional `workflow-result.sig.json`, `agent-run.json`.
+ * Rename order: events → workflow-result → [sig] → manifest (last).
+ * Signed path: on failure after some renames, best-effort reverse unlink of completed finals.
  */
 export function writeAgentRunBundle(options: WriteAgentRunBundleOptions): void {
   const resolved = path.resolve(options.outDir);
@@ -77,6 +97,14 @@ export function writeAgentRunBundle(options: WriteAgentRunBundleOptions): void {
   const workflowResultBytes = Buffer.from(JSON.stringify(options.workflowResult), "utf8");
   const producer = options.producer ?? readPackageIdentity();
   const verifiedAt = options.verifiedAt ?? new Date().toISOString();
+
+  const signingPath = options.ed25519PrivateKeyPemPath;
+  let workflowResultSignatureBytes: Buffer | undefined;
+  if (signingPath !== undefined) {
+    const privatePem = readFileSync(path.resolve(signingPath), "utf8");
+    workflowResultSignatureBytes = buildWorkflowResultSigSidecarBytes(workflowResultBytes, privatePem);
+  }
+
   const record = buildAgentRunRecordForBundle({
     runId: path.basename(resolved),
     workflowId: options.workflowResult.workflowId,
@@ -84,11 +112,32 @@ export function writeAgentRunBundle(options: WriteAgentRunBundleOptions): void {
     verifiedAt,
     workflowResultBytes,
     eventsBytes,
+    ...(workflowResultSignatureBytes !== undefined
+      ? { workflowResultSignatureBytes }
+      : {}),
   });
   const agentRunBytes = Buffer.from(`${JSON.stringify(record, null, 2)}\n`, "utf8");
 
   mkdirSync(resolved, { recursive: true });
-  atomicWriteFileSync(resolved, EVENTS_FILENAME, eventsBytes);
-  atomicWriteFileSync(resolved, WORKFLOW_RESULT_FILENAME, workflowResultBytes);
-  atomicWriteFileSync(resolved, AGENT_RUN_FILENAME, agentRunBytes);
+
+  const signed = workflowResultSignatureBytes !== undefined;
+  const written: string[] = [];
+
+  try {
+    atomicWriteFileSync(resolved, EVENTS_FILENAME, eventsBytes);
+    written.push(EVENTS_FILENAME);
+    atomicWriteFileSync(resolved, WORKFLOW_RESULT_FILENAME, workflowResultBytes);
+    written.push(WORKFLOW_RESULT_FILENAME);
+    if (signed && workflowResultSignatureBytes) {
+      atomicWriteFileSync(resolved, WORKFLOW_RESULT_SIG_FILENAME, workflowResultSignatureBytes);
+      written.push(WORKFLOW_RESULT_SIG_FILENAME);
+    }
+    atomicWriteFileSync(resolved, AGENT_RUN_FILENAME, agentRunBytes);
+    written.push(AGENT_RUN_FILENAME);
+  } catch (e) {
+    if (signed) {
+      rollbackSignedFinals(resolved, written);
+    }
+    throw e;
+  }
 }

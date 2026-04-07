@@ -30,7 +30,7 @@ This subsection maps **outcome verification** product acceptance criteria to thi
 
 ## Workflow verdict and audit
 
-This subsection maps **workflow-level verdict** and **auditable run records** acceptance criteria to this MVP. **Structural SSOT** for emitted JSON is unchanged ([`schemas/workflow-result.schema.json`](../schemas/workflow-result.schema.json), [`schemas/workflow-truth-report.schema.json`](../schemas/workflow-truth-report.schema.json), [`schemas/agent-run-record.schema.json`](../schemas/agent-run-record.schema.json)).
+This subsection maps **workflow-level verdict** and **auditable run records** acceptance criteria to this MVP. **Structural SSOT** for emitted JSON is unchanged ([`schemas/workflow-result.schema.json`](../schemas/workflow-result.schema.json), [`schemas/workflow-truth-report.schema.json`](../schemas/workflow-truth-report.schema.json)). Run-bundle manifests use [`schemas/agent-run-record-v1.schema.json`](../schemas/agent-run-record-v1.schema.json) (**unsigned**) or [`schemas/agent-run-record-v2.schema.json`](../schemas/agent-run-record-v2.schema.json) (**signed**), selected by manifest **`schemaVersion`** (see [Cryptographic signing of workflow-result (normative)](#cryptographic-signing-of-workflow-result-normative)).
 
 | Acceptance theme | Where it appears in the product |
 |------------------|----------------------------------|
@@ -38,20 +38,20 @@ This subsection maps **workflow-level verdict** and **auditable run records** ac
 | **Verdict reflects step verification outcomes** | `status` is produced only by **`aggregateWorkflow`** from step statuses, run-level reasons, and empty-step rules—see [Workflow status](#workflow-status-prd-aligned). |
 | **Distinguish complete vs incomplete vs inconsistent** | The three `WorkflowStatus` values above; CLI exit **0** / **1** / **2** respectively on verdict paths. Debug Console lists **`status`** per run; run detail includes **`workflowVerdictSurface`**. |
 | **Verdict supported by step-level evidence** | Authoritative: **`WorkflowResult.steps[]`** and **`workflowTruthReport.steps[]`**. Review helper: **`workflowVerdictSurface`** on **`GET /api/runs/:id`** (ok loads)—`status`, **`trustSummary`** (same string as **`workflowTruthReport.trustSummary`**), **`stepStatusCounts`** (count per `StepStatus`, all keys present). Implemented by **`buildWorkflowVerdictSurface`** in `workflowTruthReport.ts` only—clients must not re-derive. |
-| **Preserve execution + verification for a run** | Canonical **three-file directory**: **`events.ndjson`** (bytes observed or product-serialized), **`workflow-result.json`**, **`agent-run.json`** manifest with SHA-256 + byte lengths. Writer: **`writeAgentRunBundle`** in `agentRunBundle.ts` (CLI **`--write-run-bundle`** calls it). |
+| **Preserve execution + verification for a run** | Canonical directory: **`events.ndjson`**, **`workflow-result.json`**, **`agent-run.json`** (SHA-256 manifest). Optional **cryptographic signing** adds **`workflow-result.sig.json`** and manifest **`schemaVersion` `2`** (see [Cryptographic signing](#cryptographic-signing-of-workflow-result-normative)). Writer: **`writeAgentRunBundle`** (CLI **`--write-run-bundle`**, optional **`--sign-ed25519-private-key`**). |
 | **Link execution to verification consistently** | **`agent-run.json`** binds **`workflowId`**, artifact relative paths, **`sha256`**, **`byteLength`** for each file—see [Agent run record (canonical bundle)](#agent-run-record-canonical-bundle). |
 | **Retrieve and review a past run** | **Programmatic:** **`loadCorpusRun(corpusRoot, runId)`** (package export)—**`loadStatus === "ok"`** yields **`workflowResult`**, **`agentRunRecord`**, **`paths`**. **Interactive:** **`verify-workflow debug --corpus <dir>`** and Debug Console; **`GET /api/runs/:id`** returns **`workflowResult`**, **`workflowVerdictSurface`**, **`executionTrace`**, etc. **Offline:** open **`workflow-result.json`** / **`events.ndjson`** on disk. |
 | **Empty `events.ndjson`** | A **zero-byte** `events.ndjson` is valid when the manifest records **`byteLength` 0** and the SHA-256 of the empty buffer. It means “no captured lines in this bundle,” not “workflow succeeded.” |
 
 ### Workflow verdict — Engineer
 
-- **`agentRunBundle.ts`**: **`writeAgentRunBundle`** writes each final file via a temp name in the run directory then **rename** into place. Order: **`events.ndjson`** → **`workflow-result.json`** → **`agent-run.json`** (manifest last). On failure mid-write, temp files for the current attempt are removed; a crash can still leave an invalid directory until the next successful write—loaders return **`ARTIFACT_*`** / parse errors as today.
+- **`agentRunBundle.ts`**: **`writeAgentRunBundle`** writes each final file via a temp name in the run directory then **rename** into place. Order: **`events.ndjson`** → **`workflow-result.json`** → (when signing) **`workflow-result.sig.json`** → **`agent-run.json`** (manifest last). **Unsigned** path: three finals only (**`schemaVersion` `1`**). **Signed** path: on thrown error after some renames, the implementation **best-effort unlinks** completed finals in **reverse order** (sig → workflow-result → events) for that invocation only, then rethrows—see [Cryptographic signing](#cryptographic-signing-of-workflow-result-normative). On failure mid-write, temp files for the current attempt are removed; **process crash** can still leave an inconsistent directory—only **successful return** guarantees consistency for the signed path.
 - **`workflowTruthReport.ts`**: **`buildWorkflowVerdictSurface(WorkflowResult)`** for API/UI only.
-- **`pipeline.ts`**: **`withWorkflowVerification`** optional **`persistBundle: { outDir }`**. After a successful run, **`captureNdjsonUtf8()`** serializes **`bufferedRunEvents`** in strict **`observeStep` enqueue order** (`JSON.stringify(event) + "\n"` per line), then **`writeAgentRunBundle`** is called with the **final** **`WorkflowResult`** (v13 + truth report). No bundle is written if **`run`** throws or **`buildWorkflowResult`** fails.
+- **`pipeline.ts`**: **`withWorkflowVerification`** optional **`persistBundle: { outDir, ed25519PrivateKeyPemPath? }`**. After a successful run, **`captureNdjsonUtf8()`** serializes **`bufferedRunEvents`** in strict **`observeStep` enqueue order** (`JSON.stringify(event) + "\n"` per line), then **`writeAgentRunBundle`** is called with the **final** **`WorkflowResult`** (v13 + truth report). When **`ed25519PrivateKeyPemPath`** is set, the bundle is written as **v2** with a signature sidecar. No bundle is written if **`run`** throws or **`buildWorkflowResult`** fails.
 
 ### Workflow verdict — Integrator
 
-- **Preserve:** **`writeAgentRunBundle({ outDir, eventsNdjson, workflowResult })`** or CLI **`--write-run-bundle <dir>`** (`runId` = basename of resolved `outDir`).
+- **Preserve:** **`writeAgentRunBundle({ outDir, eventsNdjson, workflowResult, ed25519PrivateKeyPemPath? })`** or CLI **`--write-run-bundle <dir>`** with optional **`--sign-ed25519-private-key <path>`** (`runId` = basename of resolved `outDir`).
 - **Retrieve:** **`loadCorpusRun(resolveCorpusRootReal(corpusRoot), runId)`**; treat **`ok`** as the normative “this directory is a consistent bundle.”
 - **In-process audit:** pass **`persistBundle`** on **`withWorkflowVerification`**, or build **`eventsNdjson`** yourself and call **`writeAgentRunBundle`** after **`finalizeEmittedWorkflowResult`** (or use the fulfilled **`WorkflowResult`** from the hook).
 
@@ -60,7 +60,7 @@ This subsection maps **workflow-level verdict** and **auditable run records** ac
 - Debug Console run detail shows **workflow status**, **trust summary**, and **non-zero step outcome counts** from **`workflowVerdictSurface`** before raw JSON.
 - Do not treat a folder as trusted until **`loadCorpusRun`** returns **`ok`** (or the Debug list shows **`loadStatus` ok**). Tampering yields **`ARTIFACT_INTEGRITY_MISMATCH`** / **`ARTIFACT_LENGTH_MISMATCH`** / **`WORKFLOW_RESULT_*`** as documented under corpus load outcomes.
 
-**Proof in repo:** `src/agentRunBundle.test.ts` (round-trip, empty events, integrity negative), `src/workflowVerdictSurface.test.ts`, `src/withWorkflowVerification.persistBundle.test.ts`, `src/debugServer.test.ts` (**`workflowVerdictSurface`** on run detail).
+**Proof in repo:** `src/agentRunBundle.test.ts` (round-trip, empty events, integrity negative, signed round-trip), `src/agentRunBundle.rollback.test.ts` (signed rollback), `src/verifyRunBundleSignature.test.ts`, `src/workflowVerdictSurface.test.ts`, `src/withWorkflowVerification.persistBundle.test.ts`, `src/debugServer.test.ts` (**`workflowVerdictSurface`** on run detail), `test/bundle-signature-*.test.mjs` (fixture, doc codes, CLI signed write).
 
 ## Compare runs and independent verification
 
@@ -241,7 +241,7 @@ Parsed diff rows map git status to `rowKind`: `A`→add, `M`→modify, `D`→del
 
 ### Synthetic `events.ndjson` (bundle)
 
-With **`--write-run-bundle`**, **`events.ndjson`** is a **single** schema-valid **v1** `tool_observed` line, **`toolId`:** `plan_transition.meta`, **`params`:** `beforeRef`, `afterRef`, `beforeCommitSha`, `afterCommitSha`, `planResolvedPath`, `planSha256`, **`transitionRulesSource`** (`"front_matter"` \| `"body_section"` \| `"derived_citations"`). **`agent-run.json`** remains schema **v1** (unchanged).
+With **`--write-run-bundle`**, **`events.ndjson`** is a **single** schema-valid **v1** `tool_observed` line, **`toolId`:** `plan_transition.meta`, **`params`:** `beforeRef`, `afterRef`, `beforeCommitSha`, `afterCommitSha`, `planResolvedPath`, `planSha256`, **`transitionRulesSource`** (`"front_matter"` \| `"body_section"` \| `"derived_citations"`). **`agent-run.json`** is **v1** unless **`--sign-ed25519-private-key`** is also set (then **v2** with **`workflow-result.sig.json`**), same as batch **`verify-workflow`**.
 
 ### Debug Console trust panel
 
@@ -268,7 +268,7 @@ Exit codes match batch verify (**0** / **1** / **2** / **3**). Operational codes
 
 | Module | Role |
 |--------|------|
-| `schemaLoad.ts` | AJV 2020-12 validators for event line, execution trace view, registry, workflow engine/result, **stdout v13** + **frozen v9** workflow result, truth report, compare-input (engine v7 / v9 / v13 **`oneOf`**), **`cli-error-envelope`**, **`run-comparison-report`**, **`agent-run-record`**, **`plan-validation-core`** |
+| `schemaLoad.ts` | AJV 2020-12 validators for event line, execution trace view, registry, workflow engine/result, **stdout v13** + **frozen v9** workflow result, truth report, compare-input (engine v7 / v9 / v13 **`oneOf`**), **`cli-error-envelope`**, **`run-comparison-report`**, **`agent-run-record-v1`**, **`agent-run-record-v2`**, **`workflow-result-signature`**, **`plan-validation-core`** |
 | `failureCatalog.ts` | Stable run-level literals, `formatOperationalMessage`, CLI error envelope helpers |
 | `cliOperationalCodes.ts` | Compare/corpus operational codes such as `COMPARE_INPUT_RUN_LEVEL_INCONSISTENT`, `WORKFLOW_RESULT_RUN_LEVEL_CODES_MISMATCH` |
 | `runLevelDriftMessages.ts` | Fixed `message` strings for v9 `runLevelCodes` / `runLevelReasons` drift (SSOT for CLI stderr and corpus errors) |
@@ -293,7 +293,7 @@ Exit codes match batch verify (**0** / **1** / **2** / **3**). Operational codes
 | `aggregate.ts` | Workflow status precedence |
 | `actionableFailure.ts` | Actionable failure **`category`** / **`severity`** (workflow + operational), compare **`categoryHistogram`** / **`actionableCategoryRecurrence`**, P-CAT-1–4 and workflow S-1–S4; **`productionStepReasonCodeToActionableCategory`** + operational severity table |
 | `verificationDiagnostics.ts` | Pinned step `failureDiagnostic`; `formatVerificationTargetSummary`; run/event-sequence `category:` helpers for human report (internal; not re-exported from package entry) |
-| `agentRunBundle.ts` | `writeAgentRunBundle` — canonical three-file run directory with per-file temp+rename; used by CLI `--write-run-bundle` and optional `withWorkflowVerification` `persistBundle` |
+| `agentRunBundle.ts` | `writeAgentRunBundle` — canonical run directory (three files, or four when signing) with per-file temp+rename; CLI `--write-run-bundle` / `--sign-ed25519-private-key`; optional `withWorkflowVerification` `persistBundle` |
 | `workflowTruthReport.ts` | `buildWorkflowTruthReport`, `buildWorkflowVerdictSurface`, `finalizeEmittedWorkflowResult`, `formatWorkflowTruthReportStruct`, `formatWorkflowTruthReport`, `HUMAN_REPORT_RESULT_PHRASE`, `HUMAN_REPORT_PLAN_TRANSITION_PHRASE`, `STEP_STATUS_TRUTH_LABELS`, `TRUST_LINE_EVENT_SEQUENCE_IRREGULAR_SUFFIX`; human report text is rendering of structured truth with plain `result=` / `detail:` lines; plan-transition trust/result phrasing when **`workflowId === wf_plan_transition`** |
 | `executionPathFindings.ts` | `buildExecutionPathFindings`, `buildExecutionPathSummary`, `ACTION_INPUT_REASON_CODES`, `RECONCILER_STEP_REASON_CODES` — execution-path layer orthogonal to SQL reconciliation (internal; not re-exported from package entry) |
 | `workflowResultNormalize.ts` | `normalizeToEmittedWorkflowResult`, `workflowEngineResultFromEmitted` (compare ingress: engine **v7** / frozen **v9** / stdout **v13**; strip legacy **`runLevelCodes`**; inject empty **`verificationRunContext`** where needed) |
@@ -301,7 +301,7 @@ Exit codes match batch verify (**0** / **1** / **2** / **3**). Operational codes
 | `verificationPolicy.ts` | `VerificationPolicy` normalization/validation; `executeVerificationWithPolicySync` / `executeVerificationWithPolicyAsync` (strong vs eventual polling; `sql_row` / `sql_effects` / `sql_relational`); `createSqlitePolicyContext` |
 | `executionTrace.ts` | `assertValidRunEventParentGraph`, `buildExecutionTraceView`, `formatExecutionTraceText`; `traceStepKind` derivation and `backwardPaths` |
 | `pipeline.ts` | Orchestration: `runLogicalStepsVerification` (internal), async `verifyWorkflow`, sync `verifyToolObservedStep`, `withWorkflowVerification` (SQLite `dbPath` only); default `truthReport` / `logStep` |
-| `cli.ts` | CLI entry: verify (**optional **`--write-run-bundle <dir>`**), `compare`, `execution-trace`, `validate-registry`, **`debug`**, **`plan-transition`** |
+| `cli.ts` | CLI entry: verify (**optional **`--write-run-bundle <dir>`** / **`--sign-ed25519-private-key`**), **`verify-bundle-signature`**, `compare`, `execution-trace`, `validate-registry`, **`debug`**, **`plan-transition`** |
 | `debugCorpus.ts` | Debug Console corpus layout: enumerate `<corpusRoot>/<runId>/`, load outcomes (**`ok`** / **`error`**), path safety, mandatory **`agent-run.json`** manifest with SHA-256 bindings |
 | `debugFocus.ts` | Pure **`buildFocusTargets`**: maps **`workflowTruthReport.failureAnalysis.evidence`** to trace navigation targets (tested golden vectors) |
 | `debugPatterns.ts` | **`buildCorpusPatterns`**: histograms + **`recurrenceSignature`** aggregation; optional pairwise recurrence when **`workflowId`** filter set (cap **50** runs) |
@@ -309,7 +309,7 @@ Exit codes match batch verify (**0** / **1** / **2** / **3**). Operational codes
 | `debugRunIndex.ts` | **`RunListItem`** facets for filters (**`pathFindingCodes`** from truth report); customer sentinel **`__unspecified__`** when **`agent-run.json`** omits **`customerId`** (ok rows) or on load errors |
 | `debugServer.ts` | Local HTTP on **127.0.0.1** only: JSON APIs + static **`debug-ui/`** (copied to **`dist/debug-ui/`** on build) |
 | `debugPanels.ts` | **`renderComparePanelHtml`**, **`renderRunTrustPanelHtml`**, **`formatSqlEvidenceDetailForTrustPanel`** — server-only HTML for compare/trust Debug panels; plan-transition basis line + evidence serialization when **`workflowId === wf_plan_transition`** |
-| `agentRunRecord.ts` | **`buildAgentRunRecordForBundle`**, **`sha256Hex`**; types aligned with [`schemas/agent-run-record.schema.json`](../schemas/agent-run-record.schema.json) |
+| `agentRunRecord.ts` | **`buildAgentRunRecordForBundle`**, **`sha256Hex`**; types aligned with [`schemas/agent-run-record-v1.schema.json`](../schemas/agent-run-record-v1.schema.json) / [`schemas/agent-run-record-v2.schema.json`](../schemas/agent-run-record-v2.schema.json) |
 
 ### Integrator (stdout JSON)
 
@@ -952,36 +952,95 @@ Step statuses: `verified` | `missing` | `inconsistent` | `incomplete_verificatio
 
 ## Agent run record (canonical bundle)
 
+### Cryptographic signing of workflow-result (normative)
+
+1. **Trust model.** The **signer** holds a **PKCS#8 PEM Ed25519 private key** on disk at write time. A **verifier** supplies a **SPKI PEM public key** file when running **`verify-bundle-signature`** or the library API **`verifyRunBundleSignature(runDir, ed25519PublicKeyPemPath)`**. **`loadCorpusRun`** performs **integrity-only** checks (length + SHA-256 vs manifest) for the signature file when the manifest is **v2**; it does **not** perform Ed25519 verification unless a future explicit option is added. The sidecar embeds the signing public key as **`signingPublicKeySpkiPem`**; verification requires that string (after LF normalization and outer trim) **equals** the trusted public key file contents **before** **`crypto.verify`** runs—so a mismatch is unambiguous.
+
+2. **Key file formats (OpenSSL).** Private key (PKCS#8 PEM):
+
+   ```bash
+   openssl genpkey -algorithm ED25519 -out ed25519-private.pem
+   ```
+
+   Public key (SPKI PEM):
+
+   ```bash
+   openssl pkey -in ed25519-private.pem -pubout -out ed25519-public.pem
+   ```
+
+   **No** raw 32-byte key files and **no** alternate encodings in API, CLI, or tests.
+
+3. **Signed message.** The Ed25519 signature covers the **exact on-disk UTF-8 bytes** of **`workflow-result.json`**—the same bytes whose SHA-256 is recorded under **`artifacts.workflowResult`** in the manifest.
+
+4. **Sidecar `workflow-result.sig.json`.** UTF-8 JSON **object** with **exactly** these keys in **this order** (implementations should assign in this order so **`JSON.stringify`** is stable): **`algorithm`** (`"ed25519"`), **`schemaVersion`** (**`1`**, integer), **`signatureBase64`**, **`signedContentSha256Hex`** (64 lowercase hex chars; must equal SHA-256 of **`workflow-result.json`** bytes), **`signingPublicKeySpkiPem`** (SPKI PEM text, Unix line endings, trailing newline after the **`END`** line). After **`JSON.stringify`**, append **exactly one** newline (**`0x0A`**). No BOM. Structural SSOT: [`schemas/workflow-result-signature.schema.json`](../schemas/workflow-result-signature.schema.json).
+
+5. **Verification sequence** for **`verifyRunBundleSignature`** / **`verify-bundle-signature`** (first failure wins with the code for that step):
+
+   1. Read and parse **`agent-run.json`**.
+   2. Dispatch AJV **v1** vs **v2** from **`schemaVersion`**; unsupported version → **`BUNDLE_SIGNATURE_MANIFEST_UNSUPPORTED_VERSION`**; v1 → **`BUNDLE_SIGNATURE_UNSIGNED_MANIFEST`**.
+   3. Read **`events.ndjson`**, compare length + SHA-256 to manifest.
+   4. Read **`workflow-result.json`**, compare length + SHA-256 to manifest.
+   5. Read **`workflow-result.sig.json`**, compare length + SHA-256 to manifest.
+   6. **`JSON.parse`** sidecar + AJV **`workflow-result-signature`**.
+   7. Assert **`signedContentSha256Hex ===`** manifest **`artifacts.workflowResult.sha256`**.
+   8. **Before** **`crypto.verify`**, normalize LF and compare **`signingPublicKeySpkiPem`** to **`--public-key`** file contents — mismatch → **`BUNDLE_SIGNATURE_PUBLIC_KEY_MISMATCH`**.
+   9. **`crypto.verify`** on **`workflow-result.json`** bytes using the public key from the file — false → **`BUNDLE_SIGNATURE_CRYPTO_INVALID`**.
+
+6. **Manifest v1 vs v2.** After **`JSON.parse`** of **`agent-run.json`**, if **`schemaVersion === 2`**, validate with [`schemas/agent-run-record-v2.schema.json`](../schemas/agent-run-record-v2.schema.json) (requires **`artifacts.workflowResultSignature`** for **`workflow-result.sig.json`**). If **`schemaVersion === 1`**, validate with [`schemas/agent-run-record-v1.schema.json`](../schemas/agent-run-record-v1.schema.json). Otherwise fail verification with **`BUNDLE_SIGNATURE_MANIFEST_UNSUPPORTED_VERSION`**.
+
+7. **Write order and atomicity.** **`writeAgentRunBundle`** renames in order: **`events.ndjson`** → **`workflow-result.json`** → **`workflow-result.sig.json`** (signed path only) → **`agent-run.json`**. **Successful return** implies all final files exist and match the v2 manifest. If an error is thrown after some renames in the **signed** path, the implementation **best-effort `unlinkSync`** finals completed in **this** invocation in **reverse** order (sig → workflow-result → events), then rethrows. **Process crash** may leave an inconsistent directory; operators re-run the write. **Required test:** `src/agentRunBundle.rollback.test.ts` simulates failure when renaming into **`agent-run.json`** and asserts none of the four finals remain.
+
+8. **Canonical machine codes** are the **`export const`** string values in [`src/bundleSignatureCodes.ts`](../src/bundleSignatureCodes.ts). Every verification/signing failure path uses one of these literals (also re-exported from the package entry):
+
+   | Code string |
+   |-------------|
+   | `BUNDLE_SIGNATURE_UNSIGNED_MANIFEST` |
+   | `BUNDLE_SIGNATURE_MANIFEST_UNSUPPORTED_VERSION` |
+   | `BUNDLE_SIGNATURE_MANIFEST_INVALID` |
+   | `BUNDLE_SIGNATURE_MISSING_ARTIFACT` |
+   | `BUNDLE_SIGNATURE_ARTIFACT_INTEGRITY` |
+   | `BUNDLE_SIGNATURE_SIDECAR_INVALID` |
+   | `BUNDLE_SIGNATURE_SIGNED_HASH_MISMATCH` |
+   | `BUNDLE_SIGNATURE_PUBLIC_KEY_MISMATCH` |
+   | `BUNDLE_SIGNATURE_CRYPTO_INVALID` |
+   | `BUNDLE_SIGNATURE_PRIVATE_KEY_INVALID` |
+
+9. **CLI.** Subcommand **`verify-bundle-signature --run-dir <dir> --public-key <path>`** calls **`verifyRunBundleSignature`** only (no duplicate verify logic). Exit **0** iff **`{ ok: true }`**. All verification failures use exit **3** with a **single-line** stderr JSON object matching [`schemas/cli-error-envelope.schema.json`](../schemas/cli-error-envelope.schema.json) and **`code`** set to the exact **`BUNDLE_SIGNATURE_*`** string. **Do not** use exit **2** for signature failure (exit **2** remains **incomplete** workflow verdict on **`verify-workflow`**). **`verify-workflow`** accepts **`--sign-ed25519-private-key <path>`** only together with **`--write-run-bundle`**. **`persistBundle.ed25519PrivateKeyPemPath`** (library) threads the same option to **`writeAgentRunBundle`**. **Required tests:** `test/bundle-signature-cli-write.test.mjs` (CLI signed write + verify), `src/withWorkflowVerification.persistBundle.test.ts` (pipeline signed write + **`verifyRunBundleSignature`**).
+
+10. **Fixture regeneration:** `node scripts/generate-signed-bundle-fixture.mjs` (writes **`test/fixtures/signed-bundle-v2/`**; no private keys committed).
+
 ### Why
 
-The product treats each inspectable saved run as **three files** with one manifest: **`events.ndjson`** (raw capture), **`workflow-result.json`** (emitted verification), and **`agent-run.json`** (identity, optional **`customerId`** / **`capturedAt`**, **`producer`**, **`verifiedAt`**, and **SHA-256** + **byte length** for each artifact). **There is no `meta.json`** on this path—tenant metadata lives only on the manifest.
+The product treats each inspectable saved run as **three on-disk artifacts plus a manifest** (or **four artifacts** when cryptographically signed): **`events.ndjson`** (raw capture), **`workflow-result.json`** (emitted verification), optional **`workflow-result.sig.json`**, and **`agent-run.json`** (identity, optional **`customerId`** / **`capturedAt`**, **`producer`**, **`verifiedAt`**, and **SHA-256** + **byte length** for each listed artifact). **There is no `meta.json`** on this path—tenant metadata lives only on the manifest.
 
 ### Schema
 
-Structural SSOT: [`schemas/agent-run-record.schema.json`](../schemas/agent-run-record.schema.json) (**`schemaVersion` `1`**). Artifact **`relativePath`** values are fixed by JSON Schema **`const`**: **`workflow-result.json`** and **`events.ndjson`** only.
+Structural SSOT: [`schemas/agent-run-record-v1.schema.json`](../schemas/agent-run-record-v1.schema.json) (**`schemaVersion` `1`**, unsigned—**`workflow-result.json`** and **`events.ndjson`** only) and [`schemas/agent-run-record-v2.schema.json`](../schemas/agent-run-record-v2.schema.json) (**`schemaVersion` `2`**, adds required **`artifacts.workflowResultSignature`** for **`workflow-result.sig.json`**). Loaders pick the validator by parsed **`schemaVersion`**.
 
 ### `loadCorpusRun` verification order (normative)
 
 1. **Path safety:** resolved run directory must stay under the corpus root; otherwise **`PATH_ESCAPE`**.
 2. **Manifest presence:** missing **`agent-run.json`** → **`MISSING_AGENT_RUN_MANIFEST`**.
 3. **`JSON.parse`** manifest: failure → **`AGENT_RUN_JSON_SYNTAX`**.
-4. **AJV** validate manifest: failure → **`AGENT_RUN_INVALID`**.
-5. **Workflow result artifact, then events:** resolve path under the run directory; if file missing → **`MISSING_WORKFLOW_RESULT`** or **`MISSING_EVENTS`** respectively; else read bytes; if length ≠ manifest **`byteLength`** → **`ARTIFACT_LENGTH_MISMATCH`**; if **`sha256`** (hex, lowercase) ≠ manifest → **`ARTIFACT_INTEGRITY_MISMATCH`**.
-6. **Parse** workflow-result bytes: failure → **`WORKFLOW_RESULT_JSON`**.
-7. **v9 run-level alignment (before AJV):** If the parsed object has **`schemaVersion` `9`**, require **`runLevelCodes`** and **`runLevelReasons`** arrays of equal length with **`runLevelCodes[i] === runLevelReasons[i].code`** for every index; on failure → **`WORKFLOW_RESULT_RUN_LEVEL_CODES_MISMATCH`** with **`message`** exactly **`Corpus workflow result: runLevelCodes and runLevelReasons are inconsistent.`** (see [Corpus load outcomes](#corpus-load-outcomes-normative)).
-8. **Workflow-result schema + normalize:** v9 documents validate against **`workflow-result-v9.schema.json`**; v13+ against **`workflow-result.schema.json`**; failure → **`WORKFLOW_RESULT_INVALID`**.
-9. **`manifest.workflowId`** must equal normalized **`WorkflowResult.workflowId`**: else **`AGENT_RUN_WORKFLOW_ID_MISMATCH`**.
-10. **Events:** call **`loadEventsForWorkflow`** on **`events.ndjson`** (second disk read after step 5).
+4. **AJV** validate manifest (**v1** or **v2** by **`schemaVersion`**): failure → **`AGENT_RUN_INVALID`**.
+5. **Workflow result artifact:** resolve path; if missing → **`MISSING_WORKFLOW_RESULT`**; else read bytes; if length ≠ manifest **`byteLength`** → **`ARTIFACT_LENGTH_MISMATCH`**; if **`sha256`** ≠ manifest → **`ARTIFACT_INTEGRITY_MISMATCH`**.
+6. **Events artifact:** same checks for **`events.ndjson`** → **`MISSING_EVENTS`** / **`ARTIFACT_LENGTH_MISMATCH`** / **`ARTIFACT_INTEGRITY_MISMATCH`**.
+7. **Manifest v2 only — signature artifact:** if **`schemaVersion` `2`**, resolve **`workflow-result.sig.json`**; if missing → **`MISSING_WORKFLOW_RESULT_SIGNATURE`**; else length + SHA-256 vs manifest → **`ARTIFACT_LENGTH_MISMATCH`** / **`ARTIFACT_INTEGRITY_MISMATCH`**.
+8. **Parse** workflow-result bytes: failure → **`WORKFLOW_RESULT_JSON`**.
+9. **v9 run-level alignment (before AJV):** If the parsed object has **`schemaVersion` `9`**, require **`runLevelCodes`** and **`runLevelReasons`** arrays of equal length with **`runLevelCodes[i] === runLevelReasons[i].code`** for every index; on failure → **`WORKFLOW_RESULT_RUN_LEVEL_CODES_MISMATCH`** with **`message`** exactly **`Corpus workflow result: runLevelCodes and runLevelReasons are inconsistent.`** (see [Corpus load outcomes](#corpus-load-outcomes-normative)).
+10. **Workflow-result schema + normalize:** v9 documents validate against **`workflow-result-v9.schema.json`**; v13+ against **`workflow-result.schema.json`**; failure → **`WORKFLOW_RESULT_INVALID`**.
+11. **`manifest.workflowId`** must equal normalized **`WorkflowResult.workflowId`**: else **`AGENT_RUN_WORKFLOW_ID_MISMATCH`**.
+12. **Events:** call **`loadEventsForWorkflow`** on **`events.ndjson`**.
 
-**`loadStatus: ok`** is impossible without a valid manifest and steps 2–9 succeeding.
+**`loadStatus: ok`** is impossible without a valid manifest and steps 2–12 succeeding.
 
 ### CLI (normative)
 
-After a successful **`verify-workflow`** (verdict exit **0–2**, stdout **`WorkflowResult`** schema-valid), **`--write-run-bundle <dir>`** creates the directory if needed, writes **`events.ndjson`** (byte copy of **`--events`**), **`workflow-result.json`**, then **`agent-run.json`**, using the package **`name`** / **`version`** from **`package.json`** as **`producer`**.
+After a successful **`verify-workflow`** (verdict exit **0–2**, stdout **`WorkflowResult`** schema-valid), **`--write-run-bundle <dir>`** creates the directory if needed, writes **`events.ndjson`** (byte copy of **`--events`**), **`workflow-result.json`**, optionally **`workflow-result.sig.json`** when **`--sign-ed25519-private-key`** is set, then **`agent-run.json`**, using the package **`name`** / **`version`** from **`package.json`** as **`producer`**.
 
 ### Implementer API
 
-**`buildAgentRunRecordForBundle`** and **`sha256Hex`** live in **`agentRunRecord.ts`** and are re-exported from the package entry.
+**`buildAgentRunRecordForBundle`** and **`sha256Hex`** live in **`agentRunRecord.ts`** and are re-exported from the package entry. **`verifyRunBundleSignature`**, **`RunBundleSignatureResult`**, **`BundleSignatureCode`**, and all **`BUNDLE_SIGNATURE_*`** constants are re-exported for verifiers.
 
 ## Debug Console (normative)
 
@@ -989,13 +1048,13 @@ On-call **interactive debugging** is supported by a **local-only** web UI served
 
 ### Debug Console audiences
 
-- **Integrator:** Export each run as a **child directory** of the corpus root with the [Agent run record (canonical bundle)](#agent-run-record-canonical-bundle): **`agent-run.json`**, **`workflow-result.json`**, and **`events.ndjson`** (fixed names). Optional manifest fields **`customerId`** and **`capturedAt`** (ISO-8601 **`date-time`**) replace the former **`meta.json`** contract.
+- **Integrator:** Export each run as a **child directory** of the corpus root with the [Agent run record (canonical bundle)](#agent-run-record-canonical-bundle): **`agent-run.json`**, **`workflow-result.json`**, **`events.ndjson`**, and when using signing, **`workflow-result.sig.json`** (fixed names). Optional manifest fields **`customerId`** and **`capturedAt`** (ISO-8601 **`date-time`**) replace the former **`meta.json`** contract.
 - **Operator:** Run **`verify-workflow debug --corpus <path>`**, open the printed **http://127.0.0.1:…/** URL. Use **Runs** (filters + pagination), **Patterns** (corpus-wide aggregates), **Compare** (multi-select). Load-failed artifacts appear as **first-class rows** (not omitted).
 - **Engineer:** Implementation modules are listed in the Engineer table under [Audiences](#audiences) (`debugCorpus.ts`, `debugFocus.ts`, `debugPatterns.ts`, `debugRunFilters.ts`, `debugRunIndex.ts`, `debugServer.ts`). **`recurrenceSignature`** for pattern aggregation is reused from **`runComparison.ts`**.
 
 ### Corpus load outcomes (normative)
 
-Every immediate child directory of **`corpusRoot`** with a safe **`runId`** (no path separators, not **`.`** or **`..`**) is enumerated. For each **`runId`**, the loader produces either **`loadStatus: "ok"`** or **`loadStatus: "error"`**. **Silent omission is forbidden.** Resolved paths must stay under the corpus root; otherwise **`PATH_ESCAPE`**. Error codes include **`MISSING_AGENT_RUN_MANIFEST`**, **`AGENT_RUN_JSON_SYNTAX`**, **`AGENT_RUN_INVALID`**, **`ARTIFACT_LENGTH_MISMATCH`**, **`ARTIFACT_INTEGRITY_MISMATCH`**, **`AGENT_RUN_WORKFLOW_ID_MISMATCH`**, **`MISSING_WORKFLOW_RESULT`**, **`MISSING_EVENTS`**, **`WORKFLOW_RESULT_JSON`**, **`WORKFLOW_RESULT_INVALID`**, **`WORKFLOW_RESULT_RUN_LEVEL_CODES_MISMATCH`**, **`EVENTS_LOAD_FAILED`**.
+Every immediate child directory of **`corpusRoot`** with a safe **`runId`** (no path separators, not **`.`** or **`..`**) is enumerated. For each **`runId`**, the loader produces either **`loadStatus: "ok"`** or **`loadStatus: "error"`**. **Silent omission is forbidden.** Resolved paths must stay under the corpus root; otherwise **`PATH_ESCAPE`**. Error codes include **`MISSING_AGENT_RUN_MANIFEST`**, **`AGENT_RUN_JSON_SYNTAX`**, **`AGENT_RUN_INVALID`**, **`ARTIFACT_LENGTH_MISMATCH`**, **`ARTIFACT_INTEGRITY_MISMATCH`**, **`AGENT_RUN_WORKFLOW_ID_MISMATCH`**, **`MISSING_WORKFLOW_RESULT`**, **`MISSING_EVENTS`**, **`MISSING_WORKFLOW_RESULT_SIGNATURE`**, **`WORKFLOW_RESULT_JSON`**, **`WORKFLOW_RESULT_INVALID`**, **`WORKFLOW_RESULT_RUN_LEVEL_CODES_MISMATCH`**, **`EVENTS_LOAD_FAILED`**.
 
 **`WORKFLOW_RESULT_RUN_LEVEL_CODES_MISMATCH`:** Raised when **`workflow-result.json`** parses as an object with **`schemaVersion` `9`** but **`runLevelCodes`** and **`runLevelReasons`** are misaligned (length mismatch or index **`i`** where **`runLevelCodes[i] !== runLevelReasons[i].code`**). **`message`** is exactly **`Corpus workflow result: runLevelCodes and runLevelReasons are inconsistent.`**
 

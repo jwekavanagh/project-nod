@@ -161,13 +161,30 @@ export {
   sha256Hex,
   EVENTS_RELATIVE,
   WORKFLOW_RESULT_RELATIVE,
+  WORKFLOW_RESULT_SIGNATURE_RELATIVE,
 } from "./agentRunRecord.js";
-export type { AgentRunRecord } from "./agentRunRecord.js";
+export type { AgentRunRecord, AgentRunRecordV1, AgentRunRecordV2 } from "./agentRunRecord.js";
+export {
+  BUNDLE_SIGNATURE_ARTIFACT_INTEGRITY,
+  BUNDLE_SIGNATURE_CRYPTO_INVALID,
+  BUNDLE_SIGNATURE_MANIFEST_INVALID,
+  BUNDLE_SIGNATURE_MANIFEST_UNSUPPORTED_VERSION,
+  BUNDLE_SIGNATURE_MISSING_ARTIFACT,
+  BUNDLE_SIGNATURE_PRIVATE_KEY_INVALID,
+  BUNDLE_SIGNATURE_PUBLIC_KEY_MISMATCH,
+  BUNDLE_SIGNATURE_SIDECAR_INVALID,
+  BUNDLE_SIGNATURE_SIGNED_HASH_MISMATCH,
+  BUNDLE_SIGNATURE_UNSIGNED_MANIFEST,
+} from "./bundleSignatureCodes.js";
+export type { BundleSignatureCode } from "./bundleSignatureCodes.js";
+export { verifyRunBundleSignature } from "./verifyRunBundleSignature.js";
+export type { RunBundleSignatureResult } from "./verifyRunBundleSignature.js";
 export {
   AGENT_RUN_FILENAME,
   DEBUG_CORPUS_CODES,
   EVENTS_FILENAME,
   WORKFLOW_RESULT_FILENAME,
+  WORKFLOW_RESULT_SIG_FILENAME,
   loadAllCorpusRuns,
   loadCorpusRun,
   listCorpusRunIds,

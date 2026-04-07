@@ -924,7 +924,7 @@ planValidation:
     expect(v(evLine)).toBe(true);
     expect(evLine.params.transitionRulesSource).toBe("front_matter");
     const ar = JSON.parse(readFileSync(path.join(bundleDir, "agent-run.json"), "utf8"));
-    const vAr = loadSchemaValidator("agent-run-record");
+    const vAr = loadSchemaValidator("agent-run-record-v1");
     expect(vAr(ar)).toBe(true);
   }, 20_000);
 

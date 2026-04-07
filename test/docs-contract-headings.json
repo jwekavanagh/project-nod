@@ -42,6 +42,7 @@
     "## Verification policy (normative)",
     "## Workflow status (PRD-aligned)",
     "## Agent run record (canonical bundle)",
+    "### Cryptographic signing of workflow-result (normative)",
     "### Why",
     "### Schema",
     "### `loadCorpusRun` verification order (normative)",

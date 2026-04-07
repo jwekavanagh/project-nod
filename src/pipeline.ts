@@ -531,8 +531,11 @@ export async function withWorkflowVerification(
     verificationPolicy?: VerificationPolicy;
     logStep?: (line: object) => void;
     truthReport?: (report: string) => void;
-    /** Writes canonical bundle after successful verification (`runId` = basename of `outDir`). */
-    persistBundle?: { outDir: string };
+    /**
+     * Writes canonical bundle after successful verification (`runId` = basename of `outDir`).
+     * Optional `ed25519PrivateKeyPemPath`: PKCS#8 PEM path → schemaVersion 2 + `workflow-result.sig.json`.
+     */
+    persistBundle?: { outDir: string; ed25519PrivateKeyPemPath?: string };
   },
   run: (observeStep: (value: unknown) => void) => void | Promise<void>,
 ): Promise<WorkflowResult> {
@@ -578,6 +581,9 @@ export async function withWorkflowVerification(
       outDir: options.persistBundle.outDir,
       eventsNdjson: eventsNdjsonBytes ?? Buffer.alloc(0),
       workflowResult: result,
+      ...(options.persistBundle.ed25519PrivateKeyPemPath !== undefined
+        ? { ed25519PrivateKeyPemPath: options.persistBundle.ed25519PrivateKeyPemPath }
+        : {}),
     });
   }
   return result;

@@ -19,7 +19,9 @@ import {
   validateToolsRegistry,
 } from "./registryValidation.js";
 import { loadSchemaValidator } from "./schemaLoad.js";
+import { BUNDLE_SIGNATURE_PRIVATE_KEY_INVALID } from "./bundleSignatureCodes.js";
 import { TruthLayerError } from "./truthLayerError.js";
+import { verifyRunBundleSignature } from "./verifyRunBundleSignature.js";
 import type { VerificationPolicy, WorkflowEngineResult, WorkflowResult } from "./types.js";
 import { resolveVerificationPolicyInput } from "./verificationPolicy.js";
 import { normalizeToEmittedWorkflowResult } from "./workflowResultNormalize.js";
@@ -80,6 +82,10 @@ Provide exactly one of --db or --postgres-url.
 Optional output:
   --no-truth-report   For verdict exits 0–2, do not print the human truth report to stderr (stderr empty). stdout WorkflowResult JSON is unchanged. Exit 3 stderr is unchanged (single-line JSON envelope).
   --write-run-bundle <dir>   After a successful verify (schema-valid WorkflowResult), write a canonical run directory: events.ndjson (byte copy of --events), workflow-result.json (emitted result), agent-run.json (SHA-256 manifest). Directory is created if missing. Requires exit 0–2 (operational failure skips the write).
+  --sign-ed25519-private-key <path>   With --write-run-bundle only: PKCS#8 PEM Ed25519 private key; also writes workflow-result.sig.json and manifest schemaVersion 2.
+
+  verify-bundle-signature --run-dir <dir> --public-key <path>
+  Verify signed bundle (Ed25519 + manifest v2). Exit 0 if valid; exit 3 with JSON envelope on failure.
 
 Exit codes:
   0  workflow status complete
@@ -288,6 +294,59 @@ Exit codes:
 
 function writeCliError(code: string, message: string): void {
   console.error(cliErrorEnvelope(code, message));
+}
+
+function runVerifyBundleSignatureSubcommand(args: string[]): void {
+  if (args.includes("--help") || args.includes("-h")) {
+    console.log(`Usage:
+  verify-workflow verify-bundle-signature --run-dir <dir> --public-key <path>
+
+Exit codes:
+  0  signature and manifest integrity OK
+  3  verification failed (stderr: JSON envelope; code is BUNDLE_SIGNATURE_*)
+
+  --help, -h  print this message and exit 0`);
+    process.exit(0);
+  }
+  const runDir = argValue(args, "--run-dir");
+  const publicKeyPath = argValue(args, "--public-key");
+  if (!runDir || !publicKeyPath) {
+    writeCliError(
+      CLI_OPERATIONAL_CODES.CLI_USAGE,
+      "verify-bundle-signature requires --run-dir and --public-key.",
+    );
+    process.exit(3);
+  }
+  const r = verifyRunBundleSignature(runDir, publicKeyPath);
+  if (r.ok) {
+    process.exit(0);
+  }
+  writeCliError(r.code, r.message);
+  process.exit(3);
+}
+
+function writeRunBundleCli(
+  outDir: string,
+  eventsNdjson: Buffer,
+  workflowResult: WorkflowResult,
+  signPrivateKeyPath: string | undefined,
+): void {
+  try {
+    writeAgentRunBundle({
+      outDir,
+      eventsNdjson,
+      workflowResult: workflowResult,
+      producer: readPackageIdentity(),
+      verifiedAt: new Date().toISOString(),
+      ...(signPrivateKeyPath !== undefined ? { ed25519PrivateKeyPemPath: signPrivateKeyPath } : {}),
+    });
+  } catch (e) {
+    if (e instanceof TruthLayerError && e.code === BUNDLE_SIGNATURE_PRIVATE_KEY_INVALID) {
+      writeCliError(e.code, e.message);
+      process.exit(3);
+    }
+    throw e;
+  }
 }
 
 function readPackageIdentity(): { name: string; version: string } {
@@ -609,6 +668,7 @@ Optional:
   --workflow-id <id>   (default ${PLAN_TRANSITION_WORKFLOW_ID})
   --no-truth-report
   --write-run-bundle <dir>
+  --sign-ed25519-private-key <path>   (requires --write-run-bundle)
 
 Requires Git >= 2.30.0. Plan file must start with YAML front matter; rules from front matter planValidation, or from a body section "Repository transition validation", or derived from path citations as required diff surfaces when neither is present (see docs).
 
@@ -640,6 +700,14 @@ function runPlanTransitionSubcommand(args: string[]): void {
   const workflowId = argValue(args, "--workflow-id") ?? PLAN_TRANSITION_WORKFLOW_ID;
   const noTruthReport = args.includes("--no-truth-report");
   const writeRunBundleDir = argValue(args, "--write-run-bundle");
+  const signPrivateKeyPath = argValue(args, "--sign-ed25519-private-key");
+  if (signPrivateKeyPath !== undefined && writeRunBundleDir === undefined) {
+    writeCliError(
+      CLI_OPERATIONAL_CODES.CLI_USAGE,
+      "--sign-ed25519-private-key requires --write-run-bundle.",
+    );
+    process.exit(3);
+  }
 
   let result: WorkflowResult;
   let transitionRulesProvenance: TransitionRulesProvenance;
@@ -692,13 +760,7 @@ function runPlanTransitionSubcommand(args: string[]): void {
         planSha256: planSha,
         transitionRulesSource: transitionRulesProvenance,
       });
-      writeAgentRunBundle({
-        outDir: writeRunBundleDir,
-        eventsNdjson,
-        workflowResult: result,
-        producer: readPackageIdentity(),
-        verifiedAt: new Date().toISOString(),
-      });
+      writeRunBundleCli(writeRunBundleDir, eventsNdjson, result, signPrivateKeyPath);
     } catch (e) {
       const msg = e instanceof Error ? e.message : String(e);
       writeCliError(CLI_OPERATIONAL_CODES.INTERNAL_ERROR, formatOperationalMessage(msg));
@@ -714,6 +776,10 @@ function runPlanTransitionSubcommand(args: string[]): void {
 
 async function main(): Promise<void> {
   const args = process.argv.slice(2);
+  if (args[0] === "verify-bundle-signature") {
+    runVerifyBundleSignatureSubcommand(args.slice(1));
+    return;
+  }
   if (args[0] === "plan-transition") {
     runPlanTransitionSubcommand(args.slice(1));
     return;
@@ -776,6 +842,14 @@ async function main(): Promise<void> {
 
   const noTruthReport = args.includes("--no-truth-report");
   const writeRunBundleDir = argValue(args, "--write-run-bundle");
+  const signPrivateKeyPath = argValue(args, "--sign-ed25519-private-key");
+  if (signPrivateKeyPath !== undefined && writeRunBundleDir === undefined) {
+    writeCliError(
+      CLI_OPERATIONAL_CODES.CLI_USAGE,
+      "--sign-ed25519-private-key requires --write-run-bundle.",
+    );
+    process.exit(3);
+  }
 
   let result;
   try {
@@ -810,13 +884,12 @@ async function main(): Promise<void> {
 
   if (writeRunBundleDir !== undefined) {
     try {
-      writeAgentRunBundle({
-        outDir: writeRunBundleDir,
-        eventsNdjson: readFileSync(path.resolve(eventsPath)),
-        workflowResult: result,
-        producer: readPackageIdentity(),
-        verifiedAt: new Date().toISOString(),
-      });
+      writeRunBundleCli(
+        writeRunBundleDir,
+        readFileSync(path.resolve(eventsPath)),
+        result,
+        signPrivateKeyPath,
+      );
     } catch (e) {
       const msg = e instanceof Error ? e.message : String(e);
       writeCliError(CLI_OPERATIONAL_CODES.INTERNAL_ERROR, formatOperationalMessage(msg));
