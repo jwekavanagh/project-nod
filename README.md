@@ -35,6 +35,8 @@ Run it **after** a workflow (or CI replay of its NDJSON log), **before** you tre
 
 **Inputs:** append-only **NDJSON** of tool observations, a **`tools.json`** registry (maps `toolId` → how to build a verification query from `params`), and **read-only** access to **SQLite** or **Postgres**.
 
+**Relational verification (`sql_relational`):** normative semantics are documented only in [`docs/relational-verification.md`](docs/relational-verification.md).
+
 **Decisions it enables:** block release, trigger human review, open an incident, or attach a signed verification artifact to an audit trail.
 
 **Trust:** Verdicts come from **parameterized `SELECT`s** against real rows, not from the agent’s natural-language conclusion. Structured **`workflowTruthReport`** on stdout JSON holds machine-stable labels; the **human report** (stderr from the CLI, or stdout in the demo below) spells out what was expected, what was checked, and what failed in plain language.
@@ -55,7 +57,7 @@ npm start
 
 **`npm start`** runs **`npm run build`** then **`node scripts/first-run.mjs`**: it seeds **`examples/demo.db`** from **`examples/seed.sql`**, then runs two workflows from bundled **`examples/events.ndjson`** and **`examples/tools.json`** (below). **`npm run first-run`** alone only runs that demo step—use it when **`dist/`** is already built.
 
-**Workflow result stdout:** emitted JSON uses **`schemaVersion` `11`**. The **`runLevelCodes`** property is **not** present on v11 objects; use **`runLevelReasons[].code`** when you need run-level codes. Frozen **v9** documents (with **`runLevelCodes`**) exist **only** for compare ingress and corpus bundles—see [`schemas/workflow-result-v9.schema.json`](schemas/workflow-result-v9.schema.json) and compare-input **`oneOf`** in [`schemas/workflow-result-compare-input.schema.json`](schemas/workflow-result-compare-input.schema.json) (**engine v7 → frozen v9 → stdout v11**). CI machine I/O contract: [`test/ci-workflow-truth-postgres-contract.test.mjs`](test/ci-workflow-truth-postgres-contract.test.mjs) / **`npm run test:workflow-truth-contract`**.
+**Workflow result stdout:** emitted JSON uses **`schemaVersion` `12`**. The **`runLevelCodes`** property is **not** present on v12 objects; use **`runLevelReasons[].code`** when you need run-level codes. Frozen **v9** documents (with **`runLevelCodes`**) exist **only** for compare ingress and corpus bundles—see [`schemas/workflow-result-v9.schema.json`](schemas/workflow-result-v9.schema.json) and compare-input **`oneOf`** in [`schemas/workflow-result-compare-input.schema.json`](schemas/workflow-result-compare-input.schema.json) (**engine v7 → frozen v9 → stdout v12**). CI machine I/O contract: [`test/ci-workflow-truth-postgres-contract.test.mjs`](test/ci-workflow-truth-postgres-contract.test.mjs) / **`npm run test:workflow-truth-contract`**.
 
 1. **`wf_complete`** — the log matches the database → **complete** / **verified** in the JSON.
 2. **`wf_missing`** — the log claims a contact id that **does not exist** in the DB → **inconsistent** / **missing** with reason code **`ROW_ABSENT`** in the JSON (a failure that is easy to miss if you only read the agent’s narrative).
@@ -138,7 +140,7 @@ npm run test:ci
 
 ## Advanced topics (normative detail only in SSOT)
 
-Schema versions (**`schemaVersion` `11`** on emitted **`WorkflowResult`** without **`runLevelCodes`**, engine shape **`7`**, truth subtree **`schemaVersion` `5`** with **`failureAnalysis`**, **`actionableFailure`**, **`executionPathFindings`**, **`executionPathSummary`**, and **`verificationRunContext`**), **`workflowTruthReport`**, **`verificationPolicy`**, **`eventSequenceIntegrity`**, **`failureDiagnostic`**, CLI stderr envelope **`schemaVersion` `2`** with **`failureDiagnosis`** (including **`actionableFailure`**), **`verify-workflow compare`** inputs (**`workflow-result-compare-input.schema.json`**: engine v7 / frozen v9 / stdout v11) and **`RunComparisonReport`** v3 (**`reliabilityAssessment`**, **`compareHighlights`**, plus prior aggregates), **strong** vs **eventual** consistency, Postgres session guards, and **`test:workflow-truth-contract`** / **`ci-workflow-truth-postgres-contract.test.mjs`** are specified in **[docs/execution-truth-layer.md](docs/execution-truth-layer.md)**—not duplicated here.
+Schema versions (**`schemaVersion` `12`** on emitted **`WorkflowResult`** without **`runLevelCodes`**, engine shape **`7`**, truth subtree **`schemaVersion` `5`** with **`failureAnalysis`**, **`actionableFailure`**, **`executionPathFindings`**, **`executionPathSummary`**, and **`verificationRunContext`**), **`workflowTruthReport`**, **`verificationPolicy`**, **`eventSequenceIntegrity`**, **`failureDiagnostic`**, CLI stderr envelope **`schemaVersion` `2`** with **`failureDiagnosis`** (including **`actionableFailure`**), **`verify-workflow compare`** inputs (**`workflow-result-compare-input.schema.json`**: engine v7 / frozen v9 / stdout v12) and **`RunComparisonReport`** v3 (**`reliabilityAssessment`**, **`compareHighlights`**, plus prior aggregates), **strong** vs **eventual** consistency, Postgres session guards, and **`test:workflow-truth-contract`** / **`ci-workflow-truth-postgres-contract.test.mjs`** are specified in **[docs/execution-truth-layer.md](docs/execution-truth-layer.md)**—not duplicated here.
 
 ## License
 

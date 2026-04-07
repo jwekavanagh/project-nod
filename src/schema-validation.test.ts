@@ -88,6 +88,14 @@ describe("JSON Schemas (SSOT)", () => {
     expect(v(reg)).toBe(true);
   });
 
+  it("validates sql_relational registry template", () => {
+    const v = loadSchemaValidator("tools-registry");
+    const reg = JSON.parse(
+      readFileSync(path.join(root, "examples", "templates", "registry-sql-relational.json"), "utf8"),
+    );
+    expect(v(reg)).toBe(true);
+  });
+
   it("validates workflow result shape from golden pipeline output", () => {
     const v = loadSchemaValidator("workflow-result");
     const engine: WorkflowEngineResult = {
@@ -346,7 +354,7 @@ describe("JSON Schemas (SSOT)", () => {
     expect(v(v5only)).toBe(false);
   });
 
-  it("workflow-result-compare-input accepts v7 engine, v9 frozen, and v11 emitted", () => {
+  it("workflow-result-compare-input accepts v7 engine, v9 frozen, and v12 emitted", () => {
     const vCmp = loadSchemaValidator("workflow-result-compare-input");
     const engine: WorkflowEngineResult = {
       schemaVersion: 7,
@@ -392,7 +400,7 @@ describe("JSON Schemas (SSOT)", () => {
     expect(vCmp(v9Compat)).toBe(true);
   });
 
-  it("workflow-result v11 rejects stray runLevelCodes", () => {
+  it("workflow-result v12 rejects stray runLevelCodes", () => {
     const v = loadSchemaValidator("workflow-result");
     const engine: WorkflowEngineResult = {
       schemaVersion: 7,

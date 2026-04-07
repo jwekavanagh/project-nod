@@ -1,12 +1,20 @@
 import type { DatabaseSync } from "node:sqlite";
 import { CLI_OPERATIONAL_CODES } from "./failureCatalog.js";
-import { rollupMultiEffectsFromReconciledRows, rollupMultiEffectsSync } from "./multiEffectRollup.js";
+import {
+  rollupMultiEffectsFromReconciledRows,
+  rollupMultiEffectsSync,
+  rollupSqlRelationalAsync,
+  rollupSqlRelationalFromReconciled,
+  rollupSqlRelationalSync,
+} from "./multiEffectRollup.js";
 import type { ResolveResult } from "./resolveExpectation.js";
 import { compareUtf16Id } from "./resolveExpectation.js";
+import { reconcileRelationalSqlite } from "./relationalInvariant.js";
 import { reconcileSqlRow, type ReconcileOutput } from "./reconciler.js";
 import type {
   Reason,
   ResolvedEffect,
+  ResolvedRelationalCheck,
   StepStatus,
   StepVerificationRequest,
   VerificationPolicy,
@@ -33,6 +41,7 @@ const defaultTiming: TimingDeps = {
 
 export type PolicyReconcileContext = {
   reconcileRow: (req: VerificationRequest) => Promise<ReconcileOutput>;
+  reconcileRelationalCheck: (check: ResolvedRelationalCheck) => Promise<ReconcileOutput>;
 };
 
 export type PolicyExecutionOutput = {
@@ -148,6 +157,33 @@ function classifyMultiEffectAfterReconcile(
   return { kind: "done", out: rollupMultiEffectsFromReconciledRows(rows) };
 }
 
+function classifyMultiRelationalAfterReconcile(
+  checks: ResolvedRelationalCheck[],
+  recs: ReconcileOutput[],
+):
+  | { kind: "pending_all_missing" }
+  | { kind: "done"; out: ReturnType<typeof rollupSqlRelationalFromReconciled> } {
+  const pairs = checks.map((check, i) => ({
+    id: check.id,
+    status: recs[i]!.status,
+    reasons: recs[i]!.reasons,
+    evidenceSummary: recs[i]!.evidenceSummary,
+  }));
+  pairs.sort((a, b) => compareUtf16Id(a.id, b.id));
+  const incomplete = pairs.filter((e) => e.status === "incomplete_verification");
+  if (incomplete.length > 0) {
+    return { kind: "done", out: rollupSqlRelationalFromReconciled(checks, recs) };
+  }
+  const verified = pairs.filter((e) => e.status === "verified");
+  if (verified.length === pairs.length) {
+    return { kind: "done", out: rollupSqlRelationalFromReconciled(checks, recs) };
+  }
+  if (pairs.every((e) => e.status === "missing")) {
+    return { kind: "pending_all_missing" };
+  }
+  return { kind: "done", out: rollupSqlRelationalFromReconciled(checks, recs) };
+}
+
 function buildUncertainSqlRow(
   request: VerificationRequest,
   attempts: number,
@@ -225,6 +261,78 @@ function buildUncertainSqlEffects(
   };
 }
 
+function buildUncertainSqlRelational(
+  checks: ResolvedRelationalCheck[],
+  recs: ReconcileOutput[],
+  attempts: number,
+  elapsedMs: number,
+  policy: VerificationPolicy,
+): PolicyExecutionOutput {
+  const { verificationWindowMs, pollIntervalMs } = policy;
+  const sortedPairs = checks
+    .map((check, i) => ({ check, rec: recs[i]! }))
+    .sort((a, b) => compareUtf16Id(a.check.id, b.check.id));
+  const sortedChecks = sortedPairs.map((p) => p.check);
+  const n = sortedChecks.length;
+  const verificationRequest = {
+    kind: "sql_relational" as const,
+    checks: sortedChecks,
+  };
+  const effectRows = sortedPairs.map((p) => ({
+    id: p.check.id,
+    status: p.rec.status,
+    reasons: p.rec.reasons,
+    evidenceSummary: p.rec.evidenceSummary,
+  }));
+  return {
+    verificationRequest,
+    status: "uncertain",
+    reasons: [
+      {
+        code: SQL_VERIFICATION_OUTCOME_CODE.MULTI_EFFECT_UNCERTAIN_WITHIN_WINDOW,
+        message: `Not all effects were observable within the verification window; replication or processing delay is possible (effects: ${sortedChecks
+          .map((c) => c.id)
+          .sort(compareUtf16Id)
+          .join(", ")}).`,
+      },
+    ],
+    evidenceSummary: {
+      effectCount: n,
+      effects: effectRows,
+      attempts,
+      elapsedMs,
+      verificationWindowMs,
+      pollIntervalMs,
+    },
+  };
+}
+
+function buildUncertainSqlRelationalSingle(
+  check: ResolvedRelationalCheck,
+  attempts: number,
+  elapsedMs: number,
+  policy: VerificationPolicy,
+): PolicyExecutionOutput {
+  const { verificationWindowMs, pollIntervalMs } = policy;
+  return {
+    verificationRequest: { kind: "sql_relational", checks: [check] },
+    status: "uncertain",
+    reasons: [
+      {
+        code: SQL_VERIFICATION_OUTCOME_CODE.ROW_NOT_OBSERVED_WITHIN_WINDOW,
+        message:
+          "No row matched the key within the verification window; replication or processing delay is possible.",
+      },
+    ],
+    evidenceSummary: {
+      attempts,
+      elapsedMs,
+      verificationWindowMs,
+      pollIntervalMs,
+    },
+  };
+}
+
 async function executeSqlRowEventual(
   request: VerificationRequest,
   policy: VerificationPolicy,
@@ -281,6 +389,62 @@ async function executeSqlEffectsEventual(
   }
 }
 
+async function executeSqlRelationalSingleEventual(
+  check: ResolvedRelationalCheck,
+  policy: VerificationPolicy,
+  ctx: PolicyReconcileContext,
+  timing: TimingDeps,
+): Promise<PolicyExecutionOutput> {
+  const { verificationWindowMs, pollIntervalMs } = policy;
+  const start = timing.now();
+  let attempts = 0;
+  for (;;) {
+    attempts++;
+    const rec = await ctx.reconcileRelationalCheck(check);
+    if (rec.status !== "missing") {
+      return {
+        verificationRequest: { kind: "sql_relational", checks: [check] },
+        status: rec.status,
+        reasons: rec.reasons,
+        evidenceSummary: rec.evidenceSummary,
+      };
+    }
+    if (timing.now() - start >= verificationWindowMs) {
+      return buildUncertainSqlRelationalSingle(check, attempts, timing.now() - start, policy);
+    }
+    await timing.sleep(pollIntervalMs);
+  }
+}
+
+async function executeSqlRelationalEventual(
+  checks: ResolvedRelationalCheck[],
+  policy: VerificationPolicy,
+  ctx: PolicyReconcileContext,
+  timing: TimingDeps,
+): Promise<PolicyExecutionOutput> {
+  const { verificationWindowMs, pollIntervalMs } = policy;
+  const start = timing.now();
+  let attempts = 0;
+  for (;;) {
+    attempts++;
+    const recs = await Promise.all(checks.map((c) => ctx.reconcileRelationalCheck(c)));
+    const classified = classifyMultiRelationalAfterReconcile(checks, recs);
+    if (classified.kind === "done") {
+      const out = classified.out;
+      return {
+        verificationRequest: out.verificationRequest,
+        status: out.status,
+        reasons: out.reasons,
+        evidenceSummary: out.evidenceSummary,
+      };
+    }
+    if (timing.now() - start >= verificationWindowMs) {
+      return buildUncertainSqlRelational(checks, recs, attempts, timing.now() - start, policy);
+    }
+    await timing.sleep(pollIntervalMs);
+  }
+}
+
 /** Strong mode only. Throws if policy is not strong after normalization. */
 export function executeVerificationWithPolicySync(
   db: DatabaseSync,
@@ -296,6 +460,26 @@ export function executeVerificationWithPolicySync(
   }
   if (resolved.verificationKind === "sql_effects") {
     const rolled = rollupMultiEffectsSync(db, resolved.effects);
+    return {
+      verificationRequest: rolled.verificationRequest,
+      status: rolled.status,
+      reasons: rolled.reasons,
+      evidenceSummary: rolled.evidenceSummary,
+    };
+  }
+  if (resolved.verificationKind === "sql_relational") {
+    const checks = resolved.checks;
+    if (checks.length === 1) {
+      const check = checks[0]!;
+      const rec = reconcileRelationalSqlite(db, check);
+      return {
+        verificationRequest: { kind: "sql_relational", checks: [check] },
+        status: rec.status,
+        reasons: rec.reasons,
+        evidenceSummary: rec.evidenceSummary,
+      };
+    }
+    const rolled = rollupSqlRelationalSync(db, checks);
     return {
       verificationRequest: rolled.verificationRequest,
       status: rolled.status,
@@ -332,6 +516,26 @@ export async function executeVerificationWithPolicyAsync(
         evidenceSummary: out.evidenceSummary,
       };
     }
+    if (resolved.verificationKind === "sql_relational") {
+      const checks = resolved.checks;
+      if (checks.length === 1) {
+        const check = checks[0]!;
+        const rec = await ctx.reconcileRelationalCheck(check);
+        return {
+          verificationRequest: { kind: "sql_relational", checks: [check] },
+          status: rec.status,
+          reasons: rec.reasons,
+          evidenceSummary: rec.evidenceSummary,
+        };
+      }
+      const out = await rollupSqlRelationalAsync(ctx.reconcileRelationalCheck, checks);
+      return {
+        verificationRequest: out.verificationRequest,
+        status: out.status,
+        reasons: out.reasons,
+        evidenceSummary: out.evidenceSummary,
+      };
+    }
     const rec = await ctx.reconcileRow(resolved.request);
     return {
       verificationRequest: resolved.request,
@@ -344,11 +548,19 @@ export async function executeVerificationWithPolicyAsync(
   if (resolved.verificationKind === "sql_row") {
     return executeSqlRowEventual(resolved.request, p, ctx, t);
   }
-  return executeSqlEffectsEventual(resolved.effects, p, ctx, t);
+  if (resolved.verificationKind === "sql_effects") {
+    return executeSqlEffectsEventual(resolved.effects, p, ctx, t);
+  }
+  const checks = resolved.checks;
+  if (checks.length === 1) {
+    return executeSqlRelationalSingleEventual(checks[0]!, p, ctx, t);
+  }
+  return executeSqlRelationalEventual(checks, p, ctx, t);
 }
 
 export function createSqlitePolicyContext(db: DatabaseSync): PolicyReconcileContext {
   return {
     reconcileRow: (req) => Promise.resolve(reconcileSqlRow(db, req)),
+    reconcileRelationalCheck: (check) => Promise.resolve(reconcileRelationalSqlite(db, check)),
   };
 }

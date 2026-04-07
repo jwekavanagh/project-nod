@@ -41,7 +41,12 @@ function failureDiagnosticForIncompleteVerification(reasons: Reason[]): FailureD
   for (const c of C) {
     if (RESOLVE_FAILURE_CODES.has(c)) return "verification_setup";
   }
-  if (C.has("CONNECTOR_ERROR") || C.has("ROW_SHAPE_MISMATCH") || C.has("UNREADABLE_VALUE")) {
+  if (
+    C.has("CONNECTOR_ERROR") ||
+    C.has("ROW_SHAPE_MISMATCH") ||
+    C.has("UNREADABLE_VALUE") ||
+    C.has("RELATIONAL_SCALAR_UNUSABLE")
+  ) {
     return "verification_setup";
   }
   throw new Error(
@@ -85,6 +90,15 @@ export function formatVerificationTargetSummary(req: StepVerificationRequest): s
     const keys = fieldNamesSorted(req.requiredFields);
     const line = `table=${sanitizeOneLine(req.table)} ${req.keyColumn}=${sanitizeOneLine(req.keyValue)} required_fields=[${keys}]`;
     return formatOperationalMessage(line);
+  }
+  if (req.kind === "sql_relational") {
+    const parts = [...req.checks]
+      .sort((a, b) => compareUtf16Id(a.id, b.id))
+      .map((c) => `${c.id}:${sanitizeOneLine(c.checkKind)}`);
+    const line = `sql_relational count=${req.checks.length} ` + parts.join("; ");
+    const max = OPERATIONAL_MESSAGE_MAX_CHARS;
+    if (line.length <= max) return line;
+    return `${line.slice(0, max - 3)}...`;
   }
   const parts = [...req.effects]
     .sort((a, b) => compareUtf16Id(a.id, b.id))

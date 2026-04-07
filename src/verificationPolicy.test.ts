@@ -20,6 +20,12 @@ const baseReq: VerificationRequest = {
   requiredFields: {},
 };
 
+const unusedRelationalOk = async () => ({
+  status: "verified" as const,
+  reasons: [] as { code: string; message: string }[],
+  evidenceSummary: {},
+});
+
 describe("verificationPolicy", () => {
   it("normalizeVerificationPolicy forces zeros for strong", () => {
     expect(
@@ -81,6 +87,7 @@ describe("verificationPolicy", () => {
           evidenceSummary: { rowCount: 1 },
         };
       },
+      reconcileRelationalCheck: unusedRelationalOk,
     };
     const out = await executeVerificationWithPolicyAsync(
       { ok: true, verificationKind: "sql_row", request: baseReq },
@@ -115,6 +122,7 @@ describe("verificationPolicy", () => {
           evidenceSummary: { rowCount: 1 },
         };
       },
+      reconcileRelationalCheck: unusedRelationalOk,
     };
     const timing = {
       now: () => t,
@@ -149,6 +157,7 @@ describe("verificationPolicy", () => {
           evidenceSummary: { rowCount: 0 },
         };
       },
+      reconcileRelationalCheck: unusedRelationalOk,
     };
     const timing = {
       now: () => t,
@@ -185,6 +194,7 @@ describe("verificationPolicy", () => {
           evidenceSummary: {},
         };
       },
+      reconcileRelationalCheck: unusedRelationalOk,
     };
     const timing = {
       now: () => 0,
@@ -218,6 +228,7 @@ describe("verificationPolicy", () => {
           evidenceSummary: {},
         };
       },
+      reconcileRelationalCheck: unusedRelationalOk,
     };
     const out = await executeVerificationWithPolicyAsync(
       { ok: true, verificationKind: "sql_row", request: baseReq },
@@ -249,6 +260,7 @@ describe("verificationPolicy", () => {
           evidenceSummary: { rowCount: 0 },
         };
       },
+      reconcileRelationalCheck: unusedRelationalOk,
     };
     const timing = {
       now: () => t,

@@ -330,6 +330,39 @@ describe("sql_effects", () => {
   });
 });
 
+describe("sql_relational", () => {
+  it("rejects DUPLICATE_EFFECT_ID on duplicate checks[].id", () => {
+    const entry: ToolRegistryEntry = {
+      toolId: "rel",
+      effectDescriptionTemplate: "x",
+      verification: {
+        kind: "sql_relational",
+        checks: [
+          {
+            checkKind: "related_exists",
+            id: "dup",
+            childTable: { const: "c" },
+            fkColumn: { const: "k" },
+            fkValue: { const: "1" },
+          },
+          {
+            checkKind: "aggregate",
+            id: "dup",
+            table: { const: "t" },
+            fn: "COUNT_STAR",
+            expect: { op: "eq", value: { const: 0 } },
+          },
+        ],
+      },
+    };
+    const r = resolveVerificationRequest(entry, {});
+    expect(r.ok).toBe(false);
+    if (!r.ok) {
+      expect(r.code).toBe("DUPLICATE_EFFECT_ID");
+    }
+  });
+});
+
 describe("buildRegistryMap", () => {
   it("throws TruthLayerError REGISTRY_DUPLICATE_TOOL_ID", () => {
     const entries = [baseEntry, { ...baseEntry, toolId: "t" }];

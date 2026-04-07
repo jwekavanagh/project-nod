@@ -30,6 +30,18 @@ export function formatSqlEvidenceDetailForTrustPanel(step: StepOutcome): string 
     const effects = Array.isArray(ev.effects) ? ev.effects.length : (ev.effectCount as number | undefined) ?? 0;
     return `multi_effect effect_rows=${effects}`;
   }
+  if (step.verificationRequest.kind === "sql_relational") {
+    if (step.verificationRequest.checks.length >= 2) {
+      const effects = Array.isArray(ev.effects) ? ev.effects.length : (ev.effectCount as number | undefined) ?? 0;
+      return `multi_effect effect_rows=${effects}`;
+    }
+    const ck = ev.checkKind;
+    const cid = ev.checkId;
+    if (typeof ck === "string" && typeof cid === "string") {
+      return `sql_relational check=${cid} kind=${ck}`;
+    }
+    return "sql_relational (single check)";
+  }
   const rowCount = ev.rowCount;
   if (typeof rowCount === "number") {
     if (ev.field !== undefined && ev.expected !== undefined && ev.actual !== undefined) {

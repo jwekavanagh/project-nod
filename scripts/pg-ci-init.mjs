@@ -3,9 +3,18 @@
  * Idempotent Postgres schema for CI / `npm run test:ci` (via `npm run test:postgres`).
  * Requires POSTGRES_ADMIN_URL (superuser). Creates verifier_ro + seed tables + readonly_probe.
  */
+import { readFileSync } from "node:fs";
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
 import pg from "pg";
 
 const adminUrl = process.env.POSTGRES_ADMIN_URL;
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const root = join(__dirname, "..");
+const relationalSeed = readFileSync(
+  join(root, "test", "fixtures", "relational-verification", "pg-seed.sql"),
+  "utf8",
+);
 if (!adminUrl || adminUrl.trim() === "") {
   console.error("pg-ci-init: set POSTGRES_ADMIN_URL (e.g. postgresql://postgres:postgres@127.0.0.1:5432/postgres)");
   process.exit(1);
@@ -56,12 +65,17 @@ $$;
 `);
 
 await client.query(seedSql);
+await client.query(relationalSeed);
 
 await client.query(`
 GRANT CONNECT ON DATABASE postgres TO verifier_ro;
 GRANT USAGE ON SCHEMA public TO verifier_ro;
 GRANT SELECT ON contacts TO verifier_ro;
 GRANT SELECT ON dups TO verifier_ro;
+GRANT SELECT ON rel_orders TO verifier_ro;
+GRANT SELECT ON rel_lines TO verifier_ro;
+GRANT SELECT ON rel_a TO verifier_ro;
+GRANT SELECT ON rel_b TO verifier_ro;
 `);
 
 await client.end();

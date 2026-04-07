@@ -5,6 +5,7 @@ import { loadEventsForWorkflow } from "./loadEvents.js";
 import { prepareWorkflowEvents } from "./prepareWorkflowEvents.js";
 import { canonicalJsonForParams } from "./canonicalParams.js";
 import { planLogicalSteps, type LogicalStepPlan } from "./planLogicalSteps.js";
+import { reconcileRelationalPostgres } from "./relationalInvariant.js";
 import { reconcileSqlRowAsync } from "./reconciler.js";
 import { loadSchemaValidator } from "./schemaLoad.js";
 import {
@@ -398,6 +399,7 @@ export async function verifyWorkflow(options: {
     const backend = createPostgresSqlReadBackend(client);
     const ctx: PolicyReconcileContext = {
       reconcileRow: (req) => reconcileSqlRowAsync(backend, req),
+      reconcileRelationalCheck: (check) => reconcileRelationalPostgres(client, check),
     };
     try {
       steps = await runLogicalStepsVerificationAsync({

@@ -1,0 +1,19 @@
+[
+  {
+    "toolId": "bad.rel",
+    "effectDescriptionTemplate": "x",
+    "verification": {
+      "kind": "sql_relational",
+      "checks": [
+        {
+          "checkKind": "related_exists",
+          "id": "a",
+          "childTable": { "const": "t" },
+          "fkColumn": { "const": "k" },
+          "fkValue": { "const": "1" },
+          "sql": "SELECT 1"
+        }
+      ]
+    }
+  }
+]

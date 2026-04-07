@@ -360,6 +360,27 @@ export function logicalStepKeyFromStep(step: StepOutcome): string | null {
   if (vr.kind === "sql_row") {
     return `sql_row|${vr.table}|${vr.keyColumn}|${vr.keyValue}`;
   }
+  if (vr.kind === "sql_relational") {
+    const parts = [...vr.checks].sort((a, b) => compareUtf16Id(a.id, b.id));
+    const segs = parts.map((c) => {
+      if (c.checkKind === "related_exists") {
+        return `id|${c.id}|related_exists|${c.childTable}|${c.fkColumn}|${c.fkValue}|`;
+      }
+      if (c.checkKind === "aggregate") {
+        const w = [...c.whereEq]
+          .map((x) => `${x.column}=${x.value}`)
+          .sort((a, b) => compareUtf16Id(a, b))
+          .join("&");
+        return `id|${c.id}|aggregate|${c.table}|${c.fn}|${c.sumColumn ?? ""}|${c.expectOp}|${c.expectValue}|${w}|`;
+      }
+      const w = [...c.whereEq]
+        .map((x) => `${x.side}.${x.column}=${x.value}`)
+        .sort((a, b) => compareUtf16Id(a, b))
+        .join("&");
+      return `id|${c.id}|join_count|${c.leftTable}|${c.rightTable}|${c.leftJoinColumn}|${c.rightJoinColumn}|${c.expectOp}|${c.expectValue}|${w}|`;
+    });
+    return `sql_relational|${segs.join("")}`;
+  }
   const parts = [...vr.effects].sort((a, b) => compareUtf16Id(a.id, b.id));
   const segs = parts.map(
     (ef) => `id|${ef.id}|${ef.table}|${ef.keyColumn}|${ef.keyValue}|`,

@@ -8,6 +8,7 @@ const root = path.join(path.dirname(fileURLToPath(import.meta.url)), "..");
 const EMITTER_FILES = [
   "reconciler.ts",
   "multiEffectRollup.ts",
+  "relationalInvariant.ts",
   "verificationPolicy.ts",
   "resolveExpectation.ts",
   "pipeline.ts",
@@ -27,7 +28,7 @@ function stripWholeLineComments(src: string): string {
 }
 
 describe("wireReasonEmittersGuard", () => {
-  it("six emitter files contain no code: \"UPPER_SNAKE\" property literals", () => {
+  it("emitter files contain no code: \"UPPER_SNAKE\" property literals", () => {
     for (const rel of EMITTER_FILES) {
       const p = path.join(root, "src", rel);
       const raw = readFileSync(p, "utf8");

@@ -1,0 +1,113 @@
+[
+  {
+    "toolId": "demo.rel_exists",
+    "effectDescriptionTemplate": "Lines for order {orderId}",
+    "verification": {
+      "kind": "sql_relational",
+      "checks": [
+        {
+          "checkKind": "related_exists",
+          "id": "lines",
+          "childTable": { "const": "rel_lines" },
+          "fkColumn": { "const": "order_id" },
+          "fkValue": { "pointer": "/orderId" }
+        }
+      ]
+    }
+  },
+  {
+    "toolId": "demo.rel_agg_pass",
+    "effectDescriptionTemplate": "Count orders",
+    "verification": {
+      "kind": "sql_relational",
+      "checks": [
+        {
+          "checkKind": "aggregate",
+          "id": "oc",
+          "table": { "const": "rel_orders" },
+          "fn": "COUNT_STAR",
+          "expect": { "op": "eq", "value": { "const": 1 } }
+        }
+      ]
+    }
+  },
+  {
+    "toolId": "demo.rel_agg_fail",
+    "effectDescriptionTemplate": "Bad count",
+    "verification": {
+      "kind": "sql_relational",
+      "checks": [
+        {
+          "checkKind": "aggregate",
+          "id": "oc",
+          "table": { "const": "rel_orders" },
+          "fn": "COUNT_STAR",
+          "expect": { "op": "eq", "value": { "const": 99 } }
+        }
+      ]
+    }
+  },
+  {
+    "toolId": "demo.rel_join_pass",
+    "effectDescriptionTemplate": "Join",
+    "verification": {
+      "kind": "sql_relational",
+      "checks": [
+        {
+          "checkKind": "join_count",
+          "id": "jc",
+          "leftTable": { "const": "rel_orders" },
+          "rightTable": { "const": "rel_lines" },
+          "join": {
+            "leftColumn": { "const": "id" },
+            "rightColumn": { "const": "order_id" }
+          },
+          "expect": { "op": "eq", "value": { "const": 2 } }
+        }
+      ]
+    }
+  },
+  {
+    "toolId": "demo.rel_join_zero",
+    "effectDescriptionTemplate": "Zero join",
+    "verification": {
+      "kind": "sql_relational",
+      "checks": [
+        {
+          "checkKind": "join_count",
+          "id": "jz",
+          "leftTable": { "const": "rel_a" },
+          "rightTable": { "const": "rel_b" },
+          "join": {
+            "leftColumn": { "const": "id" },
+            "rightColumn": { "const": "a_id" }
+          },
+          "expect": { "op": "eq", "value": { "const": 1 } }
+        }
+      ]
+    }
+  },
+  {
+    "toolId": "demo.rel_multi_partial",
+    "effectDescriptionTemplate": "Multi",
+    "verification": {
+      "kind": "sql_relational",
+      "checks": [
+        {
+          "checkKind": "related_exists",
+          "id": "good",
+          "childTable": { "const": "rel_lines" },
+          "fkColumn": { "const": "order_id" },
+          "fkValue": { "pointer": "/orderId" }
+        },
+        {
+          "checkKind": "related_exists",
+          "id": "bad",
+          "childTable": { "const": "rel_lines" },
+          "fkColumn": { "const": "order_id" },
+          "fkValue": { "const": "ghost" }
+        }
+      ]
+    }
+  }
+]

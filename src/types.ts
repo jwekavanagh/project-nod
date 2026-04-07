@@ -90,11 +90,58 @@ export type SqlRowVerificationSpec = {
   requiredFields: { pointer: string };
 };
 
+/** Expectation for aggregate / join_count (numeric only). */
+export type RelationalExpectSpec = {
+  op: "eq" | "gte" | "lte";
+  value: { const: number } | { pointer: string };
+};
+
+export type SqlRelationalCheckSpec =
+  | {
+      checkKind: "aggregate";
+      id: string;
+      table: { const: string } | { pointer: string };
+      fn: "COUNT_STAR" | "SUM";
+      sumColumn?: { const: string } | { pointer: string };
+      whereEq?: Array<{
+        column: { const: string } | { pointer: string };
+        value: { const: string | number | boolean | null } | { pointer: string };
+      }>;
+      expect: RelationalExpectSpec;
+    }
+  | {
+      checkKind: "join_count";
+      id: string;
+      leftTable: { const: string } | { pointer: string };
+      rightTable: { const: string } | { pointer: string };
+      join: {
+        leftColumn: { const: string } | { pointer: string };
+        rightColumn: { const: string } | { pointer: string };
+      };
+      whereEq?: Array<{
+        tableSide: "left" | "right";
+        column: { const: string } | { pointer: string };
+        value: { const: string | number | boolean | null } | { pointer: string };
+      }>;
+      expect: RelationalExpectSpec;
+    }
+  | {
+      checkKind: "related_exists";
+      id: string;
+      childTable: { const: string } | { pointer: string };
+      fkColumn: { const: string } | { pointer: string };
+      fkValue: { const: string | number | boolean | null } | { pointer: string };
+    };
+
 export type ToolRegistryVerification =
   | ({ kind: "sql_row" } & SqlRowVerificationSpec)
   | {
       kind: "sql_effects";
       effects: Array<{ id: string } & SqlRowVerificationSpec>;
+    }
+  | {
+      kind: "sql_relational";
+      checks: SqlRelationalCheckSpec[];
     };
 
 export type ToolRegistryEntry = {
@@ -116,6 +163,40 @@ export type VerificationRequest = {
 /** One resolved row check with stable id (registry `sql_effects` only). */
 export type ResolvedEffect = { id: string; request: VerificationRequest };
 
+/** Resolved relational check (no pointers). */
+export type ResolvedRelationalCheck =
+  | {
+      checkKind: "related_exists";
+      id: string;
+      childTable: string;
+      fkColumn: string;
+      fkValue: string;
+    }
+  | {
+      checkKind: "aggregate";
+      id: string;
+      table: string;
+      fn: "COUNT_STAR" | "SUM";
+      sumColumn?: string;
+      whereEq: Array<{ column: string; value: string }>;
+      expectOp: "eq" | "gte" | "lte";
+      expectValue: number;
+    }
+  | {
+      checkKind: "join_count";
+      id: string;
+      leftTable: string;
+      rightTable: string;
+      leftJoinColumn: string;
+      rightJoinColumn: string;
+      whereEq: Array<{ side: "left" | "right"; column: string; value: string }>;
+      expectOp: "eq" | "gte" | "lte";
+      expectValue: number;
+    };
+
+/** One resolved relational check with stable id (registry `sql_relational`). */
+export type ResolvedRelationalItem = { id: string; check: ResolvedRelationalCheck };
+
 /** Emitted on the step when registry used `sql_effects`. */
 export type SqlEffectsVerificationPayload = {
   kind: "sql_effects";
@@ -131,7 +212,17 @@ export type SqlEffectsVerificationPayload = {
   >;
 };
 
-export type StepVerificationRequest = VerificationRequest | SqlEffectsVerificationPayload | null;
+/** Emitted when registry used `sql_relational`. */
+export type SqlRelationalVerificationPayload = {
+  kind: "sql_relational";
+  checks: ResolvedRelationalCheck[];
+};
+
+export type StepVerificationRequest =
+  | VerificationRequest
+  | SqlEffectsVerificationPayload
+  | SqlRelationalVerificationPayload
+  | null;
 
 export type StepStatus =
   | "verified"
@@ -380,9 +471,9 @@ export type WorkflowTruthReport = {
   executionPathSummary: string;
 };
 
-/** Emitted verification result on stdout / public API (`schemaVersion` 11). */
+/** Emitted verification result on stdout / public API (`schemaVersion` 12). */
 export type WorkflowResult = Omit<WorkflowEngineResult, "schemaVersion"> & {
-  schemaVersion: 11;
+  schemaVersion: 12;
   workflowTruthReport: WorkflowTruthReport;
 };
 

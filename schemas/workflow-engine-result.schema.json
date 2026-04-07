@@ -234,6 +234,118 @@
         }
       }
     },
+    "resolvedRelationalWhereEqSide": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["side", "column", "value"],
+      "properties": {
+        "side": { "type": "string", "enum": ["left", "right"] },
+        "column": { "type": "string", "minLength": 1 },
+        "value": { "type": "string" }
+      }
+    },
+    "resolvedRelationalWhereEqPlain": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["column", "value"],
+      "properties": {
+        "column": { "type": "string", "minLength": 1 },
+        "value": { "type": "string" }
+      }
+    },
+    "resolvedRelationalCheck": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["checkKind", "id", "childTable", "fkColumn", "fkValue"],
+          "properties": {
+            "checkKind": { "const": "related_exists" },
+            "id": { "type": "string", "minLength": 1 },
+            "childTable": { "type": "string", "minLength": 1 },
+            "fkColumn": { "type": "string", "minLength": 1 },
+            "fkValue": { "type": "string" }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["checkKind", "id", "table", "fn", "whereEq", "expectOp", "expectValue"],
+          "properties": {
+            "checkKind": { "const": "aggregate" },
+            "id": { "type": "string", "minLength": 1 },
+            "table": { "type": "string", "minLength": 1 },
+            "fn": { "const": "COUNT_STAR" },
+            "whereEq": {
+              "type": "array",
+              "items": { "$ref": "#/$defs/resolvedRelationalWhereEqPlain" }
+            },
+            "expectOp": { "type": "string", "enum": ["eq", "gte", "lte"] },
+            "expectValue": { "type": "number" }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["checkKind", "id", "table", "fn", "sumColumn", "whereEq", "expectOp", "expectValue"],
+          "properties": {
+            "checkKind": { "const": "aggregate" },
+            "id": { "type": "string", "minLength": 1 },
+            "table": { "type": "string", "minLength": 1 },
+            "fn": { "const": "SUM" },
+            "sumColumn": { "type": "string", "minLength": 1 },
+            "whereEq": {
+              "type": "array",
+              "items": { "$ref": "#/$defs/resolvedRelationalWhereEqPlain" }
+            },
+            "expectOp": { "type": "string", "enum": ["eq", "gte", "lte"] },
+            "expectValue": { "type": "number" }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "checkKind",
+            "id",
+            "leftTable",
+            "rightTable",
+            "leftJoinColumn",
+            "rightJoinColumn",
+            "whereEq",
+            "expectOp",
+            "expectValue"
+          ],
+          "properties": {
+            "checkKind": { "const": "join_count" },
+            "id": { "type": "string", "minLength": 1 },
+            "leftTable": { "type": "string", "minLength": 1 },
+            "rightTable": { "type": "string", "minLength": 1 },
+            "leftJoinColumn": { "type": "string", "minLength": 1 },
+            "rightJoinColumn": { "type": "string", "minLength": 1 },
+            "whereEq": {
+              "type": "array",
+              "items": { "$ref": "#/$defs/resolvedRelationalWhereEqSide" }
+            },
+            "expectOp": { "type": "string", "enum": ["eq", "gte", "lte"] },
+            "expectValue": { "type": "number" }
+          }
+        }
+      ]
+    },
+    "verificationRequestSqlRelational": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "checks"],
+      "properties": {
+        "kind": { "const": "sql_relational" },
+        "checks": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/resolvedRelationalCheck" }
+        }
+      }
+    },
     "effectOutcome": {
       "type": "object",
       "additionalProperties": false,
@@ -296,7 +408,8 @@
               "oneOf": [
                 { "type": "null" },
                 { "$ref": "#/$defs/verificationRequestSqlRow" },
-                { "$ref": "#/$defs/verificationRequestSqlEffects" }
+                { "$ref": "#/$defs/verificationRequestSqlEffects" },
+                { "$ref": "#/$defs/verificationRequestSqlRelational" }
               ]
             },
             "status": {
@@ -351,9 +464,21 @@
             "required": ["verificationRequest"],
             "properties": {
               "verificationRequest": {
-                "type": "object",
-                "required": ["kind"],
-                "properties": { "kind": { "const": "sql_effects" } }
+                "oneOf": [
+                  {
+                    "type": "object",
+                    "required": ["kind"],
+                    "properties": { "kind": { "const": "sql_effects" } }
+                  },
+                  {
+                    "type": "object",
+                    "required": ["kind", "checks"],
+                    "properties": {
+                      "kind": { "const": "sql_relational" },
+                      "checks": { "type": "array", "minItems": 2 }
+                    }
+                  }
+                ]
               }
             }
           },

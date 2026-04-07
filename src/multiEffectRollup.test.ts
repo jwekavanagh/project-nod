@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { DatabaseSync } from "node:sqlite";
-import { rollupMultiEffectsSync } from "./multiEffectRollup.js";
+import { computeMultiCheckRollupStatus, rollupMultiEffectsSync } from "./multiEffectRollup.js";
 import type { ResolvedEffect, VerificationRequest } from "./types.js";
 
 vi.mock("./reconciler.js", () => ({
@@ -19,6 +19,17 @@ function req(id: string, fields: Record<string, string | number | boolean | null
     requiredFields: fields,
   };
 }
+
+describe("computeMultiCheckRollupStatus", () => {
+  it("all verified → verified empty reasons", () => {
+    const out = computeMultiCheckRollupStatus([
+      { id: "a", status: "verified", reasons: [], evidenceSummary: {} },
+      { id: "b", status: "verified", reasons: [], evidenceSummary: {} },
+    ]);
+    expect(out.status).toBe("verified");
+    expect(out.reasons).toEqual([]);
+  });
+});
 
 describe("rollupMultiEffectsSync", () => {
   beforeEach(() => {

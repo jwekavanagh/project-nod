@@ -15,7 +15,11 @@ import { REGISTRY_VALIDATION_CODE } from "./wireReasonCodes.js";
 
 const validateToolsRegistrySchema = loadSchemaValidator("tools-registry");
 
-export type StructuralIssueKind = "json_schema" | "duplicate_tool_id" | "sql_effects_duplicate_effect_id";
+export type StructuralIssueKind =
+  | "json_schema"
+  | "duplicate_tool_id"
+  | "sql_effects_duplicate_effect_id"
+  | "sql_relational_duplicate_check_id";
 
 export type StructuralIssue = {
   kind: StructuralIssueKind;
@@ -24,6 +28,7 @@ export type StructuralIssue = {
   keyword?: string;
   toolId?: string;
   effectId?: string;
+  checkId?: string;
 };
 
 export type ResolutionIssue = {
@@ -98,6 +103,28 @@ function collectSqlEffectsDuplicateIssues(entries: ToolRegistryEntry[]): Structu
         continue;
       }
       seen.add(eff.id);
+    }
+  }
+  return out;
+}
+
+function collectSqlRelationalDuplicateCheckIssues(entries: ToolRegistryEntry[]): StructuralIssue[] {
+  const out: StructuralIssue[] = [];
+  for (const entry of entries) {
+    const v = entry.verification;
+    if (v.kind !== "sql_relational") continue;
+    const seen = new Set<string>();
+    for (const chk of v.checks) {
+      if (seen.has(chk.id)) {
+        out.push({
+          kind: "sql_relational_duplicate_check_id",
+          toolId: entry.toolId,
+          checkId: chk.id,
+          message: `Duplicate check id in registry for tool ${entry.toolId}: ${chk.id}`,
+        });
+        continue;
+      }
+      seen.add(chk.id);
     }
   }
   return out;
@@ -182,6 +209,7 @@ export function validateToolsRegistry(input: {
 
   const entries = parsed as ToolRegistryEntry[];
   structuralIssues.push(...collectSqlEffectsDuplicateIssues(entries));
+  structuralIssues.push(...collectSqlRelationalDuplicateCheckIssues(entries));
 
   let registry: Map<string, ToolRegistryEntry>;
   try {

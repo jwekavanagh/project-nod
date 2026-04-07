@@ -207,6 +207,20 @@ describe("formatVerificationTargetSummary", () => {
   it("null request returns null", () => {
     expect(formatVerificationTargetSummary(null)).toBeNull();
   });
+
+  it("sql_relational lists check ids and kinds", () => {
+    const req: StepVerificationRequest = {
+      kind: "sql_relational",
+      checks: [
+        { checkKind: "related_exists", id: "b", childTable: "c", fkColumn: "k", fkValue: "1" },
+        { checkKind: "aggregate", id: "a", table: "t", fn: "COUNT_STAR", whereEq: [], expectOp: "eq", expectValue: 0 },
+      ],
+    };
+    const s = formatVerificationTargetSummary(req);
+    expect(s).toContain("sql_relational count=2");
+    expect(s).toContain("a:aggregate");
+    expect(s).toContain("b:related_exists");
+  });
 });
 
 describe("stderr category parity with JSON failureDiagnostic", () => {

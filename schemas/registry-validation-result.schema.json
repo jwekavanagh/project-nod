@@ -30,13 +30,19 @@
       "properties": {
         "kind": {
           "type": "string",
-          "enum": ["json_schema", "duplicate_tool_id", "sql_effects_duplicate_effect_id"]
+          "enum": [
+            "json_schema",
+            "duplicate_tool_id",
+            "sql_effects_duplicate_effect_id",
+            "sql_relational_duplicate_check_id"
+          ]
         },
         "message": { "type": "string", "minLength": 1 },
         "instancePath": { "type": "string" },
         "keyword": { "type": "string" },
         "toolId": { "type": "string" },
-        "effectId": { "type": "string" }
+        "effectId": { "type": "string" },
+        "checkId": { "type": "string" }
       }
     },
     "resolutionIssue": {

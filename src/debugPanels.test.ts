@@ -99,6 +99,47 @@ describe("debugPanels", () => {
     );
   });
 
+  it("formatSqlEvidenceDetailForTrustPanel sql_relational multi uses effect_rows", () => {
+    const step: StepOutcome = {
+      seq: 0,
+      toolId: "t",
+      intendedEffect: { narrative: "" },
+      observedExecution: { paramsCanonical: "{}" },
+      verificationRequest: {
+        kind: "sql_relational",
+        checks: [
+          { checkKind: "related_exists", id: "a", childTable: "c", fkColumn: "k", fkValue: "1" },
+          { checkKind: "related_exists", id: "b", childTable: "c", fkColumn: "k", fkValue: "2" },
+        ],
+      },
+      status: "verified",
+      reasons: [],
+      evidenceSummary: { effectCount: 2, effects: [{}, {}] },
+      repeatObservationCount: 1,
+      evaluatedObservationOrdinal: 1,
+    };
+    expect(formatSqlEvidenceDetailForTrustPanel(step)).toBe("multi_effect effect_rows=2");
+  });
+
+  it("formatSqlEvidenceDetailForTrustPanel sql_relational single check", () => {
+    const step: StepOutcome = {
+      seq: 0,
+      toolId: "t",
+      intendedEffect: { narrative: "" },
+      observedExecution: { paramsCanonical: "{}" },
+      verificationRequest: {
+        kind: "sql_relational",
+        checks: [{ checkKind: "related_exists", id: "x", childTable: "c", fkColumn: "k", fkValue: "1" }],
+      },
+      status: "verified",
+      reasons: [],
+      evidenceSummary: { checkId: "x", checkKind: "related_exists" },
+      repeatObservationCount: 1,
+      evaluatedObservationOrdinal: 1,
+    };
+    expect(formatSqlEvidenceDetailForTrustPanel(step)).toBe("sql_relational check=x kind=related_exists");
+  });
+
   it("renderComparePanelHtml includes required data-etl hooks", () => {
     const r0 = wf([sqlRowStep(0, "a", true)]);
     const r1 = wf([sqlRowStep(0, "a", true)]);

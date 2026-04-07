@@ -1,6 +1,9 @@
 import { getPointer } from "./jsonPointer.js";
 import type {
+  RelationalExpectSpec,
   ResolvedEffect,
+  ResolvedRelationalCheck,
+  SqlRelationalCheckSpec,
   SqlRowVerificationSpec,
   ToolRegistryEntry,
   VerificationRequest,
@@ -20,6 +23,7 @@ export function compareUtf16Id(a: string, b: string): number {
 export type ResolveResult =
   | { ok: true; verificationKind: "sql_row"; request: VerificationRequest }
   | { ok: true; verificationKind: "sql_effects"; effects: ResolvedEffect[] }
+  | { ok: true; verificationKind: "sql_relational"; checks: ResolvedRelationalCheck[] }
   | { ok: false; code: string; message: string };
 
 function resolveStringSpec(
@@ -206,6 +210,227 @@ function resolveSqlRowSpec(
   };
 }
 
+function resolveTableIdent(
+  spec: { const: string } | { pointer: string },
+  params: Record<string, unknown>,
+  label: string,
+): { ok: true; value: string } | { ok: false; code: string; message: string } {
+  const tableRes =
+    "const" in spec && !("pointer" in spec)
+      ? { ok: true as const, value: spec.const }
+      : "pointer" in spec
+        ? (() => {
+            const tptr = (spec as { pointer: string }).pointer;
+            const got = getPointer(params, tptr);
+            if (got === undefined || got === null || typeof got !== "string" || got.length === 0) {
+              return {
+                ok: false as const,
+                code: REGISTRY_RESOLVER_CODE.TABLE_POINTER_INVALID,
+                message: `${label}: expected non-empty string at ${tptr}`,
+              };
+            }
+            return { ok: true as const, value: got };
+          })()
+        : {
+            ok: false as const,
+            code: REGISTRY_RESOLVER_CODE.TABLE_SPEC_INVALID,
+            message: `${label}: invalid spec`,
+          };
+  if (!tableRes.ok) return tableRes;
+  if (!IDENT.test(tableRes.value)) {
+    return {
+      ok: false,
+      code: REGISTRY_RESOLVER_CODE.INVALID_IDENTIFIER,
+      message: `${label}: ${tableRes.value}`,
+    };
+  }
+  return { ok: true, value: tableRes.value };
+}
+
+function resolveExpectNumber(
+  spec: RelationalExpectSpec["value"],
+  params: Record<string, unknown>,
+  label: string,
+): { ok: true; value: number } | { ok: false; code: string; message: string } {
+  if ("const" in spec && !("pointer" in spec)) {
+    const n = spec.const;
+    if (typeof n !== "number" || !Number.isFinite(n)) {
+      return {
+        ok: false,
+        code: REGISTRY_RESOLVER_CODE.RELATIONAL_EXPECT_VALUE_INVALID,
+        message: `${label}: const must be a finite number`,
+      };
+    }
+    return { ok: true, value: n };
+  }
+  const ptr = (spec as { pointer: string }).pointer;
+  const got = getPointer(params, ptr);
+  if (got === undefined || got === null) {
+    return {
+      ok: false,
+      code: REGISTRY_RESOLVER_CODE.RELATIONAL_EXPECT_VALUE_INVALID,
+      message: `${label}: missing number at ${ptr}`,
+    };
+  }
+  if (typeof got !== "number" || !Number.isFinite(got)) {
+    return {
+      ok: false,
+      code: REGISTRY_RESOLVER_CODE.RELATIONAL_EXPECT_VALUE_INVALID,
+      message: `${label}: expected finite number at ${ptr}`,
+    };
+  }
+  return { ok: true, value: got };
+}
+
+function resolveSqlRelationalCheck(
+  params: Record<string, unknown>,
+  spec: SqlRelationalCheckSpec,
+  labelPrefix: string,
+): { ok: true; check: ResolvedRelationalCheck } | { ok: false; code: string; message: string } {
+  if (spec.checkKind === "related_exists") {
+    const child = resolveTableIdent(spec.childTable, params, `${labelPrefix}childTable`);
+    if (!child.ok) return child;
+    const fkCol = resolveStringSpec(spec.fkColumn, params, `${labelPrefix}fkColumn`);
+    if (!fkCol.ok) return fkCol;
+    if (!IDENT.test(fkCol.value)) {
+      return {
+        ok: false,
+        code: REGISTRY_RESOLVER_CODE.INVALID_IDENTIFIER,
+        message: `${labelPrefix}fkColumn: ${fkCol.value}`,
+      };
+    }
+    const fkVal = resolveKeyValue(spec.fkValue, params);
+    if (!fkVal.ok) {
+      return { ok: false, code: fkVal.code, message: `${labelPrefix}${fkVal.message}` };
+    }
+    return {
+      ok: true,
+      check: {
+        checkKind: "related_exists",
+        id: spec.id,
+        childTable: child.value,
+        fkColumn: fkCol.value,
+        fkValue: fkVal.value,
+      },
+    };
+  }
+
+  if (spec.checkKind === "aggregate") {
+    const tbl = resolveTableIdent(spec.table, params, `${labelPrefix}table`);
+    if (!tbl.ok) return tbl;
+    let sumColumn: string | undefined;
+    if (spec.fn === "SUM") {
+      if (!spec.sumColumn) {
+        return {
+          ok: false,
+          code: REGISTRY_RESOLVER_CODE.RELATIONAL_SUM_COLUMN_REQUIRED,
+          message: `${labelPrefix}sumColumn required when fn is SUM`,
+        };
+      }
+      const sc = resolveStringSpec(spec.sumColumn, params, `${labelPrefix}sumColumn`);
+      if (!sc.ok) return sc;
+      if (!IDENT.test(sc.value)) {
+        return {
+          ok: false,
+          code: REGISTRY_RESOLVER_CODE.INVALID_IDENTIFIER,
+          message: `${labelPrefix}sumColumn: ${sc.value}`,
+        };
+      }
+      sumColumn = sc.value;
+    }
+    const whereEq: Array<{ column: string; value: string }> = [];
+    for (let i = 0; i < (spec.whereEq?.length ?? 0); i++) {
+      const w = spec.whereEq![i]!;
+      const col = resolveStringSpec(w.column, params, `${labelPrefix}whereEq[${i}].column`);
+      if (!col.ok) return col;
+      if (!IDENT.test(col.value)) {
+        return {
+          ok: false,
+          code: REGISTRY_RESOLVER_CODE.INVALID_IDENTIFIER,
+          message: `${labelPrefix}whereEq[${i}].column: ${col.value}`,
+        };
+      }
+      const val = resolveKeyValue(w.value, params);
+      if (!val.ok) {
+        return { ok: false, code: val.code, message: `${labelPrefix}whereEq[${i}]. ${val.message}` };
+      }
+      whereEq.push({ column: col.value, value: val.value });
+    }
+    const exp = resolveExpectNumber(spec.expect.value, params, `${labelPrefix}expect.value`);
+    if (!exp.ok) return exp;
+    return {
+      ok: true,
+      check: {
+        checkKind: "aggregate",
+        id: spec.id,
+        table: tbl.value,
+        fn: spec.fn,
+        sumColumn,
+        whereEq,
+        expectOp: spec.expect.op,
+        expectValue: exp.value,
+      },
+    };
+  }
+
+  const left = resolveTableIdent(spec.leftTable, params, `${labelPrefix}leftTable`);
+  if (!left.ok) return left;
+  const right = resolveTableIdent(spec.rightTable, params, `${labelPrefix}rightTable`);
+  if (!right.ok) return right;
+  const lj = resolveStringSpec(spec.join.leftColumn, params, `${labelPrefix}join.leftColumn`);
+  if (!lj.ok) return lj;
+  if (!IDENT.test(lj.value)) {
+    return {
+      ok: false,
+      code: REGISTRY_RESOLVER_CODE.INVALID_IDENTIFIER,
+      message: `${labelPrefix}join.leftColumn: ${lj.value}`,
+    };
+  }
+  const rj = resolveStringSpec(spec.join.rightColumn, params, `${labelPrefix}join.rightColumn`);
+  if (!rj.ok) return rj;
+  if (!IDENT.test(rj.value)) {
+    return {
+      ok: false,
+      code: REGISTRY_RESOLVER_CODE.INVALID_IDENTIFIER,
+      message: `${labelPrefix}join.rightColumn: ${rj.value}`,
+    };
+  }
+  const whereEq: Array<{ side: "left" | "right"; column: string; value: string }> = [];
+  for (let i = 0; i < (spec.whereEq?.length ?? 0); i++) {
+    const w = spec.whereEq![i]!;
+    const col = resolveStringSpec(w.column, params, `${labelPrefix}whereEq[${i}].column`);
+    if (!col.ok) return col;
+    if (!IDENT.test(col.value)) {
+      return {
+        ok: false,
+        code: REGISTRY_RESOLVER_CODE.INVALID_IDENTIFIER,
+        message: `${labelPrefix}whereEq[${i}].column: ${col.value}`,
+      };
+    }
+    const val = resolveKeyValue(w.value, params);
+    if (!val.ok) {
+      return { ok: false, code: val.code, message: `${labelPrefix}whereEq[${i}]. ${val.message}` };
+    }
+    whereEq.push({ side: w.tableSide, column: col.value, value: val.value });
+  }
+  const exp = resolveExpectNumber(spec.expect.value, params, `${labelPrefix}expect.value`);
+  if (!exp.ok) return exp;
+  return {
+    ok: true,
+    check: {
+      checkKind: "join_count",
+      id: spec.id,
+      leftTable: left.value,
+      rightTable: right.value,
+      leftJoinColumn: lj.value,
+      rightJoinColumn: rj.value,
+      whereEq,
+      expectOp: spec.expect.op,
+      expectValue: exp.value,
+    },
+  };
+}
+
 export function renderIntendedEffect(template: string, params: Record<string, unknown>): string {
   return template.replace(/\{(\/[^{}]+)\}/g, (_, ptr: string) => {
     const v = getPointer(params, ptr);
@@ -220,6 +445,25 @@ export function resolveVerificationRequest(entry: ToolRegistryEntry, params: Rec
     const row = resolveSqlRowSpec(params, v, "");
     if (!row.ok) return row;
     return { ok: true, verificationKind: "sql_row", request: row.request };
+  }
+  if (v.kind === "sql_relational") {
+    const seen = new Set<string>();
+    const checks: ResolvedRelationalCheck[] = [];
+    for (const item of v.checks) {
+      if (seen.has(item.id)) {
+        return {
+          ok: false,
+          code: REGISTRY_RESOLVER_CODE.DUPLICATE_EFFECT_ID,
+          message: `Duplicate effect id in registry: ${item.id}`,
+        };
+      }
+      seen.add(item.id);
+      const r = resolveSqlRelationalCheck(params, item, `checks[${item.id}].`);
+      if (!r.ok) return r;
+      checks.push(r.check);
+    }
+    checks.sort((a, b) => compareUtf16Id(a.id, b.id));
+    return { ok: true, verificationKind: "sql_relational", checks };
   }
   if (v.kind !== "sql_effects") {
     return {

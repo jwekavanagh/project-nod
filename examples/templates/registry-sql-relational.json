@@ -1,0 +1,31 @@
+[
+  {
+    "toolId": "example.sql_relational",
+    "effectDescriptionTemplate": "Related rows for order {orderId}",
+    "verification": {
+      "kind": "sql_relational",
+      "checks": [
+        {
+          "checkKind": "related_exists",
+          "id": "lines_exist",
+          "childTable": { "const": "order_lines" },
+          "fkColumn": { "const": "order_id" },
+          "fkValue": { "pointer": "/orderId" }
+        },
+        {
+          "checkKind": "aggregate",
+          "id": "line_count",
+          "table": { "const": "order_lines" },
+          "fn": "COUNT_STAR",
+          "whereEq": [
+            {
+              "column": { "const": "order_id" },
+              "value": { "pointer": "/orderId" }
+            }
+          ],
+          "expect": { "op": "eq", "value": { "const": 2 } }
+        }
+      ]
+    }
+  }
+]

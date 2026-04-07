@@ -45,6 +45,19 @@
                 }
               }
             }
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["kind", "checks"],
+            "properties": {
+              "kind": { "const": "sql_relational" },
+              "checks": {
+                "type": "array",
+                "minItems": 1,
+                "items": { "$ref": "#/$defs/sqlRelationalCheck" }
+              }
+            }
           }
         ]
       }
@@ -115,6 +128,141 @@
       "properties": {
         "pointer": { "type": "string", "pattern": "^/" }
       }
+    },
+    "columnSpec": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["const"],
+          "properties": { "const": { "type": "string", "minLength": 1 } }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["pointer"],
+          "properties": { "pointer": { "type": "string", "pattern": "^/" } }
+        }
+      ]
+    },
+    "scalarOrPointer": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["const"],
+          "properties": {
+            "const": { "type": ["string", "number", "boolean", "null"] }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["pointer"],
+          "properties": { "pointer": { "type": "string", "pattern": "^/" } }
+        }
+      ]
+    },
+    "expectSpec": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["op", "value"],
+      "properties": {
+        "op": { "type": "string", "enum": ["eq", "gte", "lte"] },
+        "value": {
+          "oneOf": [
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["const"],
+              "properties": {
+                "const": { "type": "number" }
+              }
+            },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["pointer"],
+              "properties": { "pointer": { "type": "string", "pattern": "^/" } }
+            }
+          ]
+        }
+      }
+    },
+    "sqlRelationalCheck": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["checkKind", "id", "table", "fn", "expect"],
+          "properties": {
+            "checkKind": { "const": "aggregate" },
+            "id": { "type": "string", "minLength": 1 },
+            "table": { "$ref": "#/$defs/tableSpec" },
+            "fn": { "type": "string", "enum": ["COUNT_STAR", "SUM"] },
+            "sumColumn": { "$ref": "#/$defs/columnSpec" },
+            "whereEq": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["column", "value"],
+                "properties": {
+                  "column": { "$ref": "#/$defs/columnSpec" },
+                  "value": { "$ref": "#/$defs/scalarOrPointer" }
+                }
+              }
+            },
+            "expect": { "$ref": "#/$defs/expectSpec" }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["checkKind", "id", "leftTable", "rightTable", "join", "expect"],
+          "properties": {
+            "checkKind": { "const": "join_count" },
+            "id": { "type": "string", "minLength": 1 },
+            "leftTable": { "$ref": "#/$defs/tableSpec" },
+            "rightTable": { "$ref": "#/$defs/tableSpec" },
+            "join": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["leftColumn", "rightColumn"],
+              "properties": {
+                "leftColumn": { "$ref": "#/$defs/columnSpec" },
+                "rightColumn": { "$ref": "#/$defs/columnSpec" }
+              }
+            },
+            "whereEq": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["tableSide", "column", "value"],
+                "properties": {
+                  "tableSide": { "type": "string", "enum": ["left", "right"] },
+                  "column": { "$ref": "#/$defs/columnSpec" },
+                  "value": { "$ref": "#/$defs/scalarOrPointer" }
+                }
+              }
+            },
+            "expect": { "$ref": "#/$defs/expectSpec" }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["checkKind", "id", "childTable", "fkColumn", "fkValue"],
+          "properties": {
+            "checkKind": { "const": "related_exists" },
+            "id": { "type": "string", "minLength": 1 },
+            "childTable": { "$ref": "#/$defs/tableSpec" },
+            "fkColumn": { "$ref": "#/$defs/columnSpec" },
+            "fkValue": { "$ref": "#/$defs/scalarOrPointer" }
+          }
+        }
+      ]
     }
   }
 }

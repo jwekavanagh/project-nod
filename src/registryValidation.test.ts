@@ -64,6 +64,44 @@ describe("registryValidation", () => {
     }
   });
 
+  it("sql_relational duplicate check id → structural", () => {
+    const dir = mkdtempSync(join(tmpdir(), "etl-rv-rel-"));
+    try {
+      const reg = join(dir, "r.json");
+      const payload = [
+        {
+          toolId: "t.rel.dup",
+          effectDescriptionTemplate: "x",
+          verification: {
+            kind: "sql_relational",
+            checks: [
+              {
+                checkKind: "related_exists",
+                id: "same",
+                childTable: { const: "c" },
+                fkColumn: { const: "p" },
+                fkValue: { const: "1" },
+              },
+              {
+                checkKind: "aggregate",
+                id: "same",
+                table: { const: "t" },
+                fn: "COUNT_STAR",
+                expect: { op: "eq", value: { const: 0 } },
+              },
+            ],
+          },
+        },
+      ];
+      writeFileSync(reg, JSON.stringify(payload));
+      const r = validateToolsRegistry({ registryPath: reg });
+      expect(r.valid).toBe(false);
+      expect(r.structuralIssues[0]!.kind).toBe("sql_relational_duplicate_check_id");
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
   it("sql_effects duplicate effect id → structural", () => {
     const dir = mkdtempSync(join(tmpdir(), "etl-rv-"));
     try {
