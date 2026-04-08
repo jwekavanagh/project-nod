@@ -7,11 +7,13 @@ import {
   verdictLine,
 } from "./quickVerifyHumanCopy.js";
 
-/** Banner after anchor lines (normative: prose only after line 3). */
+/** Banner after anchor lines (normative: fixed banner strings immediately after the three anchors). */
 export const QUICK_VERIFY_BANNER_LINE_1 =
-  "Structured tool activity: tool names and parameters extractable as JSON (NDJSON, JSON lines, or embedded objects).";
+  "Input must be structured tool activity (JSON describing tool calls and parameters)—not arbitrary logs or generic observability text.";
 export const QUICK_VERIFY_BANNER_LINE_2 =
-  "Quick Verify checks inferred row state and related-row presence only; use contract mode (registry + events) for multi-effect, destructive/forbidden-row, and full relational rules.";
+  "Quick Verify is inference-only: mapping and expectations are provisional; uncertain is a normal outcome, not an edge case.";
+export const QUICK_VERIFY_BANNER_LINE_3 =
+  "A rollup pass does not prove execution, does not prove a change occurred, and is not production safety—only that current state matched inferred expectations for the checked units.";
 
 export type QuickHumanReportCliContext = {
   workflowId?: string;
@@ -45,6 +47,9 @@ export function formatQuickVerifyHumanReport(
 
   body.push("");
   body.push("Units:");
+  body.push(
+    "Layer guide — Declared: tool activity in ingest (see sourceAction). Expected: inferred row/FK checks from declared params (quick mode). Observed: verification object (read-only SQL outcome).",
+  );
 
   for (const u of report.units) {
     const rc = u.reasonCodes.length ? u.reasonCodes.join(", ") : "none";
@@ -70,11 +75,11 @@ export function formatQuickVerifyHumanReport(
       ? `--db ${ctx.dbFlag}`
       : `--db <sqlitePath>`;
   body.push(
-    `Contract replay (row tools only): verify-workflow --workflow-id ${wf} --events ${ev} --registry ${reg} ${dbPart}`,
+    `Optional contract replay (partial coverage — exported row tools only; not full relational/multi-effect parity with quick scope): verify-workflow --workflow-id ${wf} --events ${ev} --registry ${reg} ${dbPart}`,
   );
 
   const anchors = [HUMAN_REPORT_BEGIN, verdictLine(report.verdict), HUMAN_REPORT_END];
-  const banner = [QUICK_VERIFY_BANNER_LINE_1, QUICK_VERIFY_BANNER_LINE_2];
+  const banner = [QUICK_VERIFY_BANNER_LINE_1, QUICK_VERIFY_BANNER_LINE_2, QUICK_VERIFY_BANNER_LINE_3];
 
   return `${anchors.join("\n")}\n${banner.join("\n")}\n\n${body.join("\n")}\n`;
 }

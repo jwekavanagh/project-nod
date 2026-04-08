@@ -5,6 +5,10 @@ export type {
   RunQuickVerifyOptions,
   RunQuickVerifyResult,
 } from "./quickVerify/runQuickVerify.js";
+export {
+  DEFAULT_QUICK_VERIFY_PRODUCT_TRUTH,
+  type QuickVerifyProductTruth,
+} from "./quickVerify/quickVerifyProductTruth.js";
 export type { QuickContractExport } from "./quickVerify/buildQuickContractEventsNdjson.js";
 export {
   formatRegistryValidationHumanReport,

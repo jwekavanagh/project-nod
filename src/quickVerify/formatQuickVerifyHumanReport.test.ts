@@ -3,18 +3,21 @@ import {
   formatQuickVerifyHumanReport,
   QUICK_VERIFY_BANNER_LINE_1,
   QUICK_VERIFY_BANNER_LINE_2,
+  QUICK_VERIFY_BANNER_LINE_3,
 } from "./formatQuickVerifyHumanReport.js";
 import { HUMAN_REPORT_BEGIN, HUMAN_REPORT_END, verdictLine } from "./quickVerifyHumanCopy.js";
 import { DEFAULT_QUICK_VERIFY_SCOPE } from "./quickVerifyScope.js";
+import { DEFAULT_QUICK_VERIFY_PRODUCT_TRUTH } from "./quickVerifyProductTruth.js";
 import type { QuickVerifyReport } from "./runQuickVerify.js";
 
 function minimalReport(verdict: "pass" | "fail" | "uncertain"): QuickVerifyReport {
   return {
-    schemaVersion: 1,
+    schemaVersion: 2,
     verdict,
-    summary: `Verdict ${verdict}. 0 unit(s).`,
+    summary: `Inferred provisional check — rollup ${verdict} is not a production-safety or audit-final verdict. 0 unit(s).`,
     verificationMode: "inferred",
     scope: { ...DEFAULT_QUICK_VERIFY_SCOPE },
+    productTruth: DEFAULT_QUICK_VERIFY_PRODUCT_TRUTH,
     ingest: { reasonCodes: ["INGEST_NO_ACTIONS"], malformedLineCount: 0 },
     units: [],
     exportableRegistry: { tools: [] },
@@ -30,7 +33,8 @@ describe("formatQuickVerifyHumanReport", () => {
     expect(lines[2]).toBe(HUMAN_REPORT_END);
     expect(lines[3]).toBe(QUICK_VERIFY_BANNER_LINE_1);
     expect(lines[4]).toBe(QUICK_VERIFY_BANNER_LINE_2);
-    expect(lines.length).toBeGreaterThan(5);
+    expect(lines[5]).toBe(QUICK_VERIFY_BANNER_LINE_3);
+    expect(lines.length).toBeGreaterThan(6);
   });
 
   it("first three lines are exact anchors for pass and fail", () => {

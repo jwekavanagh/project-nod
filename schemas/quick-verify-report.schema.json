@@ -11,10 +11,11 @@
     "scope",
     "ingest",
     "units",
-    "exportableRegistry"
+    "exportableRegistry",
+    "productTruth"
   ],
   "properties": {
-    "schemaVersion": { "type": "integer", "const": 1 },
+    "schemaVersion": { "type": "integer", "const": 2 },
     "verdict": { "type": "string", "enum": ["pass", "fail", "uncertain"] },
     "summary": { "type": "string", "minLength": 1 },
     "verificationMode": { "type": "string", "const": "inferred" },
@@ -150,6 +151,59 @@
           "type": "array",
           "items": { "type": "object" }
         }
+      }
+    },
+    "productTruth": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "doesNotProve",
+        "layers",
+        "quickVerifyProvisional",
+        "contractReplayPartialCoverage"
+      ],
+      "properties": {
+        "doesNotProve": {
+          "type": "array",
+          "prefixItems": [
+            {
+              "type": "string",
+              "const": "Does not prove the tool or action actually executed."
+            },
+            {
+              "type": "string",
+              "const": "Does not prove a write or other state change occurred."
+            },
+            {
+              "type": "string",
+              "const": "Only proves that current database state matches expectations derived from structured tool activity (quick: inferred expectations)."
+            }
+          ],
+          "minItems": 3,
+          "maxItems": 3,
+          "items": false
+        },
+        "layers": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["declared", "expected", "observed"],
+          "properties": {
+            "declared": {
+              "type": "string",
+              "const": "Declared: tool identity and parameters extracted from ingest (structured tool activity)."
+            },
+            "expected": {
+              "type": "string",
+              "const": "Expected: in quick mode, row and FK checks inferred from declared parameters (provisional, not a signed contract). In contract mode, registry-defined expectations from events."
+            },
+            "observed": {
+              "type": "string",
+              "const": "Observed: read-only SQL results at verification time."
+            }
+          }
+        },
+        "quickVerifyProvisional": { "type": "boolean", "const": true },
+        "contractReplayPartialCoverage": { "type": "boolean", "const": true }
       }
     }
   }

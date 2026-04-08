@@ -11,7 +11,7 @@ export const HUMAN_REPORT_BEGIN = "=== quick-verify human report ===";
 export const HUMAN_REPORT_END = "=== end quick-verify human report ===";
 
 export function verdictLine(verdict: "pass" | "fail" | "uncertain"): string {
-  return `Verdict: ${verdict}`;
+  return `Rollup (inferred, provisional): ${verdict}`;
 }
 
 const INGEST_REASON_MESSAGES: Record<string, string> = {

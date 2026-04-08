@@ -2,7 +2,7 @@
 
 **Quick Verify (zero-config inference)** is specified in [`quick-verify-normative.md`](quick-verify-normative.md). Product narrative, audiences, and documentation ownership for the wedge live in [`verification-product-ssot.md`](verification-product-ssot.md). This document remains the SSOT for **Advanced verification** (NDJSON events, `tools.json` registry, `WorkflowResult`).
 
-This document is the authoritative specification for the MVP. The product verifies **external SQL state** against expectations derived from **observed tool calls** and a **tool registry**, never from agent-reported success alone.
+This document is the authoritative specification for the MVP. The product verifies **external SQL state** (**observed**) against **expectations** derived from **declared tool parameters** and a **tool registry**—**not** proof that a tool executed, and **not** a logging or tracing system. Product positioning and non-guarantees: [`verification-product-ssot.md`](verification-product-ssot.md).
 
 ## Why this shape
 

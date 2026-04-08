@@ -55,7 +55,7 @@ describe("docs contract (SSOT + README)", () => {
     );
     assert.ok(
       /Interpretation:/i.test(funnelSlice) &&
-        /safe to trust/i.test(funnelSlice) &&
+        /state alignment|observed SQL/i.test(funnelSlice) &&
         /inconsistent/i.test(funnelSlice),
       "sample output includes interpretation lines for success and failure",
     );
@@ -81,8 +81,8 @@ describe("docs contract (SSOT + README)", () => {
     assert.ok(
       /Retries, partial failures/.test(readme) &&
         /read-only `SELECT`s/.test(readme) &&
-        /what the tool calls said should be true/.test(readme),
-      "README states verification mechanism and aligns value prop phrasing",
+        /\*\*expected\*\* state.*\*\*observed\*\* state/s.test(readme),
+      "README states verification mechanism (expected vs observed state)",
     );
   });
 });

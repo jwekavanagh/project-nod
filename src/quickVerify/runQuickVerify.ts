@@ -16,13 +16,18 @@ import { compareUtf16Id } from "../resolveExpectation.js";
 import { MSG_NO_STRUCTURED_TOOL_ACTIVITY, MSG_NO_TOOL_CALLS } from "./quickVerifyHumanCopy.js";
 import type { QuickContractExport } from "./buildQuickContractEventsNdjson.js";
 import { DEFAULT_QUICK_VERIFY_SCOPE, type QuickVerifyScope } from "./quickVerifyScope.js";
+import {
+  DEFAULT_QUICK_VERIFY_PRODUCT_TRUTH,
+  type QuickVerifyProductTruth,
+} from "./quickVerifyProductTruth.js";
 
 export type QuickVerifyReport = {
-  schemaVersion: 1;
+  schemaVersion: 2;
   verdict: "pass" | "fail" | "uncertain";
   summary: string;
   verificationMode: "inferred";
   scope: QuickVerifyScope;
+  productTruth: QuickVerifyProductTruth;
   ingest: { reasonCodes: string[]; malformedLineCount: number };
   ingestWarnings?: Array<{ code: string; actionKey?: string }>;
   runHeaderReasonCodes?: string[];
@@ -71,7 +76,10 @@ function rollupVerdict(
 }
 
 function buildSummary(verdict: string, units: QuickVerifyReport["units"], ingest: QuickVerifyReport["ingest"]): string {
-  const parts = [`Verdict ${verdict}`, `${units.length} unit(s)`];
+  const parts = [
+    `Inferred provisional check — rollup ${verdict} is not a production-safety or audit-final verdict`,
+    `${units.length} unit(s)`,
+  ];
   if (ingest.reasonCodes.includes("INGEST_NO_ACTIONS")) {
     parts.push(MSG_NO_TOOL_CALLS);
   } else if (ingest.reasonCodes.includes("INGEST_NO_STRUCTURED_TOOL_ACTIVITY")) {
@@ -92,11 +100,12 @@ export async function runQuickVerify(opts: RunQuickVerifyOptions): Promise<RunQu
   if (ingest.inputTooLarge) {
     const units: QuickVerifyReport["units"] = [];
     const report: QuickVerifyReport = {
-      schemaVersion: 1,
+      schemaVersion: 2,
       verdict: "uncertain",
       summary: buildSummary("uncertain", units, ingestBlock),
       verificationMode: "inferred",
       scope: { ...DEFAULT_QUICK_VERIFY_SCOPE },
+      productTruth: DEFAULT_QUICK_VERIFY_PRODUCT_TRUTH,
       ingest: ingestBlock,
       units,
       exportableRegistry: { tools: [] },
@@ -231,11 +240,12 @@ export async function runQuickVerify(opts: RunQuickVerifyOptions): Promise<RunQu
     contractExports.sort((a, b) => compareUtf16Id(a.toolId, b.toolId));
 
     const report: QuickVerifyReport = {
-      schemaVersion: 1,
+      schemaVersion: 2,
       verdict,
       summary: buildSummary(verdict, units, ingestBlock),
       verificationMode: "inferred",
       scope: { ...DEFAULT_QUICK_VERIFY_SCOPE },
+      productTruth: DEFAULT_QUICK_VERIFY_PRODUCT_TRUTH,
       ingest: ingestBlock,
       ...(ingestWarnings ? { ingestWarnings } : {}),
       ...(runHeaderReasonCodes.length ? { runHeaderReasonCodes } : {}),

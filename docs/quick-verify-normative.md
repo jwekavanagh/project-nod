@@ -42,14 +42,14 @@ Tokens: `verify-workflow quick --input <path> (--postgres-url <url> | --db <sqli
 **Not an integration contract** except for three lines, in order, as whole lines:
 
 1. `=== quick-verify human report ===`
-2. `Verdict: pass` or `Verdict: fail` or `Verdict: uncertain` (matches rollup)
+2. `Rollup (inferred, provisional): pass` or `: fail` or `: uncertain` (matches rollup; wording from `verdictLine` in **`src/quickVerify/quickVerifyHumanCopy.ts`**)
 3. `=== end quick-verify human report ===`
 
-Lines 4–5 after the anchors are **fixed banner** strings exported as `QUICK_VERIFY_BANNER_LINE_1` and `QUICK_VERIFY_BANNER_LINE_2` from **`src/quickVerify/formatQuickVerifyHumanReport.ts`**. Additional prose after those lines may change without bumping `quickVerifyVersion`. Integrators must use **stdout JSON** and **exit codes** for automation.
+Lines 4–6 after the anchors are **fixed banner** strings exported as `QUICK_VERIFY_BANNER_LINE_1`, `QUICK_VERIFY_BANNER_LINE_2`, and `QUICK_VERIFY_BANNER_LINE_3` from **`src/quickVerify/formatQuickVerifyHumanReport.ts`**. Additional prose after those lines may change without bumping `quickVerifyVersion`. Integrators must use **stdout JSON** and **exit codes** for automation.
 
 ## Appendix H — Human copy identifiers (normative names only)
 
-English text for ingest lines and unit reason hints is defined in **`src/quickVerify/quickVerifyHumanCopy.ts`** (ingest messages and imports from **`src/verificationUserPhrases.ts`**). Banner lines: **`src/quickVerify/formatQuickVerifyHumanReport.ts`**. Identifiers include at least: `MSG_NO_TOOL_CALLS`, `MSG_NO_STRUCTURED_TOOL_ACTIVITY`, `HUMAN_REPORT_BEGIN`, `HUMAN_REPORT_END`, `QUICK_VERIFY_BANNER_LINE_1`, `QUICK_VERIFY_BANNER_LINE_2`, `verdictLine`, `humanLineForIngestReasonCode`, `humanFragmentForReasonCode`. Do not duplicate the strings in this doc outside a fenced block that cites one of those file paths.
+English text for ingest lines and unit reason hints is defined in **`src/quickVerify/quickVerifyHumanCopy.ts`** (ingest messages and imports from **`src/verificationUserPhrases.ts`**). Banner lines: **`src/quickVerify/formatQuickVerifyHumanReport.ts`**. Machine **non-guarantee** and **declared / expected / observed** copy on stdout: **`src/quickVerify/quickVerifyProductTruth.ts`** (field `productTruth` on `QuickVerifyReport`, `schemaVersion` **2**). Identifiers include at least: `MSG_NO_TOOL_CALLS`, `MSG_NO_STRUCTURED_TOOL_ACTIVITY`, `HUMAN_REPORT_BEGIN`, `HUMAN_REPORT_END`, `QUICK_VERIFY_BANNER_LINE_1`, `QUICK_VERIFY_BANNER_LINE_2`, `QUICK_VERIFY_BANNER_LINE_3`, `verdictLine`, `humanLineForIngestReasonCode`, `humanFragmentForReasonCode`. Do not duplicate the strings in this doc outside a fenced block that cites one of those file paths.
 
 ---
 
@@ -158,4 +158,4 @@ Row: SELECT LIMIT 2; 0 rows `ROW_ABSENT`; ≥2 `DUPLICATE_ROWS`; else scalar com
 Report `scope.quickVerifyVersion` = `1.1.0`; `scope.capabilities` = fixed enum array `["inferred_row","inferred_related_exists"]`; `scope.ingestContract` = `structured_tool_activity`; `scope.groundTruth` = `read_only_sql`; `scope.limitations` = fixed tuple  
 `["quick_verify_inferred_row_and_related_exists_only","no_multi_effect_contract","no_destructive_or_forbidden_row_contract","contract_replay_export_row_tools_only"]` (see schema).
 
-Report `verificationMode` is always **`inferred`**. Per-unit `sourceAction` and `contractEligible` and merged row `verification` fields are defined only in [`schemas/quick-verify-report.schema.json`](../schemas/quick-verify-report.schema.json)—do not restate here.
+Report `schemaVersion` is **2** (includes required `productTruth`: what verification does **not** prove, and **declared / expected / observed** layer copy). Report `verificationMode` is always **`inferred`**. Per-unit `sourceAction` and `contractEligible` and merged row `verification` fields are defined only in [`schemas/quick-verify-report.schema.json`](../schemas/quick-verify-report.schema.json)—do not restate here.
