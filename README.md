@@ -136,7 +136,7 @@ Machine result (excerpt):
 
 ```json
 {
-  "schemaVersion": 14,
+  "schemaVersion": 15,
   "workflowId": "wf_complete",
   "status": "complete",
   "steps": [{ "seq": 0, "toolId": "crm.upsert_contact", "status": "verified" }]
@@ -161,7 +161,7 @@ Machine result (excerpt):
 
 ```json
 {
-  "schemaVersion": 14,
+  "schemaVersion": 15,
   "workflowId": "wf_missing",
   "status": "inconsistent",
   "steps": [

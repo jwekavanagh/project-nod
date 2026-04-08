@@ -24,7 +24,8 @@
     "verify-workflow": "node dist/cli.js",
     "migrate:workflow-result-v11": "npm run build && node scripts/migrate-workflow-result-v11.mjs",
     "migrate:workflow-result-v12": "node scripts/migrate-workflow-result-v12.mjs",
-    "migrate:workflow-result-v13": "npm run build && node scripts/migrate-workflow-result-v13.mjs"
+    "migrate:workflow-result-v13": "npm run build && node scripts/migrate-workflow-result-v13.mjs",
+    "migrate:workflow-result-v15": "npm run build && node scripts/migrate-workflow-result-v15.mjs"
   },
   "engines": {
     "node": ">=22.13.0"

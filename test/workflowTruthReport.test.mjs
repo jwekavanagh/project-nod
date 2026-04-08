@@ -59,6 +59,35 @@ diagnosis:
     rationale: The database has no row at the verified key; the tool log may not have committed a write, or replication lag prevented observation.
   alternative_origin: tool_use
     rationale: The database has no row at the verified key; the registry key/value or pointer resolution from tool params may not match the row that was written.
+failure_explanation:
+expected: Verification expected post-execution database state to satisfy verify_target "null" and intended_effect "Upsert contact "missing_id" with fields {"name":"X","status":"Y"}" for seq=0 toolId=crm.upsert_contact under policy [consistencyMode=strong; verificationWindowMs=0; pollIntervalMs=0].
+observed: Step verification outcome: code=ROW_ABSENT detail=No row matched key
+divergence: Divergence at step seq=0 toolId=crm.upsert_contact: primary_code=ROW_ABSENT meaning=Success was implied, but no matching row was found in the database.
+known_facts:
+  - id=trust_summary value=NOT TRUSTED: At least one step failed verification against the database (determinate failure).
+  - id=workflow_status value=inconsistent
+  - id=verification_policy value=consistencyMode=strong; verificationWindowMs=0; pollIntervalMs=0
+  - id=primary_origin value=downstream_system_state
+  - id=classification_confidence value=medium
+  - id=failure_analysis_summary value=Primary failure at seq 0 tool crm.upsert_contact (code ROW_ABSENT); origin: downstream_system_state.
+  - id=primary_scope value=step
+  - id=primary_codes value=ROW_ABSENT
+  - id=primary_tool_id value=crm.upsert_contact
+  - id=primary_seq value=0
+  - id=verify_target value=null
+  - id=intended_effect_narrative value=Upsert contact "missing_id" with fields {"name":"X","status":"Y"}
+unknowns:
+  - id=classification_confidence_band value=medium
+  - id=competing_hypothesis value=origin=downstream_system_state|rationale=The database has no row at the verified key; the tool log may not have committed a write, or replication lag prevented observation.
+  - id=competing_hypothesis value=origin=tool_use|rationale=The database has no row at the verified key; the registry key/value or pointer resolution from tool params may not match the row that was written.
+correctness_definition:
+  enforcement_kind: step_sql_expectation
+  must_always_hold: Must: after tool_observed seq=0 toolId=crm.upsert_contact, database state SHALL satisfy the verification contract in verificationRequest under policy [consistencyMode=strong; verificationWindowMs=0; pollIntervalMs=0] for workflowId=wf_missing.
+  enforce_as:
+    - Registry (or synthetic events plus registry) SHALL keep verificationRequest aligned with declared tool parameters for seq=0.
+    - Authoritative SQL state SHALL match identity, required fields, and relational checks encoded in verificationRequest.
+  enforceable_projection: {"projectionKind":"step_sql_expectation","workflowId":"wf_missing","verificationPolicyFragment":"consistencyMode=strong; verificationWindowMs=0; pollIntervalMs=0","seq":0,"toolId":"crm.upsert_contact","verificationRequest":{}}
+  remediation_alignment: recommended_action=manual_review automation_safe=false
 run_level: (none)
 event_sequence: normal
 steps:
@@ -83,6 +112,32 @@ diagnosis:
   confidence: high
   actionable_failure: category=bad_input severity=medium recommended_action=correct_verification_inputs automation_safe=false
   - evidence: scope=step codes=UNKNOWN_TOOL seq=0 tool=nope.tool
+failure_explanation:
+expected: Verification expected post-execution database state to satisfy verify_target "null" and intended_effect "Unknown tool: nope.tool" for seq=0 toolId=nope.tool under policy [consistencyMode=strong; verificationWindowMs=0; pollIntervalMs=0].
+observed: Step verification outcome: code=UNKNOWN_TOOL detail=Unknown toolId: nope.tool
+divergence: Divergence at step seq=0 toolId=nope.tool: primary_code=UNKNOWN_TOOL meaning=The tool is not defined in the registry (or could not be resolved).
+known_facts:
+  - id=trust_summary value=NOT TRUSTED: Verification is incomplete; the workflow cannot be fully confirmed.
+  - id=workflow_status value=incomplete
+  - id=verification_policy value=consistencyMode=strong; verificationWindowMs=0; pollIntervalMs=0
+  - id=primary_origin value=tool_use
+  - id=classification_confidence value=high
+  - id=failure_analysis_summary value=Primary failure at seq 0 tool nope.tool (code UNKNOWN_TOOL); origin: tool_use.
+  - id=primary_scope value=step
+  - id=primary_codes value=UNKNOWN_TOOL
+  - id=primary_tool_id value=nope.tool
+  - id=primary_seq value=0
+  - id=verify_target value=null
+  - id=intended_effect_narrative value=Unknown tool: nope.tool
+unknowns:
+correctness_definition:
+  enforcement_kind: step_sql_expectation
+  must_always_hold: Must: after tool_observed seq=0 toolId=nope.tool, database state SHALL satisfy the verification contract in verificationRequest under policy [consistencyMode=strong; verificationWindowMs=0; pollIntervalMs=0] for workflowId=wf_unknown_tool.
+  enforce_as:
+    - Registry (or synthetic events plus registry) SHALL keep verificationRequest aligned with declared tool parameters for seq=0.
+    - Authoritative SQL state SHALL match identity, required fields, and relational checks encoded in verificationRequest.
+  enforceable_projection: {"projectionKind":"step_sql_expectation","workflowId":"wf_unknown_tool","verificationPolicyFragment":"consistencyMode=strong; verificationWindowMs=0; pollIntervalMs=0","seq":0,"toolId":"nope.tool","verificationRequest":null}
+  remediation_alignment: recommended_action=correct_verification_inputs automation_safe=false
 run_level: (none)
 event_sequence: normal
 steps:
@@ -111,6 +166,29 @@ diagnosis:
   confidence: medium
   actionable_failure: category=bad_input severity=medium recommended_action=fix_event_ingest_and_steps automation_safe=false
   - evidence: scope=run_level codes=MALFORMED_EVENT_LINE,NO_STEPS_FOR_WORKFLOW
+failure_explanation:
+expected: Verification expected a valid captured run for workflowId=wf_complete under policy [consistencyMode=strong; verificationWindowMs=0; pollIntervalMs=0] with no run-level ingest or planning failures.
+observed: Run-level failure: code=MALFORMED_EVENT_LINE detail=Event line was missing, invalid JSON, or failed schema validation for a tool observation..
+divergence: Divergence at run_level: code=MALFORMED_EVENT_LINE meaning=Event line was missing, invalid JSON, or failed schema validation for a tool observation.
+known_facts:
+  - id=trust_summary value=NOT TRUSTED: Verification is incomplete; the workflow cannot be fully confirmed.
+  - id=workflow_status value=incomplete
+  - id=verification_policy value=consistencyMode=strong; verificationWindowMs=0; pollIntervalMs=0
+  - id=primary_origin value=inputs
+  - id=classification_confidence value=medium
+  - id=failure_analysis_summary value=Run-level ingest or planning issue (MALFORMED_EVENT_LINE, NO_STEPS_FOR_WORKFLOW); origin: inputs.
+  - id=primary_scope value=run_level
+  - id=primary_codes value=MALFORMED_EVENT_LINE,NO_STEPS_FOR_WORKFLOW
+unknowns:
+  - id=classification_confidence_band value=medium
+correctness_definition:
+  enforcement_kind: run_ingest_integrity
+  must_always_hold: Must: ingest for workflowId=wf_complete SHALL deliver a valid captured run under policy [consistencyMode=strong; verificationWindowMs=0; pollIntervalMs=0] with no blocking run-level failures (codes: MALFORMED_EVENT_LINE,NO_STEPS_FOR_WORKFLOW).
+  enforce_as:
+    - Ingest pipelines SHALL validate each event line against the wire event contract before verification.
+    - CI or preflight SHALL reject captures that surface primary failure codes MALFORMED_EVENT_LINE,NO_STEPS_FOR_WORKFLOW for this workflow under the same policy.
+  enforceable_projection: {"projectionKind":"run_ingest_integrity","workflowId":"wf_complete","verificationPolicyFragment":"consistencyMode=strong; verificationWindowMs=0; pollIntervalMs=0","primaryFailureCodes":["MALFORMED_EVENT_LINE","NO_STEPS_FOR_WORKFLOW"],"ingestContractRequirement":"no_run_level_failures"}
+  remediation_alignment: recommended_action=fix_event_ingest_and_steps automation_safe=false
 run_level:
   - detail: ${MALFORMED_MSG}
     category: workflow_execution
@@ -135,6 +213,28 @@ diagnosis:
   confidence: high
   actionable_failure: category=control_flow_problem severity=medium recommended_action=fix_event_ingest_and_steps automation_safe=false
   - evidence: scope=run_level codes=NO_STEPS_FOR_WORKFLOW
+failure_explanation:
+expected: Verification expected a valid captured run for workflowId=no_such_workflow under policy [consistencyMode=strong; verificationWindowMs=0; pollIntervalMs=0] with no run-level ingest or planning failures.
+observed: Run-level failure: code=NO_STEPS_FOR_WORKFLOW detail=No tool_observed events for this workflow id after filtering..
+divergence: Divergence at run_level: code=NO_STEPS_FOR_WORKFLOW meaning=No tool_observed events for this workflow id after filtering.
+known_facts:
+  - id=trust_summary value=NOT TRUSTED: Verification is incomplete; the workflow cannot be fully confirmed.
+  - id=workflow_status value=incomplete
+  - id=verification_policy value=consistencyMode=strong; verificationWindowMs=0; pollIntervalMs=0
+  - id=primary_origin value=workflow_flow
+  - id=classification_confidence value=high
+  - id=failure_analysis_summary value=Run-level ingest or planning issue (NO_STEPS_FOR_WORKFLOW); origin: workflow_flow.
+  - id=primary_scope value=run_level
+  - id=primary_codes value=NO_STEPS_FOR_WORKFLOW
+unknowns:
+correctness_definition:
+  enforcement_kind: run_ingest_integrity
+  must_always_hold: Must: ingest for workflowId=no_such_workflow SHALL deliver a valid captured run under policy [consistencyMode=strong; verificationWindowMs=0; pollIntervalMs=0] with no blocking run-level failures (codes: NO_STEPS_FOR_WORKFLOW).
+  enforce_as:
+    - Ingest pipelines SHALL validate each event line against the wire event contract before verification.
+    - CI or preflight SHALL reject captures that surface primary failure codes NO_STEPS_FOR_WORKFLOW for this workflow under the same policy.
+  enforceable_projection: {"projectionKind":"run_ingest_integrity","workflowId":"no_such_workflow","verificationPolicyFragment":"consistencyMode=strong; verificationWindowMs=0; pollIntervalMs=0","primaryFailureCodes":["NO_STEPS_FOR_WORKFLOW"],"ingestContractRequirement":"no_run_level_failures"}
+  remediation_alignment: recommended_action=fix_event_ingest_and_steps automation_safe=false
 run_level:
   - detail: ${NO_STEPS_MSG}
     category: workflow_execution
@@ -170,6 +270,32 @@ diagnosis:
   confidence: high
   actionable_failure: category=downstream_execution_failure severity=medium recommended_action=improve_read_connectivity automation_safe=false
   - evidence: scope=step codes=ROW_NOT_OBSERVED_WITHIN_WINDOW seq=0 tool=t
+failure_explanation:
+expected: Verification expected post-execution database state to satisfy verify_target "null" and intended_effect "(no message)" for seq=0 toolId=t under policy [consistencyMode=strong; verificationWindowMs=0; pollIntervalMs=0].
+observed: Step verification outcome: code=ROW_NOT_OBSERVED_WITHIN_WINDOW detail=No row within window
+divergence: Divergence at step seq=0 toolId=t: primary_code=ROW_NOT_OBSERVED_WITHIN_WINDOW meaning=The expected row did not show up within the verification window.
+known_facts:
+  - id=trust_summary value=${TRUST_LINE_UNCERTAIN_WITHIN_WINDOW}
+  - id=workflow_status value=incomplete
+  - id=verification_policy value=consistencyMode=strong; verificationWindowMs=0; pollIntervalMs=0
+  - id=primary_origin value=downstream_system_state
+  - id=classification_confidence value=high
+  - id=failure_analysis_summary value=Primary failure at seq 0 tool t (code ROW_NOT_OBSERVED_WITHIN_WINDOW); origin: downstream_system_state.
+  - id=primary_scope value=step
+  - id=primary_codes value=ROW_NOT_OBSERVED_WITHIN_WINDOW
+  - id=primary_tool_id value=t
+  - id=primary_seq value=0
+  - id=verify_target value=null
+  - id=intended_effect_narrative value=(no message)
+unknowns:
+correctness_definition:
+  enforcement_kind: step_sql_expectation
+  must_always_hold: Must: after tool_observed seq=0 toolId=t, database state SHALL satisfy the verification contract in verificationRequest under policy [consistencyMode=strong; verificationWindowMs=0; pollIntervalMs=0] for workflowId=wf_uncertain.
+  enforce_as:
+    - Registry (or synthetic events plus registry) SHALL keep verificationRequest aligned with declared tool parameters for seq=0.
+    - Authoritative SQL state SHALL match identity, required fields, and relational checks encoded in verificationRequest.
+  enforceable_projection: {"projectionKind":"step_sql_expectation","workflowId":"wf_uncertain","verificationPolicyFragment":"consistencyMode=strong; verificationWindowMs=0; pollIntervalMs=0","seq":0,"toolId":"t","verificationRequest":null}
+  remediation_alignment: recommended_action=improve_read_connectivity automation_safe=false
 run_level: (none)
 event_sequence: normal
 steps:
@@ -184,7 +310,7 @@ steps:
 describe("formatWorkflowTruthReport", () => {
   it("golden complete / inconsistent missing / incomplete unknown tool", () => {
     const complete = {
-      schemaVersion: 7,
+      schemaVersion: 8,
       verificationRunContext: emptyCtx,
       workflowId: "wf_complete",
       status: "complete",
@@ -209,7 +335,7 @@ describe("formatWorkflowTruthReport", () => {
     assert.equal(normTruthText(formatWorkflowTruthReport(complete)), normTruthText(GOLDEN_COMPLETE));
 
     const missing = {
-      schemaVersion: 7,
+      schemaVersion: 8,
       verificationRunContext: emptyCtx,
       workflowId: "wf_missing",
       status: "inconsistent",
@@ -234,7 +360,7 @@ describe("formatWorkflowTruthReport", () => {
     assert.equal(normTruthText(formatWorkflowTruthReport(missing)), normTruthText(GOLDEN_MISSING));
 
     const unknownTool = {
-      schemaVersion: 7,
+      schemaVersion: 8,
       verificationRunContext: emptyCtx,
       workflowId: "wf_unknown_tool",
       status: "incomplete",
@@ -265,7 +391,7 @@ describe("formatWorkflowTruthReport", () => {
   it("irregular event_sequence extends trust line and lists capture reason", () => {
     const captureReason = eventSequenceIssue("CAPTURE_ORDER_NOT_MONOTONIC_IN_SEQ");
     const r = {
-      schemaVersion: 7,
+      schemaVersion: 8,
       verificationRunContext: emptyCtx,
       workflowId: "w",
       status: "complete",
@@ -306,7 +432,7 @@ describe("formatWorkflowTruthReport", () => {
 
   it("golden malformed run-level and empty steps", () => {
     const malformed = {
-      schemaVersion: 7,
+      schemaVersion: 8,
       verificationRunContext: emptyCtx,
       workflowId: "wf_complete",
       status: "incomplete",
@@ -321,7 +447,7 @@ describe("formatWorkflowTruthReport", () => {
     assert.equal(normTruthText(formatWorkflowTruthReport(malformed)), normTruthText(GOLDEN_MALFORMED));
 
     const empty = {
-      schemaVersion: 7,
+      schemaVersion: 8,
       verificationRunContext: emptyCtx,
       workflowId: "no_such_workflow",
       status: "incomplete",
@@ -335,7 +461,7 @@ describe("formatWorkflowTruthReport", () => {
 
   it("unknown run-level code uses fallback explanation", () => {
     const r = {
-      schemaVersion: 7,
+      schemaVersion: 8,
       verificationRunContext: emptyCtx,
       workflowId: "w",
       status: "complete",
@@ -364,7 +490,7 @@ describe("formatWorkflowTruthReport", () => {
 
   it("multi-step: each step line uses HUMAN_REPORT_RESULT_PHRASE for result=", () => {
     const result = {
-      schemaVersion: 7,
+      schemaVersion: 8,
       verificationRunContext: emptyCtx,
       workflowId: "multi",
       status: "inconsistent",
@@ -431,7 +557,7 @@ describe("formatWorkflowTruthReport", () => {
 
   it("uncertain-only step uses dedicated trust line and label", () => {
     const uncertain = {
-      schemaVersion: 7,
+      schemaVersion: 8,
       verificationRunContext: emptyCtx,
       workflowId: "wf_uncertain",
       status: "incomplete",
@@ -488,7 +614,7 @@ describe("formatWorkflowTruthReport", () => {
       evaluatedObservationOrdinal: 1,
     }));
     const r = {
-      schemaVersion: 7,
+      schemaVersion: 8,
       verificationRunContext: emptyCtx,
       workflowId: "s",
       status: "incomplete",
@@ -506,7 +632,7 @@ describe("formatWorkflowTruthReport", () => {
 
   it("run-level reason message is trimmed; whitespace-only becomes (no message)", () => {
     const trimmed = {
-      schemaVersion: 7,
+      schemaVersion: 8,
       verificationRunContext: emptyCtx,
       workflowId: "w",
       status: "complete",
@@ -520,7 +646,7 @@ describe("formatWorkflowTruthReport", () => {
     assert.ok(formatWorkflowTruthReport(trimmed).includes("user_meaning: Verification issue (code X)."));
 
     const blank = {
-      schemaVersion: 7,
+      schemaVersion: 8,
       verificationRunContext: emptyCtx,
       workflowId: "w",
       status: "complete",
@@ -536,7 +662,7 @@ describe("formatWorkflowTruthReport", () => {
 
   it("empty reason message renders (no message)", () => {
     const r = {
-      schemaVersion: 7,
+      schemaVersion: 8,
       verificationRunContext: emptyCtx,
       workflowId: "w",
       status: "incomplete",
@@ -566,7 +692,7 @@ describe("formatWorkflowTruthReport", () => {
 
   it("reason with field appends field=", () => {
     const r = {
-      schemaVersion: 7,
+      schemaVersion: 8,
       verificationRunContext: emptyCtx,
       workflowId: "w",
       status: "incomplete",
@@ -596,7 +722,7 @@ describe("formatWorkflowTruthReport", () => {
 
   it("newlines in toolId sanitized", () => {
     const r = {
-      schemaVersion: 7,
+      schemaVersion: 8,
       verificationRunContext: emptyCtx,
       workflowId: "w",
       status: "complete",
@@ -623,7 +749,7 @@ describe("formatWorkflowTruthReport", () => {
 
   it("intendedEffect newlines collapsed to single line", () => {
     const r = {
-      schemaVersion: 7,
+      schemaVersion: 8,
       verificationRunContext: emptyCtx,
       workflowId: "w",
       status: "complete",

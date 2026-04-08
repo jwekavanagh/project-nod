@@ -96,22 +96,31 @@ describe("failureExplanation goldens (real buildFailureAnalysis)", () => {
     expect(truth.failureExplanation).toBeNull();
     const stderr = formatWorkflowTruthReportStruct(truth);
     expect(stderr).not.toContain("failure_explanation:");
+    expect(stderr).not.toContain("correctness_definition:");
   });
 
   it("G2: VALUE_MISMATCH fixture deep-equal failureExplanation + stderr lines", () => {
     const raw = readFileSync(path.join(root, "test/fixtures/wf_inconsistent_result.json"), "utf8");
     const emitted = JSON.parse(raw) as Parameters<typeof workflowEngineResultFromEmitted>[0];
     const goldenFe = emitted.workflowTruthReport.failureExplanation;
+    const goldenCd = emitted.workflowTruthReport.correctnessDefinition;
     expect(goldenFe).not.toBeNull();
+    expect(goldenCd).not.toBeNull();
     const engine = workflowEngineResultFromEmitted(emitted);
     const truth = buildWorkflowTruthReport(engine);
     expect(truth.failureExplanation).toEqual(goldenFe);
+    expect(truth.correctnessDefinition).toEqual(goldenCd);
+    expect(truth.correctnessDefinition!.mustAlwaysHold).not.toContain(goldenFe!.observed);
     const lines = formatWorkflowTruthReportStruct(truth).split("\n");
     const idx = lines.indexOf("failure_explanation:");
     expect(idx).toBeGreaterThan(-1);
     expect(lines[idx + 1]).toBe(`expected: ${goldenFe!.expected}`);
     expect(lines[idx + 2]).toBe(`observed: ${goldenFe!.observed}`);
     expect(lines[idx + 3]).toBe(`divergence: ${goldenFe!.divergence}`);
+    const cidx = lines.indexOf("correctness_definition:");
+    expect(cidx).toBeGreaterThan(idx);
+    expect(lines[cidx + 1]).toBe(`  enforcement_kind: ${goldenCd!.enforcementKind}`);
+    expect(lines[cidx + 2]).toBe(`  must_always_hold: ${goldenCd!.mustAlwaysHold}`);
   });
 
   it("G3: RUN_LEVEL (non–NO_STEPS) templates and facts", () => {
@@ -485,7 +494,7 @@ describe("failureExplanation goldens (real buildFailureAnalysis)", () => {
       steps: [missingStep(0, "t")],
     };
     const full = buildWorkflowTruthReport(engine);
-    const partial: Omit<WorkflowTruthReport, "schemaVersion" | "failureExplanation"> = {
+    const partial: Omit<WorkflowTruthReport, "schemaVersion" | "failureExplanation" | "correctnessDefinition"> = {
       workflowId: full.workflowId,
       workflowStatus: full.workflowStatus,
       trustSummary: full.trustSummary,

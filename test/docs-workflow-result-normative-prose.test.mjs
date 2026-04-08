@@ -1,5 +1,5 @@
 /**
- * Normative WorkflowResult v14 prose in docs/execution-truth-layer.md (CI-delimited regions).
+ * Normative WorkflowResult v15 prose in docs/execution-truth-layer.md (CI-delimited regions).
  */
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
@@ -16,26 +16,28 @@ const SEGMENT_RE = /<!-- ci:workflow-result-normative-prose:start -->([\s\S]*?)<
 
 const FORBIDDEN_BACKTICK_13 = /schemaVersion[\s\S]{0,200}?`13`/;
 const FORBIDDEN_BOLD_13 = /schemaVersion[\s\S]{0,200}?\*\*13\*\*/;
+const FORBIDDEN_BACKTICK_14 = /schemaVersion[\s\S]{0,200}?`14`/;
+const FORBIDDEN_BOLD_14 = /schemaVersion[\s\S]{0,200}?\*\*14\*\*/;
 
 /** Must each appear at least once in the concatenated normative segments (after joining). */
 const REQUIRED_PHRASES = [
-  "`schemaVersion` **`14`**",
-  "**`schemaVersion`** **14**",
-  "outer **`schemaVersion` 14**",
-  "`finalizeEmittedWorkflowResult` attaches the truth report and sets **`WorkflowResult.schemaVersion` 14**",
+  "`schemaVersion` **`15`**",
+  "**`schemaVersion`** **15**",
+  "outer **`schemaVersion` 15**",
+  "`finalizeEmittedWorkflowResult` attaches the truth report and sets **`WorkflowResult.schemaVersion` 15**",
 ];
 
-const MARKER_14 = "<!-- ci:normative-workflow-result-schemaVersion:14 -->";
+const MARKER_15 = "<!-- ci:normative-workflow-result-schemaVersion:15 -->";
 
-describe("docs workflow-result normative prose (v14)", () => {
-  it("workflow-result.schema.json const is 14", () => {
+describe("docs workflow-result normative prose (v15)", () => {
+  it("workflow-result.schema.json const is 15", () => {
     const j = JSON.parse(readFileSync(workflowResultSchemaPath, "utf8"));
-    assert.strictEqual(j.properties?.schemaVersion?.const, 14);
+    assert.strictEqual(j.properties?.schemaVersion?.const, 15);
   });
 
-  it("ETL doc contains schemaVersion:14 anchor comment", () => {
+  it("ETL doc contains schemaVersion:15 anchor comment", () => {
     const doc = readFileSync(etlPath, "utf8");
-    assert.ok(doc.includes(MARKER_14), "missing ci:normative-workflow-result-schemaVersion:14 marker");
+    assert.ok(doc.includes(MARKER_15), "missing ci:normative-workflow-result-schemaVersion:15 marker");
   });
 
   it("normative segments forbid stale WorkflowResult stdout schemaVersion 13 coupling", () => {
@@ -56,5 +58,7 @@ describe("docs workflow-result normative prose (v14)", () => {
     }
     assert.equal(FORBIDDEN_BACKTICK_13.test(combined), false, "normative region must not pair schemaVersion with `13`");
     assert.equal(FORBIDDEN_BOLD_13.test(combined), false, "normative region must not pair schemaVersion with **13**");
+    assert.equal(FORBIDDEN_BACKTICK_14.test(combined), false, "normative region must not pair schemaVersion with `14`");
+    assert.equal(FORBIDDEN_BOLD_14.test(combined), false, "normative region must not pair schemaVersion with **14**");
   });
 });

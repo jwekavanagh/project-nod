@@ -563,6 +563,101 @@ export type FailureExplanationV1 = {
   unknowns: Array<{ id: FailureExplanationUnknownId; value: string }>;
 };
 
+/** Mirrors `schemas/workflow-truth-report.schema.json` → `$defs.correctnessEnforcementKind`. */
+export type CorrectnessEnforcementKind =
+  | "run_ingest_integrity"
+  | "event_capture_integrity"
+  | "run_context_fairness"
+  | "step_sql_expectation"
+  | "plan_transition_expectation"
+  | "quick_inferred_sql_row"
+  | "quick_inferred_relational"
+  | "quick_mapping_gap";
+
+/** Nested `workflowTruthReport.correctnessDefinition` / quick unit field (`schemaVersion` 1). */
+export type CorrectnessDefinitionV1 = {
+  schemaVersion: 1;
+  enforcementKind: CorrectnessEnforcementKind;
+  mustAlwaysHold: string;
+  enforceAs: string[];
+  enforceableProjection:
+    | {
+        projectionKind: "run_ingest_integrity";
+        workflowId: string;
+        verificationPolicyFragment: string;
+        primaryFailureCodes: string[];
+        ingestContractRequirement: "no_run_level_failures" | "non_empty_tool_observed_steps";
+      }
+    | {
+        projectionKind: "event_capture_integrity";
+        workflowId: string;
+        verificationPolicyFragment: string;
+        forbiddenEventSequenceCodes: string[];
+      }
+    | {
+        projectionKind: "run_context_fairness";
+        workflowId: string;
+        verificationPolicyFragment: string;
+        ingestIndex: number;
+        requiredUpstreamContract:
+          | "retrieval_ok_before_observation"
+          | "model_turn_completed_before_observation"
+          | "no_interrupt_before_observation"
+          | "branch_not_skipped_before_observation"
+          | "gate_not_skipped_before_observation"
+          | "tool_not_skipped_before_observation";
+        primaryRunContextCodes: string[];
+      }
+    | {
+        projectionKind: "step_sql_expectation";
+        workflowId: string;
+        verificationPolicyFragment: string;
+        seq: number;
+        toolId: string;
+        verificationRequest: StepVerificationRequest;
+      }
+    | {
+        projectionKind: "plan_transition_expectation";
+        workflowId: string;
+        verificationPolicyFragment: string;
+        seq: number;
+        toolId: string;
+        verifyTarget: string | null;
+        primaryCodes: string[];
+      }
+    | {
+        projectionKind: "quick_inferred_sql_row";
+        quickProvisional: true;
+        unitId: string;
+        toolName: string;
+        actionIndex: number;
+        table: string;
+        sqlRowRequest: VerificationRequest;
+      }
+    | {
+        projectionKind: "quick_inferred_relational";
+        quickProvisional: true;
+        unitId: string;
+        toolName: string;
+        actionIndex: number;
+        childTable: string;
+        checkId: string;
+        matchEq: Array<{ column: string; value: string }>;
+      }
+    | {
+        projectionKind: "quick_mapping_gap";
+        quickProvisional: true;
+        toolName: string;
+        actionIndex: number;
+        reasonCodes: string[];
+        table: string | null;
+      };
+  remediationAlignment: {
+    recommendedAction: RecommendedActionCode;
+    automationSafe: boolean;
+  };
+};
+
 export type WorkflowTruthStep = {
   seq: number;
   toolId: string;
@@ -583,7 +678,7 @@ export type WorkflowTruthStep = {
 };
 
 export type WorkflowTruthReport = {
-  schemaVersion: 7;
+  schemaVersion: 8;
   workflowId: string;
   workflowStatus: WorkflowStatus;
   trustSummary: string;
@@ -596,13 +691,15 @@ export type WorkflowTruthReport = {
   failureAnalysis: FailureAnalysis | null;
   /** JSON `null` when workflow is complete; `failureExplanationV1` when not complete. */
   failureExplanation: FailureExplanationV1 | null;
+  /** JSON `null` when workflow is complete; forward correctness contract when not complete. */
+  correctnessDefinition: CorrectnessDefinitionV1 | null;
   executionPathFindings: ExecutionPathFinding[];
   executionPathSummary: string;
 };
 
-/** Emitted verification result on stdout / public API (`schemaVersion` 14). */
+/** Emitted verification result on stdout / public API (`schemaVersion` 15). */
 export type WorkflowResult = Omit<WorkflowEngineResult, "schemaVersion"> & {
-  schemaVersion: 14;
+  schemaVersion: 15;
   workflowTruthReport: WorkflowTruthReport;
 };
 

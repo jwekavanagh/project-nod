@@ -348,7 +348,7 @@ describe("JSON Schemas (SSOT)", () => {
     expect(v(v5only)).toBe(false);
   });
 
-  it("workflow-result-compare-input accepts v8 engine, v9 frozen, and v14 emitted", () => {
+  it("workflow-result-compare-input accepts v8 engine, v9 frozen, and v15 emitted", () => {
     const vCmp = loadSchemaValidator("workflow-result-compare-input");
     const engine: WorkflowEngineResult = {
       schemaVersion: 8,
@@ -393,7 +393,7 @@ describe("JSON Schemas (SSOT)", () => {
     expect(vCmp(v9Compat)).toBe(true);
   });
 
-  it("workflow-result v14 rejects stray runLevelCodes", () => {
+  it("workflow-result v15 rejects stray runLevelCodes", () => {
     const v = loadSchemaValidator("workflow-result");
     const engine: WorkflowEngineResult = {
       schemaVersion: 8,

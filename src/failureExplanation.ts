@@ -322,7 +322,7 @@ function addPrimaryEvidenceFacts(
 
 export function buildFailureExplanation(
   engine: WorkflowEngineResult,
-  truth: Omit<WorkflowTruthReport, "failureExplanation" | "schemaVersion">,
+  truth: Omit<WorkflowTruthReport, "failureExplanation" | "correctnessDefinition" | "schemaVersion">,
 ): FailureExplanationV1 | null {
   if (engine.status === "complete") return null;
 

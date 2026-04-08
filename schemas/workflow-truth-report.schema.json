@@ -13,11 +13,12 @@
     "steps",
     "failureAnalysis",
     "failureExplanation",
+    "correctnessDefinition",
     "executionPathFindings",
     "executionPathSummary"
   ],
   "properties": {
-    "schemaVersion": { "const": 7 },
+    "schemaVersion": { "const": 8 },
     "workflowId": { "type": "string" },
     "workflowStatus": {
       "type": "string",
@@ -63,6 +64,9 @@
     "failureExplanation": {
       "oneOf": [{ "type": "null" }, { "$ref": "#/$defs/failureExplanationV1" }]
     },
+    "correctnessDefinition": {
+      "oneOf": [{ "type": "null" }, { "$ref": "#/$defs/correctnessDefinitionV1" }]
+    },
     "executionPathFindings": {
       "type": "array",
       "items": { "$ref": "#/$defs/executionPathFinding" }
@@ -78,7 +82,8 @@
       "then": {
         "properties": {
           "failureExplanation": { "type": "null" },
-          "failureAnalysis": { "type": "null" }
+          "failureAnalysis": { "type": "null" },
+          "correctnessDefinition": { "type": "null" }
         }
       }
     },
@@ -92,7 +97,8 @@
       "then": {
         "properties": {
           "failureExplanation": { "$ref": "#/$defs/failureExplanationV1" },
-          "failureAnalysis": { "$ref": "#/$defs/failureAnalysis" }
+          "failureAnalysis": { "$ref": "#/$defs/failureAnalysis" },
+          "correctnessDefinition": { "$ref": "#/$defs/correctnessDefinitionV1" }
         }
       }
     }
@@ -482,6 +488,272 @@
           }
         }
       ]
+    },
+    "correctnessEnforcementKind": {
+      "type": "string",
+      "enum": [
+        "run_ingest_integrity",
+        "event_capture_integrity",
+        "run_context_fairness",
+        "step_sql_expectation",
+        "plan_transition_expectation",
+        "quick_inferred_sql_row",
+        "quick_inferred_relational",
+        "quick_mapping_gap"
+      ]
+    },
+    "correctnessRequiredUpstreamContract": {
+      "type": "string",
+      "enum": [
+        "retrieval_ok_before_observation",
+        "model_turn_completed_before_observation",
+        "no_interrupt_before_observation",
+        "branch_not_skipped_before_observation",
+        "gate_not_skipped_before_observation",
+        "tool_not_skipped_before_observation"
+      ]
+    },
+    "correctnessIngestContractRequirement": {
+      "type": "string",
+      "enum": ["no_run_level_failures", "non_empty_tool_observed_steps"]
+    },
+    "correctnessRemediationAlignment": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["recommendedAction", "automationSafe"],
+      "properties": {
+        "recommendedAction": { "$ref": "#/$defs/recommendedAction" },
+        "automationSafe": { "type": "boolean" }
+      }
+    },
+    "correctnessEnforceableProjection": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "projectionKind",
+            "workflowId",
+            "verificationPolicyFragment",
+            "primaryFailureCodes",
+            "ingestContractRequirement"
+          ],
+          "properties": {
+            "projectionKind": { "const": "run_ingest_integrity" },
+            "workflowId": { "type": "string" },
+            "verificationPolicyFragment": { "type": "string" },
+            "primaryFailureCodes": {
+              "type": "array",
+              "items": { "type": "string" }
+            },
+            "ingestContractRequirement": { "$ref": "#/$defs/correctnessIngestContractRequirement" }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "projectionKind",
+            "workflowId",
+            "verificationPolicyFragment",
+            "forbiddenEventSequenceCodes"
+          ],
+          "properties": {
+            "projectionKind": { "const": "event_capture_integrity" },
+            "workflowId": { "type": "string" },
+            "verificationPolicyFragment": { "type": "string" },
+            "forbiddenEventSequenceCodes": {
+              "type": "array",
+              "items": { "type": "string" }
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "projectionKind",
+            "workflowId",
+            "verificationPolicyFragment",
+            "ingestIndex",
+            "requiredUpstreamContract",
+            "primaryRunContextCodes"
+          ],
+          "properties": {
+            "projectionKind": { "const": "run_context_fairness" },
+            "workflowId": { "type": "string" },
+            "verificationPolicyFragment": { "type": "string" },
+            "ingestIndex": { "type": "integer", "minimum": 0 },
+            "requiredUpstreamContract": { "$ref": "#/$defs/correctnessRequiredUpstreamContract" },
+            "primaryRunContextCodes": {
+              "type": "array",
+              "items": { "type": "string" }
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "projectionKind",
+            "workflowId",
+            "verificationPolicyFragment",
+            "seq",
+            "toolId",
+            "verificationRequest"
+          ],
+          "properties": {
+            "projectionKind": { "const": "step_sql_expectation" },
+            "workflowId": { "type": "string" },
+            "verificationPolicyFragment": { "type": "string" },
+            "seq": { "type": "integer", "minimum": 0 },
+            "toolId": { "type": "string" },
+            "verificationRequest": {
+              "oneOf": [
+                { "type": "null" },
+                {
+                  "$ref": "https://execution-truth-layer/schemas/workflow-engine-result.schema.json#/$defs/verificationRequestSqlRow"
+                },
+                {
+                  "$ref": "https://execution-truth-layer/schemas/workflow-engine-result.schema.json#/$defs/verificationRequestSqlRowAbsent"
+                },
+                {
+                  "$ref": "https://execution-truth-layer/schemas/workflow-engine-result.schema.json#/$defs/verificationRequestSqlEffects"
+                },
+                {
+                  "$ref": "https://execution-truth-layer/schemas/workflow-engine-result.schema.json#/$defs/verificationRequestSqlRelational"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "projectionKind",
+            "workflowId",
+            "verificationPolicyFragment",
+            "seq",
+            "toolId",
+            "verifyTarget",
+            "primaryCodes"
+          ],
+          "properties": {
+            "projectionKind": { "const": "plan_transition_expectation" },
+            "workflowId": { "type": "string" },
+            "verificationPolicyFragment": { "type": "string" },
+            "seq": { "type": "integer", "minimum": 0 },
+            "toolId": { "type": "string" },
+            "verifyTarget": { "type": ["string", "null"] },
+            "primaryCodes": {
+              "type": "array",
+              "items": { "type": "string" }
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "projectionKind",
+            "quickProvisional",
+            "unitId",
+            "toolName",
+            "actionIndex",
+            "table",
+            "sqlRowRequest"
+          ],
+          "properties": {
+            "projectionKind": { "const": "quick_inferred_sql_row" },
+            "quickProvisional": { "const": true },
+            "unitId": { "type": "string", "minLength": 1 },
+            "toolName": { "type": "string" },
+            "actionIndex": { "type": "integer", "minimum": 0 },
+            "table": { "type": "string" },
+            "sqlRowRequest": {
+              "$ref": "https://execution-truth-layer/schemas/workflow-engine-result.schema.json#/$defs/verificationRequestSqlRow"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "projectionKind",
+            "quickProvisional",
+            "unitId",
+            "toolName",
+            "actionIndex",
+            "childTable",
+            "checkId",
+            "matchEq"
+          ],
+          "properties": {
+            "projectionKind": { "const": "quick_inferred_relational" },
+            "quickProvisional": { "const": true },
+            "unitId": { "type": "string", "minLength": 1 },
+            "toolName": { "type": "string" },
+            "actionIndex": { "type": "integer", "minimum": 0 },
+            "childTable": { "type": "string" },
+            "checkId": { "type": "string" },
+            "matchEq": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "$ref": "https://execution-truth-layer/schemas/workflow-engine-result.schema.json#/$defs/identityEqPair"
+              }
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "projectionKind",
+            "quickProvisional",
+            "toolName",
+            "actionIndex",
+            "reasonCodes",
+            "table"
+          ],
+          "properties": {
+            "projectionKind": { "const": "quick_mapping_gap" },
+            "quickProvisional": { "const": true },
+            "toolName": { "type": "string" },
+            "actionIndex": { "type": "integer", "minimum": 0 },
+            "reasonCodes": {
+              "type": "array",
+              "items": { "type": "string" }
+            },
+            "table": { "type": ["string", "null"] }
+          }
+        }
+      ]
+    },
+    "correctnessDefinitionV1": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schemaVersion",
+        "enforcementKind",
+        "mustAlwaysHold",
+        "enforceAs",
+        "enforceableProjection",
+        "remediationAlignment"
+      ],
+      "properties": {
+        "schemaVersion": { "const": 1 },
+        "enforcementKind": { "$ref": "#/$defs/correctnessEnforcementKind" },
+        "mustAlwaysHold": { "type": "string", "maxLength": 2048 },
+        "enforceAs": {
+          "type": "array",
+          "minItems": 2,
+          "items": { "type": "string", "maxLength": 2048 }
+        },
+        "enforceableProjection": { "$ref": "#/$defs/correctnessEnforceableProjection" },
+        "remediationAlignment": { "$ref": "#/$defs/correctnessRemediationAlignment" }
+      }
     }
   }
 }

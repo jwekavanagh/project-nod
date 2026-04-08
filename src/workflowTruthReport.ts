@@ -1,4 +1,5 @@
 import { deriveActionableFailureWorkflow } from "./actionableFailure.js";
+import { buildWorkflowCorrectnessDefinition } from "./correctnessDefinition.js";
 import { buildFailureExplanation } from "./failureExplanation.js";
 import {
   buildExecutionPathFindings,
@@ -269,30 +270,36 @@ export function buildWorkflowTruthReport(engine: WorkflowEngineResult): Workflow
   );
 
   const steps = engine.steps.map(buildTruthStep);
-  const withoutExplanation: Omit<WorkflowTruthReport, "schemaVersion" | "failureExplanation"> = {
-    workflowId: engine.workflowId,
-    workflowStatus: engine.status,
-    trustSummary: trustSummaryForEngine(engine),
-    runLevelIssues,
-    eventSequence,
-    steps,
-    failureAnalysis,
-    executionPathFindings,
-    executionPathSummary,
-  };
+  const withoutExplanation: Omit<WorkflowTruthReport, "schemaVersion" | "failureExplanation" | "correctnessDefinition"> =
+    {
+      workflowId: engine.workflowId,
+      workflowStatus: engine.status,
+      trustSummary: trustSummaryForEngine(engine),
+      runLevelIssues,
+      eventSequence,
+      steps,
+      failureAnalysis,
+      executionPathFindings,
+      executionPathSummary,
+    };
   const failureExplanation = buildFailureExplanation(engine, withoutExplanation);
+  const correctnessDefinition =
+    failureExplanation === null || failureAnalysis === null
+      ? null
+      : buildWorkflowCorrectnessDefinition(engine, failureExplanation, failureAnalysis, steps);
 
   return {
-    schemaVersion: 7,
+    schemaVersion: 8,
     ...withoutExplanation,
     failureExplanation,
+    correctnessDefinition,
   };
 }
 
 export function finalizeEmittedWorkflowResult(engine: WorkflowEngineResult): WorkflowResult {
   return {
     ...engine,
-    schemaVersion: 14,
+    schemaVersion: 15,
     workflowTruthReport: buildWorkflowTruthReport(engine),
   };
 }
@@ -392,6 +399,21 @@ export function formatWorkflowTruthReportStruct(truth: WorkflowTruthReport): str
     for (const u of fe.unknowns) {
       lines.push(`  - id=${u.id} value=${u.value}`);
     }
+  }
+
+  if (truth.correctnessDefinition !== null) {
+    const cd = truth.correctnessDefinition;
+    lines.push("correctness_definition:");
+    lines.push(`  enforcement_kind: ${cd.enforcementKind}`);
+    lines.push(`  must_always_hold: ${cd.mustAlwaysHold}`);
+    lines.push("  enforce_as:");
+    for (const line of cd.enforceAs) {
+      lines.push(`    - ${line}`);
+    }
+    lines.push(`  enforceable_projection: ${JSON.stringify(cd.enforceableProjection)}`);
+    lines.push(
+      `  remediation_alignment: recommended_action=${cd.remediationAlignment.recommendedAction} automation_safe=${cd.remediationAlignment.automationSafe}`,
+    );
   }
 
   if (truth.runLevelIssues.length === 0) {

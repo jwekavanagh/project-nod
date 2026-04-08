@@ -9,6 +9,7 @@ const repoRoot = join(__dirname, "..");
 const PROPERTY_ACCESS_ALLOWLIST = new Set([
   "src/types.ts",
   "src/actionableFailure.ts",
+  "src/correctnessDefinition.ts",
   "src/operationalDisposition.ts",
   "src/workflowTruthReport.ts",
   "src/runComparison.ts",
