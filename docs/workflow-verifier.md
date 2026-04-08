@@ -165,7 +165,7 @@ Rules come from **one** of three sources ([Where rules come from](#where-rules-c
 
 ### Derived citations (`derived_citations`)
 
-**Normative expected outputs (evaluation corpus):** The sorted path arrays the product expects for the five evaluation plans under **`plans/`** are stored only in **[`test/fixtures/plan-derived-citations/expected-harvest.json`](../test/fixtures/plan-derived-citations/expected-harvest.json)**. Do not duplicate those lists in prose here.
+**Normative expected outputs (evaluation corpus):** The five evaluation plan markdown files and the sorted path arrays the product expects for each (in **[`expected-harvest.json`](../test/fixtures/plan-derived-citations/expected-harvest.json)**) live together under **`test/fixtures/plan-derived-citations/`**. Do not duplicate those lists in prose here.
 
 **Pipeline** (implemented in **`planTransitionPathHarvest.ts`**; inputs: full plan markdown **`md`**, parsed front matter object **`fm`** for **`todos`** only):
 
