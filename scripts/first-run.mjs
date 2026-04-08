@@ -75,16 +75,16 @@ const verifyOpts = {
 println("Execution Truth Layer — first run");
 println("");
 println(
-  "We compare what your tool log claims happened against what is actually in SQL—because an agent saying “done” is not proof a row exists.",
+  "We compare structured tool observations against read-only SQL—because an agent saying “done” is not proof a row exists with the right values.",
 );
 println(
-  "Example 1: the log and DB agree. Example 2: the log claims a contact write, but that row is missing—a failure logs and green checkmarks often miss.",
+  "Example 1: observations and DB agree. Example 2: the activity implies a contact write, but that row is missing—a gap traces alone often miss.",
 );
 println("");
 
-println("[1/2] Workflow wf_complete — expected: DB contains the contact row the log describes.");
+println("[1/2] Workflow wf_complete — expected: DB contains the contact row the structured observation describes.");
 println(
-  "The log records crm.upsert_contact for id c_ok (Alice, active). The seeded SQLite DB has that row. Actual: verification should report complete / verified.",
+  "The NDJSON line records crm.upsert_contact for id c_ok (Alice, active). The seeded SQLite DB has that row. Actual: verification should report complete / verified.",
 );
 println("");
 
@@ -104,9 +104,9 @@ if (!s1 || s1.status !== "verified") {
 }
 
 println("");
-println("[2/2] Workflow wf_missing — expected: same tool call shape, but the DB has no row for that id.");
+println("[2/2] Workflow wf_missing — expected: same observation shape, but the DB has no row for that id.");
 println(
-  "The log records crm.upsert_contact for missing_id as if the write succeeded. Actual: no contacts row for missing_id—verification should flag inconsistent / missing with ROW_ABSENT in the JSON (see human report for plain wording).",
+  "The observation records crm.upsert_contact for missing_id as if the write succeeded. Actual: no contacts row for missing_id—verification should flag inconsistent / missing with ROW_ABSENT in the JSON (see human report for plain wording).",
 );
 println("");
 

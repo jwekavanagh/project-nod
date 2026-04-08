@@ -1,7 +1,7 @@
 {
   "name": "execution-truth-layer",
   "version": "0.1.0",
-  "description": "After each agent or automation run, verify your SQLite or Postgres rows match the tool-call log—not just OK responses",
+  "description": "State verification engine: read-only SQL checks that database state matches expectations from structured tool activity (not arbitrary logs)—not proof of execution",
   "license": "MIT",
   "type": "module",
   "main": "dist/index.js",

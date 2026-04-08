@@ -5,6 +5,7 @@ import { fileURLToPath } from "node:url";
 import {
   QUICK_VERIFY_BANNER_LINE_1,
   QUICK_VERIFY_BANNER_LINE_2,
+  QUICK_VERIFY_BANNER_LINE_3,
 } from "./quickVerify/formatQuickVerifyHumanReport.js";
 import { MSG_NO_STRUCTURED_TOOL_ACTIVITY, MSG_NO_TOOL_CALLS } from "./quickVerify/quickVerifyHumanCopy.js";
 import { INGEST_AND_QUICK_MISC_PHRASES, SQL_VERIFICATION_PHRASES } from "./verificationUserPhrases.js";
@@ -18,12 +19,13 @@ const CANONICAL_UX_STRING_EXPORTS: string[] = [
   MSG_NO_STRUCTURED_TOOL_ACTIVITY,
   QUICK_VERIFY_BANNER_LINE_1,
   QUICK_VERIFY_BANNER_LINE_2,
+  QUICK_VERIFY_BANNER_LINE_3,
   INGEST_AND_QUICK_MISC_PHRASES.MALFORMED_LINE,
   SQL_VERIFICATION_PHRASES.ROW_ABSENT,
 ];
 
 const README_EXEMPT_SUBSTRINGS = [
-  "This path expects structured tool activity in your paste—tool names and parameters the engine can extract as JSON—not arbitrary unstructured logs.",
+  "**Input contract:** We only accept **structured tool activity**—JSON or NDJSON that describes tool calls and parameters our ingest model can extract—not arbitrary logs, traces, or unstructured observability text.",
   "Verification uses read-only SQL against your database; API-only or non-SQL systems are out of scope for this tool.",
 ];
 

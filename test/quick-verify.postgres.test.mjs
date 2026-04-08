@@ -9,6 +9,7 @@ import { fileURLToPath } from "node:url";
 import { dirname } from "node:path";
 import { runQuickVerify } from "../dist/quickVerify/runQuickVerify.js";
 import { loadSchemaValidator } from "../dist/schemaLoad.js";
+import { DEFAULT_QUICK_VERIFY_PRODUCT_TRUTH } from "../dist/quickVerify/quickVerifyProductTruth.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const root = join(__dirname, "..");
@@ -26,6 +27,8 @@ describe("Quick Verify Postgres", () => {
       inputUtf8: passLine,
       postgresUrl: verifyUrl,
     });
+    assert.equal(report.schemaVersion, 2);
+    assert.deepEqual(report.productTruth, DEFAULT_QUICK_VERIFY_PRODUCT_TRUTH);
     assert.equal(report.verdict, "pass");
     const v = loadSchemaValidator("quick-verify-report");
     assert.ok(v(report), JSON.stringify(v.errors ?? []));

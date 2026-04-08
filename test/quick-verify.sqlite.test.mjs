@@ -23,7 +23,9 @@ import {
 import {
   QUICK_VERIFY_BANNER_LINE_1,
   QUICK_VERIFY_BANNER_LINE_2,
+  QUICK_VERIFY_BANNER_LINE_3,
 } from "../dist/quickVerify/formatQuickVerifyHumanReport.js";
+import { DEFAULT_QUICK_VERIFY_PRODUCT_TRUTH } from "../dist/quickVerify/quickVerifyProductTruth.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const root = join(__dirname, "..");
@@ -39,6 +41,7 @@ function assertHumanAnchors(stderr, verdict) {
   assert.equal(lines[i + 2], HUMAN_REPORT_END);
   assert.equal(lines[i + 3], QUICK_VERIFY_BANNER_LINE_1);
   assert.equal(lines[i + 4], QUICK_VERIFY_BANNER_LINE_2);
+  assert.equal(lines[i + 5], QUICK_VERIFY_BANNER_LINE_3);
 }
 
 describe("Quick Verify SQLite", () => {
@@ -58,6 +61,8 @@ describe("Quick Verify SQLite", () => {
       inputUtf8: passLine,
       sqlitePath: dbPath,
     });
+    assert.equal(report.schemaVersion, 2);
+    assert.deepEqual(report.productTruth, DEFAULT_QUICK_VERIFY_PRODUCT_TRUTH);
     assert.equal(report.verdict, "pass");
     assert.equal(report.verificationMode, "inferred");
     assert.ok(report.units.length >= 1);

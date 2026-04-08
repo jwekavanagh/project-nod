@@ -67,9 +67,10 @@ export const REGISTRY_RESOLVER_PHRASES: Record<
 
 /** Ingest / quick misc (not SQL or registry resolver). */
 export const INGEST_AND_QUICK_MISC_PHRASES = {
-  INGEST_NO_ACTIONS: "No tool calls detected in input.",
+  INGEST_NO_ACTIONS:
+    "No tool calls detected in input. This tool only ingests structured tool activity (JSON with tool names and parameters)—not arbitrary logs.",
   INGEST_NO_STRUCTURED_TOOL_ACTIVITY:
-    "No structured tool activity was found. Paste must include tool names and parameters extractable as JSON (see docs).",
+    "No structured tool activity was found. Input must be JSON/NDJSON describing tool calls and parameters that match the ingest model (see docs)—not generic log lines.",
   INGEST_INPUT_TOO_LARGE: "Input exceeded the maximum allowed size.",
   INGEST_ACTION_CAP: "Action limit reached; extra tool calls were ignored.",
   MALFORMED_LINE: "One or more lines could not be parsed as JSON.",

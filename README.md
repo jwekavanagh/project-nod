@@ -1,34 +1,73 @@
-# Verify agent workflows against your database—not just the logs
+# State verification for agent-driven systems
 
-**One-sentence value:** After each run, this tool uses read-only SQL to check whether your database actually matches what the tool calls said should be true.
+**Product in one line:** A **state verification engine**—not a logging, tracing, or monitoring product—that uses **read-only SQL** to compare **current database state** to **expectations derived from structured tool activity** (quick path: inferred; contract path: registry + events).
 
-**Why that matters:** That means a green trace is no longer your only proof that customer data actually updated.
+**One-sentence value:** After each run, read-only `SELECT`s check whether the database **at verification time** matches what your expectations say should be true—not whether a step “ran” or “succeeded” in a trace.
+
+**Why that matters:** A green trace or successful tool response is **not** the same as proof that the row you care about exists with the right values.
 
 *NPM package name: `execution-truth-layer`.*
 
+## What this does not prove
+
+This is the trust boundary for the whole product—**Quick Verify and contract mode**:
+
+- It does **not** prove the tool or side effect **actually executed** (only that state matched expectations when checked).
+- It does **not** prove a **write or state change occurred** (you see a snapshot, not causality).
+- It **only** proves that **current state matched declared or inferred expectations** under the configured rules—not “execution correctness” in the causal sense.
+
+**Declared vs expected vs observed** (mental model used in reports and docs):
+
+1. **Declared** — What the captured **tool activity** encodes (tool id / name and parameters extracted from ingest).
+2. **Expected** — What we derive should hold in SQL: in **quick** mode, **inferred** row/FK checks from declared parameters (provisional); in **contract** mode, **registry-defined** expectations from events.
+3. **Observed** — What **read-only SQL** returned at verification time.
+
+## Product category
+
+| You are **not** | You **are** |
+|-----------------|------------|
+| Generic observability, log search, or “paste any logs” | A **SQL ground-truth state check** against explicit or inferred expectations |
+| A test runner for application code | A verifier for **persisted state** after agent or automation workflows |
+| Proof of execution or causality | Proof of **state–expectation alignment** at a point in time |
+
+## Who should not use this
+
+Do **not** adopt this if:
+
+- You do **not** have **structured tool activity** (JSON describing tool calls and parameters your pipeline can emit)—there is **no** arbitrary-log ingest.
+- You do **not** have **SQL-accessible** ground truth (SQLite, Postgres, or a mirror you treat as authoritative).
+- You need **causal** guarantees (“this API call definitely caused this row”)—this product checks **state**, not the causal chain.
+- You want **plug-and-play** ingestion of whatever your platform logs today without shaping data to the **event / ingest model**.
+
+If that is you, a tracing or audit-log product is a better fit; this tool will frustrate you and the feedback will not be actionable.
+
 ### Quick Verify (zero-config path)
 
-This path expects structured tool activity in your paste—tool names and parameters the engine can extract as JSON—not arbitrary unstructured logs.
+**Input contract:** We only accept **structured tool activity**—JSON or NDJSON that describes tool calls and parameters our ingest model can extract—not arbitrary logs, traces, or unstructured observability text.
 Verification uses read-only SQL against your database; API-only or non-SQL systems are out of scope for this tool.
+
+**Positioning:** Quick Verify is **provisional**. Rollup **pass** / **fail** / **uncertain** is **not** a production-safety or audit-final verdict. The stdout JSON includes a **`productTruth`** block (non-guarantees + layer definitions); stderr stresses **inferred** and **partial** scope. Prefer **contract mode** when you need explicit expectations.
 
 Product story, audiences, TTFV, and **which doc owns which contract**: **[`docs/verification-product-ssot.md`](docs/verification-product-ssot.md)**. Ingest ladder, thresholds, and CLI ordering: **[`docs/quick-verify-normative.md`](docs/quick-verify-normative.md)** (do not duplicate those numbers here).
 
-After **`npm run build`**, point at **JSON/NDJSON** tool activity and a **read-only** SQLite or Postgres database. Writes the **export registry** array atomically, optional synthetic **events** NDJSON, then one **`quick-verify-report`** line on **stdout**; human-readable context on **stderr** (three fixed anchor lines—see normative doc). Integrators should rely on **stdout + exit codes**, not parsed stderr prose.
+After **`npm run build`**, point at **JSON/NDJSON** structured tool activity and a **read-only** SQLite or Postgres database. Writes the **export registry** array atomically, optional synthetic **events** NDJSON, then one **`quick-verify-report`** line on **stdout** (`schemaVersion` **2**, includes **`productTruth`**); human-readable context on **stderr** (three fixed anchor lines—see normative doc). Integrators should rely on **stdout + exit codes**, not parsed stderr prose.
 
 ```bash
 npm run first-run
 node dist/cli.js quick --input test/fixtures/quick-verify/pass-line.ndjson --db examples/demo.db --export-registry ./quick-export.json
 ```
 
-Use **`--postgres-url "postgresql://…"`** instead of **`--db`**. Use **`-`** as **`--input`** for stdin. Optional **`--emit-events <path>`** (zero-byte file if no row tools exported), **`--workflow-id <id>`** (default **`quick-verify`**). Exit codes: **0** pass, **1** fail, **2** uncertain, **3** operational.
+Use **`--postgres-url "postgresql://…"`** instead of **`--db`**. Use **`-`** as **`--input`** to stream structured tool activity on **stdin**. Optional **`--emit-events <path>`** (zero-byte file if no row tools exported), **`--workflow-id <id>`** (default **`quick-verify`**). Exit codes: **0** pass, **1** fail, **2** uncertain, **3** operational.
+
+**Export → contract replay:** Replaying with emitted events and the exported registry checks **exported row tools only**—not full parity with quick scope (`related_exists` and other rules may be missing). See stderr footer and **`productTruth.contractReplayPartialCoverage`** on stdout.
 
 ---
 
 ## Canonical use case
 
-**Verify that an AI support or CRM workflow really persisted the intended update.**
+**Check that an AI support or CRM workflow left the database in the state your expectations describe.**
 
-The agent says the ticket or contact was updated; logs show success. This tool checks the **actual database row**. If status, owner, priority, or other required fields do not match what the tool calls said should be true, the run is marked **inconsistent**—even when the narrative looked fine.
+Structured tool activity says the ticket or contact should look a certain way; a trace may show success. This tool compares **declared parameters → expected row shape** against **observed SQL**. If required fields do not match, the run is marked **inconsistent**—even when the narrative looked fine. That is **state mismatch**, not proof the tool never ran.
 
 ---
 
@@ -40,9 +79,9 @@ Everything below is what most teams need to try the idea and wire it into a pipe
 
 | Before | After |
 |--------|--------|
-| The trace says `crm.upsert_contact` ran and returned OK. You assume the row exists with the right fields. | You replay the same tool log against your DB. If the row is missing or fields do not match, you get a **clear mismatch**—even when the agent transcript looked fine. |
+| The trace says `crm.upsert_contact` ran and returned OK. You assume the row exists with the right fields. | You run verification against your DB using **structured tool observations**. If the row is missing or fields do not match **expectations**, you get a **clear mismatch**—even when the agent transcript looked fine. |
 
-The bundled demo uses workflow **`wf_complete`** (log and DB agree) and **`wf_missing`** (the tool calls imply a contact id that is **not** in the database).
+The bundled demo uses workflow **`wf_complete`** (events and DB agree) and **`wf_missing`** (the tool activity implies a contact id that is **not** in the database).
 
 ### Quickstart
 
@@ -104,7 +143,7 @@ Machine result (excerpt):
 }
 ```
 
-*Interpretation:* The workflow is safe to trust for this step because **what the tool calls said should be true** matches the database.
+*Interpretation:* Under the configured registry rules, **expected state from declared parameters** matched **observed SQL** for this step. That is **state alignment**, not proof of execution or causality.
 
 #### Failure case (`wf_missing`)
 
@@ -136,7 +175,7 @@ Machine result (excerpt):
 }
 ```
 
-*Interpretation:* The workflow claimed a write, but the **expected row is not there**, so the run is flagged **inconsistent**—the kind of gap traces alone often miss.
+*Interpretation:* Expectations derived from the tool activity imply a row that **observed SQL** did not find—**inconsistent**—the kind of gap traces alone often miss. This still does not prove whether a write was attempted or rolled back.
 
 Run **`npm start`** to see the full reports and JSON on your machine.
 
@@ -168,13 +207,13 @@ node dist/cli.js --workflow-id wf_complete --events examples/events.ndjson --reg
 
 ## Who this is for
 
-**This is for you if** you run agent or automation workflows against **real databases** (SQLite, Postgres, or anything you can mirror into SQL), you own **reliability or compliance**, and you have seen symptoms like “the assistant said it saved, but the record is wrong or missing.”
+**This is for you if** you run agent or automation workflows against **real databases** (SQLite, Postgres, or anything you can mirror into SQL), you can emit **structured tool activity** that matches the ingest model, you own **reliability or compliance**, and you have seen symptoms like “the assistant said it saved, but the record is wrong or missing.”
 
-**This is not for you if** you only need generic request tracing with no notion of **expected rows/fields**, or you have no **SQL-accessible ground truth** to compare against.
+**This is not for you if** you only need generic request tracing with no notion of **expected rows/fields**, you have no **SQL-accessible ground truth**, or you cannot produce **structured tool calls** (not raw logs). See **[Who should not use this](#who-should-not-use-this)** above for a stronger exclusion list.
 
 ## How it works
 
-Retries, partial failures, and race conditions mean a success log is not proof that the intended row exists with the right values. This tool takes **append-only NDJSON** tool observations plus a small **`tools.json`** registry, derives what should be true in SQL, and verifies that state with **read-only `SELECT`s**.
+Retries, partial failures, and race conditions mean a success flag in a trace is not proof that the intended row exists with the right values. This tool takes **append-only NDJSON** structured tool observations plus a small **`tools.json`** registry, derives **expected** state in SQL, and compares it to **observed** state with **read-only `SELECT`s**.
 
 ## How this differs from logs, tests, and observability
 
@@ -183,7 +222,7 @@ Retries, partial failures, and race conditions mean a success log is not proof t
 | **Logs / traces** | A step ran, duration, errors—**not** “row X has columns Y.” |
 | **Unit / integration tests** | Code paths in **your** repo—**not** production agent runs against live DB state. |
 | **Metrics / APM** | Health and latency—**not** semantic equality of persisted records. |
-| **Database-backed verification (this tool)** | For each step, **whether the database matches what the tool calls said should be true**, using **read-only SQL**. |
+| **Database-backed verification (this tool)** | For each step, **whether observed SQL state matches expectations derived from declared tool parameters** (contract mode), using **read-only SQL**—**not** proof the tool executed. |
 
 ## When to run it
 
