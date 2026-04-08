@@ -113,7 +113,7 @@ Example stdout (one JSON object; `schemaVersion` and nested fields evolve over r
 
 ```json
 {
-  "schemaVersion": 14,
+  "schemaVersion": 15,
   "workflowId": "wf_partner",
   "status": "complete",
   "steps": [

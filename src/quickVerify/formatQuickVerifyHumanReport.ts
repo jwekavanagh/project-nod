@@ -59,6 +59,15 @@ export function formatQuickVerifyHumanReport(
     );
     body.push(`  ${u.explanation}`);
     body.push(`  codes: ${rc}${frag ? ` — ${frag}` : ""}`);
+    if (u.correctnessDefinition !== undefined) {
+      const cd = u.correctnessDefinition;
+      body.push(`  correctness_definition: enforcement_kind=${cd.enforcementKind}`);
+      body.push(`    must_always_hold: ${cd.mustAlwaysHold}`);
+      for (const line of cd.enforceAs) {
+        body.push(`    enforce_as: ${line}`);
+      }
+      body.push(`    enforceable_projection: ${JSON.stringify(cd.enforceableProjection)}`);
+    }
   }
 
   if (report.units.length === 0) {

@@ -45,11 +45,12 @@ function extractFailureExplanationFence(docText: string, exportName: string): st
 describe("failureExplanation documentation template parity", () => {
   it("execution-truth-layer.md fenced templates match failureExplanation.ts exports", () => {
     const docText = readFileSync(docPath, "utf8");
-    const mod = failureExplanation as Record<string, string>;
+    const mod = failureExplanation as unknown as Record<string, unknown>;
     for (const name of FE_TEMPLATE_EXPORT_NAMES) {
       const fromDoc = extractFailureExplanationFence(docText, name);
       const fromCode = mod[name];
       expect(fromCode, `export ${name} must exist`).toBeDefined();
+      expect(typeof fromCode, `export ${name} must be a string template`).toBe("string");
       expect(fromDoc).toBe(fromCode);
     }
   });

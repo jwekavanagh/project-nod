@@ -32,7 +32,8 @@ You are a **state verification engine for agent-driven systems** that have **SQL
 | Subject | Authoritative location | Elsewhere |
 |---------|-------------------------|-----------|
 | Ingest ladder L0–L5, `extractActions`, thresholds (`T_TABLE`, …), dedupe, decomposition, rollup, CLI phase ordering, registry bytes, human stderr anchor rules | [`quick-verify-normative.md`](quick-verify-normative.md) | Link only; never copy thresholds or ladder text |
-| `QuickVerifyReport` JSON shape (`schemaVersion` **2**, `productTruth`, …) | [`schemas/quick-verify-report.schema.json`](../schemas/quick-verify-report.schema.json) | Normative doc links schema; no second field catalog |
+| `QuickVerifyReport` JSON shape (`schemaVersion` **3**, `productTruth`, `units[].correctnessDefinition` on non-pass, …) | [`schemas/quick-verify-report.schema.json`](../schemas/quick-verify-report.schema.json) | Normative doc links schema; no second field catalog |
+| **Correctness definition** (forward MUST + `enforceableProjection` on batch truth + quick non-pass units) | [`correctness-definition-normative.md`](correctness-definition-normative.md), [`schemas/workflow-truth-report.schema.json`](../schemas/workflow-truth-report.schema.json) | Batch human stderr: `correctness_definition:` in [`execution-truth-layer.md`](execution-truth-layer.md); trust boundary unchanged |
 | User-facing English strings for quick verify (exact wording) | [`src/quickVerify/quickVerifyHumanCopy.ts`](../src/quickVerify/quickVerifyHumanCopy.ts), [`src/quickVerify/formatQuickVerifyHumanReport.ts`](../src/quickVerify/formatQuickVerifyHumanReport.ts) (banner lines), [`src/quickVerify/quickVerifyProductTruth.ts`](../src/quickVerify/quickVerifyProductTruth.ts) (stdout `productTruth`), [`src/verificationUserPhrases.ts`](../src/verificationUserPhrases.ts) (reason `user_meaning`) | Appendix H in normative lists **identifiers** only |
 | `verifyWorkflow`, batch CLI, registry resolution, Postgres read-only session, `WorkflowResult` | [`execution-truth-layer.md`](execution-truth-layer.md) | This doc links there for batch semantics |
 | Repo entry, onboarding path | [`README.md`](../README.md) | No algorithm copy |
@@ -60,7 +61,7 @@ Quick Verify is **provisional**: inference-based mapping, **uncertain** as a nor
 
 ## For integrators
 
-- **Machine contract:** one **stdout** JSON line (`QuickVerifyReport`, **`schemaVersion` 2**), **exit code** 0/1/2/3, and on operational failure a **single-line JSON envelope** on stderr.
+- **Machine contract:** one **stdout** JSON line (`QuickVerifyReport`, **`schemaVersion` 3**), **exit code** 0/1/2/3, and on operational failure a **single-line JSON envelope** on stderr.
 - **Do not** parse human stderr for automation. stderr begins with three **fixed** anchor lines (see [`quick-verify-normative.md`](quick-verify-normative.md) § A.3a); remaining lines are user-facing only.
 - **Contract replay** (repeatable batch path, **partial** vs quick scope): after quick, run  
   `verify-workflow --workflow-id <id> --events <emit-path> --registry <export-path> --db <sqlitePath>`  
@@ -73,7 +74,7 @@ Quick Verify is **provisional**: inference-based mapping, **uncertain** as a nor
 
 ## Time to first meaningful result (Story 5)
 
-`validate-ttfv` (see [`scripts/validate-ttfv.mjs`](../scripts/validate-ttfv.mjs) and [`scripts/lib/quickVerifyPostbuildGate.mjs`](../scripts/lib/quickVerifyPostbuildGate.mjs)) runs **after** a successful **`npm run build`**. It enforces a **spawn timeout** and post-run wall clock (**120s**), parses the **stdout** **`QuickVerifyReport`** line (**`schemaVersion` 2**), and checks that the **exported registry file** matches **`canonicalToolsArrayUtf8`** of the report’s tools. `npm install` duration is network-bound and excluded. A run that completes within three minutes on CI hardware is sufficient evidence that a typical user can reach a first meaningful result within thirty minutes including reading the README and supplying structured tool activity (file or stdin).
+`validate-ttfv` (see [`scripts/validate-ttfv.mjs`](../scripts/validate-ttfv.mjs) and [`scripts/lib/quickVerifyPostbuildGate.mjs`](../scripts/lib/quickVerifyPostbuildGate.mjs)) runs **after** a successful **`npm run build`**. It enforces a **spawn timeout** and post-run wall clock (**120s**), parses the **stdout** **`QuickVerifyReport`** line (**`schemaVersion` 3**), and checks that the **exported registry file** matches **`canonicalToolsArrayUtf8`** of the report’s tools. `npm install` duration is network-bound and excluded. A run that completes within three minutes on CI hardware is sufficient evidence that a typical user can reach a first meaningful result within thirty minutes including reading the README and supplying structured tool activity (file or stdin).
 
 ## Why contract replay is row-only (today)
 

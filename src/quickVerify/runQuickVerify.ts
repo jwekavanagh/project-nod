@@ -1,5 +1,6 @@
 import { DatabaseSync } from "node:sqlite";
-import type { ToolRegistryEntry, VerificationRequest } from "../types.js";
+import { buildQuickUnitCorrectnessDefinition } from "../correctnessDefinition.js";
+import type { CorrectnessDefinitionV1, ToolRegistryEntry, VerificationRequest } from "../types.js";
 import { connectPostgresVerificationClient } from "../sqlReadBackend.js";
 import { canonicalToolsArrayUtf8, stableStringify } from "./canonicalJson.js";
 import { bucketsForAction } from "./decomposeUnits.js";
@@ -22,7 +23,7 @@ import {
 } from "./quickVerifyProductTruth.js";
 
 export type QuickVerifyReport = {
-  schemaVersion: 2;
+  schemaVersion: 3;
   verdict: "pass" | "fail" | "uncertain";
   summary: string;
   verificationMode: "inferred";
@@ -42,6 +43,7 @@ export type QuickVerifyReport = {
     inference: { table: string; rationale: string[]; alternates?: unknown[] };
     verification: Record<string, unknown>;
     explanation: string;
+    correctnessDefinition?: CorrectnessDefinitionV1;
   }>;
   exportableRegistry: { tools: ToolRegistryEntry[] };
 };
@@ -100,7 +102,7 @@ export async function runQuickVerify(opts: RunQuickVerifyOptions): Promise<RunQu
   if (ingest.inputTooLarge) {
     const units: QuickVerifyReport["units"] = [];
     const report: QuickVerifyReport = {
-      schemaVersion: 2,
+      schemaVersion: 3,
       verdict: "uncertain",
       summary: buildSummary("uncertain", units, ingestBlock),
       verificationMode: "inferred",
@@ -161,12 +163,13 @@ export async function runQuickVerify(opts: RunQuickVerifyOptions): Promise<RunQu
         const plan = await planRowUnit(catalog, b, tables);
         const uid = `u${units.length}`;
         if (!plan.request) {
+          const rc = plan.reasonCodes.length ? plan.reasonCodes : ["MAPPING_FAILED"];
           pushUnit({
             unitId: uid,
             kind: "row",
             verdict: "uncertain",
             confidence: plan.confidence,
-            reasonCodes: plan.reasonCodes.length ? plan.reasonCodes : ["MAPPING_FAILED"],
+            reasonCodes: rc,
             sourceAction,
             contractEligible: false,
             inference: {
@@ -176,6 +179,14 @@ export async function runQuickVerify(opts: RunQuickVerifyOptions): Promise<RunQu
             },
             verification: {},
             explanation: plan.rationale.join(" ") || "Could not map row unit.",
+            correctnessDefinition: buildQuickUnitCorrectnessDefinition({
+              unitId: uid,
+              kind: "row",
+              toolName: sourceAction.toolName,
+              actionIndex: sourceAction.actionIndex,
+              table: b.tableName,
+              reasonCodes: rc,
+            }),
           });
           continue;
         }
@@ -194,9 +205,9 @@ export async function runQuickVerify(opts: RunQuickVerifyOptions): Promise<RunQu
           exportTools.push(exportSqlRowTool(tid, plan.request));
           contractExports.push({ toolId: tid, request: plan.request });
         }
-        pushUnit({
+        const rowBase = {
           unitId: uid,
-          kind: "row",
+          kind: "row" as const,
           verdict: rowOut.verdict,
           confidence: plan.confidence,
           reasonCodes: rowOut.reasonCodes,
@@ -205,7 +216,23 @@ export async function runQuickVerify(opts: RunQuickVerifyOptions): Promise<RunQu
           inference: { table: plan.request.table, rationale: plan.rationale },
           verification: rowOut.verification,
           explanation: rowOut.explanation,
-        });
+        };
+        pushUnit(
+          rowOut.verdict === "verified"
+            ? rowBase
+            : {
+                ...rowBase,
+                correctnessDefinition: buildQuickUnitCorrectnessDefinition({
+                  unitId: uid,
+                  kind: "row",
+                  toolName: sourceAction.toolName,
+                  actionIndex: sourceAction.actionIndex,
+                  table: plan.request.table,
+                  reasonCodes: rowOut.reasonCodes,
+                  sqlRowRequest: plan.request,
+                }),
+              },
+        );
       }
 
       const rels = planRelationalFromFlat(action.flat, fkEdges);
@@ -219,9 +246,9 @@ export async function runQuickVerify(opts: RunQuickVerifyOptions): Promise<RunQu
           dialect === "postgres"
             ? await verifyRelatedExists("postgres", pgClient!, rel)
             : await verifyRelatedExists("sqlite", sqliteDb!, rel);
-        pushUnit({
+        const relBase = {
           unitId: uid,
-          kind: "related_exists",
+          kind: "related_exists" as const,
           verdict: rout.verdict,
           confidence: 0.8,
           reasonCodes: rout.reasonCodes,
@@ -230,7 +257,23 @@ export async function runQuickVerify(opts: RunQuickVerifyOptions): Promise<RunQu
           inference: { table: rel.childTable, rationale: [`FK ${rel.id}`] },
           verification: rout.verification,
           explanation: rout.explanation,
-        });
+        };
+        pushUnit(
+          rout.verdict === "verified"
+            ? relBase
+            : {
+                ...relBase,
+                correctnessDefinition: buildQuickUnitCorrectnessDefinition({
+                  unitId: uid,
+                  kind: "related_exists",
+                  toolName: sourceAction.toolName,
+                  actionIndex: sourceAction.actionIndex,
+                  table: rel.childTable,
+                  reasonCodes: rout.reasonCodes,
+                  relationalCheck: rel,
+                }),
+              },
+        );
       }
     }
 
@@ -240,7 +283,7 @@ export async function runQuickVerify(opts: RunQuickVerifyOptions): Promise<RunQu
     contractExports.sort((a, b) => compareUtf16Id(a.toolId, b.toolId));
 
     const report: QuickVerifyReport = {
-      schemaVersion: 2,
+      schemaVersion: 3,
       verdict,
       summary: buildSummary(verdict, units, ingestBlock),
       verificationMode: "inferred",

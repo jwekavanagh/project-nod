@@ -10,8 +10,8 @@
   "artifacts": {
     "workflowResult": {
       "relativePath": "workflow-result.json",
-      "sha256": "16091b45a0c6a8a9766de35f0aa1fd149ecba83394ee1579f9737fb1007cb625",
-      "byteLength": 2040
+      "sha256": "209dda5cbf17d2a9eb51c5a2f1bf6bda300013cff08091d0a612ee5961852063",
+      "byteLength": 2069
     },
     "events": {
       "relativePath": "events.ndjson",
@@ -20,7 +20,7 @@
     },
     "workflowResultSignature": {
       "relativePath": "workflow-result.sig.json",
-      "sha256": "206dd45f366dd18171eb528a85958bede07746c648f645da7589b74874bdbf99",
+      "sha256": "e389edb882de99a0215ed3b54ec95afff097218c2169496453492cfe8d0df94d",
       "byteLength": 388
     }
   }

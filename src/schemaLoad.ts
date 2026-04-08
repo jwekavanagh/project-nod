@@ -78,6 +78,7 @@ function ensureCompareInputDependencies(): void {
 }
 
 function ensureWorkflowTruthForWireRefs(): void {
+  compileSchemaFile("workflow-engine-result", "workflow-engine-result.schema.json");
   compileSchemaFile("workflow-truth-report", "workflow-truth-report.schema.json");
 }
 
@@ -86,6 +87,7 @@ export function loadSchemaValidator(name: SchemaValidatorName): ValidateFunction
     case "workflow-engine-result":
       return compileSchemaFile(name, "workflow-engine-result.schema.json");
     case "workflow-truth-report":
+      compileSchemaFile("workflow-engine-result", "workflow-engine-result.schema.json");
       return compileSchemaFile(name, "workflow-truth-report.schema.json");
     case "workflow-result":
       ensureWorkflowEmittedDependencies();
@@ -119,6 +121,7 @@ export function loadSchemaValidator(name: SchemaValidatorName): ValidateFunction
     case "plan-validation-core":
       return compileSchemaFile(name, "plan-validation-core.schema.json");
     case "quick-verify-report":
+      ensureWorkflowEmittedDependencies();
       return compileSchemaFile(name, "quick-verify-report.schema.json");
     case "tools-registry-export":
       compileSchemaFile("tools-registry", "tools-registry.schema.json");

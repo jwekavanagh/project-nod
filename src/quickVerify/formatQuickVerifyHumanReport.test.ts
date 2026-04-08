@@ -12,7 +12,7 @@ import type { QuickVerifyReport } from "./runQuickVerify.js";
 
 function minimalReport(verdict: "pass" | "fail" | "uncertain"): QuickVerifyReport {
   return {
-    schemaVersion: 2,
+    schemaVersion: 3,
     verdict,
     summary: `Inferred provisional check — rollup ${verdict} is not a production-safety or audit-final verdict. 0 unit(s).`,
     verificationMode: "inferred",

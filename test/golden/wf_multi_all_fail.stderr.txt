@@ -35,6 +35,14 @@ unknowns:
   - id=classification_confidence_band value=medium
   - id=competing_hypothesis value=origin=downstream_system_state|rationale=The database has no row at the verified key; the tool log may not have committed a write, or replication lag prevented observation.
   - id=competing_hypothesis value=origin=tool_use|rationale=The database has no row at the verified key; the registry key/value or pointer resolution from tool params may not match the row that was written.
+correctness_definition:
+  enforcement_kind: step_sql_expectation
+  must_always_hold: Must: after tool_observed seq=0 toolId=demo.multi_contact, database state SHALL satisfy the verification contract in verificationRequest under policy [consistencyMode=strong; verificationWindowMs=0; pollIntervalMs=0] for workflowId=wf_multi_all_fail.
+  enforce_as:
+    - Registry (or synthetic events plus registry) SHALL keep verificationRequest aligned with declared tool parameters for seq=0.
+    - Authoritative SQL state SHALL match identity, required fields, and relational checks encoded in verificationRequest.
+  enforceable_projection: {"projectionKind":"step_sql_expectation","workflowId":"wf_multi_all_fail","verificationPolicyFragment":"consistencyMode=strong; verificationWindowMs=0; pollIntervalMs=0","seq":0,"toolId":"demo.multi_contact","verificationRequest":{"kind":"sql_effects","effects":[{"id":"primary","kind":"sql_row","table":"contacts","identityEq":[{"column":"id","value":"missing_one"}],"requiredFields":{"name":"X","status":"y"}},{"id":"secondary","kind":"sql_row","table":"contacts","identityEq":[{"column":"id","value":"missing_two"}],"requiredFields":{"name":"X","status":"y"}}]}}
+  remediation_alignment: recommended_action=manual_review automation_safe=false
 run_level: (none)
 event_sequence: normal
 steps:

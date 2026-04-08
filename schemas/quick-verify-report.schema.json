@@ -15,7 +15,7 @@
     "productTruth"
   ],
   "properties": {
-    "schemaVersion": { "type": "integer", "const": 2 },
+    "schemaVersion": { "type": "integer", "const": 3 },
     "verdict": { "type": "string", "enum": ["pass", "fail", "uncertain"] },
     "summary": { "type": "string", "minLength": 1 },
     "verificationMode": { "type": "string", "const": "inferred" },
@@ -79,67 +79,96 @@
     "units": {
       "type": "array",
       "items": {
-        "type": "object",
-        "additionalProperties": false,
-        "required": [
-          "unitId",
-          "kind",
-          "verdict",
-          "confidence",
-          "reasonCodes",
-          "sourceAction",
-          "contractEligible",
-          "inference",
-          "verification",
-          "explanation"
-        ],
-        "properties": {
-          "unitId": { "type": "string", "minLength": 1 },
-          "kind": { "type": "string", "enum": ["row", "related_exists"] },
-          "verdict": {
-            "type": "string",
-            "enum": ["verified", "fail", "uncertain"]
-          },
-          "confidence": { "type": "number" },
-          "reasonCodes": {
-            "type": "array",
-            "items": { "type": "string" }
-          },
-          "sourceAction": {
+        "allOf": [
+          {
             "type": "object",
             "additionalProperties": false,
-            "required": ["toolName", "actionIndex"],
+            "required": [
+              "unitId",
+              "kind",
+              "verdict",
+              "confidence",
+              "reasonCodes",
+              "sourceAction",
+              "contractEligible",
+              "inference",
+              "verification",
+              "explanation"
+            ],
             "properties": {
-              "toolName": { "type": "string" },
-              "actionIndex": { "type": "integer", "minimum": 0 }
-            }
-          },
-          "contractEligible": { "type": "boolean" },
-          "inference": {
-            "type": "object",
-            "additionalProperties": false,
-            "required": ["table", "rationale"],
-            "properties": {
-              "table": { "type": "string" },
-              "rationale": {
+              "unitId": { "type": "string", "minLength": 1 },
+              "kind": { "type": "string", "enum": ["row", "related_exists"] },
+              "verdict": {
+                "type": "string",
+                "enum": ["verified", "fail", "uncertain"]
+              },
+              "confidence": { "type": "number" },
+              "reasonCodes": {
                 "type": "array",
                 "items": { "type": "string" }
               },
-              "alternates": {
-                "type": "array",
-                "items": {
-                  "type": "object",
-                  "additionalProperties": true
+              "sourceAction": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["toolName", "actionIndex"],
+                "properties": {
+                  "toolName": { "type": "string" },
+                  "actionIndex": { "type": "integer", "minimum": 0 }
                 }
+              },
+              "contractEligible": { "type": "boolean" },
+              "inference": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["table", "rationale"],
+                "properties": {
+                  "table": { "type": "string" },
+                  "rationale": {
+                    "type": "array",
+                    "items": { "type": "string" }
+                  },
+                  "alternates": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "additionalProperties": true
+                    }
+                  }
+                }
+              },
+              "verification": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "explanation": { "type": "string", "minLength": 1 },
+              "correctnessDefinition": {
+                "$ref": "https://execution-truth-layer/schemas/workflow-truth-report.schema.json#/$defs/correctnessDefinitionV1"
               }
             }
           },
-          "verification": {
-            "type": "object",
-            "additionalProperties": true
+          {
+            "if": {
+              "type": "object",
+              "required": ["verdict"],
+              "properties": { "verdict": { "const": "verified" } }
+            },
+            "then": {
+              "type": "object",
+              "properties": { "correctnessDefinition": false }
+            }
           },
-          "explanation": { "type": "string", "minLength": 1 }
-        }
+          {
+            "if": {
+              "type": "object",
+              "required": ["verdict"],
+              "properties": { "verdict": { "enum": ["fail", "uncertain"] } }
+            },
+            "then": {
+              "type": "object",
+              "required": ["correctnessDefinition"]
+            }
+          }
+        ]
       }
     },
     "exportableRegistry": {

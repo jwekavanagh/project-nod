@@ -1,5 +1,5 @@
 /**
- * Enforces WorkflowResult stdout schemaVersion 14 alignment across schema + sources + checklist files.
+ * Enforces WorkflowResult stdout schemaVersion 15 alignment across schema + sources + checklist files.
  */
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
@@ -10,24 +10,24 @@ import { fileURLToPath } from "node:url";
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const root = join(__dirname, "..");
 
-describe("WorkflowResult stdout schemaVersion 14", () => {
-  it("workflow-result.schema.json const is 14", () => {
+describe("WorkflowResult stdout schemaVersion 15", () => {
+  it("workflow-result.schema.json const is 15", () => {
     const schema = JSON.parse(readFileSync(join(root, "schemas", "workflow-result.schema.json"), "utf8"));
-    assert.equal(schema.properties.schemaVersion.const, 14);
+    assert.equal(schema.properties.schemaVersion.const, 15);
   });
 
-  it("finalizeEmittedWorkflowResult sets schemaVersion 14 exactly once", () => {
+  it("finalizeEmittedWorkflowResult sets schemaVersion 15 exactly once", () => {
     const src = readFileSync(join(root, "src", "workflowTruthReport.ts"), "utf8");
     const fnStart = src.indexOf("export function finalizeEmittedWorkflowResult");
     assert.ok(fnStart >= 0);
     const fnExcerpt = src.slice(fnStart, fnStart + 800);
-    const matches = [...fnExcerpt.matchAll(/schemaVersion:\s*14/g)];
-    assert.equal(matches.length, 1, "expected single schemaVersion: 14 in finalizeEmittedWorkflowResult");
+    const matches = [...fnExcerpt.matchAll(/schemaVersion:\s*15/g)];
+    assert.equal(matches.length, 1, "expected single schemaVersion: 15 in finalizeEmittedWorkflowResult");
   });
 
-  it("WorkflowResult type documents 14", () => {
+  it("WorkflowResult type documents 15", () => {
     const src = readFileSync(join(root, "src", "types.ts"), "utf8");
-    assert.match(src, /schemaVersion:\s*14/);
+    assert.match(src, /schemaVersion:\s*15/);
   });
 
   it("checklist files do not pin stdout schema to 11", () => {
