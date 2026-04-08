@@ -73,7 +73,7 @@ Quick Verify is **provisional**: inference-based mapping, **uncertain** as a nor
 
 ## Time to first meaningful result (Story 5)
 
-`validate-ttfv` measures only the quick-verify subprocess after a successful build; `npm install` duration is network-bound and excluded. A run that completes within three minutes on CI hardware is sufficient evidence that a typical user can reach a first meaningful result within thirty minutes including reading the README and supplying structured tool activity (file or stdin).
+`validate-ttfv` (see [`scripts/validate-ttfv.mjs`](../scripts/validate-ttfv.mjs) and [`scripts/lib/quickVerifyPostbuildGate.mjs`](../scripts/lib/quickVerifyPostbuildGate.mjs)) runs **after** a successful **`npm run build`**. It enforces a **spawn timeout** and post-run wall clock (**120s**), parses the **stdout** **`QuickVerifyReport`** line (**`schemaVersion` 2**), and checks that the **exported registry file** matches **`canonicalToolsArrayUtf8`** of the report’s tools. `npm install` duration is network-bound and excluded. A run that completes within three minutes on CI hardware is sufficient evidence that a typical user can reach a first meaningful result within thirty minutes including reading the README and supplying structured tool activity (file or stdin).
 
 ## Why contract replay is row-only (today)
 
