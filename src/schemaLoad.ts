@@ -41,7 +41,9 @@ export type SchemaValidatorName =
   | "plan-validation-core"
   | "quick-verify-report"
   | "tools-registry-export"
-  | "ci-lock-v1";
+  | "ci-lock-v1"
+  | "assurance-manifest-v1"
+  | "assurance-run-report-v1";
 
 const validatorCache: Partial<Record<SchemaValidatorName, ValidateFunction>> = {};
 
@@ -129,6 +131,10 @@ export function loadSchemaValidator(name: SchemaValidatorName): ValidateFunction
       return compileSchemaFile(name, "tools-registry-export.schema.json");
     case "ci-lock-v1":
       return compileSchemaFile(name, "ci-lock-v1.schema.json");
+    case "assurance-manifest-v1":
+      return compileSchemaFile(name, "assurance-manifest-v1.schema.json");
+    case "assurance-run-report-v1":
+      return compileSchemaFile(name, "assurance-run-report-v1.schema.json");
     default: {
       const _exhaustive: never = name;
       return _exhaustive;

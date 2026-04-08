@@ -53,6 +53,8 @@ import { formatQuickVerifyHumanReport } from "./quickVerify/formatQuickVerifyHum
 import { runQuickVerifyToValidatedReport } from "./quickVerify/runQuickVerify.js";
 import type { QuickVerifyReport } from "./quickVerify/runQuickVerify.js";
 import type { QuickContractExport } from "./quickVerify/buildQuickContractEventsNdjson.js";
+import { checkAssuranceReportStale } from "./assurance/checkStale.js";
+import { runAssuranceFromManifest } from "./assurance/runAssurance.js";
 
 function usageQuick(): string {
   return `Usage:
@@ -114,6 +116,10 @@ Exit codes:
   verify-workflow enforce batch (--expect-lock <path> | --output-lock <path>) <same flags as batch verify>
   verify-workflow enforce quick (--expect-lock <path> | --output-lock <path>) <same flags as quick>
   CI enforcement with pinned ci-lock-v1 (see docs/ci-enforcement.md).
+
+  verify-workflow assurance run --manifest <path> [--write-report <path>]
+  verify-workflow assurance stale --report <path> --max-age-hours <n>
+  Multi-scenario assurance sweep and staleness gate (see docs/workflow-verifier.md).
 
 Advanced / optional (persisted runs, signing, local UI, plan/git checks):
   --write-run-bundle <dir>   After a successful verify (schema-valid WorkflowResult), write a canonical run directory: events.ndjson (byte copy of --events), workflow-result.json (emitted result), agent-run.json (SHA-256 manifest). Directory is created if missing. Requires exit 0–2 (operational failure skips the write).
@@ -312,6 +318,109 @@ Exit codes:
 
 function writeCliError(code: string, message: string): void {
   console.error(cliErrorEnvelope(code, message));
+}
+
+function usageAssurance(): string {
+  return `Usage:
+  verify-workflow assurance run --manifest <path> [--write-report <path>]
+  verify-workflow assurance stale --report <path> --max-age-hours <n>
+
+  assurance run executes each manifest scenario by spawning this CLI (schemas/assurance-manifest-v1.schema.json).
+  Path arguments in each scenario argv are resolved relative to the manifest file's directory unless absolute.
+
+  assurance stale exits 1 when the report issuedAt is older than max-age-hours (UTC wall clock).
+
+Exit codes (run):
+  0  all scenarios exited 0
+  1  at least one scenario non-zero
+  3  operational failure (stderr: JSON envelope)
+
+Exit codes (stale):
+  0  report fresh
+  1  report stale
+  3  missing/invalid report (stderr: JSON envelope)
+
+  --help, -h  print this message and exit 0`;
+}
+
+function runAssuranceSubcommand(args: string[]): void {
+  if (args.includes("--help") || args.includes("-h")) {
+    console.log(usageAssurance());
+    process.exit(0);
+  }
+  const sub = args[0];
+  const rest = args.slice(1);
+  if (sub === "run") {
+    const manifestPath = argValue(rest, "--manifest");
+    const writeReport = argValue(rest, "--write-report");
+    if (!manifestPath) {
+      writeCliError(
+        CLI_OPERATIONAL_CODES.ASSURANCE_USAGE,
+        "assurance run requires --manifest <path>.",
+      );
+      process.exit(3);
+    }
+    const res = runAssuranceFromManifest(path.resolve(manifestPath));
+    if (!res.ok) {
+      writeCliError(res.code, res.message);
+      process.exit(3);
+    }
+    const line = `${JSON.stringify(res.report)}\n`;
+    try {
+      process.stdout.write(line);
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : String(e);
+      writeCliError(CLI_OPERATIONAL_CODES.INTERNAL_ERROR, formatOperationalMessage(`stdout: ${msg}`));
+      process.exit(3);
+    }
+    if (writeReport !== undefined) {
+      try {
+        atomicWriteUtf8File(path.resolve(writeReport), line);
+      } catch (e) {
+        const msg = e instanceof Error ? e.message : String(e);
+        writeCliError(
+          CLI_OPERATIONAL_CODES.INTERNAL_ERROR,
+          formatOperationalMessage(`write-report: ${msg}`),
+        );
+        process.exit(3);
+      }
+    }
+    process.exit(res.exitCode);
+  }
+  if (sub === "stale") {
+    const reportPath = argValue(rest, "--report");
+    const maxH = argValue(rest, "--max-age-hours");
+    if (!reportPath || maxH === undefined) {
+      writeCliError(
+        CLI_OPERATIONAL_CODES.ASSURANCE_STALE_USAGE,
+        "assurance stale requires --report <path> and --max-age-hours <n>.",
+      );
+      process.exit(3);
+    }
+    const hours = Number(maxH);
+    if (!Number.isFinite(hours) || hours < 0) {
+      writeCliError(
+        CLI_OPERATIONAL_CODES.ASSURANCE_STALE_USAGE,
+        "--max-age-hours must be a non-negative number.",
+      );
+      process.exit(3);
+    }
+    const st = checkAssuranceReportStale(path.resolve(reportPath), hours);
+    if (st.kind === "operational") {
+      writeCliError(st.code, st.message);
+      process.exit(3);
+    }
+    if (st.kind === "stale") {
+      process.stderr.write("AssuranceRunReport issuedAt is older than --max-age-hours.\n");
+      process.exit(1);
+    }
+    process.exit(0);
+  }
+  writeCliError(
+    CLI_OPERATIONAL_CODES.ASSURANCE_USAGE,
+    "Use verify-workflow assurance run or verify-workflow assurance stale.",
+  );
+  process.exit(3);
 }
 
 async function runQuickSubcommand(args: string[]): Promise<void> {
@@ -819,6 +928,10 @@ function runPlanTransitionSubcommand(args: string[]): void {
 
 async function main(): Promise<void> {
   const args = process.argv.slice(2);
+  if (args[0] === "assurance") {
+    runAssuranceSubcommand(args.slice(1));
+    return;
+  }
   if (args[0] === "quick") {
     await runQuickSubcommand(args.slice(1));
     return;

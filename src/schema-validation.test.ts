@@ -546,4 +546,22 @@ describe("JSON Schemas (SSOT)", () => {
     };
     expect(v(doc)).toBe(true);
   });
+
+  it("validates assurance manifest v1 (bundled example) and run report v1", () => {
+    const vm = loadSchemaValidator("assurance-manifest-v1");
+    const vr = loadSchemaValidator("assurance-run-report-v1");
+    const manifest = JSON.parse(
+      readFileSync(path.join(root, "examples", "assurance", "manifest.json"), "utf8"),
+    );
+    expect(vm(manifest)).toBe(true);
+    const rep = {
+      schemaVersion: 1,
+      issuedAt: new Date().toISOString(),
+      scenarios: [
+        { id: "minimal_ci_enforce_batch", exitCode: 0 },
+        { id: "compare_debug_ui_fixtures", exitCode: 0 },
+      ],
+    };
+    expect(vr(rep)).toBe(true);
+  });
 });

@@ -66,10 +66,6 @@ describe("docs contract (SSOT + README)", () => {
       "canonical commercial use case (support/CRM) appears in funnel",
     );
     assert.ok(
-      funnelSlice.includes("## Core workflow verification"),
-      "core path is grouped under Core workflow verification",
-    );
-    assert.ok(
       /This is for you if/i.test(funnelSlice) && /This is not for you if/i.test(funnelSlice),
       "persona self-identification in funnel",
     );

@@ -25,6 +25,7 @@
     "## Cross-run comparison (normative)",
     "## Validation matrix (what CI proves vs operations)",
     "## CI enforcement (`enforce`)",
+    "## Assurance subsystem (normative)",
     "## Examples"
   ]
 }

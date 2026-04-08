@@ -1,0 +1,35 @@
+{
+  "schemaVersion": 1,
+  "scenarios": [
+    {
+      "id": "minimal_ci_enforce_batch",
+      "kind": "spawn_argv",
+      "argv": [
+        "enforce",
+        "batch",
+        "--workflow-id",
+        "wf_complete",
+        "--events",
+        "../minimal-ci-enforcement/events.ndjson",
+        "--registry",
+        "../minimal-ci-enforcement/tools.json",
+        "--db",
+        "../minimal-ci-enforcement/ci-check.sqlite",
+        "--no-truth-report",
+        "--expect-lock",
+        "../minimal-ci-enforcement/wf_complete.ci-lock-v1.json"
+      ]
+    },
+    {
+      "id": "compare_debug_ui_fixtures",
+      "kind": "spawn_argv",
+      "argv": [
+        "compare",
+        "--prior",
+        "../../test/fixtures/debug-ui-compare/run_path_empty/workflow-result.json",
+        "--current",
+        "../../test/fixtures/debug-ui-compare/run_path_nonempty/workflow-result.json"
+      ]
+    }
+  ]
+}

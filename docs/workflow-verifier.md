@@ -456,7 +456,7 @@ When the CLI exits **3**, **stderr** is exactly **one** UTF-8 line: a JSON objec
 
 - `schemaVersion`: **2**
 - `kind`: **`execution_truth_layer_error`**
-- `code`: one of **`CLI_USAGE`**, **`REGISTRY_READ_FAILED`**, **`REGISTRY_JSON_SYNTAX`**, **`REGISTRY_SCHEMA_INVALID`**, **`REGISTRY_DUPLICATE_TOOL_ID`**, **`EVENTS_READ_FAILED`**, **`SQLITE_DATABASE_OPEN_FAILED`**, **`POSTGRES_CLIENT_SETUP_FAILED`**, **`WORKFLOW_RESULT_SCHEMA_INVALID`**, **`VERIFICATION_POLICY_INVALID`**, **`VALIDATE_REGISTRY_USAGE`**, **`INTERNAL_ERROR`**, **`ENFORCE_USAGE`**, **`CI_LOCK_SCHEMA_INVALID`**, **`VERIFICATION_OUTPUT_LOCK_MISMATCH`** ( **`VERIFICATION_OUTPUT_LOCK_MISMATCH`** is also emitted as an additional stderr line on **`enforce` exit 4**; see [Enforce stream contract (normative)](#enforce-stream-contract-normative)), plus compare-subcommand codes (**`COMPARE_USAGE`**, **`COMPARE_INPUT_READ_FAILED`**, **`COMPARE_INPUT_RUN_LEVEL_INCONSISTENT`**, **`COMPARE_WORKFLOW_TRUTH_MISMATCH`**, …) as documented under [Cross-run comparison](#cross-run-comparison-normative), plus **`execution-trace`** codes (**`EXECUTION_TRACE_USAGE`**, **`TRACE_DUPLICATE_RUN_EVENT_ID`**, **`TRACE_UNKNOWN_PARENT_RUN_EVENT_ID`**, **`TRACE_PARENT_FORWARD_REFERENCE`**, …)
+- `code`: one of **`CLI_USAGE`**, **`REGISTRY_READ_FAILED`**, **`REGISTRY_JSON_SYNTAX`**, **`REGISTRY_SCHEMA_INVALID`**, **`REGISTRY_DUPLICATE_TOOL_ID`**, **`EVENTS_READ_FAILED`**, **`SQLITE_DATABASE_OPEN_FAILED`**, **`POSTGRES_CLIENT_SETUP_FAILED`**, **`WORKFLOW_RESULT_SCHEMA_INVALID`**, **`VERIFICATION_POLICY_INVALID`**, **`VALIDATE_REGISTRY_USAGE`**, **`INTERNAL_ERROR`**, **`ENFORCE_USAGE`**, **`CI_LOCK_SCHEMA_INVALID`**, **`VERIFICATION_OUTPUT_LOCK_MISMATCH`** ( **`VERIFICATION_OUTPUT_LOCK_MISMATCH`** is also emitted as an additional stderr line on **`enforce` exit 4**; see [Enforce stream contract (normative)](#enforce-stream-contract-normative)), plus compare-subcommand codes (**`COMPARE_USAGE`**, **`COMPARE_INPUT_READ_FAILED`**, **`COMPARE_INPUT_RUN_LEVEL_INCONSISTENT`**, **`COMPARE_WORKFLOW_TRUTH_MISMATCH`**, …) as documented under [Cross-run comparison](#cross-run-comparison-normative), plus **`execution-trace`** codes (**`EXECUTION_TRACE_USAGE`**, **`TRACE_DUPLICATE_RUN_EVENT_ID`**, **`TRACE_UNKNOWN_PARENT_RUN_EVENT_ID`**, **`TRACE_PARENT_FORWARD_REFERENCE`**, …), plus assurance-subcommand codes (**`ASSURANCE_USAGE`**, **`ASSURANCE_STALE_USAGE`**, **`ASSURANCE_MANIFEST_READ_FAILED`**, **`ASSURANCE_MANIFEST_JSON_SYNTAX`**, **`ASSURANCE_MANIFEST_SCHEMA_INVALID`**, **`ASSURANCE_REPO_ROOT_NOT_FOUND`**, **`ASSURANCE_CLI_MISSING`**, **`ASSURANCE_MANIFEST_PATH_MISSING`**, **`ASSURANCE_REPORT_READ_FAILED`**, **`ASSURANCE_REPORT_JSON_SYNTAX`**, **`ASSURANCE_REPORT_SCHEMA_INVALID`**) as documented under [Assurance subsystem (normative)](#assurance-subsystem-normative)
 - `message`: human-readable text after whitespace normalization and truncation (max **2048** JavaScript string length; see `formatOperationalMessage` in `failureCatalog.ts`)
 - `failureDiagnosis`: structured operational diagnosis (**`summary`**, **`primaryOrigin`**, **`confidence`**, **`evidence`** with **`referenceCode`**, **`actionableFailure`**) from `operationalFailureDiagnosis.ts`, using origin mappings in **`failureOriginCatalog.ts`** and category/severity in **`actionableFailure.ts`** (see [Actionable failure classification](#actionable-failure-classification-normative))
 
@@ -1421,9 +1421,41 @@ Substrings for contract tests: **enforce batch**, **enforce quick**, **JSON.stri
 
 <!-- etl:enforce-stream-contract:end -->
 
+## Assurance subsystem (normative)
+
+**Purpose:** Run a **versioned multi-scenario sweep** over time (scheduled CI and/or PR gates) and optionally **fail closed** when a saved **`AssuranceRunReport`** is **missing**, **invalid**, or **stale** relative to wall clock.
+
+**Manifest:** `schemas/assurance-manifest-v1.schema.json`. Each scenario has **`kind` `spawn_argv`**: **`argv`** is appended after `node dist/cli.js` when the tool spawns itself (same integration surface as external CI). **Path arguments** immediately following these flags are resolved **relative to the manifest file’s directory** unless already absolute: **`--events`**, **`--registry`**, **`--db`**, **`--expect-lock`**, **`--prior`**, **`--current`**, **`--input`**, **`--export-registry`**, **`--emit-events`**, **`--output-lock`**.
+
+**Repository root:** The runner locates the package root containing **`package.json`** with **`name`**: **`workflow-verifier`** by walking parents from the manifest directory, then (if needed) from the **current working directory**. **`dist/cli.js`** must exist (run **`npm run build`** first).
+
+### `verify-workflow assurance run` I/O (normative)
+
+| Exit | stdout | stderr |
+|------|--------|--------|
+| **0** | exactly **one** JSON line (**`AssuranceRunReport`**, `schemas/assurance-run-report-v1.schema.json`) + newline | empty |
+| **1** | same **one** report line (**`issuedAt`** is set after all scenarios finish; **`scenarios[].exitCode`** reflects each spawn) | empty |
+| **3** | empty | exactly **one** JSON **`execution_truth_layer_error`** line (**`ASSURANCE_*`** or **`INTERNAL_ERROR`**) |
+
+Optional **`--write-report <path>`:** after a successful report build, the same JSON line (UTF-8) is written atomically to **`path`**; operational failures exit **3** before write.
+
+### `verify-workflow assurance stale` I/O (normative)
+
+| Exit | stdout | stderr |
+|------|--------|--------|
+| **0** | empty | empty |
+| **1** | empty | one human line: **`AssuranceRunReport issuedAt is older than --max-age-hours.`** |
+| **3** | empty | one JSON **`execution_truth_layer_error`** line |
+
+**Inputs:** **`--report <path>`** (must validate as **`assurance-run-report-v1`**), **`--max-age-hours <n>`** (non‑negative number). Staleness compares **UTC** **`Date.now()`** to **`Date.parse(issuedAt)`**; invalid **`issuedAt`** is **operational failure** (exit **3**). Missing report file is exit **3** (**`ASSURANCE_REPORT_READ_FAILED`**).
+
+### Integrator pattern (non-normative suggestion)
+
+Run **`assurance run --write-report <artifactPath>`** on your cadence, publish **`artifactPath`**, then run **`assurance stale --report <artifactPath> --max-age-hours …`** in a later job to detect **missed or stale** verification. This repository schedules **`assurance run`** with [`examples/assurance/manifest.json`](../examples/assurance/manifest.json) via [`.github/workflows/assurance-scheduled.yml`](../.github/workflows/assurance-scheduled.yml).
+
 ## Examples
 
-Bundled files under [`examples/`](../examples/): `seed.sql`, `tools.json`, `events.ndjson`.
+Bundled files under [`examples/`](../examples/): `seed.sql`, `tools.json`, `events.ndjson`. The assurance manifest uses [`examples/minimal-ci-enforcement/ci-check.sqlite`](../examples/minimal-ci-enforcement/ci-check.sqlite) (database created from that folder’s `seed.sql`, same data as the temp DB in [`examples/minimal-ci-enforcement/run.mjs`](../examples/minimal-ci-enforcement/run.mjs)).
 
 - **Onboarding:** run **`npm start`** or **`npm run first-run`** from the repository root (same command). The onboarding driver is [`scripts/first-run.mjs`](../scripts/first-run.mjs) (`npm run build && node scripts/first-run.mjs`). It seeds `examples/demo.db`, prints plain-language framing plus **human verification reports on stdout** (via a custom **`truthReport`** callback), then verifies workflows `wf_complete` (expect `complete` / `verified`) and `wf_missing` (expect `inconsistent` / `missing` / `ROW_ABSENT`). **`example:workflow-hook`:** run **`npm run example:workflow-hook`** for a minimal **`withWorkflowVerification`** + **`observeStep`** demo (SQLite temp DB, one event from **`examples/events.ndjson`**).
 - **CLI log streams:** For the CLI, a **human-readable verification report** is written to **stderr** and the machine-readable **workflow result JSON** to **stdout** on verdict exits **0–2** (default **`truthReport`**); full format is **[Human truth report](#human-truth-report)**. Repository README links use **`docs/workflow-verifier.md#human-truth-report`** for that section.

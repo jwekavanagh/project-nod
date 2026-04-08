@@ -1,18 +1,17 @@
 {
-  "description": "README conversion funnel: sections must appear in this order (product requirement).",
+  "description": "README adoption funnel: sections must appear in this order (product requirement). Ends before differentiation so funnelSlice includes sample output.",
   "headings": [
-    "## What this product is",
-    "## What this product does",
-    "## What this product does not prove",
-    "## Who this is for",
-    "## Who this is not for",
+    "## Try it (about one minute)",
+    "### Docker quickstart (optional)",
     "## Canonical use case",
-    "## Core workflow verification",
-    "### Quick Verify (zero-config path)",
-    "### Example: before and after",
-    "### Quickstart",
-    "### Sample output",
-    "### Use it on your own system",
-    "## How it works"
+    "## How to run the CLI",
+    "## Minimal model (event → registry → result)",
+    "## What this is (and is not)",
+    "## Contract path (registry + events)",
+    "## Quick Verify (optional, zero-registry)",
+    "## Confidence over time (assurance)",
+    "## Sample output (contract demo)",
+    "### Success (`wf_complete`)",
+    "### Failure (`wf_missing`)"
   ]
 }
