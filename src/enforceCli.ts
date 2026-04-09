@@ -23,6 +23,7 @@ import { runQuickVerifyToValidatedReport } from "./quickVerify/runQuickVerify.js
 import { formatQuickVerifyHumanReport } from "./quickVerify/formatQuickVerifyHumanReport.js";
 import { buildQuickContractEventsNdjson } from "./quickVerify/buildQuickContractEventsNdjson.js";
 import type { WorkflowResult } from "./types.js";
+import { runLicensePreflightIfNeeded } from "./commercial/licensePreflight.js";
 
 function writeCliError(code: string, message: string): void {
   console.error(cliErrorEnvelope(code, message));
@@ -83,6 +84,7 @@ async function runEnforceBatch(restArgs: string[]): Promise<void> {
 
   let result: WorkflowResult;
   try {
+    await runLicensePreflightIfNeeded();
     result = await runBatchVerifyToValidatedResult(runVerify);
   } catch (e) {
     if (e instanceof TruthLayerError) {

@@ -1,0 +1,31 @@
+name: Commercial npm publish
+
+on:
+  workflow_dispatch:
+    inputs:
+      commercial_license_api_base_url:
+        description: "Production app URL (no trailing slash), e.g. https://app.example.com"
+        required: true
+        type: string
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          registry-url: https://registry.npmjs.org
+      - run: npm ci
+      - name: Build commercial CLI
+        env:
+          WF_BUILD_PROFILE: commercial
+          COMMERCIAL_LICENSE_API_BASE_URL: ${{ github.event.inputs.commercial_license_api_base_url }}
+        run: node scripts/build-commercial.mjs
+      - name: Assert embedded license URL
+        run: grep -Fq "${{ github.event.inputs.commercial_license_api_base_url }}" dist/cli.js
+      - run: npm publish --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

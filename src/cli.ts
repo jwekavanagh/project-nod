@@ -55,6 +55,7 @@ import type { QuickVerifyReport } from "./quickVerify/runQuickVerify.js";
 import type { QuickContractExport } from "./quickVerify/buildQuickContractEventsNdjson.js";
 import { checkAssuranceReportStale } from "./assurance/checkStale.js";
 import { runAssuranceFromManifest } from "./assurance/runAssurance.js";
+import { runLicensePreflightIfNeeded } from "./commercial/licensePreflight.js";
 
 function usageQuick(): string {
   return `Usage:
@@ -977,6 +978,16 @@ async function main(): Promise<void> {
   let parsedBatch;
   try {
     parsedBatch = parseBatchVerifyCliArgs(args);
+  } catch (e) {
+    if (e instanceof TruthLayerError) {
+      writeCliError(e.code, e.message);
+      process.exit(3);
+    }
+    throw e;
+  }
+
+  try {
+    await runLicensePreflightIfNeeded();
   } catch (e) {
     if (e instanceof TruthLayerError) {
       writeCliError(e.code, e.message);

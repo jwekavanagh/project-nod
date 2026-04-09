@@ -4,12 +4,16 @@
   "description": "State verification engine: read-only SQL checks that database state matches expectations from structured tool activity (not arbitrary logs)—not proof of execution",
   "license": "MIT",
   "type": "module",
+  "workspaces": [
+    "website"
+  ],
   "main": "dist/index.js",
   "bin": {
     "workflow-verifier": "dist/cli.js"
   },
   "scripts": {
-    "build": "node scripts/sync-failure-origin-from-schema.mjs && tsc && node scripts/copy-debug-ui.mjs",
+    "build": "node scripts/write-commercial-build-flags.mjs && node scripts/sync-failure-origin-from-schema.mjs && tsc && node scripts/copy-debug-ui.mjs",
+    "build:commercial": "node scripts/build-commercial.mjs",
     "start": "npm run build && node scripts/demo.mjs",
     "test:vitest": "vitest run",
     "test:node:sqlite": "node --test --test-force-exit test/reconciler.sqlite.test.mjs test/pipeline.sqlite.test.mjs test/withWorkflowVerification.test.mjs test/workflowTruthReport.test.mjs test/cli.test.mjs test/stable-failure-consistency.test.mjs test/workflow-result-consumer-contract.test.mjs test/workflow-result-stdout-version.test.mjs test/docs-relational-ssot.test.mjs test/tools-registry-relational-surface.test.mjs test/docs-contract.test.mjs test/docs-remediation-doctrine.test.mjs test/bundle-signature-fixture.test.mjs test/bundle-signature-codes-doc.test.mjs test/bundle-signature-cli-write.test.mjs test/quick-verify.sqlite.test.mjs test/quickVerifyPostbuildGate.test.mjs test/npm-scripts-contract.test.mjs test/removed-script-names-ban.test.mjs test/docs-workflow-result-normative-prose.test.mjs test/enforce-cli.test.mjs test/docs-enforce-stream-contract.test.mjs test/docs-quick-enforce-link.test.mjs test/assurance-cli.test.mjs",
@@ -24,7 +28,11 @@
     "migrate:workflow-result-v11": "npm run build && node scripts/migrate-workflow-result-v11.mjs",
     "migrate:workflow-result-v12": "node scripts/migrate-workflow-result-v12.mjs",
     "migrate:workflow-result-v13": "npm run build && node scripts/migrate-workflow-result-v13.mjs",
-    "migrate:workflow-result-v15": "npm run build && node scripts/migrate-workflow-result-v15.mjs"
+    "migrate:workflow-result-v15": "npm run build && node scripts/migrate-workflow-result-v15.mjs",
+    "check:commercial-ssot": "node scripts/check-commercial-plans-ssot.mjs",
+    "stripe-bootstrap": "node scripts/stripe-bootstrap.mjs",
+    "validate-commercial": "node scripts/validate-commercial-funnel.mjs",
+    "test:commercial-layer": "node scripts/validate-commercial-funnel.mjs"
   },
   "engines": {
     "node": ">=22.13.0"
@@ -36,6 +44,7 @@
     "@types/picomatch": "^4.0.3",
     "ajv": "^8.17.1",
     "ajv-formats": "^3.0.1",
+    "stripe": "^17.5.0",
     "typescript": "^5.7.2",
     "vitest": "^3.2.4"
   },

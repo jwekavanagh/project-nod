@@ -453,4 +453,28 @@ export const OPERATIONAL_DISPOSITION = {
     recommendedAction: "fix_cli_usage",
     automationSafe: false,
   },
+  [CLI_OPERATIONAL_CODES.LICENSE_KEY_MISSING]: {
+    origin: "inputs",
+    summary: "Commercial workflow-verifier requires WORKFLOW_VERIFIER_API_KEY for contract verification.",
+    actionableCategory: "bad_input",
+    actionableSeverity: "high",
+    recommendedAction: "manual_review",
+    automationSafe: false,
+  },
+  [CLI_OPERATIONAL_CODES.LICENSE_DENIED]: {
+    origin: "workflow_flow",
+    summary: "License or quota check denied this contract verification run.",
+    actionableCategory: "control_flow_problem",
+    actionableSeverity: "high",
+    recommendedAction: "manual_review",
+    automationSafe: false,
+  },
+  [CLI_OPERATIONAL_CODES.LICENSE_USAGE_UNAVAILABLE]: {
+    origin: "downstream_system_state",
+    summary: "License service was unreachable after retries.",
+    actionableCategory: "downstream_execution_failure",
+    actionableSeverity: "high",
+    recommendedAction: "manual_review",
+    automationSafe: false,
+  },
 } as const satisfies Record<OperationalCode, OperationalDispositionRow>;

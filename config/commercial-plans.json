@@ -1,0 +1,33 @@
+{
+  "schemaVersion": 1,
+  "plans": {
+    "starter": {
+      "includedMonthly": 100,
+      "monthlyUsdCents": 0,
+      "displayPrice": "Free",
+      "marketingHeadline": "Starter",
+      "stripePriceEnvKey": null
+    },
+    "team": {
+      "includedMonthly": 10000,
+      "monthlyUsdCents": 10000,
+      "displayPrice": "$100/mo",
+      "marketingHeadline": "Team",
+      "stripePriceEnvKey": "STRIPE_PRICE_TEAM"
+    },
+    "business": {
+      "includedMonthly": 50000,
+      "monthlyUsdCents": 30000,
+      "displayPrice": "$300/mo",
+      "marketingHeadline": "Business",
+      "stripePriceEnvKey": "STRIPE_PRICE_BUSINESS"
+    },
+    "enterprise": {
+      "includedMonthly": null,
+      "monthlyUsdCents": null,
+      "displayPrice": "Custom",
+      "marketingHeadline": "Enterprise",
+      "stripePriceEnvKey": null
+    }
+  }
+}

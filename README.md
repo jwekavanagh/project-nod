@@ -250,6 +250,13 @@ Runs build, Vitest, SQLite Node tests, first-run demo, minimal CI enforcement ex
 
 **Full CI parity** (Postgres + Debug Console UI tests): set **`POSTGRES_ADMIN_URL`** and **`POSTGRES_VERIFICATION_URL`**, then **`npm run test:ci`**—see [`.github/workflows/ci.yml`](.github/workflows/ci.yml). Example Postgres: `docker run -d --name etl-pg -p 5432:5432 -e POSTGRES_PASSWORD=postgres postgres:16`.
 
+## Commercial CLI (npm) vs OSS (this repo)
+
+- **Default `npm run build` in this repository** uses **`WF_BUILD_PROFILE=oss`**: contract verification does **not** call a license server and does **not** require **`WORKFLOW_VERIFIER_API_KEY`**.
+- **Published npm package (commercial profile)** is built with **`npm run build:commercial`** and **`COMMERCIAL_LICENSE_API_BASE_URL`** set to your deployed app origin; that build **requires** an API key for **contract batch** and **`enforce batch`**. Quick Verify stays unmetered for onboarding.
+- **Website + billing** live under [`website/`](website/) (Next.js, Stripe, Resend, Postgres). Authoritative narrative: **[`docs/commercial-ssot.md`](docs/commercial-ssot.md)**.
+- **Validation:** `npm run validate-commercial` runs Layer 1 checks and writes [`artifacts/commercial-validation-verdict.json`](artifacts/commercial-validation-verdict.json). Set **`COMMERCIAL_VALIDATE_PLAYWRIGHT=1`** (and start the app) for Playwright; see **`scripts/run-commercial-e2e.mjs`** for Docker + migrate bootstrap.
+
 ## Status, contributing, security
 
 **Maturity:** **0.x** (`package.json`). APIs, CLI flags, and JSON schemas may evolve; rely on tests and docs for current contracts.
