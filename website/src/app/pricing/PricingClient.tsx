@@ -1,12 +1,14 @@
 "use client";
 
 import { productCopy } from "@/content/productCopy";
+import type { PlanId } from "@/lib/plans";
 import Link from "next/link";
 import { useState } from "react";
 import { useSession } from "next-auth/react";
 
 export type PlanRow = {
-  id: "starter" | "team" | "business" | "enterprise";
+  id: PlanId;
+  checkoutPlanId: PlanId | null;
   headline: string;
   displayPrice: string;
   includedMonthly: number | null;
@@ -26,7 +28,7 @@ export function PricingClient({
   const [loading, setLoading] = useState<string | null>(null);
   const authed = status === "authenticated";
 
-  async function checkout(plan: "team" | "business") {
+  async function checkout(plan: PlanId) {
     setErr(null);
     setLoading(plan);
     try {
@@ -54,7 +56,7 @@ export function PricingClient({
         style={{ marginTop: "1rem", maxWidth: "42rem" }}
         aria-label="Commercial terms"
       >
-        <p>Licensed verification with the published npm CLI requires an active Team, Business, or Enterprise subscription (trial counts); monthly quota applies after subscribe.</p>
+        <p>Licensed verification with the published npm CLI requires an active Individual, Team, Business, or Enterprise subscription (trial counts); monthly quota applies after subscribe.</p>
         <p>CI locks, the enforce command, and quick verify with lock flags use the same subscription requirement.</p>
       </section>
       <div className="pricing-grid" style={{ marginTop: "1.5rem" }}>
@@ -76,34 +78,15 @@ export function PricingClient({
             <p className="muted" style={{ marginTop: "0.35rem", fontSize: "0.95rem" }}>
               <strong>Unlocks:</strong> {p.valueUnlock}
             </p>
-            {p.id === "team" &&
+            {p.checkoutPlanId !== null &&
               (authed ? (
                 <button
                   type="button"
                   disabled={loading !== null}
-                  onClick={() => checkout("team")}
+                  onClick={() => checkout(p.checkoutPlanId!)}
                   style={{ marginTop: "0.75rem" }}
                 >
-                  {loading === "team" ? "…" : "Subscribe"}
-                </button>
-              ) : (
-                <Link
-                  className="btn-pricing-secondary"
-                  href="/auth/signin?callbackUrl=%2Fpricing"
-                  style={{ marginTop: "0.75rem" }}
-                >
-                  {productCopy.pricingSignInCta}
-                </Link>
-              ))}
-            {p.id === "business" &&
-              (authed ? (
-                <button
-                  type="button"
-                  disabled={loading !== null}
-                  onClick={() => checkout("business")}
-                  style={{ marginTop: "0.75rem" }}
-                >
-                  {loading === "business" ? "…" : "Subscribe"}
+                  {loading === p.checkoutPlanId ? "…" : "Subscribe"}
                 </button>
               ) : (
                 <Link

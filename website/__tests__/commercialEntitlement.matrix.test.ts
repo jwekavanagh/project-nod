@@ -26,9 +26,9 @@ describe("commercial entitlement matrix", () => {
     rows: MatrixRow[];
   };
 
-  it("has 48 rows", () => {
+  it("has 60 rows", () => {
     expect(data.schemaVersion).toBe(1);
-    expect(data.rows).toHaveLength(48);
+    expect(data.rows).toHaveLength(60);
   });
 
   it.each(data.rows)(

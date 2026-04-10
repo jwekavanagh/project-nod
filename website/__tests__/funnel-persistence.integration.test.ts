@@ -138,6 +138,39 @@ describe("checkout_started", () => {
       post_activation: false,
     });
   });
+
+  it("logs checkout_started for individual plan", async () => {
+    vi.stubEnv("STRIPE_PRICE_INDIVIDUAL", "price_test_individual");
+    const [u] = await db
+      .insert(users)
+      .values({ email: "checkout-ind@example.com", emailVerified: new Date() })
+      .returning();
+    authMock.mockResolvedValue({
+      user: { id: u!.id, email: "checkout-ind@example.com", name: null },
+    });
+    vi.mocked(getStripe).mockReturnValue({
+      checkout: {
+        sessions: {
+          create: vi.fn().mockResolvedValue({ url: "https://example.invalid/checkout" }),
+        },
+      },
+    } as unknown as ReturnType<typeof getStripe>);
+
+    const req = new NextRequest("http://localhost/api/checkout", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ plan: "individual" }),
+    });
+    const res = await postCheckout(req);
+    expect(res.status).toBe(200);
+    const rows = await db.select().from(funnelEvents).where(eq(funnelEvents.event, "checkout_started"));
+    expect(rows).toHaveLength(1);
+    expect(rows[0]?.metadata).toEqual({
+      schema_version: 1,
+      plan: "individual",
+      post_activation: false,
+    });
+  });
 });
 
 describe("unauthenticated checkout", () => {

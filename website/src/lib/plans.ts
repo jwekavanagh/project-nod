@@ -20,10 +20,11 @@ function resolveConfigDir(): string {
   );
 }
 
-export type PlanId = "starter" | "team" | "business" | "enterprise";
+export type PlanId = "starter" | "individual" | "team" | "business" | "enterprise";
 
-/** Plans that may use `enforce` when `subscriptionStatus === "active"`. */
+/** Paid-capable plans: licensed verify/enforce when `subscriptionStatus === "active"` (plus break-glass rules). */
 export const paidEnforcementPlanIds: readonly PlanId[] = [
+  "individual",
   "team",
   "business",
   "enterprise",

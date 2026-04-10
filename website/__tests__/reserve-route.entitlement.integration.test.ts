@@ -158,4 +158,31 @@ describe("POST /api/v1/usage/reserve entitlement", () => {
     const j = (await res.json()) as Record<string, unknown>;
     expect(j.allowed).toBe(true);
   });
+
+  it("individual + inactive + verify → 403 SUBSCRIPTION_INACTIVE", async () => {
+    entState.plan = "individual";
+    entState.subscriptionStatus = "inactive";
+    const res = await postReserve({ intent: "verify" });
+    expect(res.status).toBe(403);
+    const j = (await res.json()) as Record<string, unknown>;
+    expect(j.code).toBe("SUBSCRIPTION_INACTIVE");
+  });
+
+  it("individual + active + verify → 200 allowed", async () => {
+    entState.plan = "individual";
+    entState.subscriptionStatus = "active";
+    const res = await postReserve({ intent: "verify" });
+    expect(res.status).toBe(200);
+    const j = (await res.json()) as Record<string, unknown>;
+    expect(j.allowed).toBe(true);
+  });
+
+  it("individual + active + enforce → 200 allowed", async () => {
+    entState.plan = "individual";
+    entState.subscriptionStatus = "active";
+    const res = await postReserve({ intent: "enforce" });
+    expect(res.status).toBe(200);
+    const j = (await res.json()) as Record<string, unknown>;
+    expect(j.allowed).toBe(true);
+  });
 });

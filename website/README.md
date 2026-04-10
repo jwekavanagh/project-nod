@@ -76,7 +76,7 @@ Set **`STRIPE_WEBHOOK_SECRET`** from `stripe listen --forward-to …/api/webhook
 
 **Website Vitest:** `__tests__/funnel-persistence.integration.test.ts` requires **`DATABASE_URL`** pointing at Postgres with migrations applied (`npx drizzle-kit migrate` from `website/`). From the repo root, **`npm run validate-commercial`** enforces **`DATABASE_URL`**, runs migrate, then runs full website Vitest.
 
-Optional: **`RESERVE_EMERGENCY_ALLOW=1`** waives the **inactive subscription** check for **`intent=verify`** and **`intent=enforce`** on **team/business/enterprise** only (**Starter** stays denied). Quota still applies.
+Optional: **`RESERVE_EMERGENCY_ALLOW=1`** waives the **inactive subscription** check for **`intent=verify`** and **`intent=enforce`** on **individual/team/business/enterprise** only (**Starter** stays denied). Quota still applies.
 
 ## Root package `prepublishOnly` (commercial CLI)
 

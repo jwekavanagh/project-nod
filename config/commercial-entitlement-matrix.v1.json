@@ -98,6 +98,102 @@
       "expectedDenyCode": "ENFORCEMENT_REQUIRES_PAID_PLAN"
     },
     {
+      "plan": "individual",
+      "subscriptionStatus": "none",
+      "intent": "verify",
+      "emergencyAllow": false,
+      "expectProceedToQuota": false,
+      "expectedDenyCode": "SUBSCRIPTION_INACTIVE"
+    },
+    {
+      "plan": "individual",
+      "subscriptionStatus": "none",
+      "intent": "verify",
+      "emergencyAllow": true,
+      "expectProceedToQuota": true,
+      "expectedDenyCode": null
+    },
+    {
+      "plan": "individual",
+      "subscriptionStatus": "none",
+      "intent": "enforce",
+      "emergencyAllow": false,
+      "expectProceedToQuota": false,
+      "expectedDenyCode": "SUBSCRIPTION_INACTIVE"
+    },
+    {
+      "plan": "individual",
+      "subscriptionStatus": "none",
+      "intent": "enforce",
+      "emergencyAllow": true,
+      "expectProceedToQuota": true,
+      "expectedDenyCode": null
+    },
+    {
+      "plan": "individual",
+      "subscriptionStatus": "active",
+      "intent": "verify",
+      "emergencyAllow": false,
+      "expectProceedToQuota": true,
+      "expectedDenyCode": null
+    },
+    {
+      "plan": "individual",
+      "subscriptionStatus": "active",
+      "intent": "verify",
+      "emergencyAllow": true,
+      "expectProceedToQuota": true,
+      "expectedDenyCode": null
+    },
+    {
+      "plan": "individual",
+      "subscriptionStatus": "active",
+      "intent": "enforce",
+      "emergencyAllow": false,
+      "expectProceedToQuota": true,
+      "expectedDenyCode": null
+    },
+    {
+      "plan": "individual",
+      "subscriptionStatus": "active",
+      "intent": "enforce",
+      "emergencyAllow": true,
+      "expectProceedToQuota": true,
+      "expectedDenyCode": null
+    },
+    {
+      "plan": "individual",
+      "subscriptionStatus": "inactive",
+      "intent": "verify",
+      "emergencyAllow": false,
+      "expectProceedToQuota": false,
+      "expectedDenyCode": "SUBSCRIPTION_INACTIVE"
+    },
+    {
+      "plan": "individual",
+      "subscriptionStatus": "inactive",
+      "intent": "verify",
+      "emergencyAllow": true,
+      "expectProceedToQuota": true,
+      "expectedDenyCode": null
+    },
+    {
+      "plan": "individual",
+      "subscriptionStatus": "inactive",
+      "intent": "enforce",
+      "emergencyAllow": false,
+      "expectProceedToQuota": false,
+      "expectedDenyCode": "SUBSCRIPTION_INACTIVE"
+    },
+    {
+      "plan": "individual",
+      "subscriptionStatus": "inactive",
+      "intent": "enforce",
+      "emergencyAllow": true,
+      "expectProceedToQuota": true,
+      "expectedDenyCode": null
+    },
+    {
       "plan": "team",
       "subscriptionStatus": "none",
       "intent": "verify",

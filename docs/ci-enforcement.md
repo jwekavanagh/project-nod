@@ -6,7 +6,7 @@ This document is the **integrator SSOT** for pinning verification outcomes in CI
 
 ## Prerequisites (commercial CLI)
 
-**Licensed** contract **`verify`**, **`quick`**, **CI lock flags**, and **`enforce`** all require a **Team**, **Business**, or **Enterprise** plan with an **active** subscription (Stripe **trialing** counts) and a valid API key on **`POST /api/v1/usage/reserve`**; see [`commercial-entitlement-matrix.md`](commercial-entitlement-matrix.md) and [`commercial-entitlement-policy.md`](commercial-entitlement-policy.md).
+**Licensed** contract **`verify`**, **`quick`**, **CI lock flags**, and **`enforce`** all require an **Individual**, **Team**, **Business**, or **Enterprise** plan with an **active** subscription (Stripe **trialing** counts) and a valid API key on **`POST /api/v1/usage/reserve`**; see [`commercial-entitlement-matrix.md`](commercial-entitlement-matrix.md) and [`commercial-entitlement-policy.md`](commercial-entitlement-policy.md).
 
 ## What the lock pins (semantics)
 

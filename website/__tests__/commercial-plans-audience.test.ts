@@ -8,7 +8,7 @@ describe("config/commercial-plans.json", () => {
   ) as { plans: Record<string, { audience?: string; valueUnlock?: string }> };
 
   it("includes audience and valueUnlock for every plan", () => {
-    for (const id of ["starter", "team", "business", "enterprise"]) {
+    for (const id of ["starter", "individual", "team", "business", "enterprise"]) {
       expect(raw.plans[id]?.audience, id).toBeTruthy();
       expect(raw.plans[id]?.valueUnlock, id).toBeTruthy();
     }

@@ -90,7 +90,7 @@ components:
           type: string
           enum: [verify, enforce]
           default: verify
-          description: enforce requires paid plan with active subscription; verify requires active subscription on team/business/enterprise
+          description: enforce requires paid plan with active subscription; verify requires active subscription on individual/team/business/enterprise
     ReserveAllowed:
       type: object
       required:
@@ -104,7 +104,7 @@ components:
           enum: [true]
         plan:
           type: string
-          enum: [starter, team, business, enterprise]
+          enum: [starter, individual, team, business, enterprise]
         limit:
           type: integer
         used:

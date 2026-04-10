@@ -6,17 +6,26 @@
       "monthlyUsdCents": 0,
       "displayPrice": "Free",
       "marketingHeadline": "Starter",
-      "audience": "Individuals exploring the product; use OSS/source verify for free, or subscribe for licensed npm.",
-      "valueUnlock": "Account and API key; licensed npm verify requires an active Team+ subscription (trial ok). Use the default OSS build from source for free verify without a subscription.",
+      "audience": "Trying the commercial surface: sign in, explore, and compare with the OSS build from source.",
+      "valueUnlock": "Evaluation only on the commercial path—licensed npm verify and enforce require a paid subscription. Use the default OSS build from this repo for free contract verify without a subscription.",
       "stripePriceEnvKey": null
+    },
+    "individual": {
+      "includedMonthly": 2000,
+      "monthlyUsdCents": 2500,
+      "displayPrice": "$25/mo",
+      "marketingHeadline": "Individual",
+      "audience": "Solo developers and early adopters who need licensed npm verify and CI enforcement without team-scale volume.",
+      "valueUnlock": "Licensed contract and quick verify with monthly quota; CI locks and enforce under the same active subscription.",
+      "stripePriceEnvKey": "STRIPE_PRICE_INDIVIDUAL"
     },
     "team": {
       "includedMonthly": 10000,
       "monthlyUsdCents": 10000,
       "displayPrice": "$100/mo",
       "marketingHeadline": "Team",
-      "audience": "Small teams running verification in CI or staging with steady volume.",
-      "valueUnlock": "Licensed contract and quick verify with monthly quota; CI locks and enforce use the same active subscription.",
+      "audience": "Small teams running licensed verification in production CI or staging with steady volume.",
+      "valueUnlock": "Higher monthly quota for multi-repo or multi-service pipelines; same subscription covers enforce and CI lock flows.",
       "stripePriceEnvKey": "STRIPE_PRICE_TEAM"
     },
     "business": {

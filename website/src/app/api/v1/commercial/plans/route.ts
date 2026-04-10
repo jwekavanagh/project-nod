@@ -17,7 +17,7 @@ type PublicPlan = {
 export async function GET(): Promise<NextResponse> {
   try {
     const raw = loadCommercialPlans();
-    const order: PlanId[] = ["starter", "team", "business", "enterprise"];
+    const order: PlanId[] = ["starter", "individual", "team", "business", "enterprise"];
     const plans: Record<string, PublicPlan> = {};
     for (const id of order) {
       const p = raw.plans[id];

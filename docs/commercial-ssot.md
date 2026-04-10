@@ -6,11 +6,11 @@ This document is the **narrative SSOT** for the thin commercial layer (website, 
 
 ## Approved product scope (v1)
 
-**Original stakeholder narrative (reference):** Starter free (100/mo); Team $100/mo (10k included, per-run overage); Business $300/mo (50k + volume); Enterprise custom.
+**Original stakeholder narrative (reference):** Starter free (100/mo); Individual $25/mo (2k included); Team $100/mo (10k included, per-run overage); Business $300/mo (50k + volume); Enterprise custom.
 
 **v1 implementation:**
 
-- **Hard monthly caps** per plan from [`config/commercial-plans.json`](../config/commercial-plans.json). **Licensed** npm **`verify`**, **`quick`**, **`enforce`**, and **CI lock flags** on batch/quick require an **active Stripe subscription** on Team, Business, or Enterprise (including **trialing**), enforced in `POST /api/v1/usage/reserve`. **Starter** cannot pass licensed preflight until the user subscribes.
+- **Hard monthly caps** per plan from [`config/commercial-plans.json`](../config/commercial-plans.json). **Licensed** npm **`verify`**, **`quick`**, **`enforce`**, and **CI lock flags** on batch/quick require an **active Stripe subscription** on Individual, Team, Business, or Enterprise (including **trialing**), enforced in `POST /api/v1/usage/reserve`. **Starter** cannot pass licensed preflight until the user subscribes.
 - **Per-run overage billing** ($0.01/run, volume discounts) is **deferred to v1.1+** (documented backlog; do not advertise on the live site until implemented).
 
 **Enterprise** is **sales-assisted only** (mailto + operator SQL). It is **outside** the self-serve non-negotiable outcome and **outside** the binary `solved` verdict for the commercial funnel.
@@ -22,6 +22,7 @@ This document is the **narrative SSOT** for the thin commercial layer (website, 
 | Plan       | Included verifications / month (v1 cap) | Monthly fee (v1) |
 |------------|----------------------------------------|------------------|
 | Starter    | 100                                    | Free             |
+| Individual | 2000                                   | $25/mo           |
 | Team       | 10000                                  | $100/mo          |
 | Business   | 50000                                  | $300/mo          |
 | Enterprise | Custom                                 | Custom           |
@@ -47,7 +48,7 @@ Forks: build with `oss` to omit the gate.
 - **400:** bad request
 - **503:** server error
 
-**Emergency:** `RESERVE_EMERGENCY_ALLOW=1` — valid keys on **team/business/enterprise** bypass the **inactive subscription** check for **`verify`** and **`enforce`**. **Starter `verify` and `enforce` remain denied.** **Quota and idempotency unchanged** (still enforced).
+**Emergency:** `RESERVE_EMERGENCY_ALLOW=1` — valid keys on **individual/team/business/enterprise** bypass the **inactive subscription** check for **`verify`** and **`enforce`**. **Starter `verify` and `enforce` remain denied.** **Quota and idempotency unchanged** (still enforced).
 
 ## HTTP — `GET /api/v1/commercial/plans`
 

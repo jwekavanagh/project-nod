@@ -86,7 +86,7 @@ export const productCopy = {
   commercialSurface: {
     title: "Commercial surface (what the product charges for)",
     body:
-      "The default OSS build from this repository gives you full contract verify without an API key. The published npm package uses license preflight: licensed verify, quick verify, and CI locks require an active Team, Business, or Enterprise subscription (Stripe trial counts), then consume monthly quota. Higher tiers add headroom. Machine contracts: OpenAPI and plans JSON are linked from docs and the account page.",
+      "The default OSS build from this repository gives you full contract verify without an API key. The published npm package uses license preflight: licensed verify, quick verify, and CI locks require an active Individual, Team, Business, or Enterprise subscription (Stripe trial counts), then consume monthly quota. Higher tiers add headroom. Machine contracts: OpenAPI and plans JSON are linked from docs and the account page.",
   },
 
   nextSteps: {

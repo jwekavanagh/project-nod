@@ -1,7 +1,10 @@
 import { auth } from "@/auth";
 import { db } from "@/db/client";
 import { funnelEvents } from "@/db/schema";
-import { buildCheckoutStartedMetadata } from "@/lib/funnelCommercialMetadata";
+import {
+  buildCheckoutStartedMetadata,
+  type CheckoutStartedMetadata,
+} from "@/lib/funnelCommercialMetadata";
 import { logFunnelEvent } from "@/lib/funnelEvent";
 import { loadCommercialPlans } from "@/lib/plans";
 import type { PlanId } from "@/lib/plans";
@@ -16,22 +19,28 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
   }
 
   let plan: PlanId;
+  let envKey: string;
   try {
-    const j = (await req.json()) as { plan?: PlanId };
-    if (j.plan !== "team" && j.plan !== "business") {
+    const j = (await req.json()) as { plan?: unknown };
+    const raw = j.plan;
+    if (typeof raw !== "string") {
       return NextResponse.json({ error: "Invalid plan" }, { status: 400 });
     }
-    plan = j.plan;
+    const plans = loadCommercialPlans();
+    const def = plans.plans[raw as PlanId];
+    if (!def) {
+      return NextResponse.json({ error: "Invalid plan" }, { status: 400 });
+    }
+    const key = def.stripePriceEnvKey;
+    if (!key) {
+      return NextResponse.json({ error: "Plan not billable" }, { status: 400 });
+    }
+    plan = raw as PlanId;
+    envKey = key;
   } catch {
     return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
   }
 
-  const plans = loadCommercialPlans();
-  const def = plans.plans[plan];
-  const envKey = def.stripePriceEnvKey;
-  if (!envKey) {
-    return NextResponse.json({ error: "Plan not billable" }, { status: 400 });
-  }
   const priceId = process.env[envKey];
   if (!priceId) {
     return NextResponse.json({ error: "Missing Stripe price env" }, { status: 500 });
@@ -63,7 +72,10 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
   await logFunnelEvent({
     event: "checkout_started",
     userId: session.user.id,
-    metadata: buildCheckoutStartedMetadata(plan, postActivation),
+    metadata: buildCheckoutStartedMetadata(
+      plan as CheckoutStartedMetadata["plan"],
+      postActivation,
+    ),
   });
 
   return NextResponse.json({ url: checkout.url });

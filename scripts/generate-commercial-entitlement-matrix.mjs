@@ -10,7 +10,7 @@ import { fileURLToPath } from "node:url";
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const root = path.resolve(__dirname, "..");
 
-const paid = ["team", "business", "enterprise"];
+const paid = ["individual", "team", "business", "enterprise"];
 
 function resolve({ plan, subscriptionStatus, intent, emergencyAllow }) {
   if (intent === "enforce" && plan === "starter") {
@@ -44,7 +44,7 @@ function resolve({ plan, subscriptionStatus, intent, emergencyAllow }) {
   return { expectProceedToQuota: true, expectedDenyCode: null };
 }
 
-const plans = ["starter", "team", "business", "enterprise"];
+const plans = ["starter", "individual", "team", "business", "enterprise"];
 const subs = ["none", "active", "inactive"];
 const intents = ["verify", "enforce"];
 const emerg = [false, true];
@@ -67,7 +67,7 @@ for (const plan of plans) {
   }
 }
 
-if (rows.length !== 48) throw new Error(`expected 48 rows, got ${rows.length}`);
+if (rows.length !== 60) throw new Error(`expected 60 rows, got ${rows.length}`);
 
 const out = { schemaVersion: 1, rows };
 writeFileSync(

@@ -6,7 +6,7 @@ The **OSS** default build does not expose **`enforce`** (exit **`ENFORCE_REQUIRE
 
 ## Why licensed `verify` requires an active subscription
 
-Batch and quick **verification** with the **published npm** package (`intent=verify` on `POST /api/v1/usage/reserve`) is the **primary product outcome**. It requires an **active** Stripe-backed subscription on **Team, Business, or Enterprise** (including **trialing**). **Starter** accounts may sign in and obtain an API key but **cannot** pass license preflight for `verify` until they subscribe (`VERIFICATION_REQUIRES_SUBSCRIPTION`). **Monthly quota** still applies after entitlement allows the run.
+Batch and quick **verification** with the **published npm** package (`intent=verify` on `POST /api/v1/usage/reserve`) is the **primary product outcome**. It requires an **active** Stripe-backed subscription on **Individual, Team, Business, or Enterprise** (including **trialing**). **Starter** accounts may sign in and obtain an API key but **cannot** pass license preflight for `verify` until they subscribe (`VERIFICATION_REQUIRES_SUBSCRIPTION`). **Monthly quota** still applies after entitlement allows the run.
 
 **OSS builds** from source (`WF_BUILD_PROFILE=oss`) do not call the license server and are not subscription-gated—see README and [`commercial-enforce-gate-normative.md`](commercial-enforce-gate-normative.md).
 
@@ -27,6 +27,6 @@ When `RESERVE_EMERGENCY_ALLOW=1` on the server, the **subscription check for pai
 The `/pricing` page must show the following two lines **verbatim** (drift is caught by `test/commercial-pricing-policy-parity.test.mjs` and Playwright).
 
 <!-- commercial-pricing-lines-begin -->
-Licensed verification with the published npm CLI requires an active Team, Business, or Enterprise subscription (trial counts); monthly quota applies after subscribe.
+Licensed verification with the published npm CLI requires an active Individual, Team, Business, or Enterprise subscription (trial counts); monthly quota applies after subscribe.
 CI locks, the enforce command, and quick verify with lock flags use the same subscription requirement.
 <!-- commercial-pricing-lines-end -->

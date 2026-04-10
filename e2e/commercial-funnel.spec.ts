@@ -16,7 +16,7 @@ test.describe("commercial funnel", () => {
     };
     await page.goto("/pricing");
     const fmt = new Intl.NumberFormat("en-US");
-    for (const id of ["starter", "team", "business"] as const) {
+    for (const id of ["starter", "individual", "team", "business"] as const) {
       const n = plans.plans[id].includedMonthly;
       if (n !== null) {
         await expect(page.locator(`[data-plan="${id}"]`)).toContainText(fmt.format(n));

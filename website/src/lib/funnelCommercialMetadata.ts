@@ -9,7 +9,7 @@ export const reserveAllowedMetadataSchema = z.object({
 
 export const checkoutStartedMetadataSchema = z.object({
   schema_version: z.literal(1),
-  plan: z.enum(["team", "business"]),
+  plan: z.enum(["individual", "team", "business"]),
   post_activation: z.boolean(),
 });
 
@@ -21,7 +21,7 @@ export function buildReserveAllowedMetadata(intent: "verify" | "enforce"): Reser
 }
 
 export function buildCheckoutStartedMetadata(
-  plan: "team" | "business",
+  plan: "individual" | "team" | "business",
   postActivation: boolean,
 ): CheckoutStartedMetadata {
   return checkoutStartedMetadataSchema.parse({

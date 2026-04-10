@@ -11,5 +11,6 @@ describe("openapi-commercial-v1 (public copy)", () => {
     expect(t).toContain("reserveUsage");
     expect(t).toContain("getCommercialPlans");
     expect(t).toContain("VERIFICATION_REQUIRES_SUBSCRIPTION");
+    expect(t).toMatch(/enum:\s*\[starter,\s*individual,\s*team,\s*business,\s*enterprise\]/);
   });
 });

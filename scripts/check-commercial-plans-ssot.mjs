@@ -16,6 +16,7 @@ const md = readFileSync(mdPath, "utf8");
 
 const required = [
   String(plans.starter.includedMonthly),
+  String(plans.individual.includedMonthly),
   String(plans.team.includedMonthly),
   String(plans.business.includedMonthly),
 ];

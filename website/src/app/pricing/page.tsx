@@ -1,15 +1,16 @@
 import { productCopy } from "@/content/productCopy";
 import { enterpriseMailtoHref } from "@/lib/contactSalesEmail";
-import { loadCommercialPlans } from "@/lib/plans";
+import { loadCommercialPlans, type PlanId } from "@/lib/plans";
 import { PricingClient, type PlanRow } from "./PricingClient";
 
 export default function PricingPage() {
   const { plans: raw } = loadCommercialPlans();
-  const order = ["starter", "team", "business", "enterprise"] as const;
+  const order: PlanId[] = ["starter", "individual", "team", "business", "enterprise"];
   const plans: PlanRow[] = order.map((id) => {
     const p = raw[id];
     return {
       id,
+      checkoutPlanId: p.stripePriceEnvKey !== null ? id : null,
       headline: p.marketingHeadline,
       displayPrice: p.displayPrice,
       includedMonthly: p.includedMonthly,

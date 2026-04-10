@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Idempotently ensure Stripe Product + recurring Prices for Team and Business.
+ * Idempotently ensure Stripe Product + recurring Prices for Individual, Team, and Business.
  * Run with STRIPE_SECRET_KEY set. Prints STRIPE_PRICE_* lines for .env.
  */
 import Stripe from "stripe";
@@ -40,8 +40,10 @@ async function ensurePrice(nickname, unitAmountCents) {
   return price.id;
 }
 
+const individual = await ensurePrice("individual-v1", 25_00);
 const team = await ensurePrice("team-v1", 100_00);
 const business = await ensurePrice("business-v1", 300_00);
 
+console.log(`STRIPE_PRICE_INDIVIDUAL=${individual}`);
 console.log(`STRIPE_PRICE_TEAM=${team}`);
 console.log(`STRIPE_PRICE_BUSINESS=${business}`);

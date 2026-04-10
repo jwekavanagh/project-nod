@@ -32,7 +32,7 @@ export function AccountClient({ hasKey }: { hasKey: boolean }) {
         </p>
       )}
       <p style={{ color: "var(--muted)", fontSize: "0.9rem", marginTop: "0.75rem" }}>
-        Licensed npm verify requires an active Team+ subscription (trial counts). Use{" "}
+        Licensed npm verify requires an active Individual, Team, Business, or Enterprise subscription (trial counts). Use{" "}
         <code>WORKFLOW_VERIFIER_API_KEY</code> with the commercial CLI after you subscribe. Machine contracts:{" "}
         <a href="/openapi-commercial-v1.yaml">OpenAPI</a>,{" "}
         <a href="/api/v1/commercial/plans">plans JSON</a>. Start from <a href="/integrate">Integrate</a> for a

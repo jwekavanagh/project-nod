@@ -67,6 +67,7 @@ const websiteTestEnv = {
       : "x".repeat(40),
   STRIPE_SECRET_KEY: process.env.STRIPE_SECRET_KEY ?? "sk_test_placeholder",
   STRIPE_WEBHOOK_SECRET: process.env.STRIPE_WEBHOOK_SECRET ?? "whsec_placeholder",
+  STRIPE_PRICE_INDIVIDUAL: process.env.STRIPE_PRICE_INDIVIDUAL ?? "price_individual_placeholder",
   STRIPE_PRICE_TEAM: process.env.STRIPE_PRICE_TEAM ?? "price_team_placeholder",
   STRIPE_PRICE_BUSINESS: process.env.STRIPE_PRICE_BUSINESS ?? "price_business_placeholder",
   NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL ?? "http://127.0.0.1:3000",
