@@ -28,6 +28,13 @@ export default function HomePage() {
           <a className="btn" href="#try-it">
             Run verification
           </a>
+          <Link
+            className="link-secondary"
+            href={productCopy.homepageAcquisitionCta.href}
+            data-testid={productCopy.homepageAcquisitionCta.testId}
+          >
+            {productCopy.homepageAcquisitionCta.label}
+          </Link>
           <Link className="link-secondary" href="/integrate">
             Integrate
           </Link>

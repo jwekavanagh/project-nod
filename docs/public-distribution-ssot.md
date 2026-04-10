@@ -9,18 +9,23 @@ Single place for **public identity**, **anchor sync**, **CI / Vitest public orig
 | Path | Role | Hand edit? |
 |------|------|------------|
 | `config/public-product-anchors.json` | Authoritative: `identityOneLiner`, `productionCanonicalOrigin`, git/npm/bugs URLs, `keywords` | Yes |
+| `config/discovery-acquisition.json` | Acquisition copy, visitor problem answer, homepage CTA label, `llms` appendix arrays, README fold template; consumed by sync and the website | Yes |
+| `config/discovery-acquisition.schema.json` | JSON Schema (draft-07): product-law patterns on `visitorProblemAnswer`, required fields | Yes |
+| `scripts/discovery-acquisition.lib.cjs` | Validate discovery JSON, build README fold body (including appended acquisition markdown link), append `llms.txt` discovery sections | No (logic) |
+| `scripts/validate-discovery-acquisition.mjs` | CLI: run validation only (`npm run check:discovery-acquisition`) | No |
 | `schemas/openapi-commercial-v1.in.yaml` | OpenAPI source with sync tokens only (no hardcoded distribution URLs) | Yes |
 | `schemas/openapi-commercial-v1.yaml` | Derived from sync | No |
 | `website/public/openapi-commercial-v1.yaml` | Derived (gitignored); `servers[0].url` and self-URL use effective public origin | No |
 | Root `package.json` | `description`, `repository`, `homepage`, `bugs`, `keywords` from sync | No (those fields) |
-| `README.md` | Only the region between `<!-- public-product-anchors:start -->` and `<!-- public-product-anchors:end -->` | No inside markers |
+| `README.md` | Regions between `<!-- discovery-acquisition-fold:start/end -->` and `<!-- public-product-anchors:start/end -->` | No inside markers (both are sync-written) |
 
 ### Maintainer sync (normative)
 
 From **repository root** only:
 
-- After editing anchors or hand-editable surfaces: **`npm run sync:public-product-anchors`**
-- Validate only: **`npm run check:public-product-anchors`**
+- After editing anchors, **`config/discovery-acquisition.json`**, or other hand-editable surfaces: **`npm run sync:public-product-anchors`**
+- Validate only: **`npm run check:public-product-anchors`** (runs OpenAPI token check + discovery schema validation)
+- Discovery-only validate: **`npm run check:discovery-acquisition`**
 
 Do **not** document `node scripts/public-product-anchors.cjs` as the primary workflow; the npm scripts above are the prescribed entrypoints.
 
@@ -70,6 +75,6 @@ if (!skip && normalize(process.env.NEXT_PUBLIC_APP_URL) !== normalize(canonicalF
   throw new Error("NEXT_PUBLIC_APP_URL must equal productionCanonicalOrigin");
 ```
 
-### `distribution-graph.test.ts`
+### `distribution-graph.test.ts` and visitor outcome
 
-**`npm run validate-commercial`** from repo root is required to run `website/__tests__/distribution-graph.test.ts` (Postgres `DATABASE_URL`, injected public origin, full harness). Running bare `cd website && npx vitest` without that harness is **unsupported** for that file.
+**`npm run validate-commercial`** from repo root runs, in order after `drizzle-kit migrate`: **`node --test test/visitor-problem-outcome.test.mjs`** (README discovery fold strict equality + schema validation), then **`npx vitest run`** in `website/` (includes `website/__tests__/distribution-graph.test.ts`). Requires Postgres **`DATABASE_URL`**, injected public origin, and full harness. Running bare `cd website && npx vitest` without that harness is **unsupported** for `distribution-graph.test.ts`.

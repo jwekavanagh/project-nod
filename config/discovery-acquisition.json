@@ -1,0 +1,68 @@
+{
+  "schemaVersion": 1,
+  "slug": "/database-truth-vs-traces",
+  "heroTitle": "Your workflow said it worked. Did the database actually change?",
+  "heroSubtitle": "Workflow Verifier answers with read-only SQL at verification time—not with trace success flags or chat narratives.",
+  "homepageAcquisitionCtaLabel": "Why traces are not database truth",
+  "visitorProblemAnswer": "Teams ship agent and automation workflows where traces, tool responses, and success flags look green while the database row is missing, stale, or wrong. Workflow Verifier closes that gap by comparing structured tool activity to read-only SQL against your SQLite or Postgres at verification time: it tells you whether observed state matched expectations derived from what the workflow claimed—not whether a step narrative sounded successful. It is a snapshot check, not proof of causality or execution.",
+  "pageMetadata": {
+    "title": "Database truth vs traces — Workflow Verifier",
+    "description": "Why green traces and tool success are not proof of persisted SQL state—and how read-only verification at verification time closes the gap."
+  },
+  "sections": [
+    {
+      "heading": "What goes wrong without a SQL check",
+      "paragraphs": [
+        "A CRM or support stack can show a closed ticket in the UI narrative while `tickets.status` never moved to resolved. An agent run can log a successful upsert while the row never landed. Traditional traces tell you a step ran; they do not prove the authoritative row shape you care about."
+      ]
+    },
+    {
+      "heading": "What Workflow Verifier adds",
+      "paragraphs": [
+        "You emit structured tool activity (for example NDJSON lines with tool IDs and parameters). The engine derives expected rows or fields under your registry rules and runs read-only `SELECT`s. You get verified, missing, or inconsistent with reason codes such as ROW_ABSENT—still at verification time, not as proof that a specific API call wrote the row."
+      ]
+    },
+    {
+      "heading": "Shareable failure pattern",
+      "paragraphs": [
+        "The bundled demo contrasts `wf_complete` (row matches) with `wf_missing` (trace-shaped success story, row absent). That contrast is the product in one glance: success flags lie; observed SQL does not."
+      ]
+    },
+    {
+      "heading": "What to do next",
+      "paragraphs": [
+        "Run the homepage demo, follow /integrate for first-run on your database, or install the CLI from the repository README. When you need licensed npm features, use the commercial package and API keys described on the site."
+      ]
+    }
+  ],
+  "llms": {
+    "intentPhrases": [
+      "verify agent workflow against database rows",
+      "trace says success but CRM row missing",
+      "read-only SQL check after automation run",
+      "structured tool activity NDJSON verification",
+      "ROW_ABSENT inconsistent workflow result"
+    ],
+    "notFor": [
+      "unstructured log search as verification",
+      "proof that a specific HTTP request caused a write",
+      "non-SQL systems without a queryable mirror"
+    ],
+    "relatedQueries": [
+      "how to verify AI agent wrote to postgres",
+      "green trace but database inconsistent",
+      "workflow verification sqlite read only",
+      "compare tool parameters to sql row",
+      "agent run record workflow result json"
+    ]
+  },
+  "readmeFold": {
+    "templateLines": [
+      "## {{HERO_TITLE}}",
+      "",
+      "{{HERO_SUBTITLE}}",
+      "",
+      "{{VISITOR_PROBLEM_ANSWER}}"
+    ]
+  }
+}

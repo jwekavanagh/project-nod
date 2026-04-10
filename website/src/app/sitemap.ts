@@ -1,3 +1,4 @@
+import discoveryAcquisition from "@/lib/discoveryAcquisition";
 import { publicProductAnchors } from "@/lib/publicProductAnchors";
 import type { MetadataRoute } from "next";
 
@@ -9,6 +10,7 @@ function abs(path: string): string {
 export default function sitemap(): MetadataRoute.Sitemap {
   const paths = [
     "/",
+    discoveryAcquisition.slug,
     "/integrate",
     "/pricing",
     "/privacy",

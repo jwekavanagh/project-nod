@@ -35,6 +35,7 @@
     "stripe-bootstrap": "node scripts/stripe-bootstrap.mjs",
     "validate-commercial": "node scripts/validate-commercial-funnel.mjs",
     "sync:public-product-anchors": "node scripts/public-product-anchors.cjs",
+    "check:discovery-acquisition": "node scripts/validate-discovery-acquisition.mjs",
     "check:public-product-anchors": "node scripts/public-product-anchors.cjs --check",
     "test:commercial-layer": "node scripts/validate-commercial-funnel.mjs",
     "build:website": "npm run build && npm run build -w workflow-verifier-web",

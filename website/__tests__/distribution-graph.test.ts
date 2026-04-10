@@ -139,10 +139,58 @@ describe(
       expect(llmsText).toContain(a.npmPackageUrl);
       expect(llmsText.includes("example.invalid")).toBe(false);
 
+      const discoveryPath = join(repoRoot, "config", "discovery-acquisition.json");
+      const disc = JSON.parse(readFileSync(discoveryPath, "utf8")) as {
+        slug: string;
+        visitorProblemAnswer: string;
+        heroTitle: string;
+        homepageAcquisitionCtaLabel: string;
+      };
+
+      const hIntent = llmsText.indexOf("## Intent phrases");
+      const hNot = llmsText.indexOf("## Not for");
+      const hRel = llmsText.indexOf("## Related queries");
+      const hProb = llmsText.indexOf("## Problem framing (shareable)");
+      const hVis = llmsText.indexOf("## Visitor problem (canonical answer)");
+      expect(hIntent).toBeGreaterThanOrEqual(0);
+      expect(hNot).toBeGreaterThan(hIntent);
+      expect(hRel).toBeGreaterThan(hNot);
+      expect(hProb).toBeGreaterThan(hRel);
+      expect(hVis).toBeGreaterThan(hProb);
+
+      const acquisitionAbs = `${canonicalOrigin}${disc.slug}`;
+      expect(llmsText.includes(acquisitionAbs)).toBe(true);
+
+      const visitorHeading = "## Visitor problem (canonical answer)";
+      const afterVis = llmsText.slice(hVis + visitorHeading.length);
+      const nextSection = afterVis.search(/\n## /);
+      const visitorBodyRaw = nextSection === -1 ? afterVis : afterVis.slice(0, nextSection);
+      expect(visitorBodyRaw.trim()).toBe(disc.visitorProblemAnswer.trim());
+
+      const acqHtml = await (await fetch(`http://127.0.0.1:34100${disc.slug}`)).text();
+      expect(acqHtml).toContain('data-testid="acquisition-hero-title"');
+      expect(acqHtml).toContain(disc.heroTitle);
+      expect(acqHtml).toContain('data-testid="visitor-problem-answer"');
+      expect(acqHtml).toContain(disc.visitorProblemAnswer);
+
+      const homeAgain = await (await fetch("http://127.0.0.1:34100/")).text();
+      expect(homeAgain).toContain(disc.heroTitle);
+      const ctaNeedle = 'data-testid="homepage-acquisition-cta"';
+      const ctaIdx = homeAgain.indexOf(ctaNeedle);
+      expect(ctaIdx).toBeGreaterThanOrEqual(0);
+      const aOpen = homeAgain.lastIndexOf("<a", ctaIdx);
+      expect(aOpen).toBeGreaterThanOrEqual(0);
+      const aClose = homeAgain.indexOf("</a>", ctaIdx);
+      expect(aClose).toBeGreaterThan(ctaIdx);
+      const aTag = homeAgain.slice(aOpen, aClose + 4);
+      expect(aTag.includes(`href="${disc.slug}"`)).toBe(true);
+      expect(aTag.replace(/\s+/g, " ").trim()).toContain(disc.homepageAcquisitionCtaLabel);
+
       const sitemapXml = await (await fetch("http://127.0.0.1:34100/sitemap.xml")).text();
       expect(sitemapXml).toContain(`${canonicalOrigin}/llms.txt`);
       expect(sitemapXml).toContain(`${canonicalOrigin}/integrate`);
       expect(sitemapXml).toContain(`${canonicalOrigin}/openapi-commercial-v1.yaml`);
+      expect(sitemapXml).toContain(acquisitionAbs);
 
       const robotsTxt = await (await fetch("http://127.0.0.1:34100/robots.txt")).text();
       expect(robotsTxt).toContain(`${canonicalOrigin}/sitemap.xml`);

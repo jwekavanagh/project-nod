@@ -4,6 +4,7 @@ const { readFileSync, writeFileSync, mkdirSync } = require("node:fs");
 const { join, dirname } = require("node:path");
 
 const ROOT = join(__dirname, "..");
+
 const ANCHORS_PATH = join(ROOT, "config", "public-product-anchors.json");
 const OPENAPI_IN = join(ROOT, "schemas", "openapi-commercial-v1.in.yaml");
 const OPENAPI_OUT = join(ROOT, "schemas", "openapi-commercial-v1.yaml");
@@ -14,6 +15,8 @@ const PKG_PATH = join(ROOT, "package.json");
 
 const README_START = "<!-- public-product-anchors:start -->";
 const README_END = "<!-- public-product-anchors:end -->";
+const DISCOVERY_README_START = "<!-- discovery-acquisition-fold:start -->";
+const DISCOVERY_README_END = "<!-- discovery-acquisition-fold:end -->";
 
 const TOKENS = [
   "__IDENTITY_ONE_LINER__",
@@ -114,6 +117,25 @@ function buildLlmsText(anchors, canonicalOrigin, integrateUrl, openapiSelfCanoni
   return lines.join("\n");
 }
 
+/**
+ * @param {Record<string, unknown>} anchors
+ * @param {string} canonicalOrigin
+ * @param {string} integrateUrl
+ * @param {string} openapiSelfCanonical
+ * @param {Record<string, unknown>} discovery
+ */
+function buildLlmsTextWithDiscovery(
+  anchors,
+  canonicalOrigin,
+  integrateUrl,
+  openapiSelfCanonical,
+  discovery,
+) {
+  const base = buildLlmsText(anchors, canonicalOrigin, integrateUrl, openapiSelfCanonical);
+  const { appendDiscoveryLlmsAppendix } = require("./discovery-acquisition.lib.cjs");
+  return appendDiscoveryLlmsAppendix(base, discovery, canonicalOrigin);
+}
+
 function assertNextPublicOriginParity() {
   const anchors = loadAnchors();
   const canonicalFromJson = anchors.productionCanonicalOrigin;
@@ -125,6 +147,10 @@ function assertNextPublicOriginParity() {
 }
 
 function syncPublicProductAnchors() {
+  const discoveryLib = require("./discovery-acquisition.lib.cjs");
+  discoveryLib.validateDiscoveryAcquisition(ROOT);
+  const discovery = discoveryLib.loadDiscoveryAcquisition(ROOT);
+
   const anchors = loadAnchors();
   const template = readFileSync(OPENAPI_IN, "utf8");
   for (const tok of TOKENS) {
@@ -167,7 +193,13 @@ function syncPublicProductAnchors() {
   mkdirSync(dirname(LLMS_PUBLIC), { recursive: true });
   writeFileSync(
     LLMS_PUBLIC,
-    buildLlmsText(anchors, canonicalOrigin, integrateUrl, openapiSelfCanonical),
+    buildLlmsTextWithDiscovery(
+      anchors,
+      canonicalOrigin,
+      integrateUrl,
+      openapiSelfCanonical,
+      discovery,
+    ),
     "utf8",
   );
 
@@ -180,7 +212,20 @@ function syncPublicProductAnchors() {
   pkg.keywords = anchors.keywords;
   writeFileSync(PKG_PATH, JSON.stringify(pkg, null, 2) + "\n", "utf8");
 
-  const readme = readFileSync(README_PATH, "utf8");
+  let readme = readFileSync(README_PATH, "utf8");
+  if (!readme.includes(DISCOVERY_README_START) || !readme.includes(DISCOVERY_README_END)) {
+    throw new Error("README.md must contain discovery-acquisition-fold markers");
+  }
+  const foldBody = discoveryLib.buildDiscoveryFoldBody(discovery, canonicalOrigin);
+  const discBlock = `${DISCOVERY_README_START}\n${foldBody}\n${DISCOVERY_README_END}`;
+  const discRe = new RegExp(
+    `${DISCOVERY_README_START.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}[\\s\\S]*?${DISCOVERY_README_END.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}`,
+  );
+  if (!discRe.test(readme)) {
+    throw new Error("README: could not match discovery-acquisition-fold region");
+  }
+  readme = readme.replace(discRe, discBlock);
+
   if (!readme.includes(README_START) || !readme.includes(README_END)) {
     throw new Error("README.md must contain public-product-anchors markers");
   }
@@ -202,11 +247,13 @@ function syncPublicProductAnchors() {
   if (!re.test(readme)) {
     throw new Error("README: could not match public-product-anchors region");
   }
-  writeFileSync(README_PATH, readme.replace(re, block), "utf8");
+  readme = readme.replace(re, block);
+  writeFileSync(README_PATH, readme, "utf8");
 }
 
 function main() {
   validateAnchors();
+  require("./discovery-acquisition.lib.cjs").validateDiscoveryAcquisition(ROOT);
   if (process.argv.includes("--check")) {
     return;
   }

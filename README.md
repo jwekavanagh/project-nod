@@ -1,5 +1,15 @@
 # workflow-verifier
 
+<!-- discovery-acquisition-fold:start -->
+## Your workflow said it worked. Did the database actually change?
+
+Workflow Verifier answers with read-only SQL at verification time—not with trace success flags or chat narratives.
+
+Teams ship agent and automation workflows where traces, tool responses, and success flags look green while the database row is missing, stale, or wrong. Workflow Verifier closes that gap by comparing structured tool activity to read-only SQL against your SQLite or Postgres at verification time: it tells you whether observed state matched expectations derived from what the workflow claimed—not whether a step narrative sounded successful. It is a snapshot check, not proof of causality or execution.
+
+[Why traces are not database truth](https://workflow-verifier.vercel.app/database-truth-vs-traces)
+<!-- discovery-acquisition-fold:end -->
+
 **One-sentence value:** Read-only SQL checks that your database **at verification time** matches **expectations derived from structured tool activity**—not whether a trace step “succeeded.”
 
 <!-- public-product-anchors:start -->

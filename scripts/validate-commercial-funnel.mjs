@@ -87,6 +87,11 @@ if (!run("npx", ["drizzle-kit", "migrate"], { cwd: websiteDir, shell: true, env:
   process.exit(1);
 }
 
+if (!run(process.execPath, ["--test", path.join(root, "test", "visitor-problem-outcome.test.mjs")])) {
+  writeVerdict("not_solved", layers);
+  process.exit(1);
+}
+
 if (!run("npx", ["vitest", "run"], { cwd: websiteDir, shell: true, env: websiteTestEnv })) {
   writeVerdict("not_solved", layers);
   process.exit(1);
