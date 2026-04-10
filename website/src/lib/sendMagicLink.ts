@@ -1,7 +1,6 @@
 import nodemailer from "nodemailer";
 import { Resend } from "resend";
-
-const from = () => process.env.EMAIL_FROM ?? "Workflow Verifier <onboarding@example.com>";
+import { resolvedMagicLinkFrom } from "./emailFrom";
 
 export async function sendMagicLink(identifier: string, url: string): Promise<void> {
   if (process.env.E2E_COMMERCIAL_FUNNEL === "1") {
@@ -12,7 +11,7 @@ export async function sendMagicLink(identifier: string, url: string): Promise<vo
     });
     await transport.sendMail({
       to: identifier,
-      from: from(),
+      from: resolvedMagicLinkFrom(),
       subject: "Sign in to Workflow Verifier",
       text: `Sign in: ${url}`,
       html: `<p><a href="${url}">Sign in</a></p>`,
@@ -26,12 +25,21 @@ export async function sendMagicLink(identifier: string, url: string): Promise<vo
   }
   const resend = new Resend(key);
   const { error } = await resend.emails.send({
-    from: from(),
+    from: resolvedMagicLinkFrom(),
     to: identifier,
     subject: "Sign in to Workflow Verifier",
+    text: `Sign in: ${url}`,
     html: `<p><a href="${url}">Sign in</a></p>`,
   });
   if (error) {
-    throw new Error(error.message);
+    const message =
+      typeof error === "object" &&
+      error !== null &&
+      "message" in error &&
+      typeof (error as { message: unknown }).message === "string"
+        ? (error as { message: string }).message
+        : JSON.stringify(error);
+    console.error("[sendMagicLink] Resend error:", error);
+    throw new Error(message);
   }
 }

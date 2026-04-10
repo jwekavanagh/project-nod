@@ -3,6 +3,7 @@ import { eq } from "drizzle-orm";
 import type { NextAuthConfig } from "next-auth";
 import Email from "next-auth/providers/email";
 import { db } from "./db/client";
+import { resolvedMagicLinkFrom } from "./lib/emailFrom";
 import { recordSignInFunnel } from "./lib/recordSignInFunnel";
 import { sendMagicLink } from "./lib/sendMagicLink";
 import {
@@ -34,7 +35,7 @@ export const authConfig = {
         secure: false,
         auth: { user: "", pass: "" },
       },
-      from: process.env.EMAIL_FROM ?? "Workflow Verifier <onboarding@example.com>",
+      from: resolvedMagicLinkFrom(),
       sendVerificationRequest: async ({ identifier, url }) => {
         await sendMagicLink(identifier, url);
       },
