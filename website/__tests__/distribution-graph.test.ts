@@ -5,7 +5,7 @@ import { tmpdir } from "node:os";
 import { once } from "node:events";
 import { createRequire } from "node:module";
 import { describe, expect, beforeAll, afterAll, it } from "vitest";
-import tar from "tar";
+import { extract as extractTar } from "tar";
 import { parse } from "yaml";
 import {
   getRepoRoot,
@@ -75,7 +75,7 @@ describe(
       expect(tgzNames.length).toBe(1);
       const tgzName = tgzNames[0]!;
       const extractDir = mkdtempSync(join(tmpdir(), "wfv-extract-"));
-      await tar.x({ file: join(packDest, tgzName), cwd: extractDir });
+      await extractTar({ file: join(packDest, tgzName), cwd: extractDir });
       const pkgJson = JSON.parse(
         readFileSync(join(extractDir, "package", "package.json"), "utf8"),
       ) as Record<string, unknown>;
