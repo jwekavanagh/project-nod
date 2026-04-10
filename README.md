@@ -2,6 +2,17 @@
 
 **One-sentence value:** Read-only SQL checks that your database **at verification time** matches **expectations derived from structured tool activity**—not whether a trace step “succeeded.”
 
+<!-- public-product-anchors:start -->
+State verification engine: read-only SQL checks that database state matches expectations from structured tool activity (not arbitrary logs)—not proof of execution
+
+- **Repository:** https://github.com/jwekavanagh/workflow-verifier
+- **npm package:** https://www.npmjs.com/package/workflow-verifier
+- **Canonical site:** https://workflow-verifier.vercel.app
+- **Integrate:** https://workflow-verifier.vercel.app/integrate
+- **OpenAPI (canonical):** https://workflow-verifier.vercel.app/openapi-commercial-v1.yaml
+
+<!-- public-product-anchors:end -->
+
 ## Try it (about one minute)
 
 **Prerequisite:** **Node.js ≥ 22.13** (built-in [`node:sqlite`](https://nodejs.org/api/sqlite.html)), or use [Docker](#docker-quickstart-optional) below.

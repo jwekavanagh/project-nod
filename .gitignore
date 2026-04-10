@@ -2,6 +2,7 @@ node_modules/
 dist/
 src/generated/
 website/.next/
+website/public/openapi-commercial-v1.yaml
 .next/
 *.db
 .DS_Store

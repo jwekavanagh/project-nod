@@ -1,6 +1,10 @@
 import type { NextConfig } from "next";
+import { createRequire } from "node:module";
 import path from "path";
 import { assertContactSalesEmail } from "./src/lib/contactSalesEmail";
+
+const require = createRequire(import.meta.url);
+require("../scripts/public-product-anchors.cjs").assertNextPublicOriginParity();
 
 assertContactSalesEmail();
 

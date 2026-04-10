@@ -56,7 +56,6 @@ jobs:
       STRIPE_PRICE_INDIVIDUAL: price_ci_individual
       STRIPE_PRICE_TEAM: price_ci_team
       STRIPE_PRICE_BUSINESS: price_ci_business
-      NEXT_PUBLIC_APP_URL: http://127.0.0.1:3000
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4

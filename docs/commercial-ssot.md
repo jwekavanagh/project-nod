@@ -58,7 +58,11 @@ Forks: build with `oss` to omit the gate.
 ## Machine contracts (OpenAPI)
 
 - **Normative file (repo):** [`schemas/openapi-commercial-v1.yaml`](../schemas/openapi-commercial-v1.yaml)
-- **Deployed URL (static):** **`/openapi-commercial-v1.yaml`** on the app origin (copy produced in **`website/public/`** during **`npm run build`** in the website workspace, which runs `scripts/copy-openapi-to-website.mjs` via **`prebuild`**).
+- **Deployed URL (static):** **`/openapi-commercial-v1.yaml`** on the app origin. The file is generated into **`website/public/`** during **`website` `prebuild`** by **`npm run sync:public-product-anchors`** from the repo root (via **`npm --prefix .. run sync:public-product-anchors`**), then served as a static asset. The committed copy under `schemas/` is the canonical spec for review; the public copy may use the effective deployment origin for `servers` and the self-URL.
+
+### Public anchors and OpenAPI source
+
+The editable OpenAPI “header” and distribution tokens live in [`schemas/openapi-commercial-v1.in.yaml`](../schemas/openapi-commercial-v1.in.yaml). [`schemas/openapi-commercial-v1.yaml`](../schemas/openapi-commercial-v1.yaml) is **generated** — do not hand-edit. Rationale (single source for URLs, valid OAS layout, no placeholder hosts): **[`docs/public-distribution-ssot.md`](public-distribution-ssot.md)**.
 
 ## `/integrate` documentation embedding
 

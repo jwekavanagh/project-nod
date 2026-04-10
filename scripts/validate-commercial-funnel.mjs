@@ -4,9 +4,12 @@
  * Writes artifacts/commercial-validation-verdict.json
  */
 import { execSync, spawnSync } from "node:child_process";
-import { mkdirSync, writeFileSync } from "node:fs";
+import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { createRequire } from "node:module";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+
+const require = createRequire(import.meta.url);
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const artifactDir = path.join(root, "artifacts");
@@ -58,6 +61,10 @@ if (!process.env.DATABASE_URL?.trim()) {
 }
 
 const websiteDir = path.join(root, "website");
+const anchorsRaw = readFileSync(path.join(root, "config", "public-product-anchors.json"), "utf8");
+const anchors = JSON.parse(anchorsRaw);
+const { normalize } = require("./public-product-anchors.cjs");
+
 const websiteTestEnv = {
   ...process.env,
   CONTACT_SALES_EMAIL: process.env.CONTACT_SALES_EMAIL ?? "sales-ci@example.com",
@@ -70,8 +77,10 @@ const websiteTestEnv = {
   STRIPE_PRICE_INDIVIDUAL: process.env.STRIPE_PRICE_INDIVIDUAL ?? "price_individual_placeholder",
   STRIPE_PRICE_TEAM: process.env.STRIPE_PRICE_TEAM ?? "price_team_placeholder",
   STRIPE_PRICE_BUSINESS: process.env.STRIPE_PRICE_BUSINESS ?? "price_business_placeholder",
-  NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL ?? "http://127.0.0.1:3000",
 };
+
+websiteTestEnv.NEXT_PUBLIC_APP_URL = normalize(anchors.productionCanonicalOrigin);
+websiteTestEnv.VERCEL_ENV = "production";
 
 if (!run("npx", ["drizzle-kit", "migrate"], { cwd: websiteDir, shell: true, env: websiteTestEnv })) {
   writeVerdict("not_solved", layers);

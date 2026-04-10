@@ -1,0 +1,16 @@
+{
+  "identityOneLiner": "State verification engine: read-only SQL checks that database state matches expectations from structured tool activity (not arbitrary logs)—not proof of execution",
+  "productionCanonicalOrigin": "https://workflow-verifier.vercel.app",
+  "gitRepositoryUrl": "https://github.com/jwekavanagh/workflow-verifier",
+  "gitRepositoryGitUrl": "git+https://github.com/jwekavanagh/workflow-verifier.git",
+  "npmPackageUrl": "https://www.npmjs.com/package/workflow-verifier",
+  "bugsUrl": "https://github.com/jwekavanagh/workflow-verifier/issues",
+  "keywords": [
+    "workflow",
+    "verification",
+    "database",
+    "sql",
+    "state",
+    "read-only"
+  ]
+}

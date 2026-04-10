@@ -1,9 +1,10 @@
 /** Single source for homepage, pricing recap, sign-in framing, and test ids. */
 
+import { publicProductAnchors } from "@/lib/publicProductAnchors";
+
 export const productCopy = {
   links: {
-    cliQuickstart:
-      "https://github.com/jwekavanagh/workflow-verifier#try-it-about-one-minute",
+    cliQuickstart: `${publicProductAnchors.gitRepositoryUrl}#try-it-about-one-minute`,
     /** Relative to site origin — pair with NEXT_PUBLIC_APP_URL in prose docs. */
     openapiCommercial: "/openapi-commercial-v1.yaml",
     commercialPlansApi: "/api/v1/commercial/plans",

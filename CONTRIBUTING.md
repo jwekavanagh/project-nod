@@ -16,6 +16,7 @@ Thanks for helping improve **workflow-verifier**.
 
 ## Pull requests
 
+- **Public URLs or product one-liner:** edit [`config/public-product-anchors.json`](config/public-product-anchors.json), then from **repo root** run **`npm run sync:public-product-anchors`** and commit the derived artifacts (`schemas/openapi-commercial-v1.yaml`, root `package.json` fields, README marker region). This matches [`docs/public-distribution-ssot.md`](docs/public-distribution-ssot.md). If you touch distribution surfaces or anchors, run **`npm run validate-commercial`** (requires Postgres `DATABASE_URL`) before opening a PR.
 - Keep changes focused; match existing style and patterns in touched files.
 - If you change user-visible CLI behavior, stdout/stderr, or schemas, update the relevant **docs** and **tests** (many behaviors are guarded by doc-contract and golden tests).
 - Do not duplicate normative numbers or stream contracts in the README when they belong in `docs/quick-verify-normative.md` or `docs/workflow-verifier.md`.

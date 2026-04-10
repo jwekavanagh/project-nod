@@ -1,6 +1,9 @@
 "use client";
 
 import { useState } from "react";
+import { publicProductAnchors } from "@/lib/publicProductAnchors";
+
+const ghMain = `${publicProductAnchors.gitRepositoryUrl}/blob/main`;
 
 export function AccountClient({ hasKey }: { hasKey: boolean }) {
   const [key, setKey] = useState<string | null>(null);
@@ -37,17 +40,11 @@ export function AccountClient({ hasKey }: { hasKey: boolean }) {
         <a href="/openapi-commercial-v1.yaml">OpenAPI</a>,{" "}
         <a href="/api/v1/commercial/plans">plans JSON</a>. Start from <a href="/integrate">Integrate</a> for a
         copy-paste first run on your database. Entitlements:{" "}
-        <a
-          href="https://github.com/jwekavanagh/workflow-verifier/blob/main/docs/commercial-entitlement-matrix.md"
-          rel="noreferrer"
-        >
+        <a href={`${ghMain}/docs/commercial-entitlement-matrix.md`} rel="noreferrer">
           commercial-entitlement-matrix.md
         </a>
         ,{" "}
-        <a
-          href="https://github.com/jwekavanagh/workflow-verifier/blob/main/docs/commercial-entitlement-policy.md"
-          rel="noreferrer"
-        >
+        <a href={`${ghMain}/docs/commercial-entitlement-policy.md`} rel="noreferrer">
           commercial-entitlement-policy.md
         </a>
         . <a href="/pricing">Pricing</a>.

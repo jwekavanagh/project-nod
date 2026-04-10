@@ -37,6 +37,7 @@ This document explains how the commercial Next.js site works and points to **nor
 
 - **Homepage, pricing recap, sign-in framing, test ids:** [`website/src/content/productCopy.ts`](../website/src/content/productCopy.ts).
 - **Site metadata (title / OpenGraph literals):** [`website/src/content/siteMetadata.ts`](../website/src/content/siteMetadata.ts).
+- **Public anchors (GitHub, npm, one-liner, keywords):** [`website/src/lib/publicProductAnchors.ts`](../website/src/lib/publicProductAnchors.ts) imports [`config/public-product-anchors.json`](../config/public-product-anchors.json). **Outbound identity links** (repo, npm, served OpenAPI URL) live in the **footer** only — see [`website/src/app/SiteFooter.tsx`](../website/src/app/SiteFooter.tsx). This keeps marketing copy, README, npm `package.json`, and the site aligned without scattering hardcoded `github.com/...` strings.
 - **Auth callback hardening:** [`website/src/lib/sanitizeInternalCallbackUrl.ts`](../website/src/lib/sanitizeInternalCallbackUrl.ts) — `emailSignInOptions` is what the sign-in page passes to `signIn("email", …)`.
 
 ## Pricing / plans

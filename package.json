@@ -34,6 +34,8 @@
     "check:commercial-ssot": "node scripts/check-commercial-plans-ssot.mjs",
     "stripe-bootstrap": "node scripts/stripe-bootstrap.mjs",
     "validate-commercial": "node scripts/validate-commercial-funnel.mjs",
+    "sync:public-product-anchors": "node scripts/public-product-anchors.cjs",
+    "check:public-product-anchors": "node scripts/public-product-anchors.cjs --check",
     "test:commercial-layer": "node scripts/validate-commercial-funnel.mjs",
     "build:website": "npm run build && npm run build -w workflow-verifier-web",
     "check:web-demo-prereqs": "node scripts/check-web-demo-prereqs.mjs",
@@ -61,5 +63,21 @@
     "pg": "^8.20.0",
     "picomatch": "^4.0.4",
     "yaml": "^2.8.3"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jwekavanagh/workflow-verifier.git"
+  },
+  "homepage": "https://workflow-verifier.vercel.app",
+  "bugs": {
+    "url": "https://github.com/jwekavanagh/workflow-verifier/issues"
+  },
+  "keywords": [
+    "workflow",
+    "verification",
+    "database",
+    "sql",
+    "state",
+    "read-only"
+  ]
 }
