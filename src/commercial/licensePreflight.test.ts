@@ -98,6 +98,30 @@ describe("runLicensePreflightIfNeeded", () => {
     );
   });
 
+  it("throws LICENSE_DENIED for BILLING_PRICE_UNMAPPED with deployment wording", async () => {
+    process.env.WORKFLOW_VERIFIER_API_KEY = "wf_sk_live_test";
+    vi.mocked(fetch).mockResolvedValue(
+      new Response(
+        JSON.stringify({
+          allowed: false,
+          code: "BILLING_PRICE_UNMAPPED",
+          message:
+            "This deployment does not recognize Stripe price id price_x. Align STRIPE_PRICE_* environment variables with your Stripe prices, redeploy, or contact the site operator.",
+          upgrade_url: "https://example.com/pricing",
+        }),
+        { status: 403, headers: { "Content-Type": "application/json" } },
+      ),
+    );
+    await expect(runLicensePreflightIfNeeded("verify")).rejects.toSatisfy(
+      (e: unknown) =>
+        e instanceof TruthLayerError &&
+        e.code === CLI_OPERATIONAL_CODES.LICENSE_DENIED &&
+        e.message.includes("STRIPE_PRICE_") &&
+        e.message.includes("https://example.com/pricing") &&
+        !/portal|manage billing|\/account/i.test((e as TruthLayerError).message),
+    );
+  });
+
   it("throws ENFORCEMENT_REQUIRES_PAID_PLAN when server returns that code", async () => {
     process.env.WORKFLOW_VERIFIER_API_KEY = "wf_sk_live_test";
     vi.mocked(fetch).mockResolvedValue(

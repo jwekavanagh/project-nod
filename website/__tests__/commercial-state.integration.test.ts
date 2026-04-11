@@ -63,6 +63,7 @@ describe.skipIf(!hasDatabaseUrl)("GET /api/account/commercial-state", () => {
         plan: "team",
         subscriptionStatus: "active",
         stripePriceId: "price_cs_team",
+        stripeCustomerId: "cus_cs_ok",
       })
       .returning();
     authMock.mockResolvedValue({
@@ -76,6 +77,7 @@ describe.skipIf(!hasDatabaseUrl)("GET /api/account/commercial-state", () => {
     expect(j.checkoutActivationReady).toBe(true);
     expect(j.plan).toBe("team");
     expect(j.priceMapping).toBe("mapped");
+    expect(j.hasStripeCustomer).toBe(true);
     expect(j.entitlementSummary).toContain("is enabled");
   });
 
@@ -95,7 +97,8 @@ describe.skipIf(!hasDatabaseUrl)("GET /api/account/commercial-state", () => {
     });
     const res = await getCommercialState(new NextRequest("http://localhost/api/account/commercial-state"));
     expect(res.status).toBe(200);
-    const j = (await res.json()) as { checkoutActivationReady: boolean };
+    const j = (await res.json()) as { checkoutActivationReady: boolean; hasStripeCustomer: boolean };
     expect(j.checkoutActivationReady).toBe(false);
+    expect(j.hasStripeCustomer).toBe(false);
   });
 });

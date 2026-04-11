@@ -103,6 +103,13 @@ export async function runLicensePreflightIfNeeded(
               `${body.message || "Subscription is not active for licensed verification or CI enforcement."}${suffix}`,
             );
           }
+          if (body.code === "BILLING_PRICE_UNMAPPED") {
+            const suffix = body.upgrade_url ? ` ${body.upgrade_url}` : "";
+            throw new TruthLayerError(
+              CLI_OPERATIONAL_CODES.LICENSE_DENIED,
+              `${body.message || "Stripe price is not mapped in this deployment."}${suffix}`,
+            );
+          }
           throw new TruthLayerError(
             CLI_OPERATIONAL_CODES.LICENSE_DENIED,
             body.message || `License check failed (${body.code}).`,

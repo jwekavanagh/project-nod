@@ -31,6 +31,7 @@ export default async function AccountPage() {
     plan: (urow?.plan ?? "starter") as PlanId,
     subscriptionStatus: normalizeSubscriptionStatusForAccount(urow?.subscriptionStatus),
     stripePriceId: urow?.stripePriceId,
+    stripeCustomerId: urow?.stripeCustomerId,
     expectedPlan: null,
     operatorContactEmail: process.env.CONTACT_SALES_EMAIL,
   });

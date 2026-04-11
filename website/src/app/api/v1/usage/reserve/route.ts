@@ -11,7 +11,9 @@ import {
 import type { PlanId } from "@/lib/plans";
 import { buildReserveAllowedMetadata } from "@/lib/funnelCommercialMetadata";
 import { logFunnelEvent } from "@/lib/funnelEvent";
+import { billingPriceUnmappedMessage } from "@/lib/billingPriceUnmappedMessage";
 import { loadCommercialPlans } from "@/lib/plans";
+import { priceIdToPlanId } from "@/lib/priceIdToPlanId";
 
 function ymNow(): string {
   return new Date().toISOString().slice(0, 7);
@@ -137,6 +139,28 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
         message: "Invalid subscription_status in database.",
       },
       { status: 500 },
+    );
+  }
+
+  const stripePriceIdRaw = row.user.stripePriceId?.trim();
+  if (stripePriceIdRaw && priceIdToPlanId(stripePriceIdRaw) === null) {
+    const upgrade_url = publicUpgradeUrl();
+    console.error(
+      JSON.stringify({
+        kind: "reserve_billing_price_unmapped",
+        stripePriceId: stripePriceIdRaw,
+        plan: planId,
+        subscriptionStatus: subNorm,
+      }),
+    );
+    return NextResponse.json(
+      {
+        allowed: false,
+        code: "BILLING_PRICE_UNMAPPED",
+        message: billingPriceUnmappedMessage(stripePriceIdRaw),
+        upgrade_url,
+      },
+      { status: 403 },
     );
   }
 

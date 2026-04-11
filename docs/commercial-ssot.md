@@ -44,11 +44,13 @@ Forks: build with `oss` to omit the gate.
 - **Body:** `{"run_id": string, "issued_at": ISO8601, "intent"?: "verify"|"enforce"}`; reject if `|now - issued_at| > 300` seconds.
 - **200:** `{"allowed":true,"plan","limit","used"}`
 - **401:** invalid/revoked key
-- **403:** `QUOTA_EXCEEDED`, `VERIFICATION_REQUIRES_SUBSCRIPTION`, `ENFORCEMENT_REQUIRES_PAID_PLAN`, `SUBSCRIPTION_INACTIVE`, or other entitlement/deny bodies; may include `upgrade_url`
+- **403:** `QUOTA_EXCEEDED`, `VERIFICATION_REQUIRES_SUBSCRIPTION`, `ENFORCEMENT_REQUIRES_PAID_PLAN`, `SUBSCRIPTION_INACTIVE`, `BILLING_PRICE_UNMAPPED`, or other entitlement/deny bodies; may include `upgrade_url`
 - **400:** bad request
 - **503:** server error
 
-**Emergency:** `RESERVE_EMERGENCY_ALLOW=1` — valid keys on **individual/team/business/enterprise** bypass the **inactive subscription** check for **`verify`** and **`enforce`**. **Starter `verify` and `enforce` remain denied.** **Quota and idempotency unchanged** (still enforced).
+**Emergency:** `RESERVE_EMERGENCY_ALLOW=1` — valid keys on **individual/team/business/enterprise** bypass the **inactive subscription** check for **`verify`** and **`enforce`**. **Starter `verify` and `enforce` remain denied.** **`BILLING_PRICE_UNMAPPED` is never bypassed** (misconfigured `STRIPE_PRICE_*` mapping is a deployment defect, not a subscription pause). **Quota and idempotency unchanged** (still enforced).
+
+**`BILLING_PRICE_UNMAPPED`:** returned when **`user.stripe_price_id`** is set and the deployment’s **`STRIPE_PRICE_*`** env values do not recognize that Price id. Remediation is **only** to align env with Stripe, redeploy, or contact the operator—**not** the Billing Portal or account UI.
 
 ## HTTP — `GET /api/v1/commercial/plans`
 
@@ -61,10 +63,31 @@ Forks: build with `oss` to omit the gate.
 
 ### Stripe → database
 
-- Webhooks: **`checkout.session.completed`**, **`customer.subscription.updated`**, **`customer.subscription.deleted`** (see [`website/README.md`](../website/README.md) for operator env).
+- Webhooks: **`checkout.session.completed`**, **`customer.subscription.updated`**, **`customer.subscription.deleted`**. Operator env: **`STRIPE_SECRET_KEY`**, **`STRIPE_WEBHOOK_SECRET`**, **`STRIPE_PRICE_*`** (see *Validation matrix* below for `stripe listen`).
 - **`user.stripe_price_id`:** nullable; stores the primary recurring Stripe **Price** id from the subscription object. Used to compute **`priceMapping`** (`mapped` vs `unmapped`) on the account API without calling Stripe on every page load.
 - **Tier (`user.plan`) for self-serve prices:** derived from that Price id via the same env-backed mapping as [`config/commercial-plans.json`](../config/commercial-plans.json) (`STRIPE_PRICE_*`). Checkout **metadata.plan** is not the long-term authority for tier.
-- **Unknown Price id:** `plan` is left unchanged; `stripe_price_id` still records the id; logs `stripe_price_unmapped`; account shows **`priceMapping: unmapped`** and entitlement copy includes an operator-contact suffix.
+- **Unknown Price id:** `plan` is left unchanged; `stripe_price_id` still records the id; logs `stripe_price_unmapped`; account shows **`priceMapping: unmapped`** and entitlement copy includes an operator-contact suffix. **`POST /api/v1/usage/reserve`** returns **`403`** with **`BILLING_PRICE_UNMAPPED`** (no quota consumed) until mapping is fixed.
+
+### Customer Billing Portal and Checkout customer reuse
+
+**Why two surfaces:** **Stripe Checkout** (via **`POST /api/checkout`**) is the **first-purchase** path. **Stripe Customer Billing Portal** (via **`POST /api/account/billing-portal`**) is the **ongoing self-serve** path for payment methods, invoices, cancellation, and plan/price changes **as enabled in the Stripe Dashboard** for that Customer. They are separate guarantees: Checkout can succeed without Portal ever being opened; Portal requires a persisted **`user.stripe_customer_id`**.
+
+**Checkout:** Session params are built in [`website/src/lib/stripeCheckoutSessionParams.ts`](../website/src/lib/stripeCheckoutSessionParams.ts). If **`stripe_customer_id`** is already on the user row, Checkout passes **`customer`** (and does **not** send **`customer_email`**); otherwise **`customer_email`** is used for the first Stripe Customer creation path.
+
+**Billing Portal session — `POST /api/account/billing-portal`** (session cookie, same auth model as other account routes):
+
+| Status | Body |
+|--------|------|
+| **200** | `{"url":"<string>"}` — redirect browser to `url` |
+| **401** | `{"error":"Unauthorized"}` |
+| **404** | `{"error":"STRIPE_CUSTOMER_MISSING","message":"…"}` — no **`stripe_customer_id`** yet (complete Checkout once) |
+| **500** | `{"error":"Internal Server Error"}` — Stripe misconfiguration or API failure; server logs JSON line **`{"kind":"billing_portal_session_failed",...}`** |
+
+**Return URL:** **`{NEXT_PUBLIC_APP_URL}/account`** (trailing slash stripped).
+
+**Account UI:** **`Manage billing`** is rendered **only** when **`GET /api/account/commercial-state`** (and server-rendered initial state) include **`hasStripeCustomer: true`** (non-empty trimmed **`stripe_customer_id`**).
+
+**Operator — Stripe Dashboard:** Enable the **Customer billing portal**; link the same **Products/Prices** used for self-serve Checkout so customers can switch plans without leaving Stripe’s UI. Misconfiguration surfaces as **500** on **`POST /api/account/billing-portal`** until fixed.
 
 ### `customer.subscription.deleted`
 
@@ -79,7 +102,7 @@ Single row semantics (match subscription + customer when possible; else fall bac
 
 - **Auth:** signed-in website user (NextAuth session).
 - **Query:** optional **`expectedPlan`** = `individual` | `team` | `business` only; any other value → **400**.
-- **200 body (always):** `plan`, `subscriptionStatus`, `priceMapping`, `entitlementSummary`, `checkoutActivationReady`.
+- **200 body (always):** `plan`, `subscriptionStatus`, `priceMapping`, `entitlementSummary`, `checkoutActivationReady`, **`hasStripeCustomer`**.
 - **`checkoutActivationReady`:** `true` only when the query includes a valid **`expectedPlan`** and the user row satisfies **`plan === expectedPlan`**, **`subscriptionStatus === active`**, **`priceMapping === mapped`**, and licensed **`verify`** would proceed per [`website/src/lib/commercialEntitlement.ts`](../website/src/lib/commercialEntitlement.ts) (no emergency flag). Used by **`/account`** after Checkout success polling. **Trialing** in Stripe maps to **`active`** in the DB ([`website/src/lib/stripeSubscriptionStatus.ts`](../website/src/lib/stripeSubscriptionStatus.ts)).
 
 **OpenAPI:** this route is **not** part of [`schemas/openapi-commercial-v1.yaml`](../schemas/openapi-commercial-v1.yaml).
@@ -144,6 +167,19 @@ Services (see [`docker-compose.commercial-e2e.yml`](../docker-compose.commercial
 **Stripe CLI:** `stripe listen --forward-to <BASE_URL>/api/webhooks/stripe` — use the printed **`whsec_…`** as `STRIPE_WEBHOOK_SECRET` for that process.
 
 **Mailpit messages API:** `GET http://127.0.0.1:8025/api/v1/messages` (see Mailpit docs for stable JSON shape).
+
+### Staging checklist (self-serve billing — binary “solved”)
+
+Run once per environment with **test-mode** Stripe keys before promoting:
+
+1. **`stripe listen`** forwarding to **`/api/webhooks/stripe`**; **`STRIPE_WEBHOOK_SECRET`** matches the listener.
+2. Sign in, **`POST /api/checkout`** for a self-serve plan → complete Checkout → confirm webhook updates **`user`** (`plan`, **`subscription_status`**, **`stripe_customer_id`**, **`stripe_subscription_id`**, **`stripe_price_id`**).
+3. **`/account`**: **`hasStripeCustomer`** true; **Manage billing** opens Portal; return lands on **`/account`**.
+4. Second Checkout while logged in: Stripe Dashboard shows **one** Customer for that test user (reuse via **`customer`** on Checkout).
+5. **`POST /api/v1/usage/reserve`** with API key returns **200** when subscription active and price mapped.
+6. Negative: set **`stripe_price_id`** to an unknown Price id in DB (test only) → reserve returns **`403`** **`BILLING_PRICE_UNMAPPED`**; restore row.
+
+**Verdict:** **Solved** only if steps 1–6 pass; otherwise **not solved**.
 
 ## Enterprise operator runbook
 

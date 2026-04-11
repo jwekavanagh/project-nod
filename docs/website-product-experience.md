@@ -53,6 +53,7 @@ This document explains how the commercial Next.js site works and points to **nor
 
 **Integrator:** For tooling or assistants, prefer fetching **`/llms.txt`** and **`/openapi-commercial-v1.yaml`** on the canonical site origin over scraping prose docs.
 
-## Pricing / plans
+## Commercial (pointers only)
 
-- Billing fields and tier blurbs: [`config/commercial-plans.json`](../config/commercial-plans.json) (`audience`, `valueUnlock` per plan). Numeric SSOT checks remain [`docs/commercial-ssot.md`](commercial-ssot.md) / `npm run check:commercial-ssot`.
+- Plan marketing fields and numeric limits: [`config/commercial-plans.json`](../config/commercial-plans.json); parity checks: `npm run check:commercial-ssot` (see [`docs/commercial-ssot.md`](commercial-ssot.md)).
+- Billing, subscriptions, Checkout, Customer Portal, webhooks, account commercial APIs, usage reserve, and OpenAPI contracts: normative only in [`docs/commercial-ssot.md`](commercial-ssot.md).

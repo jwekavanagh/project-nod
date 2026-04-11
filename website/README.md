@@ -62,23 +62,17 @@ Architecture, contracts, and operator checklist: **[`docs/website-product-experi
 
 **Partner quickstart (repo root):** `npm run partner-quickstart` (see root `package.json`). **`/integrate`** renders generated **[`docs/partner-quickstart-commands.md`](../docs/partner-quickstart-commands.md)** then **[`docs/first-run-integration.md`](../docs/first-run-integration.md)**.
 
-## Stripe webhooks and env (commercial)
+## Commercial operator env (Stripe, webhooks, account APIs)
 
-Configure Stripe to send at least:
+Required for the licensed website surface: **`DATABASE_URL`**, **`STRIPE_SECRET_KEY`**, **`STRIPE_WEBHOOK_SECRET`**, **`STRIPE_PRICE_*`** keys referenced from [`config/commercial-plans.json`](../config/commercial-plans.json), **`NEXT_PUBLIC_APP_URL`**, **`AUTH_SECRET`**, **`CONTACT_SALES_EMAIL`** (bare email — `website/.env.example`).
 
-- **`checkout.session.completed`** — checkout success; syncs **`user.plan`** from the subscription’s primary Stripe Price id, **`subscription_status`**, Stripe ids, and **`stripe_price_id`** (see **[`docs/commercial-ssot.md`](../docs/commercial-ssot.md)** — *Subscription state, Stripe webhooks, and account API*).
-- **`customer.subscription.updated`** — same fields as checkout, keyed by Stripe customer (and subscription id when present).
-- **`customer.subscription.deleted`** — sets **`subscription_status`** inactive, **`plan`** to **`starter`**, clears subscription and price ids; keeps **`stripe_customer_id`**.
+Forward Stripe webhooks to **`/api/webhooks/stripe`** (local: `stripe listen --forward-to <BASE_URL>/api/webhooks/stripe`; use the printed secret as **`STRIPE_WEBHOOK_SECRET`**).
 
-**Account (signed-in):** **`GET /api/account/commercial-state`** returns `plan`, `subscriptionStatus`, `priceMapping`, `entitlementSummary`, and **`checkoutActivationReady`** (optional query **`expectedPlan=individual|team|business`** for post-checkout polling). Not in OpenAPI; SSOT in **`docs/commercial-ssot.md`**.
+Normative contracts (webhook event list, Checkout vs Billing Portal, account **`commercial-state`** and **`billing-portal`** routes, reserve **`BILLING_PRICE_UNMAPPED`**, emergency flag semantics): **[`docs/commercial-ssot.md`](../docs/commercial-ssot.md)** — *Commercial layer — single source of truth*.
 
-Set **`STRIPE_WEBHOOK_SECRET`** from `stripe listen --forward-to …/api/webhooks/stripe`. Use a Postgres **`DATABASE_URL`** with migrations applied.
+**Website Vitest:** from the repo root, **`npm run validate-commercial`** enforces **`DATABASE_URL`**, runs migrate in **`website/`**, then full website Vitest.
 
-**`CONTACT_SALES_EMAIL`** (bare email, regex in `website/.env.example`) is **required** so `next.config.ts` can load—`next dev` / `next build` fail without it.
-
-**Website Vitest:** `__tests__/funnel-persistence.integration.test.ts` requires **`DATABASE_URL`** pointing at Postgres with migrations applied (`npx drizzle-kit migrate` from `website/`). From the repo root, **`npm run validate-commercial`** enforces **`DATABASE_URL`**, runs migrate, then runs full website Vitest.
-
-Optional: **`RESERVE_EMERGENCY_ALLOW=1`** waives the **inactive subscription** check for **`intent=verify`** and **`intent=enforce`** on **individual/team/business/enterprise** only (**Starter** stays denied). Quota still applies.
+**`RESERVE_EMERGENCY_ALLOW=1`:** see SSOT — waives inactive-subscription checks only where documented; does not bypass **`BILLING_PRICE_UNMAPPED`**.
 
 ## Root package `prepublishOnly` (commercial CLI)
 

@@ -61,16 +61,31 @@ export type CommercialAccountStatePayload = {
   priceMapping: PriceMapping;
   entitlementSummary: string;
   checkoutActivationReady: boolean;
+  /** True when `user.stripe_customer_id` is set; drives Billing Portal entry control. */
+  hasStripeCustomer: boolean;
 };
+
+export function computeHasStripeCustomer(stripeCustomerId: string | null | undefined): boolean {
+  return typeof stripeCustomerId === "string" && stripeCustomerId.trim().length > 0;
+}
 
 export function buildCommercialAccountStatePayload(input: {
   plan: PlanId;
   subscriptionStatus: SubscriptionStatusForEntitlement;
   stripePriceId: string | null | undefined;
+  stripeCustomerId?: string | null;
   expectedPlan: PlanId | null;
   operatorContactEmail?: string | null;
 }): CommercialAccountStatePayload {
-  const { plan, subscriptionStatus, stripePriceId, expectedPlan, operatorContactEmail } = input;
+  const {
+    plan,
+    subscriptionStatus,
+    stripePriceId,
+    stripeCustomerId,
+    expectedPlan,
+    operatorContactEmail,
+  } = input;
+  const hasStripeCustomer = computeHasStripeCustomer(stripeCustomerId);
   const priceMapping = computePriceMapping(stripePriceId);
   const entitlementSummary = getAccountEntitlementSummary({
     planId: plan,
@@ -90,5 +105,6 @@ export function buildCommercialAccountStatePayload(input: {
     priceMapping,
     entitlementSummary,
     checkoutActivationReady,
+    hasStripeCustomer,
   };
 }

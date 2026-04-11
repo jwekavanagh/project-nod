@@ -33,6 +33,7 @@ function baseCommercial(overrides: Partial<CommercialAccountStatePayload> = {}):
     priceMapping: "mapped",
     entitlementSummary: "Licensed verification (npm) needs an active subscription.",
     checkoutActivationReady: false,
+    hasStripeCustomer: false,
     ...overrides,
   };
 }
@@ -45,9 +46,39 @@ describe("AccountClient inactive subscription", () => {
     expect(notice).toBeInTheDocument();
     expect(notice).toHaveTextContent(/not active/i);
     expect(notice).toHaveTextContent(/licensed verification and enforcement are paused/i);
+    expect(notice).toHaveTextContent(/subscribe from pricing to restore access/i);
 
     const pricing = screen.getByRole("link", { name: /view pricing and subscribe/i });
     expect(pricing).toHaveAttribute("href", "/pricing");
+  });
+
+  it("does not render Manage billing when hasStripeCustomer is false", () => {
+    render(<AccountClient hasKey={false} initialCommercial={baseCommercial({ hasStripeCustomer: false })} />);
+    expect(screen.queryByTestId("manage-billing-button")).not.toBeInTheDocument();
+  });
+
+  it("renders exactly one Manage billing button when hasStripeCustomer is true", () => {
+    render(<AccountClient hasKey={false} initialCommercial={baseCommercial({ hasStripeCustomer: true })} />);
+    const buttons = screen.getAllByRole("button", { name: /^manage billing$/i });
+    expect(buttons).toHaveLength(1);
+  });
+
+  it("inactive notice references Manage billing when hasStripeCustomer is true", () => {
+    render(
+      <AccountClient
+        hasKey={false}
+        initialCommercial={baseCommercial({ hasStripeCustomer: true })}
+      />,
+    );
+    const notice = screen.getByTestId("inactive-subscription-notice");
+    expect(notice).toHaveTextContent(/use manage billing above/i);
+  });
+
+  it("documents licensed CLI prerequisites next to API key", () => {
+    render(<AccountClient hasKey={false} initialCommercial={baseCommercial()} />);
+    expect(screen.getByText(/licensed cli use requires an active subscription/i)).toBeInTheDocument();
+    expect(screen.getByText(/successful license reserve for each run/i)).toBeInTheDocument();
+    expect(screen.getByText(/your api key alone does not grant verification/i)).toBeInTheDocument();
   });
 
   it("does not show inactive notice when subscription is active", () => {

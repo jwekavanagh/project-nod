@@ -32,6 +32,7 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
     plan: row.plan as PlanId,
     subscriptionStatus: normalizeSubscriptionStatusForAccount(row.subscriptionStatus),
     stripePriceId: row.stripePriceId,
+    stripeCustomerId: row.stripeCustomerId,
     expectedPlan,
     operatorContactEmail: process.env.CONTACT_SALES_EMAIL,
   });

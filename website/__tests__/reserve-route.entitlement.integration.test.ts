@@ -7,6 +7,7 @@ const LOOKUP = "test_key_lookup_sha256_hex_64_chars_____________________________
 const entState = vi.hoisted(() => ({
   plan: "starter" as string,
   subscriptionStatus: "none" as string,
+  stripePriceId: undefined as string | undefined,
   txFromCount: 0,
 }));
 
@@ -67,6 +68,7 @@ vi.mock("@/db/client", () => ({
                   user: {
                     plan: entState.plan,
                     subscriptionStatus: entState.subscriptionStatus,
+                    stripePriceId: entState.stripePriceId ?? null,
                   },
                 },
               ]),
@@ -83,6 +85,8 @@ describe("POST /api/v1/usage/reserve entitlement", () => {
   beforeEach(() => {
     entState.plan = "starter";
     entState.subscriptionStatus = "none";
+    entState.stripePriceId = undefined;
+    delete process.env.RESERVE_EMERGENCY_ALLOW;
     process.env.NEXT_PUBLIC_APP_URL = "http://127.0.0.1:3000";
   });
 
@@ -184,5 +188,30 @@ describe("POST /api/v1/usage/reserve entitlement", () => {
     expect(res.status).toBe(200);
     const j = (await res.json()) as Record<string, unknown>;
     expect(j.allowed).toBe(true);
+  });
+
+  it("active subscription + unmapped stripe_price_id → 403 BILLING_PRICE_UNMAPPED + upgrade_url", async () => {
+    entState.plan = "team";
+    entState.subscriptionStatus = "active";
+    entState.stripePriceId = "price_not_mapped_in_this_test_env";
+    const res = await postReserve({ intent: "verify" });
+    expect(res.status).toBe(403);
+    const j = (await res.json()) as Record<string, unknown>;
+    expect(j.allowed).toBe(false);
+    expect(j.code).toBe("BILLING_PRICE_UNMAPPED");
+    expect(String(j.message)).toMatch(/STRIPE_PRICE_\*/i);
+    expect(String(j.message)).not.toMatch(/billing portal|manage billing|\/account/i);
+    expect(j.upgrade_url).toBe("http://127.0.0.1:3000/pricing");
+  });
+
+  it("RESERVE_EMERGENCY_ALLOW does not bypass BILLING_PRICE_UNMAPPED", async () => {
+    process.env.RESERVE_EMERGENCY_ALLOW = "1";
+    entState.plan = "team";
+    entState.subscriptionStatus = "inactive";
+    entState.stripePriceId = "price_unmapped_emergency";
+    const res = await postReserve({ intent: "verify" });
+    expect(res.status).toBe(403);
+    const j = (await res.json()) as Record<string, unknown>;
+    expect(j.code).toBe("BILLING_PRICE_UNMAPPED");
   });
 });

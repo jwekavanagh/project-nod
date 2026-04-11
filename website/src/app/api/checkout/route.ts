@@ -1,6 +1,6 @@
 import { auth } from "@/auth";
 import { db } from "@/db/client";
-import { funnelEvents } from "@/db/schema";
+import { funnelEvents, users } from "@/db/schema";
 import {
   buildCheckoutStartedMetadata,
   type CheckoutStartedMetadata,
@@ -8,6 +8,7 @@ import {
 import { logFunnelEvent } from "@/lib/funnelEvent";
 import { loadCommercialPlans } from "@/lib/plans";
 import type { PlanId } from "@/lib/plans";
+import { buildStripeCheckoutSessionCreateParams } from "@/lib/stripeCheckoutSessionParams";
 import { getStripe } from "@/lib/stripeServer";
 import { and, eq } from "drizzle-orm";
 import { NextRequest, NextResponse } from "next/server";
@@ -48,6 +49,12 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
 
   const base = process.env.NEXT_PUBLIC_APP_URL ?? "http://127.0.0.1:3000";
 
+  const [urow] = await db
+    .select({ stripeCustomerId: users.stripeCustomerId })
+    .from(users)
+    .where(eq(users.id, session.user.id))
+    .limit(1);
+
   const priorReserve = await db
     .select()
     .from(funnelEvents)
@@ -57,17 +64,15 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     .limit(1);
   const postActivation = priorReserve.length > 0;
 
-  const checkout = await getStripe().checkout.sessions.create({
-    mode: "subscription",
-    customer_email: session.user.email,
-    line_items: [{ price: priceId, quantity: 1 }],
-    success_url: `${base}/account?checkout=success&expectedPlan=${encodeURIComponent(plan)}`,
-    cancel_url: `${base}/pricing`,
-    metadata: {
-      userId: session.user.id,
-      plan,
-    },
+  const sessionParams = buildStripeCheckoutSessionCreateParams({
+    stripeCustomerId: urow?.stripeCustomerId,
+    customerEmail: session.user.email,
+    priceId,
+    baseUrl: base,
+    plan,
+    userId: session.user.id,
   });
+  const checkout = await getStripe().checkout.sessions.create(sessionParams);
 
   await logFunnelEvent({
     event: "checkout_started",

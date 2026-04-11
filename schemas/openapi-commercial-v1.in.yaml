@@ -126,7 +126,7 @@ components:
           type: string
           description: >
             Examples BAD_REQUEST, INVALID_KEY, QUOTA_EXCEEDED, VERIFICATION_REQUIRES_SUBSCRIPTION,
-            ENFORCEMENT_REQUIRES_PAID_PLAN, SUBSCRIPTION_INACTIVE, SERVER_ERROR
+            ENFORCEMENT_REQUIRES_PAID_PLAN, SUBSCRIPTION_INACTIVE, BILLING_PRICE_UNMAPPED, SERVER_ERROR
         message:
           type: string
         upgrade_url:

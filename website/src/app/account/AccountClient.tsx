@@ -6,6 +6,10 @@ import Link from "next/link";
 import { publicProductAnchors } from "@/lib/publicProductAnchors";
 import type { CommercialAccountStatePayload } from "@/lib/commercialAccountState";
 import type { PriceMapping } from "@/lib/accountEntitlementSummary";
+import {
+  STRIPE_CUSTOMER_MISSING_ERROR,
+  STRIPE_CUSTOMER_MISSING_MESSAGE,
+} from "@/lib/billingPortalConstants";
 
 const ghMain = `${publicProductAnchors.gitRepositoryUrl}/blob/main`;
 
@@ -38,6 +42,8 @@ export function AccountClient({
   const [err, setErr] = useState<string | null>(null);
   const [commercial, setCommercial] = useState<CommercialAccountStatePayload>(initialCommercial);
   const [activationUi, setActivationUi] = useState<"idle" | "pending" | "ready" | "timeout">("idle");
+  const [portalLoading, setPortalLoading] = useState(false);
+  const [portalErr, setPortalErr] = useState<string | null>(null);
 
   const billing = billingSyncDisplay(commercial.priceMapping);
 
@@ -85,6 +91,26 @@ export function AccountClient({
     };
   }, [checkout, expectedPlanRaw]);
 
+  async function openBillingPortal() {
+    setPortalErr(null);
+    setPortalLoading(true);
+    try {
+      const r = await fetch("/api/account/billing-portal", { method: "POST" });
+      const j = (await r.json()) as { url?: string; error?: string; message?: string };
+      if (r.status === 404 && j.error === STRIPE_CUSTOMER_MISSING_ERROR) {
+        setPortalErr(j.message ?? STRIPE_CUSTOMER_MISSING_MESSAGE);
+        return;
+      }
+      if (!r.ok) {
+        setPortalErr(j.error === "Internal Server Error" ? "Billing portal is unavailable. Try again later." : (j.error ?? "Billing portal failed"));
+        return;
+      }
+      if (j.url) window.location.href = j.url;
+    } finally {
+      setPortalLoading(false);
+    }
+  }
+
   async function createKey() {
     setErr(null);
     const r = await fetch("/api/account/create-key", { method: "POST" });
@@ -110,6 +136,23 @@ export function AccountClient({
       <p title={billing.title}>
         <strong>Billing:</strong> {billing.label}
       </p>
+      {commercial.hasStripeCustomer && (
+        <p style={{ marginTop: "0.5rem" }}>
+          <button
+            type="button"
+            data-testid="manage-billing-button"
+            disabled={portalLoading}
+            onClick={() => void openBillingPortal()}
+          >
+            {portalLoading ? "…" : "Manage billing"}
+          </button>
+        </p>
+      )}
+      {portalErr && (
+        <p className="error-text" data-testid="billing-portal-error" style={{ marginTop: "0.35rem" }}>
+          {portalErr}
+        </p>
+      )}
       {showInactiveBillingCta && (
         <div
           className="muted"
@@ -122,8 +165,10 @@ export function AccountClient({
           data-testid="inactive-subscription-notice"
         >
           <p style={{ margin: 0 }}>
-            Your subscription is not active, so licensed verification and enforcement are paused. Update
-            payment in your billing provider or choose a plan again.
+            Your subscription is not active, so licensed verification and enforcement are paused.
+            {commercial.hasStripeCustomer
+              ? " Use Manage billing above to update payment or your subscription in Stripe, or choose a plan again from Pricing."
+              : " Subscribe from Pricing to restore access."}
           </p>
           <p style={{ margin: "0.5rem 0 0" }}>
             <Link href="/pricing">View pricing and subscribe</Link>
@@ -165,8 +210,10 @@ export function AccountClient({
         </p>
       )}
       <p style={{ color: "var(--muted)", fontSize: "0.9rem", marginTop: "0.75rem" }}>
-        Use <code>WORKFLOW_VERIFIER_API_KEY</code> with the commercial CLI after you have an active paid
-        subscription. Machine contracts:{" "}
+        Licensed CLI use requires an active subscription, a Stripe price this deployment maps to your plan,
+        and a successful license reserve for each run—your API key alone does not grant verification until
+        those conditions hold. Use <code>WORKFLOW_VERIFIER_API_KEY</code> with the commercial CLI once they
+        do. Machine contracts:{" "}
         <a href="/openapi-commercial-v1.yaml">OpenAPI</a>,{" "}
         <a href="/api/v1/commercial/plans">plans JSON</a>. Entitlements:{" "}
         <a href={`${ghMain}/docs/commercial-entitlement-matrix.md`} rel="noreferrer">
