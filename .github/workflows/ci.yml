@@ -83,22 +83,31 @@ jobs:
 
   distribution-consumer:
     needs: [test, commercial]
-    # Without this secret the default GITHUB_TOKEN cannot reach distributionConsumerRepository (see scripts/distribution-consumer-pipeline.mjs).
-    if: github.repository == 'jwekavanagh/workflow-verifier' && github.ref == 'refs/heads/main' && secrets.DISTRIBUTION_GITHUB_TOKEN != ''
+    # `secrets` cannot be used in job-level `if` (workflow parse error). Gate on repo/ref here; gate the PAT on each step below.
+    # Without DISTRIBUTION_GITHUB_TOKEN the default GITHUB_TOKEN cannot reach distributionConsumerRepository (see scripts/distribution-consumer-pipeline.mjs).
+    if: github.repository == 'jwekavanagh/workflow-verifier' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     permissions:
       contents: read
     steps:
+      - name: Skip distribution consumer (no token)
+        if: secrets.DISTRIBUTION_GITHUB_TOKEN == ''
+        run: echo "DISTRIBUTION_GITHUB_TOKEN is not set; skipping distribution consumer pipeline."
       - uses: actions/checkout@v4
+        if: secrets.DISTRIBUTION_GITHUB_TOKEN != ''
       - uses: actions/setup-node@v4
+        if: secrets.DISTRIBUTION_GITHUB_TOKEN != ''
         with:
           node-version: "22"
           cache: npm
       - name: Install dependencies
+        if: secrets.DISTRIBUTION_GITHUB_TOKEN != ''
         run: npm ci
       - name: Build TypeScript
+        if: secrets.DISTRIBUTION_GITHUB_TOKEN != ''
         run: npm run build
       - name: Distribution consumer pipeline (P1–P8)
+        if: secrets.DISTRIBUTION_GITHUB_TOKEN != ''
         env:
           GITHUB_TOKEN: ${{ github.token }}
           # Required: default token cannot access repos/${distributionConsumerRepository}. Fine-grained PAT must include that repo (Contents + Actions).
