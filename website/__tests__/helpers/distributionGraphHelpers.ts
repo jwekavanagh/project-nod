@@ -24,12 +24,18 @@ export function loadAnchors(): PublicProductAnchors {
   return JSON.parse(readFileSync(p, "utf8")) as PublicProductAnchors;
 }
 
+export function loadDiscoveryAcquisitionPageDescription(): string {
+  const p = join(getRepoRoot(), "config", "discovery-acquisition.json");
+  const raw = JSON.parse(readFileSync(p, "utf8")) as { pageMetadata: { description: string } };
+  return raw.pageMetadata.description;
+}
+
 export function expectedNpmPackageJsonFields(anchors: PublicProductAnchors) {
   const { normalize } = require("../../../scripts/public-product-anchors.cjs") as {
     normalize: (s: string) => string;
   };
   return {
-    description: anchors.identityOneLiner,
+    description: loadDiscoveryAcquisitionPageDescription(),
     homepage: normalize(anchors.productionCanonicalOrigin),
     repository: { type: "git", url: anchors.gitRepositoryGitUrl },
     bugs: { url: anchors.bugsUrl },

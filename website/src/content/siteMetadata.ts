@@ -1,8 +1,8 @@
-import { publicProductAnchors } from "@/lib/publicProductAnchors";
+import discoveryAcquisition from "@/lib/discoveryAcquisition";
 
 export const siteMetadata = {
   title: "Workflow Verifier — check database state against what your workflow claimed",
-  description: publicProductAnchors.identityOneLiner,
+  description: discoveryAcquisition.pageMetadata.description,
   integrate: {
     title: "Integrate — first run on your database",
     description:
@@ -10,7 +10,7 @@ export const siteMetadata = {
   },
   openGraph: {
     title: "Workflow Verifier — check database state against what your workflow claimed",
-    description: publicProductAnchors.identityOneLiner,
+    description: discoveryAcquisition.pageMetadata.description,
   },
   /** Relative to `metadataBase` (canonical production origin). */
   openGraphImage: {

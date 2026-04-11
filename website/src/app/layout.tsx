@@ -1,4 +1,5 @@
 import { siteMetadata } from "@/content/siteMetadata";
+import discoveryAcquisition from "@/lib/discoveryAcquisition";
 import { publicProductAnchors } from "@/lib/publicProductAnchors";
 import { Analytics } from "@vercel/analytics/react";
 import type { Metadata } from "next";
@@ -11,7 +12,7 @@ const productJsonLd = {
   "@context": "https://schema.org",
   "@type": "SoftwareApplication",
   name: "Workflow Verifier",
-  description: publicProductAnchors.identityOneLiner,
+  description: discoveryAcquisition.pageMetadata.description,
   url: publicProductAnchors.productionCanonicalOrigin,
   sameAs: [publicProductAnchors.gitRepositoryUrl, publicProductAnchors.npmPackageUrl],
 };

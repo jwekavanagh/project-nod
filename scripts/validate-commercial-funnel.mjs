@@ -92,6 +92,11 @@ if (!run(process.execPath, ["--test", path.join(root, "test", "visitor-problem-o
   process.exit(1);
 }
 
+if (!run(process.execPath, ["--test", path.join(root, "test", "registry-metadata-parity.test.mjs")])) {
+  writeVerdict("not_solved", layers);
+  process.exit(1);
+}
+
 if (!run("npx", ["vitest", "run"], { cwd: websiteDir, shell: true, env: websiteTestEnv })) {
   writeVerdict("not_solved", layers);
   process.exit(1);

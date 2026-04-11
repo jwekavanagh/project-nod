@@ -13,7 +13,7 @@
   "visitorProblemAnswer": "Teams ship agent and automation workflows where traces, tool responses, and success flags look green while the database row is missing, stale, or wrong. Workflow Verifier closes that gap by comparing structured tool activity to read-only SQL against your SQLite or Postgres at verification time: it tells you whether observed state matched expectations derived from what the workflow claimed—not whether a step narrative sounded successful. It is a snapshot check, not proof of causality or execution.",
   "pageMetadata": {
     "title": "Database truth vs traces — Workflow Verifier",
-    "description": "Why green traces and tool success are not proof of persisted SQL state—and how read-only verification at verification time closes the gap."
+    "description": "Green agent traces and tool success flags often hide missing or wrong database rows. Workflow Verifier runs read-only SQL at verification time against persisted state vs structured tool activity—not chat narratives."
   },
   "sections": [
     {

@@ -15,8 +15,9 @@ Single place for **public identity**, **anchor sync**, **CI / Vitest public orig
 | `src/distributionFooter.ts` | Re-export footer for CLI | Yes (thin) |
 | `AGENTS.md` | Agent pointer to SSOT | No (sync-written) |
 | `test/distribution-*.test.mjs` | Clause, traceability, pipeline unit tests | No |
-| `config/discovery-acquisition.json` | Acquisition copy: `readmeTitle`, `homepageHero` (what/why/when), `demandMoments`, `cliFollowupLines`, visitor problem answer, homepage CTA label, `llms` appendix arrays, README fold template; consumed by sync and the website | Yes |
-| `config/discovery-acquisition.schema.json` | JSON Schema (draft-07): product-law patterns on `visitorProblemAnswer`, required fields | Yes |
+| `test/registry-metadata-parity.test.mjs` | Committed **`package.json` `description`** equals **`pageMetadata.description`** and not **`identityOneLiner`** | No |
+| `config/discovery-acquisition.json` | Acquisition copy: `readmeTitle`, `homepageHero` (what/why/when), `demandMoments`, `cliFollowupLines`, visitor problem answer, **`pageMetadata.description`** (npm `description`, site-wide HTML meta, Open Graph/Twitter, `SoftwareApplication` JSON-LD `description`), homepage CTA label, `llms` appendix arrays, README fold template; consumed by sync and the website | Yes |
+| `config/discovery-acquisition.schema.json` | JSON Schema (draft-07): product-law patterns on `visitorProblemAnswer` and on **`pageMetadata.description`** (length + patterns), required fields | Yes |
 | `scripts/discovery-acquisition.lib.cjs` | Validate discovery JSON, build README fold body (including appended acquisition markdown link); `llms` appendix sections consumed via [`discovery-payload.lib.cjs`](../scripts/discovery-payload.lib.cjs) | No (logic) |
 | `scripts/discovery-payload.lib.cjs` | Single `DiscoveryPayload` v1 builder + `llms.txt` / CI Markdown renders + PR upsert selector | No (logic) |
 | `scripts/write-discovery-payload.mjs` | Writes `dist/discovery-payload-v1.json` during build | No |
@@ -30,7 +31,7 @@ Single place for **public identity**, **anchor sync**, **CI / Vitest public orig
 | `schemas/public-verification-report-v1.schema.json` | Public share POST envelope (`workflow` \| `quick`) | Yes |
 | `docs/shareable-verification-reports.md` | SSOT for `/r/{id}`, POST body cap (**393216** bytes), **`PUBLIC_VERIFICATION_REPORTS_ENABLED`**, CLI **`--share-report-origin`** | Yes |
 | `website/public/openapi-commercial-v1.yaml` | Derived (gitignored); `servers[0].url` and self-URL use effective public origin | No |
-| Root `package.json` | `description`, `repository`, `homepage`, `bugs`, `keywords` from sync | No (those fields) |
+| Root `package.json` | **`description`** from **`config/discovery-acquisition.json` → `pageMetadata.description`**; **`repository`**, **`homepage`**, **`bugs`**, **`keywords`** from anchors via sync | No (those fields) |
 | `README.md` | Regions between `<!-- discovery-readme-title:start/end -->`, `<!-- discovery-acquisition-fold:start/end -->`, and `<!-- public-product-anchors:start/end -->` | No inside markers (all are sync-written) |
 
 ### Maintainer sync (normative)
@@ -38,8 +39,9 @@ Single place for **public identity**, **anchor sync**, **CI / Vitest public orig
 From **repository root** only:
 
 - After editing anchors, **`config/discovery-acquisition.json`**, or other hand-editable surfaces: **`npm run sync:public-product-anchors`**
-- Validate only: **`npm run check:public-product-anchors`** (runs OpenAPI token check + discovery schema validation)
+- Validate only: **`npm run check:public-product-anchors`** (runs OpenAPI token check + discovery schema validation).
 - Discovery-only validate: **`npm run check:discovery-acquisition`**
+- Registry metadata parity (committed **`package.json` `description`** vs **`pageMetadata.description`**): **`node --test test/registry-metadata-parity.test.mjs`** (included in **`npm run test:node:sqlite`** and **`npm run validate-commercial`** after migrate).
 
 Do **not** document `node scripts/public-product-anchors.cjs` as the primary workflow; the npm scripts above are the prescribed entrypoints.
 
@@ -93,7 +95,7 @@ if (!skip && normalize(process.env.NEXT_PUBLIC_APP_URL) !== normalize(canonicalF
 
 ### `distribution-graph.test.ts` and visitor outcome
 
-**`npm run validate-commercial`** from repo root runs, in order after `drizzle-kit migrate`: **`node --test test/visitor-problem-outcome.test.mjs`** (README discovery fold strict equality + schema validation), then **`npx vitest run`** in `website/` (includes `website/__tests__/distribution-graph.test.ts`). Requires Postgres **`DATABASE_URL`**, injected public origin, and full harness. Running bare `cd website && npx vitest` without that harness is **unsupported** for `distribution-graph.test.ts`.
+**`npm run validate-commercial`** from repo root runs, in order after `drizzle-kit migrate`: **`node --test test/visitor-problem-outcome.test.mjs`** (README discovery fold strict equality + schema validation), then **`node --test test/registry-metadata-parity.test.mjs`** (committed **`package.json` `description`** matches **`pageMetadata.description`** and not **`identityOneLiner`**), then **`npx vitest run`** in `website/` (includes `website/__tests__/distribution-graph.test.ts`). Requires Postgres **`DATABASE_URL`**, injected public origin, and full harness. Running bare `cd website && npx vitest` without that harness is **unsupported** for `distribution-graph.test.ts`.
 
 ---
 

@@ -129,6 +129,16 @@ describe(
         throw new Error("distribution-graph: next start did not become ready");
       }
 
+      const discoveryPath = join(repoRoot, "config", "discovery-acquisition.json");
+      const disc = JSON.parse(readFileSync(discoveryPath, "utf8")) as {
+        slug: string;
+        visitorProblemAnswer: string;
+        heroTitle: string;
+        homepageAcquisitionCtaLabel: string;
+        homepageHero: { what: string; why: string; when: string };
+        pageMetadata: { description: string };
+      };
+
       const html = await (await fetch("http://127.0.0.1:34100/")).text();
       const o = normalize(process.env.NEXT_PUBLIC_APP_URL ?? "");
       const canonicalOrigin = normalize(a.productionCanonicalOrigin);
@@ -140,6 +150,12 @@ describe(
       expect(html).toContain("SoftwareApplication");
       expect(html).toContain("summary_large_image");
 
+      const htmlDecoded = htmlForTextNeedleMatch(html);
+      expect(htmlDecoded).toContain(disc.pageMetadata.description);
+      expect(html).toContain('property="og:description"');
+      expect(html).toContain('name="description"');
+      expect(htmlDecoded).not.toContain(a.identityOneLiner);
+
       const llmsText = await (await fetch("http://127.0.0.1:34100/llms.txt")).text();
       expect(llmsText).toContain(a.identityOneLiner);
       expect(llmsText).toContain(`${canonicalOrigin}/integrate`);
@@ -147,15 +163,6 @@ describe(
       expect(llmsText).toContain(a.gitRepositoryUrl);
       expect(llmsText).toContain(a.npmPackageUrl);
       expect(llmsText.includes("example.invalid")).toBe(false);
-
-      const discoveryPath = join(repoRoot, "config", "discovery-acquisition.json");
-      const disc = JSON.parse(readFileSync(discoveryPath, "utf8")) as {
-        slug: string;
-        visitorProblemAnswer: string;
-        heroTitle: string;
-        homepageAcquisitionCtaLabel: string;
-        homepageHero: { what: string; why: string; when: string };
-      };
 
       const hIntent = llmsText.indexOf("## Intent phrases");
       const hNot = llmsText.indexOf("## Not for");

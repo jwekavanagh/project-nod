@@ -1,7 +1,7 @@
 {
   "name": "workflow-verifier",
-  "version": "0.1.0",
-  "description": "State verification engine: read-only SQL checks that database state matches expectations from structured tool activity (not arbitrary logs)—not proof of execution",
+  "version": "0.1.1",
+  "description": "Green agent traces and tool success flags often hide missing or wrong database rows. Workflow Verifier runs read-only SQL at verification time against persisted state vs structured tool activity—not chat narratives.",
   "license": "MIT",
   "type": "module",
   "workspaces": [
@@ -18,7 +18,7 @@
     "start": "npm run build && node scripts/demo.mjs",
     "dev": "npm run dev -w workflow-verifier-web",
     "test:vitest": "vitest run",
-    "test:node:sqlite": "node --test --test-force-exit test/reconciler.sqlite.test.mjs test/pipeline.sqlite.test.mjs test/withWorkflowVerification.test.mjs test/workflowTruthReport.test.mjs test/cli.test.mjs test/stable-failure-consistency.test.mjs test/workflow-result-consumer-contract.test.mjs test/workflow-result-stdout-version.test.mjs test/docs-relational-ssot.test.mjs test/tools-registry-relational-surface.test.mjs test/docs-contract.test.mjs test/docs-commercial-enforce-gate-normative.test.mjs test/docs-remediation-doctrine.test.mjs test/bundle-signature-fixture.test.mjs test/bundle-signature-codes-doc.test.mjs test/bundle-signature-cli-write.test.mjs test/quick-verify.sqlite.test.mjs test/quickVerifyPostbuildGate.test.mjs test/npm-scripts-contract.test.mjs test/removed-script-names-ban.test.mjs test/docs-workflow-result-normative-prose.test.mjs test/enforce-oss-forbidden.test.mjs test/docs-enforce-stream-contract.test.mjs test/docs-quick-enforce-link.test.mjs test/commercial-pricing-policy-parity.test.mjs test/distribution-requirement-clauses.test.mjs test/distribution-traceability-literals.test.mjs test/distribution-ssot-clause-coverage.test.mjs test/distribution-consumer-pipeline.test.mjs test/discovery-payload.test.mjs test/npm-pack-discovery-scripts.test.mjs",
+    "test:node:sqlite": "node --test --test-force-exit test/reconciler.sqlite.test.mjs test/pipeline.sqlite.test.mjs test/withWorkflowVerification.test.mjs test/workflowTruthReport.test.mjs test/cli.test.mjs test/stable-failure-consistency.test.mjs test/workflow-result-consumer-contract.test.mjs test/workflow-result-stdout-version.test.mjs test/docs-relational-ssot.test.mjs test/tools-registry-relational-surface.test.mjs test/docs-contract.test.mjs test/docs-commercial-enforce-gate-normative.test.mjs test/docs-remediation-doctrine.test.mjs test/bundle-signature-fixture.test.mjs test/bundle-signature-codes-doc.test.mjs test/bundle-signature-cli-write.test.mjs test/quick-verify.sqlite.test.mjs test/quickVerifyPostbuildGate.test.mjs test/npm-scripts-contract.test.mjs test/removed-script-names-ban.test.mjs test/docs-workflow-result-normative-prose.test.mjs test/enforce-oss-forbidden.test.mjs test/docs-enforce-stream-contract.test.mjs test/docs-quick-enforce-link.test.mjs test/commercial-pricing-policy-parity.test.mjs test/distribution-requirement-clauses.test.mjs test/distribution-traceability-literals.test.mjs test/distribution-ssot-clause-coverage.test.mjs test/distribution-consumer-pipeline.test.mjs test/discovery-payload.test.mjs test/npm-pack-discovery-scripts.test.mjs test/registry-metadata-parity.test.mjs",
     "test:postgres": "node scripts/pg-ci-init.mjs && node --test --test-force-exit test/postgres-session-readonly.test.mjs test/postgres-privilege.test.mjs test/pipeline.postgres.test.mjs test/ci-workflow-truth-postgres-contract.test.mjs test/quick-verify.postgres.test.mjs",
     "test:workflow-truth-contract": "node --test --test-force-exit test/ci-workflow-truth-postgres-contract.test.mjs",
     "validate-ttfv": "node scripts/validate-ttfv.mjs",
@@ -102,6 +102,11 @@
     "false-positive",
     "postgres-verification",
     "trace-vs-database",
-    "silent-failure"
+    "silent-failure",
+    "ai-agent-verification",
+    "workflow-validation",
+    "langgraph-observability",
+    "tool-call-grounding",
+    "database-state-checking"
   ]
 }

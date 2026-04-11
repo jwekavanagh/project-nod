@@ -27,6 +27,11 @@
     "false-positive",
     "postgres-verification",
     "trace-vs-database",
-    "silent-failure"
+    "silent-failure",
+    "ai-agent-verification",
+    "workflow-validation",
+    "langgraph-observability",
+    "tool-call-grounding",
+    "database-state-checking"
   ]
 }

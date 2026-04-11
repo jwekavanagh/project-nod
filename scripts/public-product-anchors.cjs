@@ -237,7 +237,7 @@ function syncPublicProductAnchors() {
 
   const pkgRaw = readFileSync(PKG_PATH, "utf8");
   const pkg = JSON.parse(pkgRaw);
-  pkg.description = anchors.identityOneLiner;
+  pkg.description = String(discovery.pageMetadata.description);
   pkg.repository = { type: "git", url: anchors.gitRepositoryGitUrl };
   pkg.homepage = canonicalOrigin;
   pkg.bugs = { url: anchors.bugsUrl };

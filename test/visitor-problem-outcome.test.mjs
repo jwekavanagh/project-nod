@@ -72,3 +72,50 @@ test("invalid visitorProblemAnswer fails schema (negative)", () => {
   };
   assert.equal(validate(bad), false);
 });
+
+test("invalid pageMetadata.description fails schema (negative)", () => {
+  const schemaPath = join(root, "config", "discovery-acquisition.schema.json");
+  const schema = JSON.parse(readFileSync(schemaPath, "utf8"));
+  const ajv = new Ajv({ allErrors: true, strict: true });
+  addFormats(ajv);
+  const validate = ajv.compile(schema);
+  const bad = {
+    schemaVersion: 1,
+    slug: "/database-truth-vs-traces",
+    visitorProblemAnswer:
+      "Teams ship agent workflows where traces look green while the database row is wrong. Workflow Verifier compares structured tool activity to read-only SQL against SQLite at verification time: it tells you whether observed state matched expectations—not proof of execution.",
+    heroTitle: "Your workflow said it worked. Did the database actually change?",
+    heroSubtitle:
+      "Workflow Verifier answers with read-only SQL at verification time—not with trace success flags or chat narratives.",
+    homepageAcquisitionCtaLabel: "Why traces are not database truth",
+    readmeTitle: "Workflow Verifier — when traces say success but your database does not match",
+    homepageHero: {
+      what: "You shipped an agent run and the trace says success. This product runs read-only SQL to check rows.",
+      why: "Traces do not prove the row exists with the right values. That gap ships silent failures.",
+      when: "Use it after a workflow when you need ground truth before customer-facing actions or a CI gate.",
+    },
+    pageMetadata: {
+      title: "Database truth vs traces — Workflow Verifier",
+      description: "Too short, missing required length and product-law patterns for registry metadata.",
+    },
+    sections: [
+      { heading: "a", paragraphs: ["p"] },
+      { heading: "b", paragraphs: ["p"] },
+      { heading: "c", paragraphs: ["p"] },
+      { heading: "d", paragraphs: ["p"] },
+    ],
+    demandMoments: [
+      "Green LangGraph trace but wrong Postgres row",
+      "Tool loop reported success; CRM state does not match",
+      "CI passed on logs; database side effect never showed up",
+    ],
+    cliFollowupLines: ["More context: {{ACQUISITION_URL}}"],
+    llms: {
+      intentPhrases: ["1", "2", "3", "4", "5"],
+      notFor: ["1", "2", "3"],
+      relatedQueries: ["1", "2", "3", "4", "5"],
+    },
+    readmeFold: { templateLines: ["x"] },
+  };
+  assert.equal(validate(bad), false);
+});
