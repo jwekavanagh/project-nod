@@ -406,6 +406,8 @@ node dist/cli.js --workflow-id <id> --events <path> --registry <path> --postgres
 
 **stderr (verdict paths):** Unless **`--no-truth-report`** is set, one **human truth report** per verification (same text as `formatWorkflowTruthReport`); see [Human truth report](#human-truth-report).
 
+**Distribution footer (batch verify + quick):** After that human report (batch) or after the Quick Verify human block (quick), the CLI appends one extra stderr line with a stable link to the public distribution SSOT (generated **`formatDistributionFooter()`** in **`src/publicDistribution.generated.ts`** from **`npm run sync:public-product-anchors`**). With **`--no-truth-report`**, batch verify leaves stderr empty (no report and no footer). Exit **3** behavior is unchanged.
+
 ### CI workflow truth contract (Postgres CLI)
 
 This subsection is **normative** for CI and for any automation that treats **`workflow-verifier`** as the sole machine-facing verification surface. The **only** structured artifacts for workflow truth from the CLI are:

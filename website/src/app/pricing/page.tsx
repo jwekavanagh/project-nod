@@ -3,6 +3,8 @@ import { enterpriseMailtoHref } from "@/lib/contactSalesEmail";
 import { loadCommercialPlans, type PlanId } from "@/lib/plans";
 import { PricingClient, type PlanRow } from "./PricingClient";
 
+export const dynamic = "force-dynamic";
+
 export default function PricingPage() {
   const { plans: raw } = loadCommercialPlans();
   const order: PlanId[] = ["starter", "individual", "team", "business", "enterprise"];

@@ -8,7 +8,13 @@ Single place for **public identity**, **anchor sync**, **CI / Vitest public orig
 
 | Path | Role | Hand edit? |
 |------|------|------------|
-| `config/public-product-anchors.json` | Authoritative: `identityOneLiner`, `productionCanonicalOrigin`, git/npm/bugs URLs, `keywords` | Yes |
+| `config/public-product-anchors.json` | Authoritative: `identityOneLiner`, `productionCanonicalOrigin`, **`distributionConsumerRepository`** (owner/name), git/npm/bugs URLs, `keywords` | Yes |
+| `docs/distribution-product-requirement.md` | REQ-DIST stakeholder requirement prose | Yes |
+| `scripts/distribution-consumer-pipeline.mjs` | Cross-repo consumer lifecycle + P6.5 + P7 + P8 proof | No (logic) |
+| `src/publicDistribution.generated.ts` | CLI footer URL (from sync) | No |
+| `src/distributionFooter.ts` | Re-export footer for CLI | Yes (thin) |
+| `AGENTS.md` | Agent pointer to SSOT | No (sync-written) |
+| `test/distribution-*.test.mjs` | Clause, traceability, pipeline unit tests | No |
 | `config/discovery-acquisition.json` | Acquisition copy, visitor problem answer, homepage CTA label, `llms` appendix arrays, README fold template; consumed by sync and the website | Yes |
 | `config/discovery-acquisition.schema.json` | JSON Schema (draft-07): product-law patterns on `visitorProblemAnswer`, required fields | Yes |
 | `scripts/discovery-acquisition.lib.cjs` | Validate discovery JSON, build README fold body (including appended acquisition markdown link), append `llms.txt` discovery sections | No (logic) |
@@ -78,3 +84,73 @@ if (!skip && normalize(process.env.NEXT_PUBLIC_APP_URL) !== normalize(canonicalF
 ### `distribution-graph.test.ts` and visitor outcome
 
 **`npm run validate-commercial`** from repo root runs, in order after `drizzle-kit migrate`: **`node --test test/visitor-problem-outcome.test.mjs`** (README discovery fold strict equality + schema validation), then **`npx vitest run`** in `website/` (includes `website/__tests__/distribution-graph.test.ts`). Requires Postgres **`DATABASE_URL`**, injected public origin, and full harness. Running bare `cd website && npx vitest` without that harness is **unsupported** for `distribution-graph.test.ts`.
+
+---
+
+## Distribution consumer pipeline (normative)
+
+**Requirement prose SSOT:** [`distribution-product-requirement.md`](distribution-product-requirement.md) (`### REQ-DIST-*` headings). **Clause heading set** must equal the **Clause ID** set in the traceability table below (enforced by `test/distribution-requirement-clauses.test.mjs` + `test/distribution-ssot-clause-coverage.test.mjs`).
+
+**Implementation entrypoint:** [`scripts/distribution-consumer-pipeline.mjs`](../scripts/distribution-consumer-pipeline.mjs) (repo root). **Consumer repository** full name (e.g. `owner/name`) is **`distributionConsumerRepository`** in [`config/public-product-anchors.json`](../config/public-product-anchors.json).
+
+**GitHub CLI:** all remote operations use **`gh`** with JSON where specified. **`GITHUB_TOKEN`** (or **`DISTRIBUTION_GITHUB_TOKEN`** when set) must allow **`repo`** workflow scope on the consumer and read access to the primary repo as needed.
+
+### Stable proof vocabulary (literal binding)
+
+For **`REQ-DIST-004`** and **`REQ-DIST-005`** traceability rows, the **Implementation** cell must contain these **four** case-sensitive substrings anywhere in the cell: **`run-name`**, **`distribution-proof`**, **`proof.json`**, **`foreign_smoke_fixture_sha256`**. They are the minimum stable identifiers tying list API / YAML **`run-name`**, artifact **`name`** / directory **`distribution-proof`**, the proof file **`proof.json`**, and the JSON field **`foreign_smoke_fixture_sha256`**. Renames require a coordinated plan revision and test updates.
+
+### Traceability (Clause ID set equals requirement headings)
+
+<!-- distribution-traceability-table:start -->
+<!-- distribution-traceability-literals:start -->
+
+| Clause ID | Requirement summary | Implementation | Evidence |
+|-----------|--------------------|----------------|----------|
+| REQ-DIST-001 | Consumer repo exists, `main` default, Actions on | **P1–P4** in [`scripts/distribution-consumer-pipeline.mjs`](../scripts/distribution-consumer-pipeline.mjs): `gh api repos/{consumer}`; default branch; `actions/permissions` | CI job **`distribution-consumer`** |
+| REQ-DIST-002 | Published `foreign-smoke.yml` bytes match verified fixture | **P5–P6**: `gh api` Contents `PUT` / `GET`; drift `WORKFLOW_DRIFT_AFTER_PUT` | Same |
+| REQ-DIST-003 | Indexed workflow + Actions post-publish | **P6.5(c)(d)**: `gh workflow view foreign-smoke.yml` retry **5s / 120s**; second permissions `GET` | Same |
+| REQ-DIST-004 | Proof without `gh run view` inputs: list by **`run-name`**, artifact **`distribution-proof`**, file **`proof.json`**, field **`foreign_smoke_fixture_sha256`** | **P8** in script + generated consumer YAML: `run-name`, `distribution-proof`, `proof.json`, `foreign_smoke_fixture_sha256` | `test/distribution-consumer-pipeline.test.mjs` |
+| REQ-DIST-005 | Merge gate runs distribution last | [`.github/workflows/ci.yml`](../.github/workflows/ci.yml) job **`distribution-consumer`** with **`needs: [test, commercial]`**; `if` canonical repo + `main`; **P7** dispatch + **P8** proof; consumer list key **`run-name`**; artifact **`distribution-proof`**; **`proof.json`**; JSON **`foreign_smoke_fixture_sha256`** | Green **`distribution-consumer`** on `main` |
+| REQ-DIST-006 | Docs link SSOT | This file + [`workflow-verifier.md`](workflow-verifier.md) pointer | Doc tests |
+
+<!-- distribution-traceability-literals:end -->
+<!-- distribution-traceability-table:end -->
+
+### Strip-hash env line (`FOREIGN_SMOKE_FIXTURE_SHA256`)
+
+**Normative:** Define **`stripForeignSmokeBodyForHash(yamlUtf8)`** as UTF-8 of the workflow text **after** removing the injected job-level block consisting of **`env:`** on one line and the following line whose trimmed content starts with **`FOREIGN_SMOKE_FIXTURE_SHA256:`** (regex removal plus a safety line-filter for that prefix). **`FIXTURE_SHA256`** is **`sha256(stripForeignSmokeBodyForHash(fullYaml))`**. The generator builds YAML **without** that block, computes **`FIXTURE_SHA256`**, then inserts the block between **`runs-on`** and **`steps`**:
+
+```yaml
+    env:
+      FOREIGN_SMOKE_FIXTURE_SHA256: "<64 lowercase hex chars>"
+```
+
+If recompute after injection does not match the literal → **`FIXTURE_HASH_INJECTION_FAILED`** (build-time, before HTTP).
+
+### Post-publish gate **P6.5** (single phase, ordered)
+
+Sub-steps **(a)** ref parity `PUT` response `commit.sha` vs `refs/heads/main` (**`WORKFLOW_REF_MISMATCH`** / **`WORKFLOW_FIRST_COMMIT_BLOCKED`**). **(b)** `GET` Contents `foreign-smoke.yml`, decode base64, SHA-256 must equal **`FIXTURE_SHA256`** from the same in-memory fixture bytes as **P5/P6** → else **`PRE_DISPATCH_CONTENT_HASH_MISMATCH`**. **(c)** `gh workflow view foreign-smoke.yml` retry window **5s** interval, **120s** max → **`WORKFLOW_NOT_INDEXED`**. **(d)** `GET …/actions/permissions` → **`CONSUMER_ACTIONS_DISABLED_POST_PUBLISH`**. **(e)** Record **`T_DISPATCH_BEFORE`** (UTC ms, `Date.now()` once) and **`correlation_id`** = **`<github.repository>#<github.run_id>`** (primary workflow only).
+
+### **P8** poll, download, proof (authoritative)
+
+**Fixed window:** **`T_WINDOW_START_MS = T_DISPATCH_BEFORE - 5000`**, never recomputed from wall clock per poll.
+
+1. **`gh run list`** `--workflow foreign-smoke.yml` `--event workflow_dispatch` `--json databaseId,name,createdAt,status,conclusion`.
+2. **`C`:** exact **`name ===`** `distribution-consumer-<correlation_id>` and **`createdAt` ≥ `T_WINDOW_START_MS`** (ISO timestamps from API parsed to ms).
+3. **`S`:** `C ∩ { conclusion === "success" }`. If **`S`** non-empty, **`R`** = sort **`S`** by **`createdAt` desc**, tie-break **`databaseId` desc** as decimal **BigInt**; take first. **No** failure for multiplicity alone.
+4. Poll **15s** interval, **900s** max. When **`R`** defined → exit poll → download. **On timeout** without **`R`**: **`STALE_SUCCESS_IGNORED`** iff every poll had **`C` empty** and some in-window **`success`** existed on any poll; else **`NO_RUN_WITHIN_POLL`** (evaluate stale rule first).
+5. **`gh run download <R.databaseId> -n distribution-proof -D <tmp>`**; accept only **`<tmp>/distribution-proof/proof.json`**; **`readdir`** gates per plan (**`PROOF_ARTIFACT_MISMATCH`**).
+6. JSON keys exactly **`correlation_id`**, **`verifier_sha`**, **`foreign_smoke_fixture_sha256`**. Compare to dispatched values and **`FIXTURE_SHA256`** → **`CORRELATION_PROOF_MISMATCH`**, **`VERIFIER_SHA_PROOF_MISMATCH`**, **`FIXTURE_HASH_PROOF_MISMATCH`** respectively.
+7. **Never** use **`gh run view --json inputs`** for acceptance.
+
+### Consumer `foreign-smoke.yml` (generated shape)
+
+- Top-level **`run-name:`** exactly `distribution-consumer-${{ inputs.correlation_id }}`.
+- **`workflow_dispatch`** inputs **`verifier_sha`**, **`correlation_id`** (required).
+- Job **`foreign-smoke`**: checkout primary repo **tag or ref matching `verifier_sha`** is optional; minimal path uses **`npm install workflow-verifier`** then **`npx workflow-verifier`** against **`examples/`** with **`--no-truth-report`**; proof step **`if: success()`** writes **`proof.json`**; **`actions/upload-artifact@v4`** **`name: distribution-proof`**, **`path: proof.json`**, **`if: success()`**.
+
+### Failure codes (pipeline stderr JSON)
+
+Structured stderr line: `{"distributionPipeline":true,"code":"<CODE>","message":"<text>"}`. Non-zero exit **1** for pipeline failures.
+
+Includes at least: **`CONSUMER_GET_FAILED`**, **`WORKFLOW_PUT_FAILED`**, **`WORKFLOW_REF_MISMATCH`**, **`WORKFLOW_DRIFT_AFTER_PUT`**, **`PRE_DISPATCH_CONTENT_HASH_MISMATCH`**, **`WORKFLOW_NOT_INDEXED`**, **`CONSUMER_ACTIONS_DISABLED`**, **`CONSUMER_ACTIONS_DISABLED_POST_PUBLISH`**, **`CONSUMER_DEFAULT_BRANCH_NOT_MAIN`**, **`DISPATCH_NOT_ACCEPTED`**, **`NO_RUN_WITHIN_POLL`**, **`STALE_SUCCESS_IGNORED`**, **`PROOF_ARTIFACT_MISMATCH`**, **`PROOF_ARTIFACT_DOWNLOAD_FAILED`**, **`CORRELATION_PROOF_MISMATCH`**, **`VERIFIER_SHA_PROOF_MISMATCH`**, **`FIXTURE_HASH_PROOF_MISMATCH`**, **`FIXTURE_HASH_INJECTION_FAILED`**.

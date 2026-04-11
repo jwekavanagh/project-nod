@@ -11,6 +11,7 @@ import {
   RETRY_OBSERVATIONS_DIVERGE_MESSAGE,
 } from "../dist/failureCatalog.js";
 import { formatWorkflowTruthReport } from "../dist/workflowTruthReport.js";
+import { formatDistributionFooter } from "../dist/distributionFooter.js";
 import { loadSchemaValidator } from "../dist/schemaLoad.js";
 import { loadCorpusRun, resolveCorpusRootReal } from "../dist/debugCorpus.js";
 import { loadEventsForWorkflow } from "../dist/loadEvents.js";
@@ -63,7 +64,12 @@ describe("CLI workflow-verifier", () => {
     const parsed = JSON.parse(stdout);
     const validateResult = loadSchemaValidator("workflow-result");
     assert.equal(validateResult(parsed), true);
-    assert.equal(stderr, formatWorkflowTruthReport(parsed).replace(/\r\n/g, "\n"));
+    const expected = (
+      formatWorkflowTruthReport(parsed).replace(/\r\n/g, "\n") +
+      "\n" +
+      formatDistributionFooter()
+    ).replace(/\n$/, "");
+    assert.equal(stderr, expected);
   });
 
   it("--no-truth-report: stderr empty; stdout schema-valid wf_complete", () => {

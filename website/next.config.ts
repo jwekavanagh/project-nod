@@ -1,22 +1,18 @@
 import type { NextConfig } from "next";
 import { createRequire } from "node:module";
 import path from "path";
-import { assertContactSalesEmail } from "./src/lib/contactSalesEmail";
 
 const require = createRequire(import.meta.url);
 require("../scripts/public-product-anchors.cjs").assertNextPublicOriginParity();
 
-assertContactSalesEmail();
-
 /**
  * `outputFileTracingRoot` helps Vercel/monorepo serverless traces include the repo root.
  * On Windows + OneDrive, tracing extra roots can worsen EBUSY locks during `next build`;
- * disable locally unless deploying (set NEXT_CONFIG_TRACE_ROOT=1).
+ * disable locally unless deploying (set NEXT_CONFIG_TRACE_ROOT=1) or building on Vercel.
  */
+const vercelLike = process.env.VERCEL === "1" || process.env.VERCEL === "production" || Boolean(process.env.VERCEL);
 const traceRoot =
-  process.env.NEXT_CONFIG_TRACE_ROOT === "1"
-    ? path.join(__dirname, "..")
-    : undefined;
+  vercelLike || process.env.NEXT_CONFIG_TRACE_ROOT === "1" ? path.join(__dirname, "..") : undefined;
 
 const nextConfig: NextConfig = {
   serverExternalPackages: ["nodemailer", "postgres", "workflow-verifier"],

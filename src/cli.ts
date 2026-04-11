@@ -58,6 +58,7 @@ import { runAssuranceFromManifest } from "./assurance/runAssurance.js";
 import { runLicensePreflightIfNeeded } from "./commercial/licensePreflight.js";
 import { LICENSE_PREFLIGHT_ENABLED } from "./generated/commercialBuildFlags.js";
 import { runBatchCiLockFromRestArgs, runQuickCiLockFromRestArgs } from "./ciLockWorkflow.js";
+import { formatDistributionFooter } from "./distributionFooter.js";
 
 function usageQuick(): string {
   return `Usage:
@@ -553,6 +554,7 @@ async function runQuickSubcommand(args: string[]): Promise<void> {
     postgresUrl: postgresUrl !== undefined,
   });
   console.error(human);
+  process.stderr.write(formatDistributionFooter());
   if (report.verdict === "pass") process.exit(0);
   if (report.verdict === "fail") process.exit(1);
   process.exit(2);
@@ -1085,7 +1087,14 @@ async function main(): Promise<void> {
         registryPath: parsedBatch.registryPath,
         database: parsedBatch.database,
         verificationPolicy: parsedBatch.verificationPolicy,
-        ...(parsedBatch.noTruthReport ? { truthReport: () => {} } : {}),
+        ...(parsedBatch.noTruthReport ?
+          { truthReport: () => {} }
+        : {
+            truthReport: (report: string) => {
+              process.stderr.write(`${report}\n`);
+              process.stderr.write(formatDistributionFooter());
+            },
+          }),
       }),
     maybeWriteBundle:
       parsedBatch.writeRunBundleDir === undefined
