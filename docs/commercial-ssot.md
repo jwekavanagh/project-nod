@@ -55,6 +55,39 @@ Forks: build with `oss` to omit the gate.
 - **Auth:** none
 - **200:** `{"schemaVersion", "plans"}` with public fields only (no Stripe price env key names). Same shapes as the OpenAPI `CommercialPlansResponse` component.
 
+## Subscription state, Stripe webhooks, and account API
+
+**Normative detail for billing sync, post-checkout UX, and deletion semantics lives here** (do not duplicate in other docs—link to this section).
+
+### Stripe → database
+
+- Webhooks: **`checkout.session.completed`**, **`customer.subscription.updated`**, **`customer.subscription.deleted`** (see [`website/README.md`](../website/README.md) for operator env).
+- **`user.stripe_price_id`:** nullable; stores the primary recurring Stripe **Price** id from the subscription object. Used to compute **`priceMapping`** (`mapped` vs `unmapped`) on the account API without calling Stripe on every page load.
+- **Tier (`user.plan`) for self-serve prices:** derived from that Price id via the same env-backed mapping as [`config/commercial-plans.json`](../config/commercial-plans.json) (`STRIPE_PRICE_*`). Checkout **metadata.plan** is not the long-term authority for tier.
+- **Unknown Price id:** `plan` is left unchanged; `stripe_price_id` still records the id; logs `stripe_price_unmapped`; account shows **`priceMapping: unmapped`** and entitlement copy includes an operator-contact suffix.
+
+### `customer.subscription.deleted`
+
+Single row semantics (match subscription + customer when possible; else fall back to customer id):
+
+- **`subscription_status`** → `inactive`
+- **`plan`** → `starter`
+- **`stripe_subscription_id`** and **`stripe_price_id`** → `null`
+- **`stripe_customer_id`** unchanged (reuse for a future checkout)
+
+### HTTP — `GET /api/account/commercial-state` (session cookie)
+
+- **Auth:** signed-in website user (NextAuth session).
+- **Query:** optional **`expectedPlan`** = `individual` | `team` | `business` only; any other value → **400**.
+- **200 body (always):** `plan`, `subscriptionStatus`, `priceMapping`, `entitlementSummary`, `checkoutActivationReady`.
+- **`checkoutActivationReady`:** `true` only when the query includes a valid **`expectedPlan`** and the user row satisfies **`plan === expectedPlan`**, **`subscriptionStatus === active`**, **`priceMapping === mapped`**, and licensed **`verify`** would proceed per [`website/src/lib/commercialEntitlement.ts`](../website/src/lib/commercialEntitlement.ts) (no emergency flag). Used by **`/account`** after Checkout success polling. **Trialing** in Stripe maps to **`active`** in the DB ([`website/src/lib/stripeSubscriptionStatus.ts`](../website/src/lib/stripeSubscriptionStatus.ts)).
+
+**OpenAPI:** this route is **not** part of [`schemas/openapi-commercial-v1.yaml`](../schemas/openapi-commercial-v1.yaml).
+
+### Operator verification
+
+From the repo root, **`npm run validate-commercial`** requires **`DATABASE_URL`**, runs **`drizzle-kit migrate`** in **`website/`**, then full website Vitest (including funnel DB tests).
+
 ## Machine contracts (OpenAPI)
 
 - **Normative file (repo):** [`schemas/openapi-commercial-v1.yaml`](../schemas/openapi-commercial-v1.yaml)

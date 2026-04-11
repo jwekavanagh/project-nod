@@ -2,21 +2,23 @@
 
 This document is the **hand-authored** source for **why** the product gates certain capabilities. Machine-readable entitlement rows live in [`config/commercial-entitlement-matrix.v1.json`](../config/commercial-entitlement-matrix.v1.json). The generated table is [`commercial-entitlement-matrix.md`](commercial-entitlement-matrix.md).
 
+**Implementation SSOT (reserve bodies, codes, Stripe lifecycle, account `commercial-state`, deletion policy):** **[`docs/commercial-ssot.md`](commercial-ssot.md)** — section *Subscription state, Stripe webhooks, and account API*.
+
 The **OSS** default build does not expose **`enforce`** (exit **`ENFORCE_REQUIRES_COMMERCIAL_BUILD`**); entitlement rows below apply to **commercial** CLI builds. See **[`docs/commercial-enforce-gate-normative.md`](commercial-enforce-gate-normative.md)**.
 
 ## Why licensed `verify` requires an active subscription
 
-Batch and quick **verification** with the **published npm** package (`intent=verify` on `POST /api/v1/usage/reserve`) is the **primary product outcome**. It requires an **active** Stripe-backed subscription on **Individual, Team, Business, or Enterprise** (including **trialing**). **Starter** accounts may sign in and obtain an API key but **cannot** pass license preflight for `verify` until they subscribe (`VERIFICATION_REQUIRES_SUBSCRIPTION`). **Monthly quota** still applies after entitlement allows the run.
+The **published npm** path is gated in **`POST /api/v1/usage/reserve`** so contract **`verify`** (and related licensed flows) require an **active** Stripe-backed subscription on a paid-capable plan (including **trialing**). **Starter** cannot pass **`verify`** until they subscribe (`VERIFICATION_REQUIRES_SUBSCRIPTION`). **Monthly quota** still applies once entitlement allows the run. See the SSOT section above for the exact HTTP contract and CLI preflight behavior (including **`SUBSCRIPTION_INACTIVE`** and **`upgrade_url`** on denials).
 
 **OSS builds** from source (`WF_BUILD_PROFILE=oss`) do not call the license server and are not subscription-gated—see README and [`commercial-enforce-gate-normative.md`](commercial-enforce-gate-normative.md).
 
 ## Why `enforce` and CI locks share the same paid gate
 
-**Enforcement** (`workflow-verifier enforce …`, `intent=enforce`) and **CI lock** flags on batch/quick verify (`--output-lock` / `--expect-lock`) use **`intent=enforce`** on reserve. Both require the same **active subscription** on a paid-capable plan as licensed `verify`.
+**Enforcement** and **CI lock** paths use **`intent=enforce`** on reserve with the same active-subscription requirement as licensed **`verify`** (SSOT).
 
 ## Why `starter` cannot `verify` or `enforce` on commercial npm
 
-The **starter** plan is an **account + upgrade path** only on the commercial surface. **`verify`** returns `VERIFICATION_REQUIRES_SUBSCRIPTION`; **`enforce`** returns `ENFORCEMENT_REQUIRES_PAID_PLAN`, each with an upgrade URL.
+The **starter** plan is an **account + upgrade path** on the commercial surface. **`verify`** returns `VERIFICATION_REQUIRES_SUBSCRIPTION`; **`enforce`** returns `ENFORCEMENT_REQUIRES_PAID_PLAN`, each with an **`upgrade_url`** when the license server provides one.
 
 ## `RESERVE_EMERGENCY_ALLOW`
 

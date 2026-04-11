@@ -96,6 +96,13 @@ export async function runLicensePreflightIfNeeded(
               `${body.message || "Licensed verification requires an active subscription."}${suffix}`,
             );
           }
+          if (body.code === "SUBSCRIPTION_INACTIVE") {
+            const suffix = body.upgrade_url ? ` ${body.upgrade_url}` : "";
+            throw new TruthLayerError(
+              CLI_OPERATIONAL_CODES.LICENSE_DENIED,
+              `${body.message || "Subscription is not active for licensed verification or CI enforcement."}${suffix}`,
+            );
+          }
           throw new TruthLayerError(
             CLI_OPERATIONAL_CODES.LICENSE_DENIED,
             body.message || `License check failed (${body.code}).`,

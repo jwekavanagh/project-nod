@@ -77,6 +77,27 @@ describe("runLicensePreflightIfNeeded", () => {
     );
   });
 
+  it("throws LICENSE_DENIED with upgrade_url for SUBSCRIPTION_INACTIVE", async () => {
+    process.env.WORKFLOW_VERIFIER_API_KEY = "wf_sk_live_test";
+    vi.mocked(fetch).mockResolvedValue(
+      new Response(
+        JSON.stringify({
+          allowed: false,
+          code: "SUBSCRIPTION_INACTIVE",
+          message: "Subscription is not active.",
+          upgrade_url: "https://example.com/pricing",
+        }),
+        { status: 403, headers: { "Content-Type": "application/json" } },
+      ),
+    );
+    await expect(runLicensePreflightIfNeeded("verify")).rejects.toSatisfy(
+      (e: unknown) =>
+        e instanceof TruthLayerError &&
+        e.code === CLI_OPERATIONAL_CODES.LICENSE_DENIED &&
+        e.message.includes("https://example.com/pricing"),
+    );
+  });
+
   it("throws ENFORCEMENT_REQUIRES_PAID_PLAN when server returns that code", async () => {
     process.env.WORKFLOW_VERIFIER_API_KEY = "wf_sk_live_test";
     vi.mocked(fetch).mockResolvedValue(

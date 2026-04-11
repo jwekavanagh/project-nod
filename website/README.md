@@ -66,9 +66,11 @@ Architecture, contracts, and operator checklist: **[`docs/website-product-experi
 
 Configure Stripe to send at least:
 
-- **`checkout.session.completed`** — checkout success; user plan / subscription updates.
-- **`customer.subscription.updated`** — keeps **`subscription_status`** in sync (**`active`** vs **`inactive`**).
-- **`customer.subscription.deleted`** — subscription ended.
+- **`checkout.session.completed`** — checkout success; syncs **`user.plan`** from the subscription’s primary Stripe Price id, **`subscription_status`**, Stripe ids, and **`stripe_price_id`** (see **[`docs/commercial-ssot.md`](../docs/commercial-ssot.md)** — *Subscription state, Stripe webhooks, and account API*).
+- **`customer.subscription.updated`** — same fields as checkout, keyed by Stripe customer (and subscription id when present).
+- **`customer.subscription.deleted`** — sets **`subscription_status`** inactive, **`plan`** to **`starter`**, clears subscription and price ids; keeps **`stripe_customer_id`**.
+
+**Account (signed-in):** **`GET /api/account/commercial-state`** returns `plan`, `subscriptionStatus`, `priceMapping`, `entitlementSummary`, and **`checkoutActivationReady`** (optional query **`expectedPlan=individual|team|business`** for post-checkout polling). Not in OpenAPI; SSOT in **`docs/commercial-ssot.md`**.
 
 Set **`STRIPE_WEBHOOK_SECRET`** from `stripe listen --forward-to …/api/webhooks/stripe`. Use a Postgres **`DATABASE_URL`** with migrations applied.
 

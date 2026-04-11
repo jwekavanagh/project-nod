@@ -189,11 +189,28 @@ describe("unauthenticated checkout", () => {
 });
 
 describe("subscription_checkout_completed", () => {
-  it("applyStripeWebhookEvent updates user and logs funnel", async () => {
+  afterEach(() => {
+    vi.unstubAllEnvs();
+    vi.mocked(getStripe).mockReset();
+  });
+
+  it("applyStripeWebhookEvent updates user from Stripe subscription price and logs funnel", async () => {
+    vi.stubEnv("STRIPE_PRICE_TEAM", "price_sub_fixture_team");
     const [u] = await db
       .insert(users)
       .values({ email: "sub-1@example.com", emailVerified: new Date(), plan: "starter" })
       .returning();
+    vi.mocked(getStripe).mockReturnValue({
+      subscriptions: {
+        retrieve: vi.fn().mockResolvedValue({
+          id: "sub_x",
+          customer: "cus_x",
+          status: "active",
+          items: { data: [{ price: { id: "price_sub_fixture_team" } }] },
+        }),
+      },
+    } as unknown as ReturnType<typeof getStripe>);
+
     const event = {
       id: `evt_test_${crypto.randomUUID()}`,
       object: "event",
@@ -202,7 +219,7 @@ describe("subscription_checkout_completed", () => {
         object: {
           id: "cs_test",
           object: "checkout.session",
-          metadata: { userId: u!.id, plan: "team" },
+          metadata: { userId: u!.id, plan: "individual" },
           customer: "cus_x",
           subscription: "sub_x",
         },
@@ -213,6 +230,7 @@ describe("subscription_checkout_completed", () => {
 
     const row = await db.select().from(users).where(eq(users.id, u!.id)).limit(1);
     expect(row[0]?.plan).toBe("team");
+    expect(row[0]?.stripePriceId).toBe("price_sub_fixture_team");
     expect(row[0]?.subscriptionStatus).toBe("active");
     const fun = await db
       .select()
@@ -220,6 +238,50 @@ describe("subscription_checkout_completed", () => {
       .where(eq(funnelEvents.event, "subscription_checkout_completed"));
     expect(fun).toHaveLength(1);
     expect(fun[0]?.userId).toBe(u!.id);
+    expect((fun[0]?.metadata as { plan?: string })?.plan).toBe("team");
+  });
+});
+
+describe("customer.subscription.deleted", () => {
+  afterEach(() => {
+    vi.mocked(getStripe).mockReset();
+  });
+
+  it("resets plan to starter and clears subscription fields", async () => {
+    const [u] = await db
+      .insert(users)
+      .values({
+        email: "sub-del@example.com",
+        emailVerified: new Date(),
+        plan: "team",
+        subscriptionStatus: "active",
+        stripeCustomerId: "cus_del",
+        stripeSubscriptionId: "sub_del",
+        stripePriceId: "price_x",
+      })
+      .returning();
+
+    const event = {
+      id: `evt_test_${crypto.randomUUID()}`,
+      object: "event",
+      type: "customer.subscription.deleted",
+      data: {
+        object: {
+          id: "sub_del",
+          object: "subscription",
+          customer: "cus_del",
+        },
+      },
+    } as unknown as Stripe.Event;
+
+    await applyStripeWebhookEvent(event);
+
+    const row = await db.select().from(users).where(eq(users.id, u!.id)).limit(1);
+    expect(row[0]?.plan).toBe("starter");
+    expect(row[0]?.subscriptionStatus).toBe("inactive");
+    expect(row[0]?.stripeSubscriptionId).toBeNull();
+    expect(row[0]?.stripePriceId).toBeNull();
+    expect(row[0]?.stripeCustomerId).toBe("cus_del");
   });
 });
 

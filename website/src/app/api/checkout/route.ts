@@ -61,7 +61,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     mode: "subscription",
     customer_email: session.user.email,
     line_items: [{ price: priceId, quantity: 1 }],
-    success_url: `${base}/account?checkout=success`,
+    success_url: `${base}/account?checkout=success&expectedPlan=${encodeURIComponent(plan)}`,
     cancel_url: `${base}/pricing`,
     metadata: {
       userId: session.user.id,

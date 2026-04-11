@@ -22,6 +22,13 @@
       "when": 1775695066000,
       "tag": "0002_funnel_reserve_allowed",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1775695067000,
+      "tag": "0003_stripe_price_id",
+      "breakpoints": true
     }
   ]
 }

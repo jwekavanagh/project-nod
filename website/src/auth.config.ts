@@ -50,11 +50,18 @@ export const authConfig = {
         session.user.id = user.id;
         try {
           const row = await db
-            .select({ plan: users.plan })
+            .select({ plan: users.plan, subscriptionStatus: users.subscriptionStatus })
             .from(users)
             .where(eq(users.id, user.id))
             .limit(1);
-          (session.user as { plan?: string }).plan = row[0]?.plan ?? "starter";
+          const su = session.user as {
+            plan?: string;
+            subscriptionStatus?: "none" | "active" | "inactive";
+          };
+          su.plan = row[0]?.plan ?? "starter";
+          const ss = row[0]?.subscriptionStatus;
+          su.subscriptionStatus =
+            ss === "none" || ss === "active" || ss === "inactive" ? ss : "none";
         } catch (e) {
           if (process.env.NODE_ENV !== "development") {
             throw e;
@@ -63,7 +70,12 @@ export const authConfig = {
             "[auth] session plan lookup skipped (database unreachable?)",
             e,
           );
-          (session.user as { plan?: string }).plan = "starter";
+          const su = session.user as {
+            plan?: string;
+            subscriptionStatus?: "none" | "active" | "inactive";
+          };
+          su.plan = "starter";
+          su.subscriptionStatus = "none";
         }
       }
       return session;

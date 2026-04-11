@@ -21,6 +21,8 @@ export const users = pgTable("user", {
   plan: text("plan").notNull().default("starter"),
   stripeCustomerId: text("stripe_customer_id"),
   stripeSubscriptionId: text("stripe_subscription_id"),
+  /** Primary recurring Stripe Price id on the subscription; drives priceMapping on account API. */
+  stripePriceId: text("stripe_price_id"),
   subscriptionStatus: text("subscription_status").notNull().default("none"),
 });
 
