@@ -1,5 +1,5 @@
 {
-  "$id": "https://workflow-verifier/schemas/assurance-run-report-v1.schema.json",
+  "$id": "https://agentskeptic.com/schemas/assurance-run-report-v1.schema.json",
   "title": "AssuranceRunReportV1",
   "type": "object",
   "additionalProperties": false,

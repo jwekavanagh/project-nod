@@ -3,7 +3,7 @@ name: Outcome verification
 overview: Lock outcome verification to the existing SQLite-backed verifyWorkflow path with one new Vitest module and a doc mapping; every proof is black-box on emitted WorkflowResult plus one schema-validator assertion in that same file, and completion is only when npm test passes.
 todos:
   - id: doc-outcome-map
-    content: Add outcome verification acceptance → artifacts mapping subsection to docs/workflow-verifier.md
+    content: Add outcome verification acceptance → artifacts mapping subsection to docs/agentskeptic.md
     status: completed
   - id: req-tests
     content: Add src/verificationAgainstSystemState.requirements.test.ts (Vitest, verifyWorkflow-only, temp DB from examples/seed.sql)
@@ -96,7 +96,7 @@ flowchart LR
 
 ## Implementation
 
-1. **Documentation** — Add subsection **“Product requirements: outcome verification”** to [`docs/workflow-verifier.md`](c:/Users/kavan/OneDrive/projects/workflow-verifier/docs/workflow-verifier.md): map each acceptance bullet to `WorkflowResult` / `workflowTruthReport` fields and typical `reasons[].code` values, with links to Human truth report and Reconciler rule table. **Completion:** subsection merged; no new duplicate field tables (schemas stay SSOT).
+1. **Documentation** — Add subsection **“Product requirements: outcome verification”** to [`docs/agentskeptic.md`](c:/Users/kavan/OneDrive/projects/workflow-verifier/docs/agentskeptic.md): map each acceptance bullet to `WorkflowResult` / `workflowTruthReport` fields and typical `reasons[].code` values, with links to Human truth report and Reconciler rule table. **Completion:** subsection merged; no new duplicate field tables (schemas stay SSOT).
 
 2. **Tests** — Create [`src/verificationAgainstSystemState.requirements.test.ts`](c:/Users/kavan/OneDrive/projects/workflow-verifier/src/verificationAgainstSystemState.requirements.test.ts) implementing **exactly** the seven cases listed in Testing (fixed names below). **Completion:** file exists and `npm run test:vitest` includes it (default Vitest `include` already covers `src/**/*.test.ts`).
 

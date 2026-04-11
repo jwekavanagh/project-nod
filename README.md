@@ -18,7 +18,7 @@ Teams ship agent and automation workflows where traces, tool responses, and succ
 State verification engine: read-only SQL checks that database state matches expectations from structured tool activity (not arbitrary logs)—not proof of execution
 
 - **Repository:** https://github.com/jwekavanagh/workflow-verifier
-- **npm package:** https://www.npmjs.com/package/workflow-verifier
+- **npm package:** https://www.npmjs.com/package/agentskeptic
 - **Canonical site:** https://agentskeptic.com
 - **Integrate:** https://agentskeptic.com/integrate
 - **OpenAPI (canonical):** https://agentskeptic.com/openapi-commercial-v1.yaml
@@ -65,15 +65,15 @@ docker run --rm -it -v "${PWD}:/work" -w /work node:22-bookworm bash -lc "npm in
 
 ## How to run the CLI
 
-- **After `npm install` and `npm run build` in this repo:** use **`workflow-verifier`** (from `package.json` `bin`, pointing at `dist/cli.js`). Examples: `npm run workflow-verifier -- --help` or `npx workflow-verifier --help` from the repo root.
-- **From a published install** (when you install the `workflow-verifier` package): same command—**`workflow-verifier`** on your `PATH`.
-- **Explicit path from source:** **`node dist/cli.js`** — same entrypoint as **`workflow-verifier`**; use this when you want a literal path after **`npm run build`**.
+- **After `npm install` and `npm run build` in this repo:** use **`agentskeptic`** (from `package.json` `bin`, pointing at `dist/cli.js`). Examples: `npm run agentskeptic -- --help` or `npx agentskeptic --help` from the repo root.
+- **From a published install** (when you install the `agentskeptic` package): same command—**`agentskeptic`** on your `PATH`.
+- **Explicit path from source:** **`node dist/cli.js`** — same entrypoint as **`agentskeptic`**; use this when you want a literal path after **`npm run build`**.
 
 Postgres: use **`--postgres-url "postgresql://…"`** instead of **`--db <sqlitePath>`** (exactly one of the two).
 
 ## Minimal model (event → registry → result)
 
-**One structured observation** (NDJSON line; full schema in [Event line schema](docs/workflow-verifier.md#event-line-schema)):
+**One structured observation** (NDJSON line; full schema in [Event line schema](docs/agentskeptic.md#event-line-schema)):
 
 ```json
 {"schemaVersion":1,"workflowId":"wf_complete","seq":0,"type":"tool_observed","toolId":"crm.upsert_contact","params":{"recordId":"c_ok","fields":{"name":"Alice","status":"active"}}}
@@ -133,23 +133,23 @@ Retries, partial failures, and race conditions mean a success flag in a trace is
 
 Typical integration:
 
-1. Emit **one NDJSON line per tool observation** (see [Event line schema](docs/workflow-verifier.md#event-line-schema)).
+1. Emit **one NDJSON line per tool observation** (see [Event line schema](docs/agentskeptic.md#event-line-schema)).
 2. Add a **registry** entry per `toolId` (start from **`examples/templates/`**).
 3. Run verification:
 
 ```bash
 npm run build
-workflow-verifier --workflow-id <id> --events <path> --registry <path> --db <sqlitePath>
+agentskeptic --workflow-id <id> --events <path> --registry <path> --db <sqlitePath>
 ```
 
 Replay the bundled demo:
 
 ```bash
 npm run build
-workflow-verifier --workflow-id wf_complete --events examples/events.ndjson --registry examples/tools.json --db examples/demo.db
+agentskeptic --workflow-id wf_complete --events examples/events.ndjson --registry examples/tools.json --db examples/demo.db
 ```
 
-**From source without `workflow-verifier` on PATH:** `node dist/cli.js` with the same flags.
+**From source without `agentskeptic` on PATH:** `node dist/cli.js` with the same flags.
 
 **Why SQLite in the demo:** file-backed ground truth with no extra services. The demo (re)creates **`examples/demo.db`**; verification still uses read-only SQL.
 
@@ -158,24 +158,24 @@ workflow-verifier --workflow-id wf_complete --events examples/events.ndjson --re
 **Input contract:** We only accept **structured tool activity**—JSON or NDJSON that describes tool calls and parameters our ingest model can extract—not arbitrary logs, traces, or unstructured observability text.
 Verification uses read-only SQL against your database; API-only or non-SQL systems are out of scope for this tool.
 
-**Quick Verify** runs **`workflow-verifier quick`** with structured tool activity and a DB: inferred checks, no registry file. It is **provisional**—rollup pass/fail/uncertain is **not** an audit-final verdict; prefer **contract mode** when you need explicit per-tool expectations.
+**Quick Verify** runs **`agentskeptic quick`** with structured tool activity and a DB: inferred checks, no registry file. It is **provisional**—rollup pass/fail/uncertain is **not** an audit-final verdict; prefer **contract mode** when you need explicit per-tool expectations.
 
-Full behavior, stdout/stderr contracts, exit codes, and replay caveats: **[`docs/quick-verify-normative.md`](docs/quick-verify-normative.md)** and **[`docs/workflow-verifier.md`](docs/workflow-verifier.md)** (Quick Verify sections). Product framing: **[`docs/verification-product-ssot.md`](docs/verification-product-ssot.md)**.
+Full behavior, stdout/stderr contracts, exit codes, and replay caveats: **[`docs/quick-verify-normative.md`](docs/quick-verify-normative.md)** and **[`docs/agentskeptic.md`](docs/agentskeptic.md)** (Quick Verify sections). Product framing: **[`docs/verification-product-ssot.md`](docs/verification-product-ssot.md)**.
 
 ```bash
 npm run build
-workflow-verifier quick --input test/fixtures/quick-verify/pass-line.ndjson --db examples/demo.db --export-registry ./quick-export.json
+agentskeptic quick --input test/fixtures/quick-verify/pass-line.ndjson --db examples/demo.db --export-registry ./quick-export.json
 ```
 
 Use **`--postgres-url`** instead of **`--db`**; **`-`** as **`--input`** reads stdin.
 
 ## Confidence over time (assurance)
 
-**Trust over time** uses **`workflow-verifier assurance run`** with a versioned **manifest** (multi-scenario sweep by spawning the CLI) and **`workflow-verifier assurance stale`** to fail closed when a saved **`AssuranceRunReport`** is missing, invalid, or older than **`--max-age-hours`**. Bundled example manifest: **[`examples/assurance/manifest.json`](examples/assurance/manifest.json)**. Normative I/O and schemas: **[Assurance subsystem](docs/workflow-verifier.md#assurance-subsystem-normative)** in **`docs/workflow-verifier.md`**.
+**Trust over time** uses **`agentskeptic assurance run`** with a versioned **manifest** (multi-scenario sweep by spawning the CLI) and **`agentskeptic assurance stale`** to fail closed when a saved **`AssuranceRunReport`** is missing, invalid, or older than **`--max-age-hours`**. Bundled example manifest: **[`examples/assurance/manifest.json`](examples/assurance/manifest.json)**. Normative I/O and schemas: **[Assurance subsystem](docs/agentskeptic.md#assurance-subsystem-normative)** in **`docs/agentskeptic.md`**.
 
 ## Sample output (contract demo)
 
-The **`npm start`** driver prints the human report and workflow JSON to **stdout** (so one stream carries the story). Normal CLI use: machine JSON on **stdout**, human report on **stderr**—see [Human truth report](docs/workflow-verifier.md#human-truth-report).
+The **`npm start`** driver prints the human report and workflow JSON to **stdout** (so one stream carries the story). Normal CLI use: machine JSON on **stdout**, human report on **stderr**—see [Human truth report](docs/agentskeptic.md#human-truth-report).
 
 ### Success (`wf_complete`)
 
@@ -233,7 +233,7 @@ steps:
 | **Logs / traces** | A step ran, duration, errors—not “row X has columns Y.” |
 | **Unit / integration tests** | Code paths in your repo—not production agent runs against live DB state. |
 | **Metrics / APM** | Health and latency—not semantic equality of persisted records. |
-| **workflow-verifier** | Whether **observed SQL** matches **expectations from declared tool parameters** (contract mode), via read-only SQL—not proof the tool executed. |
+| **agentskeptic** | Whether **observed SQL** matches **expectations from declared tool parameters** (contract mode), via read-only SQL—not proof the tool executed. |
 
 ## When to run it
 
@@ -243,29 +243,29 @@ Run **after** a workflow (or CI replay of its log), **before** you treat the out
 
 **Typical uses:** block a release, trigger human review, open an incident, or attach a verification artifact to an audit trail.
 
-**CI with pinned outcomes:** **`workflow-verifier enforce`** and committed **`ci-lock-v1`** fixtures—[`docs/ci-enforcement.md`](docs/ci-enforcement.md).
+**CI with pinned outcomes:** **`agentskeptic enforce`** and committed **`ci-lock-v1`** fixtures—[`docs/ci-enforcement.md`](docs/ci-enforcement.md).
 
 ## Advanced features
 
-Optional capabilities; full detail in **[`docs/workflow-verifier.md`](docs/workflow-verifier.md)**.
+Optional capabilities; full detail in **[`docs/agentskeptic.md`](docs/agentskeptic.md)**.
 
 | Area | Entry |
 |------|--------|
-| **Cross-run compare** | `workflow-verifier compare` — [Cross-run comparison](docs/workflow-verifier.md#cross-run-comparison-normative) |
-| **Execution trace** | `workflow-verifier execution-trace` — [End-to-end execution visibility](docs/workflow-verifier.md#end-to-end-execution-visibility-normative) |
-| **In-process hook** | SQLite **`withWorkflowVerification`** — [Low-friction integration](docs/workflow-verifier.md#low-friction-integration-in-process) |
-| **Registry validation** | `workflow-verifier validate-registry` — [Registry validation](docs/workflow-verifier.md#registry-validation-validate-registry--normative) |
-| **Run bundles / signing** | [Agent run record](docs/workflow-verifier.md#agent-run-record-canonical-bundle), [Signing](docs/workflow-verifier.md#cryptographic-signing-of-workflow-result-normative) |
-| **Debug Console** | `workflow-verifier debug` — [Debug Console](docs/workflow-verifier.md#debug-console-normative) |
-| **Plan transition** | `workflow-verifier plan-transition` — [Plan transition validation](docs/workflow-verifier.md#plan-transition-validation-normative) |
+| **Cross-run compare** | `agentskeptic compare` — [Cross-run comparison](docs/agentskeptic.md#cross-run-comparison-normative) |
+| **Execution trace** | `agentskeptic execution-trace` — [End-to-end execution visibility](docs/agentskeptic.md#end-to-end-execution-visibility-normative) |
+| **In-process hook** | SQLite **`withWorkflowVerification`** — [Low-friction integration](docs/agentskeptic.md#low-friction-integration-in-process) |
+| **Registry validation** | `agentskeptic validate-registry` — [Registry validation](docs/agentskeptic.md#registry-validation-validate-registry--normative) |
+| **Run bundles / signing** | [Agent run record](docs/agentskeptic.md#agent-run-record-canonical-bundle), [Signing](docs/agentskeptic.md#cryptographic-signing-of-workflow-result-normative) |
+| **Debug Console** | `agentskeptic debug` — [Debug Console](docs/agentskeptic.md#debug-console-normative) |
+| **Plan transition** | `agentskeptic plan-transition` — [Plan transition validation](docs/agentskeptic.md#plan-transition-validation-normative) |
 
-Streams, exit codes, and operational errors: [Human truth report](docs/workflow-verifier.md#human-truth-report), [CLI operational errors](docs/workflow-verifier.md#cli-operational-errors).
+Streams, exit codes, and operational errors: [Human truth report](docs/agentskeptic.md#human-truth-report), [CLI operational errors](docs/agentskeptic.md#cli-operational-errors).
 
 ## Documentation map
 
 | Doc | Purpose |
 |-----|---------|
-| [`docs/workflow-verifier.md`](docs/workflow-verifier.md) | Authoritative CLI and behavior reference (SSOT) |
+| [`docs/agentskeptic.md`](docs/agentskeptic.md) | Authoritative CLI and behavior reference (SSOT) |
 | [`docs/quick-verify-normative.md`](docs/quick-verify-normative.md) | Quick Verify normative contract |
 | [`docs/verification-product-ssot.md`](docs/verification-product-ssot.md) | Product story and doc ownership |
 | [`docs/relational-verification.md`](docs/relational-verification.md) | Relational verification semantics |
@@ -282,9 +282,9 @@ Runs build, Vitest, SQLite Node tests, first-run demo, `assurance run`, the comm
 
 ## Commercial CLI (npm) vs OSS (this repo)
 
-- **Default `npm run build`** uses **`WF_BUILD_PROFILE=oss`**: contract **`verify`** does **not** call a license server or require **`WORKFLOW_VERIFIER_API_KEY`**. **`enforce`** and **`--output-lock` / `--expect-lock`** on batch or **`quick`** are **unavailable** in this profile — see **[`docs/commercial-enforce-gate-normative.md`](docs/commercial-enforce-gate-normative.md)**. Use OSS builds for local development, forks, and air-gapped **`verify`**.
+- **Default `npm run build`** uses **`WF_BUILD_PROFILE=oss`**: contract **`verify`** does **not** call a license server or require **`AGENTSKEPTIC_API_KEY`**. **`enforce`** and **`--output-lock` / `--expect-lock`** on batch or **`quick`** are **unavailable** in this profile — see **[`docs/commercial-enforce-gate-normative.md`](docs/commercial-enforce-gate-normative.md)**. Use OSS builds for local development, forks, and air-gapped **`verify`**.
 - **Published npm (commercial profile)** is built with **`npm run build:commercial`** and **`COMMERCIAL_LICENSE_API_BASE_URL`**; it **requires** an API key, an **active subscription** (Individual, Team, or Business self-serve, or Enterprise; trial counts) for **licensed** **batch**, **`quick`**, **CI lock flags**, and **`enforce`**, and successful **`POST /api/v1/usage/reserve`** preflight. **Entitlement matrix:** **[`docs/commercial-entitlement-matrix.md`](docs/commercial-entitlement-matrix.md)** (generated). **Policy:** **[`docs/commercial-entitlement-policy.md`](docs/commercial-entitlement-policy.md)**. **Machine contracts:** **`GET /api/v1/commercial/plans`** and **`/openapi-commercial-v1.yaml`** — **[`docs/commercial-ssot.md`](docs/commercial-ssot.md)**.
-- **Production CI** should install **`workflow-verifier@latest`** from npm, set **`WORKFLOW_VERIFIER_API_KEY`**, and use a reachable license API. Example: **[`examples/github-actions/workflow-verifier-commercial.yml`](examples/github-actions/workflow-verifier-commercial.yml)**.
+- **Production CI** should install **`agentskeptic@latest`** from npm, set **`AGENTSKEPTIC_API_KEY`** (legacy **`WORKFLOW_VERIFIER_API_KEY`** still accepted), and use a reachable license API. Example: **[`examples/github-actions/agentskeptic-commercial.yml`](examples/github-actions/agentskeptic-commercial.yml)**.
 - **Website + billing:** [`website/`](website/), **[`docs/commercial-ssot.md`](docs/commercial-ssot.md)**. First-run on your DB: **[`docs/first-run-integration.md`](docs/first-run-integration.md)** and **`/integrate`**.
 - **Validation:** `npm run validate-commercial` requires **`DATABASE_URL`**, runs **`drizzle-kit migrate`**, runs website Vitest, and writes [`artifacts/commercial-validation-verdict.json`](artifacts/commercial-validation-verdict.json). Set **`COMMERCIAL_VALIDATE_PLAYWRIGHT=1`** for Playwright; see **`scripts/run-commercial-e2e.mjs`**.
 

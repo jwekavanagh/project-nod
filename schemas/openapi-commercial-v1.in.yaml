@@ -4,7 +4,7 @@ info:
   version: "1.0.0"
   contact:
     url: __DISTRIBUTION_CONTACT_URL__
-  x-workflow-verifier-distribution:
+  x-agentskeptic-distribution:
     repository: __DISTRIBUTION_REPO_URL__
     npmPackage: __DISTRIBUTION_NPM_URL__
     openApi: __OPENAPI_SELF_URL__

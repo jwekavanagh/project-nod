@@ -10,7 +10,7 @@ export function readPackageIdentity(): { name: string; version: string } {
   const pkgPath = path.join(path.dirname(fileURLToPath(import.meta.url)), "..", "package.json");
   const raw = readFileSync(pkgPath, "utf8");
   const pkg = JSON.parse(raw) as { name?: string; version?: string };
-  const name = typeof pkg.name === "string" && pkg.name.length > 0 ? pkg.name : "workflow-verifier";
+  const name = typeof pkg.name === "string" && pkg.name.length > 0 ? pkg.name : "agentskeptic";
   const version = typeof pkg.version === "string" && pkg.version.length > 0 ? pkg.version : "0.0.0";
   return { name, version };
 }

@@ -2,7 +2,7 @@
 
 **Policy:** CI lock gating requires a **commercial** CLI build and license API; the OSS repo default build does not run **`enforce`** — see **[`docs/commercial-enforce-gate-normative.md`](commercial-enforce-gate-normative.md)**.
 
-This document is the **integrator SSOT** for pinning verification outcomes in CI. Lock **shape** is defined only in [`schemas/ci-lock-v1.schema.json`](../schemas/ci-lock-v1.schema.json). **Exit codes and stdout/stderr** for `enforce` are defined only in [workflow-verifier.md — Enforce stream contract (normative)](workflow-verifier.md#enforce-stream-contract-normative).
+This document is the **integrator SSOT** for pinning verification outcomes in CI. Lock **shape** is defined only in [`schemas/ci-lock-v1.schema.json`](../schemas/ci-lock-v1.schema.json). **Exit codes and stdout/stderr** for `enforce` are defined only in [agentskeptic.md — Enforce stream contract (normative)](agentskeptic.md#enforce-stream-contract-normative).
 
 ## Prerequisites (commercial CLI)
 
@@ -19,12 +19,12 @@ It does **not** replace full **`WorkflowResult`** / **`QuickVerifyReport`** on s
 
 ## Automation recipe
 
-**Canonical (same flags as plain verify / quick):** append exactly one of **`--output-lock`** or **`--expect-lock`** to your batch or **`quick`** command. **`workflow-verifier enforce batch|quick …`** remains a **compatibility alias** with identical lock semantics.
+**Canonical (same flags as plain verify / quick):** append exactly one of **`--output-lock`** or **`--expect-lock`** to your batch or **`quick`** command. **`agentskeptic enforce batch|quick …`** remains a **compatibility alias** with identical lock semantics.
 
 1. **Bootstrap (once per scenario):** run, for example,  
-   `workflow-verifier --workflow-id … --events … --registry … --db … --output-lock path/to/scenario.ci-lock-v1.json`  
+   `agentskeptic --workflow-id … --events … --registry … --db … --output-lock path/to/scenario.ci-lock-v1.json`  
    or  
-   `workflow-verifier quick --input … --db … --export-registry … --output-lock path/to/scenario.ci-lock-v1.json`  
+   `agentskeptic quick --input … --db … --export-registry … --output-lock path/to/scenario.ci-lock-v1.json`  
    Commit the file.
 2. **CI gate:** run the **same** command with **`--expect-lock`** pointing at the committed file instead of **`--output-lock`**. Exactly one of the two flags is required.
 3. **Review:** when intentional product changes alter pinned semantics, update the lock in the same change.

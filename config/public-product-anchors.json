@@ -4,7 +4,7 @@
   "productionCanonicalOrigin": "https://agentskeptic.com",
   "gitRepositoryUrl": "https://github.com/jwekavanagh/workflow-verifier",
   "gitRepositoryGitUrl": "git+https://github.com/jwekavanagh/workflow-verifier.git",
-  "npmPackageUrl": "https://www.npmjs.com/package/workflow-verifier",
+  "npmPackageUrl": "https://www.npmjs.com/package/agentskeptic",
   "bugsUrl": "https://github.com/jwekavanagh/workflow-verifier/issues",
   "keywords": [
     "agentskeptic",

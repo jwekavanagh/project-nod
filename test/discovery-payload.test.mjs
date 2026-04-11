@@ -125,11 +125,26 @@ test("selectPrCommentUpsert: update newest with marker", () => {
   assert.deepEqual(r, { action: "update", id: 3 });
 });
 
+test("selectPrCommentUpsert: update when only legacy marker present", () => {
+  const r = dp.selectPrCommentUpsert([{ id: 9, body: `x ${dp.PR_MARKER_LINE_LEGACY}` }], dp.PR_MARKER_LINE);
+  assert.deepEqual(r, { action: "update", id: 9 });
+});
+
 test("render-discovery-ci.mjs summary prints golden", () => {
   const r = spawnSync(process.execPath, [join(root, "scripts", "render-discovery-ci.mjs"), "summary"], {
     cwd: root,
     encoding: "utf8",
     env: { ...process.env, WFV_REPO_ROOT: root },
+  });
+  assert.equal(r.status, 0, r.stderr);
+  assert.equal(r.stdout, readFileSync(goldenSummary, "utf8"));
+});
+
+test("render-discovery-ci.mjs summary prints golden with AS_REPO_ROOT", () => {
+  const r = spawnSync(process.execPath, [join(root, "scripts", "render-discovery-ci.mjs"), "summary"], {
+    cwd: root,
+    encoding: "utf8",
+    env: { ...process.env, AS_REPO_ROOT: root },
   });
   assert.equal(r.status, 0, r.stderr);
   assert.equal(r.stdout, readFileSync(goldenSummary, "utf8"));
@@ -171,7 +186,7 @@ test("render-discovery-ci.mjs exits 2 on bad argv", () => {
   assert.ok((r.stderr + r.stdout).toLowerCase().includes("usage") || r.stderr.includes("Usage"));
 });
 
-test("examples/github-actions/workflow-verifier-commercial.yml references PR marker", () => {
-  const yml = readFileSync(join(root, "examples", "github-actions", "workflow-verifier-commercial.yml"), "utf8");
+test("examples/github-actions/agentskeptic-commercial.yml references PR marker", () => {
+  const yml = readFileSync(join(root, "examples", "github-actions", "agentskeptic-commercial.yml"), "utf8");
   assert.ok(yml.includes(dp.PR_MARKER_LINE));
 });

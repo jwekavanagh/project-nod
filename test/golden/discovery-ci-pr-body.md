@@ -11,4 +11,4 @@ _(no stderr)_
 - https://agentskeptic.com/integrate
 - https://github.com/jwekavanagh/workflow-verifier
 
-<!-- workflow-verifier-discovery:v1 -->
+<!-- agentskeptic-discovery:v1 -->

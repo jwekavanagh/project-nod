@@ -69,7 +69,7 @@ describe("writeAgentRunBundle signed rollback", () => {
           outDir,
           eventsNdjson: evBytes,
           workflowResult: wf,
-          producer: { name: "workflow-verifier", version: "test" },
+          producer: { name: "agentskeptic", version: "test" },
           verifiedAt: "2026-04-04T12:00:00.000Z",
           ed25519PrivateKeyPemPath: keyPath,
         }),

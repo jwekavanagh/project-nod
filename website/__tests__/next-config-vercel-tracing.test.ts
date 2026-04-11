@@ -1,3 +1,4 @@
+import path from "node:path";
 import { describe, expect, it, beforeEach, afterEach, vi } from "vitest";
 
 describe("next.config outputFileTracingRoot", () => {
@@ -22,7 +23,7 @@ describe("next.config outputFileTracingRoot", () => {
     process.env.VERCEL = "1";
     const mod = await import("../next.config");
     const cfg = mod.default as { outputFileTracingRoot?: string };
-    expect(cfg.outputFileTracingRoot).toMatch(/workflow-verifier$/);
+    expect(cfg.outputFileTracingRoot).toBe(path.resolve(path.join(__dirname, "..")));
   });
 
   it("omits outputFileTracingRoot when VERCEL unset and NEXT_CONFIG_TRACE_ROOT unset", async () => {

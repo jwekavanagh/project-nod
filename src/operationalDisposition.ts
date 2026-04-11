@@ -27,7 +27,7 @@ export type OperationalDispositionRow = {
 export const OPERATIONAL_DISPOSITION = {
   [CLI_OPERATIONAL_CODES.CLI_USAGE]: {
     origin: "inputs",
-    summary: "Invalid or incomplete CLI arguments for workflow-verifier.",
+    summary: "Invalid or incomplete CLI arguments for agentskeptic.",
     actionableCategory: "bad_input",
     actionableSeverity: "low",
     recommendedAction: "fix_cli_usage",
@@ -99,7 +99,7 @@ export const OPERATIONAL_DISPOSITION = {
   },
   [CLI_OPERATIONAL_CODES.INTERNAL_ERROR]: {
     origin: "workflow_flow",
-    summary: "Unexpected internal error in workflow-verifier.",
+    summary: "Unexpected internal error in agentskeptic.",
     actionableCategory: "control_flow_problem",
     actionableSeverity: "high",
     recommendedAction: "manual_review",
@@ -107,7 +107,7 @@ export const OPERATIONAL_DISPOSITION = {
   },
   [CLI_OPERATIONAL_CODES.COMPARE_USAGE]: {
     origin: "workflow_flow",
-    summary: "Invalid or incomplete arguments for workflow-verifier compare.",
+    summary: "Invalid or incomplete arguments for agentskeptic compare.",
     actionableCategory: "bad_input",
     actionableSeverity: "low",
     recommendedAction: "fix_cli_usage",
@@ -243,7 +243,7 @@ export const OPERATIONAL_DISPOSITION = {
   },
   [CLI_OPERATIONAL_CODES.PLAN_TRANSITION_USAGE]: {
     origin: "inputs",
-    summary: "Invalid or incomplete arguments for workflow-verifier plan-transition.",
+    summary: "Invalid or incomplete arguments for agentskeptic plan-transition.",
     actionableCategory: "bad_input",
     actionableSeverity: "low",
     recommendedAction: "fix_plan_transition_cli_and_refs",
@@ -343,7 +343,7 @@ export const OPERATIONAL_DISPOSITION = {
   },
   [CLI_OPERATIONAL_CODES.ENFORCE_USAGE]: {
     origin: "inputs",
-    summary: "Invalid or incomplete arguments for workflow-verifier enforce.",
+    summary: "Invalid or incomplete arguments for agentskeptic enforce.",
     actionableCategory: "bad_input",
     actionableSeverity: "low",
     recommendedAction: "fix_cli_usage",
@@ -367,7 +367,7 @@ export const OPERATIONAL_DISPOSITION = {
   },
   [CLI_OPERATIONAL_CODES.ASSURANCE_USAGE]: {
     origin: "inputs",
-    summary: "Invalid or incomplete arguments for workflow-verifier assurance.",
+    summary: "Invalid or incomplete arguments for agentskeptic assurance.",
     actionableCategory: "bad_input",
     actionableSeverity: "low",
     recommendedAction: "fix_cli_usage",
@@ -399,7 +399,7 @@ export const OPERATIONAL_DISPOSITION = {
   },
   [CLI_OPERATIONAL_CODES.ASSURANCE_REPO_ROOT_NOT_FOUND]: {
     origin: "workflow_flow",
-    summary: "Could not locate workflow-verifier package root from the manifest path.",
+    summary: "Could not locate agentskeptic package root from the manifest path.",
     actionableCategory: "control_flow_problem",
     actionableSeverity: "high",
     recommendedAction: "manual_review",
@@ -447,7 +447,7 @@ export const OPERATIONAL_DISPOSITION = {
   },
   [CLI_OPERATIONAL_CODES.ASSURANCE_STALE_USAGE]: {
     origin: "inputs",
-    summary: "Invalid or incomplete arguments for workflow-verifier assurance stale.",
+    summary: "Invalid or incomplete arguments for agentskeptic assurance stale.",
     actionableCategory: "bad_input",
     actionableSeverity: "low",
     recommendedAction: "fix_cli_usage",
@@ -455,7 +455,7 @@ export const OPERATIONAL_DISPOSITION = {
   },
   [CLI_OPERATIONAL_CODES.LICENSE_KEY_MISSING]: {
     origin: "inputs",
-    summary: "Commercial workflow-verifier requires WORKFLOW_VERIFIER_API_KEY for contract verification.",
+    summary: "Commercial agentskeptic requires AGENTSKEPTIC_API_KEY for contract verification (legacy WORKFLOW_VERIFIER_API_KEY accepted).",
     actionableCategory: "bad_input",
     actionableSeverity: "high",
     recommendedAction: "manual_review",
@@ -498,7 +498,7 @@ export const OPERATIONAL_DISPOSITION = {
   [CLI_OPERATIONAL_CODES.ENFORCE_REQUIRES_COMMERCIAL_BUILD]: {
     origin: "workflow_flow",
     summary:
-      "CI enforcement (enforce) and CI lock flags are not available in the OSS build; use the published workflow-verifier npm package or a commercial local build with a license API.",
+      "CI enforcement (enforce) and CI lock flags are not available in the OSS build; use the published agentskeptic npm package or a commercial local build with a license API.",
     actionableCategory: "control_flow_problem",
     actionableSeverity: "high",
     recommendedAction: "manual_review",

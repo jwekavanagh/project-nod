@@ -239,7 +239,7 @@ describe(
       );
       expect(yamlText.includes("example.invalid")).toBe(false);
 
-      const dist = info["x-workflow-verifier-distribution"] as Record<string, string>;
+      const dist = info["x-agentskeptic-distribution"] as Record<string, string>;
       expect(Object.keys(dist).sort()).toEqual(["npmPackage", "openApi", "repository"]);
       expect(String(dist.repository)).toBe(a.gitRepositoryUrl);
       expect(String(dist.npmPackage)).toBe(a.npmPackageUrl);

@@ -32,16 +32,20 @@ export async function runLicensePreflightIfNeeded(
 ): Promise<void> {
   if (!LICENSE_PREFLIGHT_ENABLED) return;
 
-  const apiKey = process.env.WORKFLOW_VERIFIER_API_KEY?.trim();
+  const apiKey =
+    process.env.AGENTSKEPTIC_API_KEY?.trim() ||
+    process.env.WORKFLOW_VERIFIER_API_KEY?.trim();
   if (!apiKey) {
     throw new TruthLayerError(
       CLI_OPERATIONAL_CODES.LICENSE_KEY_MISSING,
-      "Commercial workflow-verifier requires WORKFLOW_VERIFIER_API_KEY for contract verification. Sign in at the product website to obtain a key.",
+      "Commercial agentskeptic requires AGENTSKEPTIC_API_KEY for contract verification (legacy WORKFLOW_VERIFIER_API_KEY is still accepted). Sign in at the product website to obtain a key.",
     );
   }
 
   const runId =
-    process.env.WORKFLOW_VERIFIER_RUN_ID?.trim() || crypto.randomUUID();
+    process.env.AGENTSKEPTIC_RUN_ID?.trim() ||
+    process.env.WORKFLOW_VERIFIER_RUN_ID?.trim() ||
+    crypto.randomUUID();
   const issuedAt = new Date().toISOString();
   const url = `${LICENSE_API_BASE_URL.replace(/\/$/, "")}/api/v1/usage/reserve`;
 

@@ -1,5 +1,5 @@
 {
-  "$id": "https://workflow-verifier/schemas/assurance-manifest-v1.schema.json",
+  "$id": "https://agentskeptic.com/schemas/assurance-manifest-v1.schema.json",
   "title": "AssuranceManifestV1",
   "type": "object",
   "additionalProperties": false,

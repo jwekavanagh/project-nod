@@ -11,7 +11,7 @@ import { runBatchCiLockFromRestArgs, runQuickCiLockFromRestArgs } from "./ciLock
 
 /** User-facing message for OSS builds when `enforce` is invoked; exported for tests. */
 export const ENFORCE_OSS_GATE_MESSAGE =
-  "The OSS build cannot run workflow-verifier enforce (CI lock gating). Install the published npm package workflow-verifier, set WORKFLOW_VERIFIER_API_KEY, and point COMMERCIAL_LICENSE_API_BASE_URL at your license server; or run npm run build:commercial with COMMERCIAL_LICENSE_API_BASE_URL set. Policy: docs/commercial-enforce-gate-normative.md";
+  "The OSS build cannot run agentskeptic enforce (CI lock gating). Install the published npm package agentskeptic, set AGENTSKEPTIC_API_KEY (legacy WORKFLOW_VERIFIER_API_KEY accepted), and point COMMERCIAL_LICENSE_API_BASE_URL at your license server; or run npm run build:commercial with COMMERCIAL_LICENSE_API_BASE_URL set. Policy: docs/commercial-enforce-gate-normative.md";
 
 function writeCliError(code: string, message: string): void {
   console.error(cliErrorEnvelope(code, message));
@@ -19,15 +19,15 @@ function writeCliError(code: string, message: string): void {
 
 function usageEnforce(): string {
   return `Usage:
-  workflow-verifier enforce batch (--expect-lock <path> | --output-lock <path>) <same flags as batch verify>
-  workflow-verifier enforce quick (--expect-lock <path> | --output-lock <path>) <same flags as quick>
+  agentskeptic enforce batch (--expect-lock <path> | --output-lock <path>) <same flags as batch verify>
+  agentskeptic enforce quick (--expect-lock <path> | --output-lock <path>) <same flags as quick>
 
 Exactly one of --expect-lock or --output-lock is required.
 
 Exit codes (batch): same as batch verify for 0–2; 3 operational; 4 lock mismatch (--expect-lock only).
 Exit codes (quick): same as quick for 0–2; 3 operational; 4 lock mismatch (--expect-lock only).
 
-See docs/ci-enforcement.md and docs/workflow-verifier.md.
+See docs/ci-enforcement.md and docs/agentskeptic.md.
 
   --help, -h  print this message and exit 0`;
 }

@@ -20,6 +20,7 @@ describe("adoption docs boundary", () => {
     const gp = readFileSync(join(root, "docs", "golden-path.md"), "utf8");
     const ssot = readFileSync(join(root, "docs", "verification-product-ssot.md"), "utf8");
     for (const s of [gp, ssot]) {
+      assert.equal(s.includes("agentskeptic quick"), false);
       assert.equal(s.includes("workflow-verifier quick"), false);
       assert.equal(s.includes("npm run first-run"), false);
     }

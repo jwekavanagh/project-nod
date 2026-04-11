@@ -1,5 +1,5 @@
 {
-  "$id": "https://workflow-verifier/schemas/quick-verify-report.schema.json",
+  "$id": "https://agentskeptic.com/schemas/quick-verify-report.schema.json",
   "title": "QuickVerifyReport",
   "type": "object",
   "additionalProperties": false,
@@ -154,7 +154,7 @@
                 }
               },
               "correctnessDefinition": {
-                "$ref": "https://workflow-verifier/schemas/workflow-truth-report.schema.json#/$defs/correctnessDefinitionV1"
+                "$ref": "https://agentskeptic.com/schemas/workflow-truth-report.schema.json#/$defs/correctnessDefinitionV1"
               }
             }
           },

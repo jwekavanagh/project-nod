@@ -1,5 +1,5 @@
 {
-  "$id": "https://workflow-verifier/schemas/workflow-result.schema.json",
+  "$id": "https://agentskeptic.com/schemas/workflow-result.schema.json",
   "title": "WorkflowResult",
   "type": "object",
   "additionalProperties": false,
@@ -24,7 +24,7 @@
     "runLevelReasons": {
       "type": "array",
       "items": {
-        "$ref": "https://workflow-verifier/schemas/workflow-engine-result.schema.json#/$defs/reason"
+        "$ref": "https://agentskeptic.com/schemas/workflow-engine-result.schema.json#/$defs/reason"
       }
     },
     "verificationPolicy": {
@@ -40,7 +40,7 @@
     "steps": {
       "type": "array",
       "items": {
-        "$ref": "https://workflow-verifier/schemas/workflow-engine-result.schema.json#/$defs/step"
+        "$ref": "https://agentskeptic.com/schemas/workflow-engine-result.schema.json#/$defs/step"
       }
     },
     "eventSequenceIntegrity": {
@@ -63,7 +63,7 @@
               "type": "array",
               "minItems": 1,
               "items": {
-                "$ref": "https://workflow-verifier/schemas/workflow-engine-result.schema.json#/$defs/reason"
+                "$ref": "https://agentskeptic.com/schemas/workflow-engine-result.schema.json#/$defs/reason"
               }
             }
           }
@@ -71,10 +71,10 @@
       ]
     },
     "verificationRunContext": {
-      "$ref": "https://workflow-verifier/schemas/workflow-engine-result.schema.json#/$defs/verificationRunContext"
+      "$ref": "https://agentskeptic.com/schemas/workflow-engine-result.schema.json#/$defs/verificationRunContext"
     },
     "workflowTruthReport": {
-      "$ref": "https://workflow-verifier/schemas/workflow-truth-report.schema.json"
+      "$ref": "https://agentskeptic.com/schemas/workflow-truth-report.schema.json"
     }
   }
 }

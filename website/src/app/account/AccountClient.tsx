@@ -212,7 +212,7 @@ export function AccountClient({
       <p style={{ color: "var(--muted)", fontSize: "0.9rem", marginTop: "0.75rem" }}>
         Licensed CLI use requires an active subscription, a Stripe price this deployment maps to your plan,
         and a successful license reserve for each run—your API key alone does not grant verification until
-        those conditions hold. Use <code>WORKFLOW_VERIFIER_API_KEY</code> with the commercial CLI once they
+        those conditions hold. Use <code>AGENTSKEPTIC_API_KEY</code> with the commercial CLI once they
         do. Machine contracts:{" "}
         <a href="/openapi-commercial-v1.yaml">OpenAPI</a>,{" "}
         <a href="/api/v1/commercial/plans">plans JSON</a>. Entitlements:{" "}
@@ -232,8 +232,9 @@ export function AccountClient({
         for your database.
       </p>
       <p className="muted" style={{ marginTop: "0.5rem", fontSize: "0.95rem" }}>
-        Commercial CLI: set <code>WORKFLOW_VERIFIER_API_KEY</code>, then run{" "}
-        <code style={{ wordBreak: "break-all" }}>npx workflow-verifier verify …</code> from your repo (see
+        Commercial CLI: set <code>AGENTSKEPTIC_API_KEY</code> (legacy <code>WORKFLOW_VERIFIER_API_KEY</code> still
+        works), then run{" "}
+        <code style={{ wordBreak: "break-all" }}>npx agentskeptic verify …</code> from your repo (see
         Integrate for the full command).
       </p>
     </div>

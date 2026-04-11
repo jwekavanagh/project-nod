@@ -66,7 +66,7 @@ describe("openapi-commercial contract", () => {
     const integrateUrl = `${canonicalOrigin}/integrate`;
     expect(normalize(String(ext.url))).toBe(normalize(integrateUrl));
     expect(normalize(String((info.contact as { url: string }).url))).toBe(canonicalOrigin);
-    const dist = info["x-workflow-verifier-distribution"] as Record<string, string>;
+    const dist = info["x-agentskeptic-distribution"] as Record<string, string>;
     const distHostOpenApi = `${canonicalOrigin}/openapi-commercial-v1.yaml`;
     expect(Object.keys(dist).sort()).toEqual(["npmPackage", "openApi", "repository"]);
     expect(String(dist.repository)).toBe(anchors.gitRepositoryUrl);

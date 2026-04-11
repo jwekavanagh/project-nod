@@ -15,7 +15,7 @@ todos:
     content: Add verificationAgainstSystemState tests H–L (multi-effect + actionable assertions + human report substrings)
     status: completed
   - id: docs-partial-effects
-    content: Update workflow-verifier.md multi-effect mapping, operator reading order, rollup message normative text if changed
+    content: Update agentskeptic.md multi-effect mapping, operator reading order, rollup message normative text if changed
     status: completed
 isProject: false
 ---
@@ -73,7 +73,7 @@ flowchart LR
 ```
 
 - **Contracts (unchanged):** Step `status` + `reasons` + `evidenceSummary.effects[]` (`id`, `status`, `reasons`, `evidenceSummary`) per [`workflow-engine-result.schema.json`](c:\Users\kavan\OneDrive\projects\workflow-verifier\schemas\workflow-engine-result.schema.json) `$defs/effectOutcome` and conditional step `evidenceSummary`.
-- **Human report:** Step line + per-effect `effect: id=… result=…` + nested `detail` / `reference_code` (already specified in [`docs/workflow-verifier.md`](c:\Users\kavan\OneDrive\projects\workflow-verifier\docs\workflow-verifier.md)).
+- **Human report:** Step line + per-effect `effect: id=… result=…` + nested `detail` / `reference_code` (already specified in [`docs/agentskeptic.md`](c:\Users\kavan\OneDrive\projects\workflow-verifier\docs\agentskeptic.md)).
 - **Failure feedback:** [`failureAnalysis.ts`](c:\Users\kavan\OneDrive\projects\workflow-verifier\src\failureAnalysis.ts) `primaryCodeForStep` already substitutes the **first failing effect’s** reconciler code when the step reason is a `MULTI_EFFECT_*` rollup; **extend only** `buildSummary` for P5 when the driver’s step-level code is in `MULTI_EFFECT_ROLLUP_CODES` to append a single normative clause: multi-effect step at `seq`/`toolId`, primary driver code, and explicit pointer to `workflowTruthReport.steps[].effects` (wording only; no new JSON fields).
 
 ### How this satisfies each requirement
@@ -136,7 +136,7 @@ All tests assert **observable outputs**, not internal call order.
 
 ## Documentation
 
-Update [`docs/workflow-verifier.md`](c:\Users\kavan\OneDrive\projects\workflow-verifier\docs\workflow-verifier.md) only:
+Update [`docs/agentskeptic.md`](c:\Users\kavan\OneDrive\projects\workflow-verifier\docs\agentskeptic.md) only:
 
 - In the **outcome verification** mapping table (or immediately below it), add **two rows** for multi-effect items **4** and **7**: each row lists **acceptance theme → exact artifacts** (`steps[].status` values, `evidenceSummary.effects`, `workflowTruthReport.steps[].effects`, `failureAnalysis`, `actionableFailure`, human report sections).
 - Add a short **“Operator reading order”** bullet list: trust line → diagnosis → failing step → `verify_target` → step reasons → effect blocks (multi-effect).

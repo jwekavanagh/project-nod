@@ -21,7 +21,7 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const root = join(__dirname, "..");
 const cliJs = join(root, "dist", "cli.js");
 
-describe("CLI workflow-verifier", () => {
+describe("CLI agentskeptic", () => {
   let dir;
   let dbPath;
 

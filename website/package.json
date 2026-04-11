@@ -1,5 +1,5 @@
 {
-  "name": "workflow-verifier-web",
+  "name": "agentskeptic-web",
   "version": "0.1.0",
   "private": true,
   "engines": {
@@ -28,7 +28,7 @@
     "remark-gfm": "^4.0.1",
     "resend": "^4.0.1",
     "stripe": "^17.5.0",
-    "workflow-verifier": "file:..",
+    "agentskeptic": "file:..",
     "zod": "^3.24.1"
   },
   "devDependencies": {

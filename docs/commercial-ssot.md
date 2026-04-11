@@ -1,6 +1,6 @@
 # Commercial layer — single source of truth
 
-This document is the **narrative SSOT** for the thin commercial layer (website, billing, API keys, CLI preflight). It does **not** redefine CLI verification semantics—see [verification-product-ssot.md](verification-product-ssot.md) and [workflow-verifier.md](workflow-verifier.md).
+This document is the **narrative SSOT** for the thin commercial layer (website, billing, API keys, CLI preflight). It does **not** redefine CLI verification semantics—see [verification-product-ssot.md](verification-product-ssot.md) and [agentskeptic.md](agentskeptic.md).
 
 **Related (integrator, not duplicated here):** [first-run-integration.md](first-run-integration.md) — run verification against your own SQL database; rendered on the site as **`/integrate`**.
 
@@ -32,7 +32,7 @@ This document is the **narrative SSOT** for the thin commercial layer (website, 
 | Artifact              | `WF_BUILD_PROFILE` | Behavior |
 |-----------------------|--------------------|----------|
 | OSS / this repo CI    | `oss` (default)    | No license preflight; contract **`verify`** without API key; **`enforce` unavailable** — **[`docs/commercial-enforce-gate-normative.md`](commercial-enforce-gate-normative.md)** |
-| Published npm tarball | `commercial`       | Requires `WORKFLOW_VERIFIER_API_KEY` + successful preflight for contract batch, quick verify, and **`enforce`** |
+| Published npm tarball | `commercial`       | Requires `AGENTSKEPTIC_API_KEY` (legacy `WORKFLOW_VERIFIER_API_KEY` accepted) + successful preflight for contract batch, quick verify, and **`enforce`** |
 
 Codegen: **`node scripts/write-commercial-build-flags.mjs`** writes **`src/generated/commercialBuildFlags.ts`** (gitignored) before `tsc`. **`npm run build`** passes **`--oss`** so the default artifact stays OSS even if **`WF_BUILD_PROFILE`** is set in the shell; **`npm run build:commercial`** invokes the script with **`--commercial`** and requires **`COMMERCIAL_LICENSE_API_BASE_URL`**.
 
@@ -131,8 +131,8 @@ The editable OpenAPI “header” and distribution tokens live in [`schemas/open
 
 | Variable                         | Purpose |
 |----------------------------------|---------|
-| `WORKFLOW_VERIFIER_API_KEY`      | Plaintext API key (commercial build) |
-| `WORKFLOW_VERIFIER_RUN_ID`       | Optional idempotency key (default: random UUID) |
+| `AGENTSKEPTIC_API_KEY`           | Plaintext API key (commercial build); legacy `WORKFLOW_VERIFIER_API_KEY` still read |
+| `AGENTSKEPTIC_RUN_ID`            | Optional idempotency key (default: random UUID); legacy `WORKFLOW_VERIFIER_RUN_ID` still read |
 
 Retries on 429/502/503/504: **250ms, 750ms, 2250ms** (3 attempts), then exit **3** `LICENSE_USAGE_UNAVAILABLE`.
 

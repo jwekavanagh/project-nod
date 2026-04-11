@@ -15,7 +15,7 @@ todos:
     content: Add @playwright/test; test/debug-ui/*.spec.ts; extend test:ci with npx playwright install chromium && npm run test:debug-ui
     status: completed
   - id: readme-ssot
-    content: README compare/trust subsection + workflow-verifier.md compare section + API/HTML contract + v2→v3 breaking note
+    content: README compare/trust subsection + agentskeptic.md compare section + API/HTML contract + v2→v3 breaking note
     status: completed
 isProject: false
 ---
@@ -141,7 +141,7 @@ Deterministic order:
 ## Documentation
 
 - **README.md:** Required **“Compare and trust surfaces”**: v3 stdout, pointer to SSOT for Debug API success shapes, `npm run test:debug-ui`, link to SSOT.
-- **`docs/workflow-verifier.md`:** Compare runs matrix; **Debug API (normative success shapes)** subsection that **copies the same key lists** as Non-negotiable observables (compare `200`: `comparePanelHtml`, `humanSummary`, `report`; run detail `200` ok: full eleven-key list in UTF-16 sorted order); **HTML hooks** table; reliability algorithm; v3 breaking note; reference **`debug_api_*_exact_keys`** tests as enforcement.
+- **`docs/agentskeptic.md`:** Compare runs matrix; **Debug API (normative success shapes)** subsection that **copies the same key lists** as Non-negotiable observables (compare `200`: `comparePanelHtml`, `humanSummary`, `report`; run detail `200` ok: full eleven-key list in UTF-16 sorted order); **HTML hooks** table; reliability algorithm; v3 breaking note; reference **`debug_api_*_exact_keys`** tests as enforcement.
 
 ---
 

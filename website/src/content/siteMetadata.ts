@@ -6,7 +6,7 @@ export const siteMetadata = {
   integrate: {
     title: "Integrate — first run on your database",
     description:
-      "Copy-paste steps: NDJSON tool observations, tools.json registry, SQLite or Postgres, and the workflow-verifier CLI.",
+      "Copy-paste steps: NDJSON tool observations, tools.json registry, SQLite or Postgres, and the agentskeptic CLI.",
   },
   openGraph: {
     title: "AgentSkeptic — check database state against what your workflow claimed",

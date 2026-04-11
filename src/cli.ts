@@ -63,7 +63,7 @@ import { postPublicVerificationReport } from "./shareReport/postPublicVerificati
 
 function usageQuick(): string {
   return `Usage:
-  workflow-verifier quick --input <path> (--postgres-url <url> | --db <sqlitePath>) --export-registry <path>
+  agentskeptic quick --input <path> (--postgres-url <url> | --db <sqlitePath>) --export-registry <path>
     [--emit-events <path>] [--workflow-id <id>] [--share-report-origin <https://host>]
 
   Input must contain structured tool activity (tool names and parameters extractable as JSON). Verification uses read-only SQL against the database you pass.
@@ -82,11 +82,11 @@ Exit codes:
 
 function usageVerify(): string {
   return `Usage:
-  workflow-verifier quick --input <path> (--postgres-url <url> | --db <sqlitePath>) --export-registry <path> [--emit-events <path>] [--workflow-id <id>]
+  agentskeptic quick --input <path> (--postgres-url <url> | --db <sqlitePath>) --export-registry <path> [--emit-events <path>] [--workflow-id <id>]
     (zero-config path; structured tool activity + read-only SQL; see docs/quick-verify-normative.md)
 
-  workflow-verifier --workflow-id <id> --events <path> --registry <path> --db <sqlitePath>
-  workflow-verifier --workflow-id <id> --events <path> --registry <path> --postgres-url <url>
+  agentskeptic --workflow-id <id> --events <path> --registry <path> --db <sqlitePath>
+  agentskeptic --workflow-id <id> --events <path> --registry <path> --postgres-url <url>
 
   Optional CI lock (commercial build; same as enforce batch): append exactly one of
   --output-lock <path> or --expect-lock <path> (requires active subscription; see docs/ci-enforcement.md).
@@ -112,24 +112,24 @@ Exit codes:
   3  operational failure (see stderr JSON)
   4  CI lock mismatch with --expect-lock (stdout: WorkflowResult line; stderr: envelope after human report if any)
 
-  workflow-verifier compare --prior <path> [--prior <path> ...] --current <path>
+  agentskeptic compare --prior <path> [--prior <path> ...] --current <path>
   Compare saved WorkflowResult JSON files (local only; see docs).
 
-  workflow-verifier validate-registry --registry <path>
-  workflow-verifier validate-registry --registry <path> --events <path> --workflow-id <id>
+  agentskeptic validate-registry --registry <path>
+  agentskeptic validate-registry --registry <path> --events <path> --workflow-id <id>
   Validate tools registry JSON (and optionally resolution vs events) without a database.
-  See docs/workflow-verifier.md (Registry validation).
+  See docs/agentskeptic.md (Registry validation).
 
-  workflow-verifier execution-trace --workflow-id <id> --events <path> [--workflow-result <path>] [--format json|text]
-  Emit ExecutionTraceView JSON or text (see docs/workflow-verifier.md).
+  agentskeptic execution-trace --workflow-id <id> --events <path> [--workflow-result <path>] [--format json|text]
+  Emit ExecutionTraceView JSON or text (see docs/agentskeptic.md).
 
-  workflow-verifier enforce batch (--expect-lock <path> | --output-lock <path>) <same flags as batch verify>
-  workflow-verifier enforce quick (--expect-lock <path> | --output-lock <path>) <same flags as quick>
+  agentskeptic enforce batch (--expect-lock <path> | --output-lock <path>) <same flags as batch verify>
+  agentskeptic enforce quick (--expect-lock <path> | --output-lock <path>) <same flags as quick>
   CI enforcement with pinned ci-lock-v1 (see docs/ci-enforcement.md).
 
-  workflow-verifier assurance run --manifest <path> [--write-report <path>]
-  workflow-verifier assurance stale --report <path> --max-age-hours <n>
-  Multi-scenario assurance sweep and staleness gate (see docs/workflow-verifier.md).
+  agentskeptic assurance run --manifest <path> [--write-report <path>]
+  agentskeptic assurance stale --report <path> --max-age-hours <n>
+  Multi-scenario assurance sweep and staleness gate (see docs/agentskeptic.md).
 
 Advanced / optional (persisted runs, signing, local UI, plan/git checks):
   --write-run-bundle <dir>   After a successful verify (schema-valid WorkflowResult), write a canonical run directory: events.ndjson (byte copy of --events), workflow-result.json (emitted result), agent-run.json (SHA-256 manifest). Directory is created if missing. Requires exit 0–2 (operational failure skips the write).
@@ -138,10 +138,10 @@ Advanced / optional (persisted runs, signing, local UI, plan/git checks):
   verify-bundle-signature --run-dir <dir> --public-key <path>
   Verify signed bundle (Ed25519 + manifest v2). Exit 0 if valid; exit 3 with JSON envelope on failure.
 
-  workflow-verifier debug --corpus <dir> [--port <n>]
-  Local Debug Console on 127.0.0.1 (see docs/workflow-verifier.md — Debug Console).
+  agentskeptic debug --corpus <dir> [--port <n>]
+  Local Debug Console on 127.0.0.1 (see docs/agentskeptic.md — Debug Console).
 
-  workflow-verifier plan-transition --repo <dir> --before <ref> --after <ref> --plan <path>
+  agentskeptic plan-transition --repo <dir> --before <ref> --after <ref> --plan <path>
   Validate git Before..After against machine plan rules (planValidation, body YAML section, or derived path citations as required diff surfaces; Git >= 2.30.0; see docs).
 
   --help, -h  print this message and exit 0`;
@@ -149,7 +149,7 @@ Advanced / optional (persisted runs, signing, local UI, plan/git checks):
 
 function usageExecutionTrace(): string {
   return `Usage:
-  workflow-verifier execution-trace --workflow-id <id> --events <path> [--workflow-result <path>] [--format json|text]
+  agentskeptic execution-trace --workflow-id <id> --events <path> [--workflow-result <path>] [--format json|text]
 
 Exit codes:
   0  success (stdout: ExecutionTraceView JSON or text; stderr empty)
@@ -314,7 +314,7 @@ function runExecutionTraceSubcommand(args: string[]): void {
 
 function usageCompare(): string {
   return `Usage:
-  workflow-verifier compare --prior <workflowResult.json> [--prior <path> ...] --current <workflowResult.json>
+  agentskeptic compare --prior <workflowResult.json> [--prior <path> ...] --current <workflowResult.json>
 
 Compares the current run (last file) against the immediate prior run (last --prior).
 Recurrence uses all runs in order: each --prior in order, then --current.
@@ -332,8 +332,8 @@ function writeCliError(code: string, message: string): void {
 
 function usageAssurance(): string {
   return `Usage:
-  workflow-verifier assurance run --manifest <path> [--write-report <path>]
-  workflow-verifier assurance stale --report <path> --max-age-hours <n>
+  agentskeptic assurance run --manifest <path> [--write-report <path>]
+  agentskeptic assurance stale --report <path> --max-age-hours <n>
 
   assurance run executes each manifest scenario by spawning this CLI (schemas/assurance-manifest-v1.schema.json).
   Path arguments in each scenario argv are resolved relative to the manifest file's directory unless absolute.
@@ -428,7 +428,7 @@ function runAssuranceSubcommand(args: string[]): void {
   }
   writeCliError(
     CLI_OPERATIONAL_CODES.ASSURANCE_USAGE,
-    "Use workflow-verifier assurance run or workflow-verifier assurance stale.",
+    "Use agentskeptic assurance run or agentskeptic assurance stale.",
   );
   process.exit(3);
 }
@@ -584,7 +584,7 @@ async function runQuickSubcommand(args: string[]): Promise<void> {
 function runVerifyBundleSignatureSubcommand(args: string[]): void {
   if (args.includes("--help") || args.includes("-h")) {
     console.log(`Usage:
-  workflow-verifier verify-bundle-signature --run-dir <dir> --public-key <path>
+  agentskeptic verify-bundle-signature --run-dir <dir> --public-key <path>
 
 Exit codes:
   0  signature and manifest integrity OK
@@ -612,8 +612,8 @@ Exit codes:
 
 function usageValidateRegistry(): string {
   return `Usage:
-  workflow-verifier validate-registry --registry <path>
-  workflow-verifier validate-registry --registry <path> --events <path> --workflow-id <id>
+  agentskeptic validate-registry --registry <path>
+  agentskeptic validate-registry --registry <path> --events <path> --workflow-id <id>
 
 Exit codes:
   0  registry valid (stdout: RegistryValidationResult JSON; stderr empty)
@@ -822,10 +822,10 @@ function runCompareSubcommand(args: string[]): void {
 
 function usageDebug(): string {
   return `Usage:
-  workflow-verifier debug --corpus <dir> [--port <n>]
+  agentskeptic debug --corpus <dir> [--port <n>]
 
 Serves the Debug Console on 127.0.0.1 only. Each run is a subfolder of the corpus
-with workflow-result.json and events.ndjson (see docs/workflow-verifier.md).
+with workflow-result.json and events.ndjson (see docs/agentskeptic.md).
 
 Exit: Ctrl+C ends the server (exit 0). Port in use or bad corpus → exit 3.
 
@@ -883,7 +883,7 @@ async function runDebugSubcommand(args: string[]): Promise<void> {
 
 function usagePlanTransition(): string {
   return `Usage:
-  workflow-verifier plan-transition --repo <dir> --before <ref> --after <ref> --plan <path>
+  agentskeptic plan-transition --repo <dir> --before <ref> --after <ref> --plan <path>
 
 Optional:
   --workflow-id <id>   (default ${PLAN_TRANSITION_WORKFLOW_ID})

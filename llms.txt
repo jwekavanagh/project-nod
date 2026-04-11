@@ -8,7 +8,7 @@ State verification engine: read-only SQL checks that database state matches expe
 - First-run integration: https://agentskeptic.com/integrate
 - OpenAPI (canonical): https://agentskeptic.com/openapi-commercial-v1.yaml
 - Source repository: https://github.com/jwekavanagh/workflow-verifier
-- npm package: https://www.npmjs.com/package/workflow-verifier
+- npm package: https://www.npmjs.com/package/agentskeptic
 
 ## Intent phrases
 - green trace wrong database row agent workflow

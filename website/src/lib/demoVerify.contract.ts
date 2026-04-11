@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { loadSchemaValidator } from "workflow-verifier";
+import { loadSchemaValidator } from "agentskeptic";
 import { DEMO_SCENARIO_IDS, type DemoScenarioId } from "./demoScenarioIds";
 
 export { DEMO_SCENARIO_IDS, type DemoScenarioId };

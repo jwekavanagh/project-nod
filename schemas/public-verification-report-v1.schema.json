@@ -1,5 +1,5 @@
 {
-  "$id": "https://workflow-verifier/schemas/public-verification-report-v1.schema.json",
+  "$id": "https://agentskeptic.com/schemas/public-verification-report-v1.schema.json",
   "title": "PublicVerificationReportEnvelopeV1",
   "oneOf": [
     {
@@ -10,7 +10,7 @@
         "schemaVersion": { "type": "integer", "const": 1 },
         "kind": { "type": "string", "const": "workflow" },
         "workflowResult": {
-          "$ref": "https://workflow-verifier/schemas/workflow-result.schema.json"
+          "$ref": "https://agentskeptic.com/schemas/workflow-result.schema.json"
         },
         "truthReportText": {
           "type": "string",
@@ -38,7 +38,7 @@
           "maxLength": 512
         },
         "quickReport": {
-          "$ref": "https://workflow-verifier/schemas/quick-verify-report.schema.json"
+          "$ref": "https://agentskeptic.com/schemas/quick-verify-report.schema.json"
         },
         "humanReportText": {
           "type": "string",

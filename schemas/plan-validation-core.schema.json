@@ -1,5 +1,5 @@
 {
-  "$id": "https://workflow-verifier/schemas/plan-validation-core.schema.json",
+  "$id": "https://agentskeptic.com/schemas/plan-validation-core.schema.json",
   "title": "PlanValidationCore",
   "type": "object",
   "additionalProperties": false,

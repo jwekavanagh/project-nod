@@ -1,5 +1,5 @@
 {
-  "$id": "https://workflow-verifier/schemas/ci-lock-v1.schema.json",
+  "$id": "https://agentskeptic.com/schemas/ci-lock-v1.schema.json",
   "title": "CiLockV1",
   "oneOf": [
     {

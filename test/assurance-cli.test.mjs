@@ -1,5 +1,5 @@
 /**
- * workflow-verifier assurance run | stale: manifest sweep, staleness, failure modes.
+ * agentskeptic assurance run | stale: manifest sweep, staleness, failure modes.
  */
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";

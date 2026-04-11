@@ -1,5 +1,5 @@
 {
-  "$id": "https://workflow-verifier/schemas/cli-error-envelope.schema.json",
+  "$id": "https://agentskeptic.com/schemas/cli-error-envelope.schema.json",
   "title": "ExecutionTruthLayerCliError",
   "type": "object",
   "additionalProperties": false,
@@ -22,10 +22,10 @@
       "properties": {
         "summary": { "type": "string", "maxLength": 2048 },
         "primaryOrigin": {
-          "$ref": "https://workflow-verifier/schemas/workflow-truth-report.schema.json#/$defs/failureOrigin"
+          "$ref": "https://agentskeptic.com/schemas/workflow-truth-report.schema.json#/$defs/failureOrigin"
         },
         "confidence": {
-          "$ref": "https://workflow-verifier/schemas/workflow-truth-report.schema.json#/$defs/failureConfidence"
+          "$ref": "https://agentskeptic.com/schemas/workflow-truth-report.schema.json#/$defs/failureConfidence"
         },
         "evidence": {
           "type": "array",
@@ -40,7 +40,7 @@
           }
         },
         "actionableFailure": {
-          "$ref": "https://workflow-verifier/schemas/workflow-truth-report.schema.json#/$defs/actionableFailure"
+          "$ref": "https://agentskeptic.com/schemas/workflow-truth-report.schema.json#/$defs/actionableFailure"
         }
       }
     }

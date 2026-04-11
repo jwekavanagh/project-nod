@@ -72,7 +72,7 @@ export function runAssuranceFromManifest(manifestPath: string): RunAssuranceResu
       ok: false,
       exitCode: 3,
       code: "ASSURANCE_REPO_ROOT_NOT_FOUND",
-      message: "Could not locate workflow-verifier package root from manifest path.",
+      message: "Could not locate agentskeptic package root from manifest path.",
     };
   }
 

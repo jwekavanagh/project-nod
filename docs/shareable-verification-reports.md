@@ -68,7 +68,7 @@ The **`createPublicVerificationReport`** operation is documented in the synced c
 
 ## Why stderr is deferred when sharing
 
-Exit **3** requires **stderr to be exactly one JSON line** and **stdout empty** ([`docs/workflow-verifier.md`](workflow-verifier.md) — CLI operational errors). Streaming the human report before a successful POST would violate that contract on POST failure, so the CLI buffers human output until after **201**.
+Exit **3** requires **stderr to be exactly one JSON line** and **stdout empty** ([`docs/agentskeptic.md`](agentskeptic.md) — CLI operational errors). Streaming the human report before a successful POST would violate that contract on POST failure, so the CLI buffers human output until after **201**.
 
 ## LangGraph guide
 

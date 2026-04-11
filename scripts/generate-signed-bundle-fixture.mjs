@@ -32,7 +32,7 @@ const sidecarBytes = buildWorkflowResultSigSidecarBytes(workflowResultBytes, pri
 
 const pkg = JSON.parse(readFileSync(join(root, "package.json"), "utf8"));
 const producer = {
-  name: typeof pkg.name === "string" ? pkg.name : "workflow-verifier",
+  name: typeof pkg.name === "string" ? pkg.name : "agentskeptic",
   version: typeof pkg.version === "string" ? pkg.version : "0.0.0",
 };
 

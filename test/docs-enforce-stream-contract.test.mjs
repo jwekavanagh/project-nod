@@ -1,5 +1,5 @@
 /**
- * Marker-delimited enforce stream contract in workflow-verifier.md
+ * Marker-delimited enforce stream contract in agentskeptic.md
  */
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
@@ -9,7 +9,7 @@ import { fileURLToPath } from "url";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const root = join(__dirname, "..");
-const md = readFileSync(join(root, "docs", "workflow-verifier.md"), "utf8");
+const md = readFileSync(join(root, "docs", "agentskeptic.md"), "utf8");
 
 const OPEN = "<!-- etl:enforce-stream-contract:start -->";
 const CLOSE = "<!-- etl:enforce-stream-contract:end -->";

@@ -16,12 +16,13 @@ function usage() {
   node scripts/render-discovery-ci.mjs pr_body --stderr-file PATH --workflow-stdout-file PATH
 
 Environment:
-  WFV_REPO_ROOT   Root of installed workflow-verifier package (default: parent of scripts/)
+  AS_REPO_ROOT    Root of installed agentskeptic package (preferred)
+  WFV_REPO_ROOT   Legacy alias for AS_REPO_ROOT (default: parent of scripts/)
 `;
 }
 
 function resolveRoot() {
-  const e = process.env.WFV_REPO_ROOT;
+  const e = process.env.AS_REPO_ROOT || process.env.WFV_REPO_ROOT;
   if (e && String(e).trim()) return path.resolve(String(e).trim());
   return path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 }

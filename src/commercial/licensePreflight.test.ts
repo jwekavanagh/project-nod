@@ -9,20 +9,25 @@ vi.mock("../generated/commercialBuildFlags.js", () => ({
 }));
 
 describe("runLicensePreflightIfNeeded", () => {
-  const origKey = process.env.WORKFLOW_VERIFIER_API_KEY;
+  const keyNames = ["AGENTSKEPTIC_API_KEY", "WORKFLOW_VERIFIER_API_KEY"] as const;
+  const orig: Partial<Record<(typeof keyNames)[number], string | undefined>> = {};
 
   beforeEach(() => {
+    for (const k of keyNames) orig[k] = process.env[k];
     vi.stubGlobal("fetch", vi.fn());
   });
 
   afterEach(() => {
     vi.unstubAllGlobals();
     vi.resetModules();
-    if (origKey === undefined) delete process.env.WORKFLOW_VERIFIER_API_KEY;
-    else process.env.WORKFLOW_VERIFIER_API_KEY = origKey;
+    for (const k of keyNames) {
+      if (orig[k] === undefined) delete process.env[k];
+      else process.env[k] = orig[k]!;
+    }
   });
 
   it("throws LICENSE_KEY_MISSING when key unset", async () => {
+    delete process.env.AGENTSKEPTIC_API_KEY;
     delete process.env.WORKFLOW_VERIFIER_API_KEY;
     await expect(runLicensePreflightIfNeeded()).rejects.toMatchObject({
       code: CLI_OPERATIONAL_CODES.LICENSE_KEY_MISSING,
@@ -30,7 +35,7 @@ describe("runLicensePreflightIfNeeded", () => {
   });
 
   it("returns when server allows", async () => {
-    process.env.WORKFLOW_VERIFIER_API_KEY = "wf_sk_live_test";
+    process.env.AGENTSKEPTIC_API_KEY = "wf_sk_live_test";
     vi.mocked(fetch).mockResolvedValue(
       new Response(JSON.stringify({ allowed: true, plan: "starter", limit: 100, used: 1 }), {
         status: 200,
@@ -44,7 +49,7 @@ describe("runLicensePreflightIfNeeded", () => {
   });
 
   it("sends intent enforce when requested", async () => {
-    process.env.WORKFLOW_VERIFIER_API_KEY = "wf_sk_live_test";
+    process.env.AGENTSKEPTIC_API_KEY = "wf_sk_live_test";
     vi.mocked(fetch).mockResolvedValue(
       new Response(JSON.stringify({ allowed: true, plan: "team", limit: 100, used: 1 }), {
         status: 200,
@@ -57,7 +62,7 @@ describe("runLicensePreflightIfNeeded", () => {
   });
 
   it("throws VERIFICATION_REQUIRES_SUBSCRIPTION when server returns that code", async () => {
-    process.env.WORKFLOW_VERIFIER_API_KEY = "wf_sk_live_test";
+    process.env.AGENTSKEPTIC_API_KEY = "wf_sk_live_test";
     vi.mocked(fetch).mockResolvedValue(
       new Response(
         JSON.stringify({
@@ -78,7 +83,7 @@ describe("runLicensePreflightIfNeeded", () => {
   });
 
   it("throws LICENSE_DENIED with upgrade_url for SUBSCRIPTION_INACTIVE", async () => {
-    process.env.WORKFLOW_VERIFIER_API_KEY = "wf_sk_live_test";
+    process.env.AGENTSKEPTIC_API_KEY = "wf_sk_live_test";
     vi.mocked(fetch).mockResolvedValue(
       new Response(
         JSON.stringify({
@@ -99,7 +104,7 @@ describe("runLicensePreflightIfNeeded", () => {
   });
 
   it("throws LICENSE_DENIED for BILLING_PRICE_UNMAPPED with deployment wording", async () => {
-    process.env.WORKFLOW_VERIFIER_API_KEY = "wf_sk_live_test";
+    process.env.AGENTSKEPTIC_API_KEY = "wf_sk_live_test";
     vi.mocked(fetch).mockResolvedValue(
       new Response(
         JSON.stringify({
@@ -123,7 +128,7 @@ describe("runLicensePreflightIfNeeded", () => {
   });
 
   it("throws ENFORCEMENT_REQUIRES_PAID_PLAN when server returns that code", async () => {
-    process.env.WORKFLOW_VERIFIER_API_KEY = "wf_sk_live_test";
+    process.env.AGENTSKEPTIC_API_KEY = "wf_sk_live_test";
     vi.mocked(fetch).mockResolvedValue(
       new Response(
         JSON.stringify({
@@ -144,7 +149,7 @@ describe("runLicensePreflightIfNeeded", () => {
   });
 
   it("throws LICENSE_DENIED on 403 body", async () => {
-    process.env.WORKFLOW_VERIFIER_API_KEY = "wf_sk_live_test";
+    process.env.AGENTSKEPTIC_API_KEY = "wf_sk_live_test";
     vi.mocked(fetch).mockResolvedValue(
       new Response(
         JSON.stringify({ allowed: false, code: "QUOTA_EXCEEDED", message: "Cap hit" }),
@@ -157,5 +162,18 @@ describe("runLicensePreflightIfNeeded", () => {
         e.code === CLI_OPERATIONAL_CODES.LICENSE_DENIED &&
         e.message.includes("Cap hit"),
     );
+  });
+
+  it("accepts legacy WORKFLOW_VERIFIER_API_KEY when AGENTSKEPTIC_API_KEY unset", async () => {
+    delete process.env.AGENTSKEPTIC_API_KEY;
+    process.env.WORKFLOW_VERIFIER_API_KEY = "wf_sk_live_test";
+    vi.mocked(fetch).mockResolvedValue(
+      new Response(JSON.stringify({ allowed: true, plan: "starter", limit: 100, used: 1 }), {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      }),
+    );
+    await runLicensePreflightIfNeeded("verify");
+    expect(fetch).toHaveBeenCalled();
   });
 });

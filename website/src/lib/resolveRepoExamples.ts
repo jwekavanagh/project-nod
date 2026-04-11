@@ -19,7 +19,7 @@ function committedExampleFixturesPresent(examplesDir: string): boolean {
 
 /**
  * `examples/demo.db` is gitignored (`*.db`); clean checkouts only have `seed.sql`.
- * Same materialization as `scripts/demo.mjs` and `examples/github-actions/workflow-verifier-commercial.yml`.
+ * Same materialization as `scripts/demo.mjs` and `examples/github-actions/agentskeptic-commercial.yml`.
  */
 function ensureExamplesDemoDb(examplesDir: string): void {
   const demoDb = path.join(examplesDir, "demo.db");

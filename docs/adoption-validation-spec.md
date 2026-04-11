@@ -29,7 +29,7 @@ docs/adoption-validation-spec.md	add
 docs/first-run-validation-log.md	modify
 docs/golden-path.md	add
 docs/verification-product-ssot.md	modify
-docs/workflow-verifier.md	modify
+docs/agentskeptic.md	modify
 package.json	modify
 scripts/demo.mjs	add
 scripts/first-run.mjs	delete

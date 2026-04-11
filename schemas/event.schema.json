@@ -1,5 +1,5 @@
 {
-  "$id": "https://workflow-verifier/schemas/event.schema.json",
+  "$id": "https://agentskeptic.com/schemas/event.schema.json",
   "title": "WorkflowRunEvent",
   "oneOf": [
     {

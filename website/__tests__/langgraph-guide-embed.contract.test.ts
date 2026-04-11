@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
-import { loadSchemaValidator } from "workflow-verifier";
+import { loadSchemaValidator } from "agentskeptic";
 import { getRepoRoot } from "./helpers/distributionGraphHelpers";
 
 describe("langgraph-guide.v1 embed", () => {

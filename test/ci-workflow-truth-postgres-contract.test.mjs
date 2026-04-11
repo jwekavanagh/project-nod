@@ -1,5 +1,5 @@
 /**
- * CI workflow truth contract (Postgres CLI): machine-enforced parity with docs/workflow-verifier.md
+ * CI workflow truth contract (Postgres CLI): machine-enforced parity with docs/agentskeptic.md
  * "### CI workflow truth contract (Postgres CLI)".
  */
 import { describe, it, before } from "node:test";

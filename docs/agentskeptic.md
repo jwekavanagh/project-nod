@@ -1,4 +1,4 @@
-# workflow-verifier (MVP) — Single Source of Truth
+# AgentSkeptic CLI (MVP) — Single Source of Truth
 
 **Quick Verify (zero-config inference)** is specified in [`quick-verify-normative.md`](quick-verify-normative.md). Product narrative, audiences, and documentation ownership for the wedge live in [`verification-product-ssot.md`](verification-product-ssot.md). This document remains the SSOT for **Advanced verification** (NDJSON events, `tools.json` registry, `WorkflowResult`).
 
@@ -19,7 +19,7 @@ This table defines **where** each concern is authoritative. Other markdown may s
 
 | Concern | Single source of truth | Others |
 |--------|-------------------------|--------|
-| **Quick Verify** (`workflow-verifier quick`, inferred units, `quick-verify-report`, export registry array) | [`quick-verify-normative.md`](quick-verify-normative.md), [`schemas/quick-verify-report.schema.json`](../schemas/quick-verify-report.schema.json) | Product SSOT: [`verification-product-ssot.md`](verification-product-ssot.md); README summarizes; behavior must match the normative doc. |
+| **Quick Verify** (`agentskeptic quick`, inferred units, `quick-verify-report`, export registry array) | [`quick-verify-normative.md`](quick-verify-normative.md), [`schemas/quick-verify-report.schema.json`](../schemas/quick-verify-report.schema.json) | Product SSOT: [`verification-product-ssot.md`](verification-product-ssot.md); README summarizes; behavior must match the normative doc. |
 | **Correctness definition** (`correctnessDefinition` on truth report and quick units; forward MUST text + `enforceableProjection`) | [`correctness-definition-normative.md`](correctness-definition-normative.md), [`schemas/workflow-truth-report.schema.json`](../schemas/workflow-truth-report.schema.json) (`$defs.correctnessDefinitionV1`) | Implementation: `src/correctnessDefinition.ts`, `src/correctnessDefinitionTemplates.ts`; human stderr includes `correctness_definition:` after `failure_explanation:` when non-null. |
 | **Emitted wire shape** (property names, types, `schemaVersion`, `verificationRequest` variants, `evidenceSummary` keys as JSON) | [`schemas/workflow-engine-result.schema.json`](../schemas/workflow-engine-result.schema.json), [`schemas/workflow-result.schema.json`](../schemas/workflow-result.schema.json), [`schemas/tools-registry.schema.json`](../schemas/tools-registry.schema.json) | Markdown describes behavior; it must not introduce fields or types absent from these schemas. |
 | **Reason code literals** | `src/wireReasonCodes.ts` (exported constants) | Docs list the same strings; no duplicate definitions with different meanings. |
@@ -58,7 +58,7 @@ This subsection maps **workflow-level verdict** and **auditable run records** ac
 | **Verdict supported by step-level evidence** | Authoritative: **`WorkflowResult.steps[]`** and **`workflowTruthReport.steps[]`**. Review helper: **`workflowVerdictSurface`** on **`GET /api/runs/:id`** (ok loads)—`status`, **`trustSummary`** (same string as **`workflowTruthReport.trustSummary`**), **`stepStatusCounts`** (count per `StepStatus`, all keys present). Implemented by **`buildWorkflowVerdictSurface`** in `workflowTruthReport.ts` only—clients must not re-derive. |
 | **Preserve execution + verification for a run** | Canonical directory: **`events.ndjson`**, **`workflow-result.json`**, **`agent-run.json`** (SHA-256 manifest). Optional **cryptographic signing** adds **`workflow-result.sig.json`** and manifest **`schemaVersion` `2`** (see [Cryptographic signing](#cryptographic-signing-of-workflow-result-normative)). Writer: **`writeAgentRunBundle`** (CLI **`--write-run-bundle`**, optional **`--sign-ed25519-private-key`**). |
 | **Link execution to verification consistently** | **`agent-run.json`** binds **`workflowId`**, artifact relative paths, **`sha256`**, **`byteLength`** for each file—see [Agent run record (canonical bundle)](#agent-run-record-canonical-bundle). |
-| **Retrieve and review a past run** | **Programmatic:** **`loadCorpusRun(corpusRoot, runId)`** (package export)—**`loadStatus === "ok"`** yields **`workflowResult`**, **`agentRunRecord`**, **`paths`**. **Interactive:** **`workflow-verifier debug --corpus <dir>`** and Debug Console; **`GET /api/runs/:id`** returns **`workflowResult`**, **`workflowVerdictSurface`**, **`executionTrace`**, etc. **Offline:** open **`workflow-result.json`** / **`events.ndjson`** on disk. |
+| **Retrieve and review a past run** | **Programmatic:** **`loadCorpusRun(corpusRoot, runId)`** (package export)—**`loadStatus === "ok"`** yields **`workflowResult`**, **`agentRunRecord`**, **`paths`**. **Interactive:** **`agentskeptic debug --corpus <dir>`** and Debug Console; **`GET /api/runs/:id`** returns **`workflowResult`**, **`workflowVerdictSurface`**, **`executionTrace`**, etc. **Offline:** open **`workflow-result.json`** / **`events.ndjson`** on disk. |
 | **Empty `events.ndjson`** | A **zero-byte** `events.ndjson` is valid when the manifest records **`byteLength` 0** and the SHA-256 of the empty buffer. It means “no captured lines in this bundle,” not “workflow succeeded.” |
 
 ### Workflow verdict — Engineer
@@ -134,7 +134,7 @@ Types: **`runTrustPanelHtml`** non-empty string (from **`renderRunTrustPanelHtml
 
 ## Plan transition validation (normative)
 
-This subsection defines **`workflow-verifier plan-transition`**: validate a **git** diff between two commits against **machine-checkable rules** read from the same plan markdown file (**`--plan`**). It does **not** use SQL or the tool registry.
+This subsection defines **`agentskeptic plan-transition`**: validate a **git** diff between two commits against **machine-checkable rules** read from the same plan markdown file (**`--plan`**). It does **not** use SQL or the tool registry.
 
 Rules come from **one** of three sources ([Where rules come from](#where-rules-come-from-ordered)); the product **never** interprets arbitrary prose as requirements. **Derived citations** (**`derived_citations`**) collect path-shaped tokens only by deterministic rules implemented in **`planTransitionPathHarvest.ts`** — not NLP and not semantic interpretation of tables or checklist prose.
 
@@ -259,7 +259,7 @@ Parsed diff rows map git status to `rowKind`: `A`→add, `M`→modify, `D`→del
 
 ### Synthetic `events.ndjson` (bundle)
 
-With **`--write-run-bundle`**, **`events.ndjson`** is a **single** schema-valid **v1** `tool_observed` line, **`toolId`:** `plan_transition.meta`, **`params`:** `beforeRef`, `afterRef`, `beforeCommitSha`, `afterCommitSha`, `planResolvedPath`, `planSha256`, **`transitionRulesSource`** (`"front_matter"` \| `"body_section"` \| `"derived_citations"`). **`agent-run.json`** is **v1** unless **`--sign-ed25519-private-key`** is also set (then **v2** with **`workflow-result.sig.json`**), same as batch **`workflow-verifier`**.
+With **`--write-run-bundle`**, **`events.ndjson`** is a **single** schema-valid **v1** `tool_observed` line, **`toolId`:** `plan_transition.meta`, **`params`:** `beforeRef`, `afterRef`, `beforeCommitSha`, `afterCommitSha`, `planResolvedPath`, `planSha256`, **`transitionRulesSource`** (`"front_matter"` \| `"body_section"` \| `"derived_citations"`). **`agent-run.json`** is **v1** unless **`--sign-ed25519-private-key`** is also set (then **v2** with **`workflow-result.sig.json`**), same as batch **`agentskeptic`**.
 
 ### Debug Console trust panel
 
@@ -268,7 +268,7 @@ When **`workflowId === wf_plan_transition`**, **`renderRunTrustPanelHtml`** uses
 ### CLI
 
 ```text
-workflow-verifier plan-transition --repo <dir> --before <ref> --after <ref> --plan <path>
+agentskeptic plan-transition --repo <dir> --before <ref> --after <ref> --plan <path>
   [--workflow-id <id>] [--no-truth-report] [--write-run-bundle <dir>]
 ```
 
@@ -392,7 +392,7 @@ node dist/cli.js --workflow-id <id> --events <path> --registry <path> --postgres
 | 1 | `workflow.status` is `inconsistent` |
 | 2 | `workflow.status` is `incomplete` |
 | 3 | Operational failure (registry read/parse, events read, DB open/connect, invalid args, internal CLI error); see [CLI operational errors](#cli-operational-errors) |
-| 4 | **`workflow-verifier enforce` only:** CI lock mismatch (**`VERIFICATION_OUTPUT_LOCK_MISMATCH`**); see [Enforce stream contract (normative)](#enforce-stream-contract-normative) |
+| 4 | **`agentskeptic enforce` only:** CI lock mismatch (**`VERIFICATION_OUTPUT_LOCK_MISMATCH`**); see [Enforce stream contract (normative)](#enforce-stream-contract-normative) |
 
 **`--help` / `-h`:** Prints usage to **stdout** and exits **0** (not a verification run).
 
@@ -410,7 +410,7 @@ node dist/cli.js --workflow-id <id> --events <path> --registry <path> --postgres
 
 ### CI workflow truth contract (Postgres CLI)
 
-This subsection is **normative** for CI and for any automation that treats **`workflow-verifier`** as the sole machine-facing verification surface. The **only** structured artifacts for workflow truth from the CLI are:
+This subsection is **normative** for CI and for any automation that treats **`agentskeptic`** as the sole machine-facing verification surface. The **only** structured artifacts for workflow truth from the CLI are:
 
 - **Exits 0–2:** one JSON object on **stdout** matching **`schemas/workflow-result.schema.json`** (see **stdout** above).
 - **Exit 3:** **stdout** empty; **stderr** exactly one JSON line with **`kind`:** **`execution_truth_layer_error`** (see [CLI operational errors](#cli-operational-errors)).
@@ -472,14 +472,14 @@ Optional on **batch verify** and **`quick`** (non-enforce): **`--share-report-or
 
 When **`LICENSE_PREFLIGHT_ENABLED`** is true (commercial npm profile), the CLI may call the hosted **`POST /api/v1/usage/reserve`** before batch verify, quick verify, or **`enforce`**. Operational **`code`** values on exit **3** include:
 
-- **`LICENSE_KEY_MISSING`** — no **`WORKFLOW_VERIFIER_API_KEY`**
+- **`LICENSE_KEY_MISSING`** — no **`AGENTSKEPTIC_API_KEY`** (legacy **`WORKFLOW_VERIFIER_API_KEY`** is still accepted by the CLI for one migration window)
 - **`LICENSE_DENIED`** — reserve denied (quota, generic 403, etc.)
 - **`LICENSE_USAGE_UNAVAILABLE`** — reserve unreachable after retries
 - **`ENFORCEMENT_REQUIRES_PAID_PLAN`** — **`enforce`** on a starter-tier API key (upgrade path; message may include **`upgrade_url`**)
 
 **Why verify vs enforce differ:** see **[`docs/commercial-entitlement-policy.md`](commercial-entitlement-policy.md)** (rationale and normative entitlement matrix links).
 
-**`COMPARE_INPUT_RUN_LEVEL_INCONSISTENT`:** Emitted when **`workflow-verifier compare`** loads a saved workflow result that validates as **frozen v9** (`schemas/workflow-result-v9.schema.json`) but fails the v9 consistency rule: `runLevelCodes.length === runLevelReasons.length` and `runLevelCodes[i] === runLevelReasons[i].code` for every index **`i`**. **`message`** is exactly: **`Compare input workflow result: runLevelCodes and runLevelReasons are inconsistent.`**
+**`COMPARE_INPUT_RUN_LEVEL_INCONSISTENT`:** Emitted when **`agentskeptic compare`** loads a saved workflow result that validates as **frozen v9** (`schemas/workflow-result-v9.schema.json`) but fails the v9 consistency rule: `runLevelCodes.length === runLevelReasons.length` and `runLevelCodes[i] === runLevelReasons[i].code` for every index **`i`**. **`message`** is exactly: **`Compare input workflow result: runLevelCodes and runLevelReasons are inconsistent.`**
 
 ### Human truth report
 
@@ -498,7 +498,7 @@ This section is **normative**: literals and line shape match `formatWorkflowTrut
 - **Default `truthReport` to stderr:** Gives a clear truth signal without extra configuration; silent tests pass `truthReport: () => {}`.
 - **Default `logStep` no-op:** Removes the old default of one JSON object per step on stderr, which duplicated `WorkflowResult` and conflicted with the human report.
 - **Fixed `trust:` lines:** Most `trust:` lines map to one `WorkflowStatus` from `aggregate.ts`, except the **eventual-window uncertainty** line which applies when `workflow_status` is `incomplete` under the narrow rule in the grammar below.
-- **Machine-stable JSON labels (`STEP_STATUS_TRUTH_LABELS`):** The structured **`workflowTruthReport`** on stdout JSON uses fixed **`outcomeLabel`** strings (`VERIFIED`, `FAILED_ROW_MISSING`, …) for integrators and **`workflow-verifier compare`**. The **human report text** embeds the same plain-language phrases on the **`verification_verdict:`** line after **`outcome=<outcomeLabel>;`** (from **`HUMAN_REPORT_RESULT_PHRASE`** in `workflowTruthReport.ts`—see [Human text vs JSON `outcomeLabel`](#human-text-vs-json-outcomelabel) below). **Automation should key on stdout JSON**, not on parsing stderr text.
+- **Machine-stable JSON labels (`STEP_STATUS_TRUTH_LABELS`):** The structured **`workflowTruthReport`** on stdout JSON uses fixed **`outcomeLabel`** strings (`VERIFIED`, `FAILED_ROW_MISSING`, …) for integrators and **`agentskeptic compare`**. The **human report text** embeds the same plain-language phrases on the **`verification_verdict:`** line after **`outcome=<outcomeLabel>;`** (from **`HUMAN_REPORT_RESULT_PHRASE`** in `workflowTruthReport.ts`—see [Human text vs JSON `outcomeLabel`](#human-text-vs-json-outcomelabel) below). **Automation should key on stdout JSON**, not on parsing stderr text.
 - **Run-level and event-sequence issues:** Human text leads with **`detail:`** (trimmed `message`), then **`category:`**, then **`reference_code:`** (wire `code`). Same sources as **`runLevelReasons`** / **`eventSequenceIntegrity.reasons`**.
 - **Failure diagnosis:** When the workflow is not **`complete`**, after **`trust:`** and the execution-path block (see below), the human report includes a **`diagnosis:`** block mirroring **`workflowTruthReport.failureAnalysis`** on stdout JSON (see [Failure analysis](#failure-analysis-normative)), including one line **`actionable_failure: category=… severity=… recommended_action=… automation_safe=…`** (see [Actionable failure classification](#actionable-failure-classification-normative)). Immediately after **`diagnosis:`**, when **`failureExplanation`** is non-null, the report includes **`failure_explanation:`** (see [Failure explanation v1 (normative)](#failure-explanation-v1-normative)); when **`correctnessDefinition`** is non-null, the report includes **`correctness_definition:`** (enforcement kind, must-always-hold, enforce-as bullets, JSON line for **`enforceableProjection`**, remediation alignment); when the workflow is **`complete`**, those blocks are omitted entirely.
 - **Execution path:** Immediately after **`trust:`**, the human report includes **`execution_path:`** (summary string) and zero or more **`path_finding:`** lines with **`detail:`**, mirroring **`workflowTruthReport.executionPathFindings`** (see [Execution path findings](#execution-path-findings-normative)).
@@ -573,7 +573,7 @@ These fields are **verification** metadata for **external** consumers: they desc
 
 **Workflow categories:** Eight literals: **`decision_error`**, **`bad_input`**, **`retrieval_failure`**, **`control_flow_problem`**, **`state_inconsistency`**, **`downstream_execution_failure`**, **`ambiguous`**, **`unclassified`**. Compare also emits synthetic **`complete`** (with severity **`low`**) per run when **`failureAnalysis`** is **`null`**, for histograms that sum to the run count.
 
-**Cross-run comparison:** **`runIndex`** order in **`workflow-verifier compare`** inputs is the normative time axis for **`actionableCategoryRecurrence`** (longest consecutive **`runIndex`** block per category). Integrators may map indices to wall-clock externally.
+**Cross-run comparison:** **`runIndex`** order in **`agentskeptic compare`** inputs is the normative time axis for **`actionableCategoryRecurrence`** (longest consecutive **`runIndex`** block per category). Integrators may map indices to wall-clock externally.
 
 ### Taxonomy authority (normative)
 
@@ -763,7 +763,7 @@ Two observations **match** iff `toolId` is `===` and `canonicalJsonForParams(par
 
 **`backwardPaths`:** Always includes **`workflow_terminal`** when `nodes.length > 0`: `seedRunEventId` is the last node’s `runEventId`, `ancestorRunEventIds` is `[seed, parent(seed), …, root]` following **`parentRunEventId`** on nodes. When **`workflowResult`** is supplied, append one **`verification_step`** per `steps[i]` that has a matching `tool_observed` for `steps[i].seq` (seed = evaluated observation for that `seq`, same ancestor walk). Ordering: `workflow_terminal` first, then **`verification_step`** rows in ascending `stepIndex`.
 
-**CLI:** `workflow-verifier execution-trace --workflow-id <id> --events <path> [--workflow-result <path>] [--format json|text]`. Success: stdout = `ExecutionTraceView` JSON or `formatExecutionTraceText` output; stderr empty; exit **0**. Operational failure (usage, graph validation, read/parse errors): stderr = one-line `cliErrorEnvelope`; stdout empty; exit **3**.
+**CLI:** `agentskeptic execution-trace --workflow-id <id> --events <path> [--workflow-result <path>] [--format json|text]`. Success: stdout = `ExecutionTraceView` JSON or `formatExecutionTraceText` output; stderr empty; exit **0**. Operational failure (usage, graph validation, read/parse errors): stderr = one-line `cliErrorEnvelope`; stdout empty; exit **3**.
 
 **In-process:** `observeStep` accepts the same union; **`withWorkflowVerification`** buffers all valid events in capture order and feeds only `tool_observed` into verification (same as batch).
 
@@ -847,8 +847,8 @@ Validate a **`tools.json`** registry **without** opening SQLite or Postgres: JSO
 ### CLI
 
 ```text
-workflow-verifier validate-registry --registry <path>
-workflow-verifier validate-registry --registry <path> --events <path> --workflow-id <id>
+agentskeptic validate-registry --registry <path>
+agentskeptic validate-registry --registry <path> --events <path> --workflow-id <id>
 ```
 
 - **`--registry`**: required.
@@ -1117,7 +1117,7 @@ When there are no unknown codes, high confidence, and no alternatives, **`unknow
 | `EXPLANATION_STEP_TRUTH_MISMATCH` | `step` branch: driver or truth step row missing for `(seq, toolId)`. |
 | `EXPLANATION_RUN_CONTEXT_INDEX_MISSING` | `run_context` branch: `e0.ingestIndex` undefined. |
 
-If any of these propagate as an unhandled error from verification, the **`workflow-verifier`** CLI treats it like other internal failures: **stderr** emits the operational JSON envelope (`INTERNAL_ERROR`), **exit code `3`**, and **no** valid `WorkflowResult` JSON on **stdout**.
+If any of these propagate as an unhandled error from verification, the **`agentskeptic`** CLI treats it like other internal failures: **stderr** emits the operational JSON envelope (`INTERNAL_ERROR`), **exit code `3`**, and **no** valid `WorkflowResult` JSON on **stdout**.
 
 ### Consumption (no new package exports)
 
@@ -1252,7 +1252,7 @@ Divergence: no steps to verify against the database under policy [<P>]
    | `BUNDLE_SIGNATURE_CRYPTO_INVALID` |
    | `BUNDLE_SIGNATURE_PRIVATE_KEY_INVALID` |
 
-9. **CLI.** Subcommand **`verify-bundle-signature --run-dir <dir> --public-key <path>`** calls **`verifyRunBundleSignature`** only (no duplicate verify logic). Exit **0** iff **`{ ok: true }`**. All verification failures use exit **3** with a **single-line** stderr JSON object matching [`schemas/cli-error-envelope.schema.json`](../schemas/cli-error-envelope.schema.json) and **`code`** set to the exact **`BUNDLE_SIGNATURE_*`** string. **Do not** use exit **2** for signature failure (exit **2** remains **incomplete** workflow verdict on **`workflow-verifier`**). **`workflow-verifier`** accepts **`--sign-ed25519-private-key <path>`** only together with **`--write-run-bundle`**. **`persistBundle.ed25519PrivateKeyPemPath`** (library) threads the same option to **`writeAgentRunBundle`**. **Required tests:** `test/bundle-signature-cli-write.test.mjs` (CLI signed write + verify), `src/withWorkflowVerification.persistBundle.test.ts` (pipeline signed write + **`verifyRunBundleSignature`**).
+9. **CLI.** Subcommand **`verify-bundle-signature --run-dir <dir> --public-key <path>`** calls **`verifyRunBundleSignature`** only (no duplicate verify logic). Exit **0** iff **`{ ok: true }`**. All verification failures use exit **3** with a **single-line** stderr JSON object matching [`schemas/cli-error-envelope.schema.json`](../schemas/cli-error-envelope.schema.json) and **`code`** set to the exact **`BUNDLE_SIGNATURE_*`** string. **Do not** use exit **2** for signature failure (exit **2** remains **incomplete** workflow verdict on **`agentskeptic`**). **`agentskeptic`** accepts **`--sign-ed25519-private-key <path>`** only together with **`--write-run-bundle`**. **`persistBundle.ed25519PrivateKeyPemPath`** (library) threads the same option to **`writeAgentRunBundle`**. **Required tests:** `test/bundle-signature-cli-write.test.mjs` (CLI signed write + verify), `src/withWorkflowVerification.persistBundle.test.ts` (pipeline signed write + **`verifyRunBundleSignature`**).
 
 10. **Fixture regeneration:** `node scripts/generate-signed-bundle-fixture.mjs` (writes **`test/fixtures/signed-bundle-v2/`**; no private keys committed).
 
@@ -1283,7 +1283,7 @@ Structural SSOT: [`schemas/agent-run-record-v1.schema.json`](../schemas/agent-ru
 
 ### CLI (normative)
 
-After a successful **`workflow-verifier`** (verdict exit **0–2**, stdout **`WorkflowResult`** schema-valid), **`--write-run-bundle <dir>`** creates the directory if needed, writes **`events.ndjson`** (byte copy of **`--events`**), **`workflow-result.json`**, optionally **`workflow-result.sig.json`** when **`--sign-ed25519-private-key`** is set, then **`agent-run.json`**, using the package **`name`** / **`version`** from **`package.json`** as **`producer`**.
+After a successful **`agentskeptic`** (verdict exit **0–2**, stdout **`WorkflowResult`** schema-valid), **`--write-run-bundle <dir>`** creates the directory if needed, writes **`events.ndjson`** (byte copy of **`--events`**), **`workflow-result.json`**, optionally **`workflow-result.sig.json`** when **`--sign-ed25519-private-key`** is set, then **`agent-run.json`**, using the package **`name`** / **`version`** from **`package.json`** as **`producer`**.
 
 ### Implementer API
 
@@ -1291,12 +1291,12 @@ After a successful **`workflow-verifier`** (verdict exit **0–2**, stdout **`Wo
 
 ## Debug Console (normative)
 
-On-call **interactive debugging** is supported by a **local-only** web UI served by the CLI subcommand **`workflow-verifier debug --corpus <dir> [--port <n>]`**. The server binds **127.0.0.1** only (no LAN exposure in this MVP). **`npm run build`** copies static assets from **`debug-ui/`** to **`dist/debug-ui/`** next to **`dist/cli.js`**.
+On-call **interactive debugging** is supported by a **local-only** web UI served by the CLI subcommand **`agentskeptic debug --corpus <dir> [--port <n>]`**. The server binds **127.0.0.1** only (no LAN exposure in this MVP). **`npm run build`** copies static assets from **`debug-ui/`** to **`dist/debug-ui/`** next to **`dist/cli.js`**.
 
 ### Debug Console audiences
 
 - **Integrator:** Export each run as a **child directory** of the corpus root with the [Agent run record (canonical bundle)](#agent-run-record-canonical-bundle): **`agent-run.json`**, **`workflow-result.json`**, **`events.ndjson`**, and when using signing, **`workflow-result.sig.json`** (fixed names). Optional manifest fields **`customerId`** and **`capturedAt`** (ISO-8601 **`date-time`**) replace the former **`meta.json`** contract.
-- **Operator:** Run **`workflow-verifier debug --corpus <path>`**, open the printed **http://127.0.0.1:…/** URL. Use **Runs** (filters + pagination), **Patterns** (corpus-wide aggregates), **Compare** (multi-select). Load-failed artifacts appear as **first-class rows** (not omitted).
+- **Operator:** Run **`agentskeptic debug --corpus <path>`**, open the printed **http://127.0.0.1:…/** URL. Use **Runs** (filters + pagination), **Patterns** (corpus-wide aggregates), **Compare** (multi-select). Load-failed artifacts appear as **first-class rows** (not omitted).
 - **Engineer:** Implementation modules are listed in the Engineer table under [Audiences](#audiences) (`debugCorpus.ts`, `debugFocus.ts`, `debugPatterns.ts`, `debugRunFilters.ts`, `debugRunIndex.ts`, `debugServer.ts`). **`recurrenceSignature`** for pattern aggregation is reused from **`runComparison.ts`**.
 
 ### Corpus load outcomes (normative)
@@ -1395,7 +1395,7 @@ For each run index `i`, build the **set** of `recurrenceSignature` values from *
 
 ### Cross-run comparison: implementation bindings (normative)
 
-- **CLI:** `workflow-verifier compare --prior <path> [--prior <path> …] --current <path>`. Each `--prior` is a saved **`WorkflowResult`** JSON file; order is oldest → newest; **`--current`** is the last run. At least one `--prior` is required.
+- **CLI:** `agentskeptic compare --prior <path> [--prior <path> …] --current <path>`. Each `--prior` is a saved **`WorkflowResult`** JSON file; order is oldest → newest; **`--current`** is the last run. At least one `--prior` is required.
 - **`displayLabel`:** Integrator-supplied opaque string per run. The **reference CLI** sets **`displayLabel`** to the **basename** of each file path (never a full path in the report).
 - **Failure envelope:** Same shape and rules as § CLI operational errors; compare-specific codes live in `failureCatalog.ts` (e.g. `COMPARE_USAGE`, `COMPARE_WORKFLOW_ID_MISMATCH`, `COMPARE_WORKFLOW_TRUTH_MISMATCH`, `COMPARE_INPUT_READ_FAILED`, `COMPARE_INPUT_JSON_SYNTAX`, `COMPARE_INPUT_SCHEMA_INVALID`, `COMPARE_RUN_COMPARISON_REPORT_INVALID`).
 - **Schema:** `schemas/run-comparison-report.schema.json` validates stdout on success; root **`$comment`** points to this document’s **Cross-run comparison (normative)** anchor.
@@ -1414,7 +1414,7 @@ For each run index `i`, build the **set** of `recurrenceSignature` values from *
 
 ## CI enforcement (`enforce`)
 
-Automation should use **`workflow-verifier enforce batch`** or **`workflow-verifier enforce quick`** with a pinned **`ci-lock-v1`** fixture (see [`schemas/ci-lock-v1.schema.json`](../schemas/ci-lock-v1.schema.json)). Exploratory runs continue to use bare **`workflow-verifier`** / **`quick`** without locks. Full recipe and field semantics: [`ci-enforcement.md`](ci-enforcement.md).
+Automation should use **`agentskeptic enforce batch`** or **`agentskeptic enforce quick`** with a pinned **`ci-lock-v1`** fixture (see [`schemas/ci-lock-v1.schema.json`](../schemas/ci-lock-v1.schema.json)). Exploratory runs continue to use bare **`agentskeptic`** / **`quick`** without locks. Full recipe and field semantics: [`ci-enforcement.md`](ci-enforcement.md).
 
 ### Enforce stream contract (normative)
 
@@ -1448,9 +1448,9 @@ Substrings for contract tests: **enforce batch**, **enforce quick**, **JSON.stri
 
 **Manifest:** `schemas/assurance-manifest-v1.schema.json`. Each scenario has **`kind` `spawn_argv`**: **`argv`** is appended after `node dist/cli.js` when the tool spawns itself (same integration surface as external CI). **Path arguments** immediately following these flags are resolved **relative to the manifest file’s directory** unless already absolute: **`--events`**, **`--registry`**, **`--db`**, **`--expect-lock`**, **`--prior`**, **`--current`**, **`--input`**, **`--export-registry`**, **`--emit-events`**, **`--output-lock`**.
 
-**Repository root:** The runner locates the package root containing **`package.json`** with **`name`**: **`workflow-verifier`** by walking parents from the manifest directory, then (if needed) from the **current working directory**. **`dist/cli.js`** must exist (run **`npm run build`** first).
+**Repository root:** The runner locates the package root containing **`package.json`** with **`name`**: **`agentskeptic`** by walking parents from the manifest directory, then (if needed) from the **current working directory**. **`dist/cli.js`** must exist (run **`npm run build`** first).
 
-### `workflow-verifier assurance run` I/O (normative)
+### `agentskeptic assurance run` I/O (normative)
 
 | Exit | stdout | stderr |
 |------|--------|--------|
@@ -1460,7 +1460,7 @@ Substrings for contract tests: **enforce batch**, **enforce quick**, **JSON.stri
 
 Optional **`--write-report <path>`:** after a successful report build, the same JSON line (UTF-8) is written atomically to **`path`**; operational failures exit **3** before write.
 
-### `workflow-verifier assurance stale` I/O (normative)
+### `agentskeptic assurance stale` I/O (normative)
 
 | Exit | stdout | stderr |
 |------|--------|--------|
@@ -1479,6 +1479,6 @@ Run **`assurance run --write-report <artifactPath>`** on your cadence, publish *
 Bundled files under [`examples/`](../examples/): `seed.sql`, `tools.json`, `events.ndjson`. The assurance manifest uses [`examples/minimal-ci-enforcement/ci-check.sqlite`](../examples/minimal-ci-enforcement/ci-check.sqlite) (database created from that folder’s `seed.sql`, same data as the temp DB in [`examples/minimal-ci-enforcement/run.mjs`](../examples/minimal-ci-enforcement/run.mjs)).
 
 - **Onboarding:** **`npm start`** runs **`npm run build`** then [`scripts/demo.mjs`](../scripts/demo.mjs) (batch CLI demo with bundled `examples/`). For the narrated first-run walkthrough, run **`npm run build && node scripts/first-run.mjs`** (also executed as part of **`npm test`**); that driver is [`scripts/first-run.mjs`](../scripts/first-run.mjs). It seeds `examples/demo.db`, prints plain-language framing plus **human verification reports on stdout** (via a custom **`truthReport`** callback), then verifies workflows `wf_complete` (expect `complete` / `verified`) and `wf_missing` (expect `inconsistent` / `missing` / `ROW_ABSENT`). **`example:workflow-hook`:** run **`npm run example:workflow-hook`** for a minimal **`withWorkflowVerification`** + **`observeStep`** demo (SQLite temp DB, one event from **`examples/events.ndjson`**).
-- **CLI log streams:** For the CLI, a **human-readable verification report** is written to **stderr** and the machine-readable **workflow result JSON** to **stdout** on verdict exits **0–2** (default **`truthReport`**); full format is **[Human truth report](#human-truth-report)**. Repository README links use **`docs/workflow-verifier.md#human-truth-report`** for that section.
+- **CLI log streams:** For the CLI, a **human-readable verification report** is written to **stderr** and the machine-readable **workflow result JSON** to **stdout** on verdict exits **0–2** (default **`truthReport`**); full format is **[Human truth report](#human-truth-report)**. Repository README links use **`docs/agentskeptic.md#human-truth-report`** for that section.
 
 (Node may print an experimental warning for `node:sqlite` depending on version.)

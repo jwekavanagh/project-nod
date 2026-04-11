@@ -1,8 +1,8 @@
-# Example: run the published commercial workflow-verifier CLI against this repo's examples/
-# with a real WORKFLOW_VERIFIER_API_KEY and a reachable license API (COMMERCIAL_LICENSE_API_BASE_URL).
+# Example: run the published commercial AgentSkeptic CLI (npm package `agentskeptic`) against this repo's examples/
+# with a real AGENTSKEPTIC_API_KEY and a reachable license API (COMMERCIAL_LICENSE_API_BASE_URL).
 #
 # Prerequisites:
-# - GitHub secret WORKFLOW_VERIFIER_API_KEY from your product account
+# - GitHub secret AGENTSKEPTIC_API_KEY from your product account (legacy WORKFLOW_VERIFIER_API_KEY is still accepted by the CLI)
 # - License server must accept POST /api/v1/usage/reserve for intent=verify
 #
 # Copy to .github/workflows/ in a repo that vendors the same examples/ layout, or run from this monorepo.
@@ -27,7 +27,7 @@ jobs:
   verify:
     runs-on: ubuntu-latest
     env:
-      WFV_REPO_ROOT: ${{ github.workspace }}/node_modules/workflow-verifier
+      AS_REPO_ROOT: ${{ github.workspace }}/node_modules/agentskeptic
     steps:
       - uses: actions/checkout@v4
 
@@ -45,16 +45,16 @@ jobs:
           d.close();
           "
 
-      - name: Install published workflow-verifier (commercial)
-        run: npm install workflow-verifier@latest
+      - name: Install published agentskeptic (commercial)
+        run: npm install agentskeptic@latest
 
       - name: Run contract verification
         id: wfv_verify
         continue-on-error: true
         env:
-          WORKFLOW_VERIFIER_API_KEY: ${{ secrets.WORKFLOW_VERIFIER_API_KEY }}
+          AGENTSKEPTIC_API_KEY: ${{ secrets.AGENTSKEPTIC_API_KEY }}
         run: |
-          npx workflow-verifier --workflow-id wf_complete \
+          npx agentskeptic --workflow-id wf_complete \
             --events examples/events.ndjson \
             --registry examples/tools.json \
             --db examples/demo.db \
@@ -63,12 +63,12 @@ jobs:
       - name: Append AgentSkeptic discovery summary
         if: always()
         run: |
-          node "${WFV_REPO_ROOT}/scripts/render-discovery-ci.mjs" summary >> "$GITHUB_STEP_SUMMARY"
+          node "${AS_REPO_ROOT}/scripts/render-discovery-ci.mjs" summary >> "$GITHUB_STEP_SUMMARY"
 
       - name: Render PR comment body on verification failure
         if: github.event_name == 'pull_request' && steps.wfv_verify.outcome == 'failure'
         run: |
-          node "${WFV_REPO_ROOT}/scripts/render-discovery-ci.mjs" pr_body \
+          node "${AS_REPO_ROOT}/scripts/render-discovery-ci.mjs" pr_body \
             --stderr-file verify.stderr \
             --workflow-stdout-file verify.stdout \
             > pr-comment-body.md
@@ -79,7 +79,7 @@ jobs:
         with:
           script: |
             const fs = require('fs');
-            const marker = '<!-- workflow-verifier-discovery:v1 -->';
+            const marker = '<!-- agentskeptic-discovery:v1 -->';
             const body = fs.readFileSync('pr-comment-body.md', 'utf8');
             const { data: comments } = await github.rest.issues.listComments({
               owner: context.repo.owner,
@@ -108,5 +108,5 @@ jobs:
       - name: Fail job when verification failed
         if: steps.wfv_verify.outcome == 'failure'
         run: |
-          echo "::error::workflow-verifier verify failed; see step logs and PR comment (if pull_request)."
+          echo "::error::agentskeptic verify failed; see step logs and PR comment (if pull_request)."
           exit 1

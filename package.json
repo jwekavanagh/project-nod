@@ -1,5 +1,5 @@
 {
-  "name": "workflow-verifier",
+  "name": "agentskeptic",
   "version": "0.1.1",
   "description": "Green agent traces and tool success flags often hide missing or wrong database rows. AgentSkeptic runs read-only SQL at verification time against persisted state vs structured tool activity—not chat narratives.",
   "license": "MIT",
@@ -9,14 +9,14 @@
   ],
   "main": "dist/index.js",
   "bin": {
-    "workflow-verifier": "dist/cli.js"
+    "agentskeptic": "dist/cli.js"
   },
   "scripts": {
     "prepublishOnly": "node scripts/build-commercial.mjs",
     "build": "node scripts/write-commercial-build-flags.mjs --oss && node scripts/sync-failure-origin-from-schema.mjs && tsc && node scripts/copy-debug-ui.mjs && node scripts/write-discovery-payload.mjs",
     "build:commercial": "node scripts/build-commercial.mjs",
     "start": "npm run build && node scripts/demo.mjs",
-    "dev": "npm run dev -w workflow-verifier-web",
+    "dev": "npm run dev -w agentskeptic-web",
     "test:vitest": "vitest run",
     "test:node:sqlite": "node --test --test-force-exit test/reconciler.sqlite.test.mjs test/pipeline.sqlite.test.mjs test/withWorkflowVerification.test.mjs test/workflowTruthReport.test.mjs test/cli.test.mjs test/stable-failure-consistency.test.mjs test/workflow-result-consumer-contract.test.mjs test/workflow-result-stdout-version.test.mjs test/docs-relational-ssot.test.mjs test/tools-registry-relational-surface.test.mjs test/docs-contract.test.mjs test/docs-commercial-enforce-gate-normative.test.mjs test/docs-remediation-doctrine.test.mjs test/bundle-signature-fixture.test.mjs test/bundle-signature-codes-doc.test.mjs test/bundle-signature-cli-write.test.mjs test/quick-verify.sqlite.test.mjs test/quickVerifyPostbuildGate.test.mjs test/npm-scripts-contract.test.mjs test/removed-script-names-ban.test.mjs test/docs-workflow-result-normative-prose.test.mjs test/enforce-oss-forbidden.test.mjs test/docs-enforce-stream-contract.test.mjs test/docs-quick-enforce-link.test.mjs test/commercial-pricing-policy-parity.test.mjs test/distribution-requirement-clauses.test.mjs test/distribution-traceability-literals.test.mjs test/distribution-ssot-clause-coverage.test.mjs test/distribution-consumer-pipeline.test.mjs test/discovery-payload.test.mjs test/npm-pack-discovery-scripts.test.mjs test/registry-metadata-parity.test.mjs",
     "test:postgres": "node scripts/pg-ci-init.mjs && node --test --test-force-exit test/postgres-session-readonly.test.mjs test/postgres-privilege.test.mjs test/pipeline.postgres.test.mjs test/ci-workflow-truth-postgres-contract.test.mjs test/quick-verify.postgres.test.mjs",
@@ -26,7 +26,7 @@
     "test:debug-ui": "playwright test",
     "test:ci": "npm run build && npm run test:vitest && npm run test:node:sqlite && node scripts/first-run.mjs && npm run partner-quickstart && node test/partner-quickstart.adversarial.mjs && npm run check:partner-quickstart-ssot && node dist/cli.js assurance run --manifest examples/assurance/manifest.json && npm run test:postgres && node scripts/run-partner-quickstart-postgres-ci.mjs && node scripts/commercial-enforce-test-harness.mjs --require-postgres && npx playwright install chromium && npm run test:debug-ui && npm run build && npm run validate-ttfv",
     "example:workflow-hook": "npm run build && node examples/workflow-runner.mjs",
-    "workflow-verifier": "node dist/cli.js",
+    "agentskeptic": "node dist/cli.js",
     "migrate:workflow-result-v11": "npm run build && node scripts/migrate-workflow-result-v11.mjs",
     "migrate:workflow-result-v12": "node scripts/migrate-workflow-result-v12.mjs",
     "migrate:workflow-result-v13": "npm run build && node scripts/migrate-workflow-result-v13.mjs",
@@ -39,7 +39,7 @@
     "check:discovery-acquisition": "node scripts/validate-discovery-acquisition.mjs",
     "check:public-product-anchors": "node scripts/public-product-anchors.cjs --check",
     "test:commercial-layer": "node scripts/validate-commercial-funnel.mjs",
-    "build:website": "npm run build && npm run build -w workflow-verifier-web",
+    "build:website": "npm run build && npm run build -w agentskeptic-web",
     "check:web-demo-prereqs": "node scripts/check-web-demo-prereqs.mjs",
     "generate:web-demo-snippets": "node scripts/generate-web-demo-snippets.mjs",
     "generate:partner-quickstart-commands": "node scripts/generate-partner-quickstart-commands.mjs",

@@ -18,7 +18,10 @@ function normalizeOrigin(s) {
 const DISCOVERY_LLM_BRANCH = "main";
 
 /** @type {const} */
-const PR_MARKER_LINE = "<!-- workflow-verifier-discovery:v1 -->";
+const PR_MARKER_LINE = "<!-- agentskeptic-discovery:v1 -->";
+
+/** @type {const} */
+const PR_MARKER_LINE_LEGACY = "<!-- workflow-verifier-discovery:v1 -->";
 
 const MAX_SUMMARY_UTF8_BYTES = 65536;
 const MAX_PR_BODY_UTF8_BYTES = 10240;
@@ -296,7 +299,10 @@ ${String(payload.identityOneLiner)}
  * @returns {{ action: 'create' } | { action: 'update'; id: number }}
  */
 function selectPrCommentUpsert(comments, marker) {
-  const withMarker = comments.filter((c) => String(c.body ?? "").includes(marker));
+  const withMarker = comments.filter((c) => {
+    const b = String(c.body ?? "");
+    return b.includes(marker) || b.includes(PR_MARKER_LINE_LEGACY);
+  });
   if (withMarker.length === 0) return { action: "create" };
   const newest = withMarker[withMarker.length - 1];
   return { action: "update", id: newest.id };
@@ -305,6 +311,7 @@ function selectPrCommentUpsert(comments, marker) {
 module.exports = {
   DISCOVERY_LLM_BRANCH,
   PR_MARKER_LINE,
+  PR_MARKER_LINE_LEGACY,
   MAX_SUMMARY_UTF8_BYTES,
   MAX_PR_BODY_UTF8_BYTES,
   STDERR_TAIL_LINES,

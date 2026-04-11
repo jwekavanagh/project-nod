@@ -15,7 +15,7 @@ const traceRoot =
   vercelLike || process.env.NEXT_CONFIG_TRACE_ROOT === "1" ? path.join(__dirname, "..") : undefined;
 
 const nextConfig: NextConfig = {
-  serverExternalPackages: ["nodemailer", "postgres", "workflow-verifier"],
+  serverExternalPackages: ["nodemailer", "postgres", "agentskeptic"],
   ...(traceRoot ? { outputFileTracingRoot: traceRoot } : {}),
   async headers() {
     return [

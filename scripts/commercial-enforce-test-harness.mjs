@@ -42,7 +42,7 @@ const baseUrl = `http://127.0.0.1:${port}`;
 const harnessEnv = {
   ...process.env,
   COMMERCIAL_LICENSE_API_BASE_URL: baseUrl,
-  WORKFLOW_VERIFIER_API_KEY: "wfv_test_harness_key",
+  AGENTSKEPTIC_API_KEY: "wfv_test_harness_key",
 };
 
 /**

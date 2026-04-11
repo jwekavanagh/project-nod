@@ -14,8 +14,8 @@ const quick = readFileSync(join(root, "docs", "quick-verify-normative.md"), "utf
 describe("quick-verify normative enforce cross-link", () => {
   it("links to enforce stream contract anchor only (no local exit 4 table row)", () => {
     assert.ok(
-      quick.includes("workflow-verifier.md#enforce-stream-contract-normative"),
-      "must link to workflow-verifier enforce stream anchor",
+      quick.includes("agentskeptic.md#enforce-stream-contract-normative"),
+      "must link to agentskeptic enforce stream anchor",
     );
     assert.equal(
       /\|\s*4\s*\|\s*`?enforce/.test(quick),

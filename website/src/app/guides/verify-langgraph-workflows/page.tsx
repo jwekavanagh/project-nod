@@ -34,7 +34,7 @@ export default function LangGraphVerificationGuidePage() {
           start with Quick Verify for inferred checks.
         </li>
         <li>
-          Run <code>workflow-verifier verify</code> or <code>workflow-verifier quick</code> locally. To publish a
+          Run <code>agentskeptic verify</code> or <code>agentskeptic quick</code> locally. To publish a
           shareable HTML report on the canonical site, pass{" "}
           <code>
             --share-report-origin https://agentskeptic.com

@@ -15,7 +15,7 @@ todos:
     content: withWorkflowVerification persistBundle + deterministic NDJSON capture + integration test
     status: completed
   - id: docs-verdict-audit
-    content: workflow-verifier.md workflow verdict + audience sections (engineer/integrator/operator); README one-line pointer
+    content: agentskeptic.md workflow verdict + audience sections (engineer/integrator/operator); README one-line pointer
     status: completed
   - id: validation-tests
     content: Bundle round-trip, empty-events bundle, integrity negative, debugServer workflowVerdictSurface
@@ -165,14 +165,14 @@ Every case below states **exact expected outputs** or **exact error codes**—no
 
 ## Documentation
 
-Single SSOT remains **[`docs/workflow-verifier.md`](docs/workflow-verifier.md)**. Add **structured** material (headings to implement verbatim intent):
+Single SSOT remains **[`docs/agentskeptic.md`](docs/agentskeptic.md)**. Add **structured** material (headings to implement verbatim intent):
 
 1. **Product requirements table (workflow verdict)** — Map PR 6 → `WorkflowResult.status`, `workflowTruthReport.trustSummary`, `workflowVerdictSurface`, human `trust:` line. Map PR 8 → three-file bundle, `writeAgentRunBundle`, `loadCorpusRun`, Debug Console, manifest integrity.
 2. **Engineer** — New module **`agentRunBundle.ts`**; per-file atomic write + rename order; **`captureNdjsonUtf8`** semantics (enqueue order, includes all buffered v2 run events). Reference tests that lock behavior.
 3. **Integrator** — **Preserve:** call `writeAgentRunBundle` or CLI `--write-run-bundle`. **Retrieve:** `loadCorpusRun(corpusRoot, runId)` return shape. **In-process:** `withWorkflowVerification` + `persistBundle` lifecycle (numbered list mirroring Design). **Empty events:** when it occurs and that it is valid.
 4. **Operator** — Debug Console verdict panel reads server field; corrupted bundle manifests surface **`ARTIFACT_*`** / **`WORKFLOW_RESULT_*`** codes; do not treat a directory as trusted until `loadCorpusRun` is **ok**.
 
-**[`README.md`](README.md):** One short sentence pointing to the workflow verdict anchor in `workflow-verifier.md` (no second spec).
+**[`README.md`](README.md):** One short sentence pointing to the workflow verdict anchor in `agentskeptic.md` (no second spec).
 
 ---
 

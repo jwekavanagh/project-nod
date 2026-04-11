@@ -63,7 +63,7 @@ The website **`prebuild`** must be exactly:
 - Discoverability in the spec:
   - `info.contact.url` — canonical site origin
   - Root **`externalDocs`** (not under `info`) — first-run integration guide at `{canonical}/integrate` with **`description: "First-run integration guide"`**
-  - `info.x-workflow-verifier-distribution` with keys **`repository`**, **`npmPackage`**, **`openApi`**
+  - `info.x-agentskeptic-distribution` with keys **`repository`**, **`npmPackage`**, **`openApi`**
 - **Public share surfaces (literals):** **`POST {canonical}/api/public/verification-reports`**, **`GET {canonical}/r/{uuid}`** (HTML report; **`X-Robots-Tag: noindex, nofollow`**), indexable guide **`GET {canonical}/guides/verify-langgraph-workflows`**. Normative: [`shareable-verification-reports.md`](shareable-verification-reports.md).
 - **Ambient CI (GitHub):** job summary + optional PR upsert for commercial verify — single contract in [`ambient-ci-distribution.md`](ambient-ci-distribution.md); payload + renders live in [`scripts/discovery-payload.lib.cjs`](../scripts/discovery-payload.lib.cjs).
 
@@ -123,7 +123,7 @@ For **`REQ-DIST-004`** and **`REQ-DIST-005`** traceability rows, the **Implement
 | REQ-DIST-003 | Indexed workflow + Actions post-publish | **P6.5(c)(d)**: `gh workflow view foreign-smoke.yml` retry **5s / 120s**; second permissions `GET` | Same |
 | REQ-DIST-004 | Proof without `gh run view` inputs: list by **`run-name`**, artifact **`distribution-proof`**, file **`proof.json`**, field **`foreign_smoke_fixture_sha256`** | **P8** in script + generated consumer YAML: `run-name`, `distribution-proof`, `proof.json`, `foreign_smoke_fixture_sha256` | `test/distribution-consumer-pipeline.test.mjs` |
 | REQ-DIST-005 | Merge gate runs distribution last | [`.github/workflows/ci.yml`](../.github/workflows/ci.yml) job **`distribution-consumer`** with **`needs: [test, commercial]`**; `if` canonical repo + `main`; **P7** dispatch + **P8** proof; consumer list key **`run-name`**; artifact **`distribution-proof`**; **`proof.json`**; JSON **`foreign_smoke_fixture_sha256`** | Green **`distribution-consumer`** on `main` |
-| REQ-DIST-006 | Docs link SSOT | This file + [`workflow-verifier.md`](workflow-verifier.md) pointer | Doc tests |
+| REQ-DIST-006 | Docs link SSOT | This file + [`agentskeptic.md`](agentskeptic.md) pointer | Doc tests |
 
 <!-- distribution-traceability-literals:end -->
 <!-- distribution-traceability-table:end -->
@@ -159,7 +159,7 @@ Sub-steps **(a)** ref parity `PUT` response `commit.sha` vs `refs/heads/main` (*
 
 - Top-level **`run-name:`** exactly `distribution-consumer-${{ inputs.correlation_id }}`.
 - **`workflow_dispatch`** inputs **`verifier_sha`**, **`correlation_id`** (required).
-- Job **`foreign-smoke`**: checkout primary repo **tag or ref matching `verifier_sha`** is optional; minimal path uses **`npm install workflow-verifier`** then **`npx workflow-verifier`** against **`examples/`** with **`--no-truth-report`**; proof step **`if: success()`** writes **`proof.json`**; **`actions/upload-artifact@v4`** **`name: distribution-proof`**, **`path: proof.json`**, **`if: success()`**.
+- Job **`foreign-smoke`**: checkout primary repo **tag or ref matching `verifier_sha`** is optional; minimal path uses **`npm install agentskeptic`** then **`npx agentskeptic`** against **`examples/`** with **`--no-truth-report`**; proof step **`if: success()`** writes **`proof.json`**; **`actions/upload-artifact@v4`** **`name: distribution-proof`**, **`path: proof.json`**, **`if: success()`**.
 
 ### Failure codes (pipeline stderr JSON)
 

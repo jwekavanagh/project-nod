@@ -1,4 +1,4 @@
-import { verifyWorkflow, loadSchemaValidator } from "workflow-verifier";
+import { verifyWorkflow, loadSchemaValidator } from "agentskeptic";
 import type { DemoScenarioId } from "./demoScenarioIds";
 import { DemoFixturesMissingError, resolveRepoExamplesPaths } from "./resolveRepoExamples";
 
