@@ -73,6 +73,31 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/CommercialPlansResponse"
+  /api/public/verification-reports:
+    post:
+      operationId: createPublicVerificationReport
+      summary: Persist a shareable verification report (public ingestion; size-limited; optional env disable)
+      tags:
+        - PublicVerificationReports
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PublicVerificationReportCreate"
+      responses:
+        "201":
+          description: Report stored; URL is canonical origin + /r/{id}
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PublicVerificationReportCreated"
+        "400":
+          description: Invalid JSON or failed schema validation
+        "413":
+          description: Request body exceeds maximum allowed size
+        "503":
+          description: Public report ingestion disabled or server unavailable
 components:
   securitySchemes:
     bearerAuth:
@@ -80,6 +105,30 @@ components:
       scheme: bearer
       bearerFormat: API key
   schemas:
+    PublicVerificationReportCreate:
+      description: >
+        Discriminated envelope (schemaVersion 1). Workflow branch includes WorkflowResult + truth report text.
+        Quick branch includes QuickVerifyReport + human report text + workflowDisplayId for labeling.
+      type: object
+      additionalProperties: true
+    PublicVerificationReportCreated:
+      type: object
+      additionalProperties: false
+      required:
+        - schemaVersion
+        - id
+        - url
+      properties:
+        schemaVersion:
+          type: integer
+          const: 1
+        id:
+          type: string
+          format: uuid
+        url:
+          type: string
+          format: uri
+          description: GET this URL to render the stored report (HTML)
     ReserveRequest:
       type: object
       required:

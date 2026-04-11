@@ -1,11 +1,14 @@
-import { loadSchemaValidator } from "./schemaLoad.js";
+import { formatDistributionFooter } from "./distributionFooter.js";
 import {
   CLI_OPERATIONAL_CODES,
   cliErrorEnvelope,
   formatOperationalMessage,
 } from "./failureCatalog.js";
+import { loadSchemaValidator } from "./schemaLoad.js";
+import { postPublicVerificationReport } from "./shareReport/postPublicVerificationReport.js";
 import { TruthLayerError } from "./truthLayerError.js";
 import type { WorkflowResult } from "./types.js";
+import { formatWorkflowTruthReportStruct } from "./workflowTruthReport.js";
 
 /**
  * Run batch verification and validate emitted WorkflowResult against schema.
@@ -51,6 +54,8 @@ const defaultIo: StandardVerifyWorkflowCliIo = {
 export async function runStandardVerifyWorkflowCliFlow(options: {
   runVerify: () => Promise<WorkflowResult>;
   maybeWriteBundle?: (result: WorkflowResult) => void;
+  /** When set, human stderr is deferred until after a successful POST to this origin. */
+  shareReportOrigin?: string;
   io?: Partial<StandardVerifyWorkflowCliIo>;
 }): Promise<void> {
   const io = { ...defaultIo, ...options.io };
@@ -87,6 +92,28 @@ export async function runStandardVerifyWorkflowCliFlow(options: {
       io.exit(3);
       return;
     }
+  }
+
+  const origin = options.shareReportOrigin;
+  if (origin !== undefined) {
+    const truthReportText = formatWorkflowTruthReportStruct(result.workflowTruthReport);
+    const shareRes = await postPublicVerificationReport(origin, {
+      schemaVersion: 1,
+      kind: "workflow",
+      workflowResult: result,
+      truthReportText,
+    });
+    if (!shareRes.ok) {
+      writeCliError(
+        CLI_OPERATIONAL_CODES.SHARE_REPORT_FAILED,
+        formatOperationalMessage(
+          `share_report_origin=${origin} http_status=${String(shareRes.status)} detail=${shareRes.bodySnippet}`,
+        ),
+      );
+      io.exit(3);
+      return;
+    }
+    io.stderrLine(`${truthReportText}\n${formatDistributionFooter()}`);
   }
 
   io.consoleLog(JSON.stringify(result));

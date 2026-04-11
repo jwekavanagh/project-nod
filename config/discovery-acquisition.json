@@ -37,7 +37,8 @@
     {
       "heading": "What to do next",
       "paragraphs": [
-        "Run the homepage demo, follow /integrate for first-run on your database, or install the CLI from the repository README. When you need licensed npm features, use the commercial package and API keys described on the site."
+        "Run the homepage demo, follow /integrate for first-run on your database, or install the CLI from the repository README. When you need licensed npm features, use the commercial package and API keys described on the site.",
+        "To turn a verification run into a pasteable URL, use the CLI flag documented in docs/shareable-verification-reports.md and read the LangGraph-oriented guide at /guides/verify-langgraph-workflows."
       ]
     }
   ],

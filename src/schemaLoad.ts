@@ -43,7 +43,8 @@ export type SchemaValidatorName =
   | "tools-registry-export"
   | "ci-lock-v1"
   | "assurance-manifest-v1"
-  | "assurance-run-report-v1";
+  | "assurance-run-report-v1"
+  | "public-verification-report-v1";
 
 const validatorCache: Partial<Record<SchemaValidatorName, ValidateFunction>> = {};
 
@@ -135,6 +136,11 @@ export function loadSchemaValidator(name: SchemaValidatorName): ValidateFunction
       return compileSchemaFile(name, "assurance-manifest-v1.schema.json");
     case "assurance-run-report-v1":
       return compileSchemaFile(name, "assurance-run-report-v1.schema.json");
+    case "public-verification-report-v1":
+      ensureWorkflowEmittedDependencies();
+      compileSchemaFile("workflow-result", "workflow-result.schema.json");
+      compileSchemaFile("quick-verify-report", "quick-verify-report.schema.json");
+      return compileSchemaFile(name, "public-verification-report-v1.schema.json");
     default: {
       const _exhaustive: never = name;
       return _exhaustive;

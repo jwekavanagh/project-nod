@@ -45,7 +45,8 @@
     "generate:partner-quickstart-commands": "node scripts/generate-partner-quickstart-commands.mjs",
     "sync-integrator-docs-embedded": "node scripts/sync-integrator-docs-embedded.mjs",
     "check:partner-quickstart-ssot": "node scripts/check-partner-quickstart-ssot.mjs",
-    "partner-quickstart": "node scripts/partner-quickstart-verify.mjs"
+    "partner-quickstart": "node scripts/partner-quickstart-verify.mjs",
+    "generate:langgraph-guide-embed": "node scripts/embed/generate-langgraph-guide-embed.mjs"
   },
   "engines": {
     "node": "22.x"

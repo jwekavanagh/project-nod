@@ -7,6 +7,7 @@ import {
   timestamp,
   unique,
   uuid,
+  varchar,
 } from "drizzle-orm/pg-core";
 
 /** Auth.js default table name `user`. */
@@ -124,4 +125,17 @@ export const funnelEvents = pgTable("funnel_event", {
   createdAt: timestamp("created_at", { withTimezone: true, mode: "date" })
     .notNull()
     .defaultNow(),
+});
+
+/** Persisted public verification report (POST /api/public/verification-reports). */
+export const sharedVerificationReports = pgTable("shared_verification_report", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  createdAt: timestamp("created_at", { withTimezone: true, mode: "date" })
+    .notNull()
+    .defaultNow(),
+  kind: text("kind").notNull(),
+  payload: jsonb("payload").notNull(),
+  reportWorkflowId: varchar("report_workflow_id", { length: 512 }).notNull(),
+  reportStatusToken: text("report_status_token").notNull(),
+  humanText: text("human_text").notNull(),
 });

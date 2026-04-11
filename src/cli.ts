@@ -59,15 +59,17 @@ import { runLicensePreflightIfNeeded } from "./commercial/licensePreflight.js";
 import { LICENSE_PREFLIGHT_ENABLED } from "./generated/commercialBuildFlags.js";
 import { runBatchCiLockFromRestArgs, runQuickCiLockFromRestArgs } from "./ciLockWorkflow.js";
 import { formatDistributionFooter } from "./distributionFooter.js";
+import { postPublicVerificationReport } from "./shareReport/postPublicVerificationReport.js";
 
 function usageQuick(): string {
   return `Usage:
   workflow-verifier quick --input <path> (--postgres-url <url> | --db <sqlitePath>) --export-registry <path>
-    [--emit-events <path>] [--workflow-id <id>]
+    [--emit-events <path>] [--workflow-id <id>] [--share-report-origin <https://host>]
 
   Input must contain structured tool activity (tool names and parameters extractable as JSON). Verification uses read-only SQL against the database you pass.
 
   Use - for stdin. Writes registry JSON array atomically, then optional events file, then stdout (see docs/quick-verify-normative.md).
+  With --share-report-origin, human stderr is deferred until after a successful POST (same contract as batch verify; see docs/shareable-verification-reports.md).
 
 Exit codes:
   0  verdict pass
@@ -101,6 +103,7 @@ Provide exactly one of --db or --postgres-url.
 
 Optional output:
   --no-truth-report   For verdict exits 0–2, do not print the human truth report to stderr (stderr empty). stdout WorkflowResult JSON is unchanged. Exit 3 stderr is unchanged (single-line JSON envelope).
+  --share-report-origin <https://host>   After successful verification, POST a shareable report to that origin (https only, origin with no path), then print human report + footer to stderr and WorkflowResult JSON to stdout. On POST failure: exit 3, stdout empty, stderr single-line JSON envelope (code SHARE_REPORT_FAILED). See docs/shareable-verification-reports.md.
 
 Exit codes:
   0  workflow status complete
@@ -478,7 +481,7 @@ async function runQuickSubcommand(args: string[]): Promise<void> {
     }
     throw e;
   }
-  const { inputPath, exportPath, emitEventsPath, workflowIdQuick, dbPath, postgresUrl } = pq;
+  const { inputPath, exportPath, emitEventsPath, workflowIdQuick, dbPath, postgresUrl, shareReportOrigin } = pq;
   try {
     await runLicensePreflightIfNeeded("verify");
   } catch (e) {
@@ -539,13 +542,6 @@ async function runQuickSubcommand(args: string[]): Promise<void> {
       process.exit(3);
     }
   }
-  try {
-    process.stdout.write(stableStringify(report) + "\n");
-  } catch (e) {
-    const msg = e instanceof Error ? e.message : String(e);
-    writeCliError(CLI_OPERATIONAL_CODES.INTERNAL_ERROR, formatOperationalMessage(`stdout: ${msg}`));
-    process.exit(3);
-  }
   const human = formatQuickVerifyHumanReport(report, {
     workflowId: workflowIdQuick,
     eventsPath: emitEventsPath !== undefined ? emitEventsPath : undefined,
@@ -553,6 +549,31 @@ async function runQuickSubcommand(args: string[]): Promise<void> {
     dbFlag: dbPath ?? undefined,
     postgresUrl: postgresUrl !== undefined,
   });
+  if (shareReportOrigin !== undefined) {
+    const shareRes = await postPublicVerificationReport(shareReportOrigin, {
+      schemaVersion: 1,
+      kind: "quick",
+      workflowDisplayId: workflowIdQuick,
+      quickReport: report,
+      humanReportText: human,
+    });
+    if (!shareRes.ok) {
+      writeCliError(
+        CLI_OPERATIONAL_CODES.SHARE_REPORT_FAILED,
+        formatOperationalMessage(
+          `share_report_origin=${shareReportOrigin} http_status=${String(shareRes.status)} detail=${shareRes.bodySnippet}`,
+        ),
+      );
+      process.exit(3);
+    }
+  }
+  try {
+    process.stdout.write(stableStringify(report) + "\n");
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : String(e);
+    writeCliError(CLI_OPERATIONAL_CODES.INTERNAL_ERROR, formatOperationalMessage(`stdout: ${msg}`));
+    process.exit(3);
+  }
   console.error(human);
   process.stderr.write(formatDistributionFooter());
   if (report.verdict === "pass") process.exit(0);
@@ -1079,7 +1100,9 @@ async function main(): Promise<void> {
     throw e;
   }
 
+  const suppressTruthToStderr = parsedBatch.noTruthReport || parsedBatch.shareReportOrigin !== undefined;
   await runStandardVerifyWorkflowCliFlow({
+    shareReportOrigin: parsedBatch.shareReportOrigin,
     runVerify: () =>
       verifyWorkflow({
         workflowId: parsedBatch.workflowId,
@@ -1087,7 +1110,7 @@ async function main(): Promise<void> {
         registryPath: parsedBatch.registryPath,
         database: parsedBatch.database,
         verificationPolicy: parsedBatch.verificationPolicy,
-        ...(parsedBatch.noTruthReport ?
+        ...(suppressTruthToStderr ?
           { truthReport: () => {} }
         : {
             truthReport: (report: string) => {

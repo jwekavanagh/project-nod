@@ -1,0 +1,51 @@
+{
+  "$id": "https://workflow-verifier/schemas/public-verification-report-v1.schema.json",
+  "title": "PublicVerificationReportEnvelopeV1",
+  "oneOf": [
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["schemaVersion", "kind", "workflowResult", "truthReportText"],
+      "properties": {
+        "schemaVersion": { "type": "integer", "const": 1 },
+        "kind": { "type": "string", "const": "workflow" },
+        "workflowResult": {
+          "$ref": "https://workflow-verifier/schemas/workflow-result.schema.json"
+        },
+        "truthReportText": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1048576
+        }
+      }
+    },
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schemaVersion",
+        "kind",
+        "workflowDisplayId",
+        "quickReport",
+        "humanReportText"
+      ],
+      "properties": {
+        "schemaVersion": { "type": "integer", "const": 1 },
+        "kind": { "type": "string", "const": "quick" },
+        "workflowDisplayId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 512
+        },
+        "quickReport": {
+          "$ref": "https://workflow-verifier/schemas/quick-verify-report.schema.json"
+        },
+        "humanReportText": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1048576
+        }
+      }
+    }
+  ]
+}

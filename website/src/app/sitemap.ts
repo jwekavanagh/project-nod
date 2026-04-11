@@ -11,6 +11,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
   const paths = [
     "/",
     discoveryAcquisition.slug,
+    "/guides/verify-langgraph-workflows",
     "/integrate",
     "/pricing",
     "/privacy",

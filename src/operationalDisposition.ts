@@ -504,4 +504,12 @@ export const OPERATIONAL_DISPOSITION = {
     recommendedAction: "manual_review",
     automationSafe: false,
   },
+  [CLI_OPERATIONAL_CODES.SHARE_REPORT_FAILED]: {
+    origin: "downstream_system_state",
+    summary: "Publishing the verification report to the configured origin failed after verification succeeded.",
+    actionableCategory: "downstream_execution_failure",
+    actionableSeverity: "medium",
+    recommendedAction: "manual_review",
+    automationSafe: false,
+  },
 } as const satisfies Record<OperationalCode, OperationalDispositionRow>;

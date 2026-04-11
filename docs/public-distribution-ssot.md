@@ -25,8 +25,10 @@ Single place for **public identity**, **anchor sync**, **CI / Vitest public orig
 | `llms.txt` (repo root) | Committed agent surface; byte-synced with `website/public/llms.txt` after sync | No |
 | `docs/ambient-ci-distribution.md` | Ambient GitHub Actions contract (sizes, upsert, permissions) | Yes |
 | `scripts/validate-discovery-acquisition.mjs` | CLI: run validation only (`npm run check:discovery-acquisition`) | No |
-| `schemas/openapi-commercial-v1.in.yaml` | OpenAPI source with sync tokens only (no hardcoded distribution URLs) | Yes |
+| `schemas/openapi-commercial-v1.in.yaml` | OpenAPI source with sync tokens only (no hardcoded distribution URLs); includes **`POST /api/public/verification-reports`** (`createPublicVerificationReport`) | Yes |
 | `schemas/openapi-commercial-v1.yaml` | Derived from sync | No |
+| `schemas/public-verification-report-v1.schema.json` | Public share POST envelope (`workflow` \| `quick`) | Yes |
+| `docs/shareable-verification-reports.md` | SSOT for `/r/{id}`, POST body cap (**393216** bytes), **`PUBLIC_VERIFICATION_REPORTS_ENABLED`**, CLI **`--share-report-origin`** | Yes |
 | `website/public/openapi-commercial-v1.yaml` | Derived (gitignored); `servers[0].url` and self-URL use effective public origin | No |
 | Root `package.json` | `description`, `repository`, `homepage`, `bugs`, `keywords` from sync | No (those fields) |
 | `README.md` | Regions between `<!-- discovery-readme-title:start/end -->`, `<!-- discovery-acquisition-fold:start/end -->`, and `<!-- public-product-anchors:start/end -->` | No inside markers (all are sync-written) |
@@ -60,6 +62,7 @@ The website **`prebuild`** must be exactly:
   - `info.contact.url` — canonical site origin
   - Root **`externalDocs`** (not under `info`) — first-run integration guide at `{canonical}/integrate` with **`description: "First-run integration guide"`**
   - `info.x-workflow-verifier-distribution` with keys **`repository`**, **`npmPackage`**, **`openApi`**
+- **Public share surfaces (literals):** **`POST {canonical}/api/public/verification-reports`**, **`GET {canonical}/r/{uuid}`** (HTML report; **`X-Robots-Tag: noindex, nofollow`**), indexable guide **`GET {canonical}/guides/verify-langgraph-workflows`**. Normative: [`shareable-verification-reports.md`](shareable-verification-reports.md).
 - **Ambient CI (GitHub):** job summary + optional PR upsert for commercial verify — single contract in [`ambient-ci-distribution.md`](ambient-ci-distribution.md); payload + renders live in [`scripts/discovery-payload.lib.cjs`](../scripts/discovery-payload.lib.cjs).
 
 API semantics remain in **`docs/commercial-ssot.md`**.

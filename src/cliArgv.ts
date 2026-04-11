@@ -21,6 +21,37 @@ export function argValues(args: string[], name: string): string[] {
   return out;
 }
 
+/**
+ * Parses `--share-report-origin` when present: https URL, origin only (no path/query/fragment).
+ * @throws TruthLayerError CLI_USAGE
+ */
+export function parseOptionalShareReportOrigin(args: string[]): string | undefined {
+  const raw = argValue(args, "--share-report-origin");
+  if (raw === undefined) return undefined;
+  let u: URL;
+  try {
+    u = new URL(raw);
+  } catch {
+    throw new TruthLayerError(CLI_OPERATIONAL_CODES.CLI_USAGE, "Invalid --share-report-origin URL.");
+  }
+  if (u.protocol !== "https:") {
+    throw new TruthLayerError(CLI_OPERATIONAL_CODES.CLI_USAGE, "--share-report-origin must use https://.");
+  }
+  if (u.username || u.password) {
+    throw new TruthLayerError(
+      CLI_OPERATIONAL_CODES.CLI_USAGE,
+      "--share-report-origin must not include userinfo.",
+    );
+  }
+  if (u.pathname !== "/" || u.search !== "" || u.hash !== "") {
+    throw new TruthLayerError(
+      CLI_OPERATIONAL_CODES.CLI_USAGE,
+      "--share-report-origin must be an origin only (no path, query, or fragment).",
+    );
+  }
+  return u.origin;
+}
+
 export function removeArgPair(args: string[], flag: string): string[] {
   const out: string[] = [];
   for (let i = 0; i < args.length; i++) {
@@ -73,6 +104,7 @@ export type ParsedBatchVerifyCli = {
   noTruthReport: boolean;
   writeRunBundleDir: string | undefined;
   signPrivateKeyPath: string | undefined;
+  shareReportOrigin: string | undefined;
 };
 
 /**
@@ -123,6 +155,7 @@ export function parseBatchVerifyCliArgs(args: string[]): ParsedBatchVerifyCli {
     noTruthReport,
     writeRunBundleDir,
     signPrivateKeyPath,
+    shareReportOrigin: parseOptionalShareReportOrigin(args),
   };
 }
 
@@ -133,6 +166,7 @@ export type ParsedQuickCli = {
   workflowIdQuick: string;
   dbPath: string | undefined;
   postgresUrl: string | undefined;
+  shareReportOrigin: string | undefined;
 };
 
 /**
@@ -163,5 +197,6 @@ export function parseQuickCliArgs(args: string[]): ParsedQuickCli {
     workflowIdQuick,
     dbPath,
     postgresUrl,
+    shareReportOrigin: parseOptionalShareReportOrigin(args),
   };
 }

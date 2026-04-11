@@ -100,6 +100,34 @@ describe("CLI workflow-verifier", () => {
     assert.equal(parsed.steps[0]?.status, "verified");
   });
 
+  it("--share-report-origin to closed port: exit 3, stdout empty, stderr one JSON line SHARE_REPORT_FAILED", () => {
+    const r = spawnSync(
+      process.execPath,
+      [
+        "--no-warnings",
+        cliJs,
+        "--workflow-id",
+        "wf_complete",
+        "--events",
+        eventsPath,
+        "--registry",
+        registryPath,
+        "--db",
+        dbPath,
+        "--share-report-origin",
+        "https://127.0.0.1:9",
+      ],
+      { encoding: "utf8", cwd: root },
+    );
+    assert.equal(r.status, 3, r.stderr);
+    assert.equal(r.stdout, "");
+    const lines = r.stderr.replace(/\r\n/g, "\n").trimEnd().split("\n");
+    assert.equal(lines.length, 1);
+    const j = JSON.parse(lines[0]);
+    assert.equal(j.code, CLI_OPERATIONAL_CODES.SHARE_REPORT_FAILED);
+    assert.ok(String(j.message).includes("share_report_origin="));
+  });
+
   it("--write-run-bundle writes a loadable canonical bundle", () => {
     const bundleDir = mkdtempSync(join(tmpdir(), "etl-bundle-"));
     try {

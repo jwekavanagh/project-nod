@@ -345,3 +345,14 @@ main {
   border-left: 3px solid var(--accent);
   color: var(--muted);
 }
+
+.truth-report-pre {
+  background: var(--card);
+  border: 1px solid #2f3336;
+  border-radius: 8px;
+  padding: 1rem;
+  overflow-x: auto;
+  white-space: pre-wrap;
+  font-size: 0.85rem;
+  max-height: 70vh;
+}

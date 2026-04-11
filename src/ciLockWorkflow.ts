@@ -59,6 +59,13 @@ export async function runBatchCiLockFromRestArgs(restArgs: string[]): Promise<vo
     }
     throw e;
   }
+  if (parsed.shareReportOrigin !== undefined) {
+    writeCliError(
+      CLI_OPERATIONAL_CODES.ENFORCE_USAGE,
+      "--share-report-origin is not supported with enforce batch.",
+    );
+    process.exit(3);
+  }
 
   const runVerify = () =>
     verifyWorkflow({
@@ -175,6 +182,13 @@ export async function runQuickCiLockFromRestArgs(restArgs: string[]): Promise<vo
       process.exit(3);
     }
     throw e;
+  }
+  if (pq.shareReportOrigin !== undefined) {
+    writeCliError(
+      CLI_OPERATIONAL_CODES.ENFORCE_USAGE,
+      "--share-report-origin is not supported with enforce quick.",
+    );
+    process.exit(3);
   }
 
   let inputUtf8: string;

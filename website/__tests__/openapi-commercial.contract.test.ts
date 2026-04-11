@@ -74,10 +74,12 @@ describe("openapi-commercial contract", () => {
     expect(normalize(String(dist.openApi))).toBe(normalize(distHostOpenApi));
   });
 
-  it("lists reserve and plans paths matching implemented routes", () => {
+  it("lists reserve, plans, and public verification-report paths matching implemented routes", () => {
     const t = readFileSync(derivedPath, "utf8");
     expect(t).toContain("/api/v1/usage/reserve");
     expect(t).toContain("/api/v1/commercial/plans");
+    expect(t).toContain("/api/public/verification-reports");
+    expect(t).toContain("createPublicVerificationReport");
     expect(t).toContain("reserveUsage");
     expect(t).toContain("getCommercialPlans");
     expect(t).toContain("VERIFICATION_REQUIRES_SUBSCRIPTION");

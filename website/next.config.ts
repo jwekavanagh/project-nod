@@ -17,6 +17,14 @@ const traceRoot =
 const nextConfig: NextConfig = {
   serverExternalPackages: ["nodemailer", "postgres", "workflow-verifier"],
   ...(traceRoot ? { outputFileTracingRoot: traceRoot } : {}),
+  async headers() {
+    return [
+      {
+        source: "/r/:path*",
+        headers: [{ key: "X-Robots-Tag", value: "noindex, nofollow" }],
+      },
+    ];
+  },
 };
 
 export default nextConfig;
