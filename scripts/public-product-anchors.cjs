@@ -10,6 +10,7 @@ const OPENAPI_IN = join(ROOT, "schemas", "openapi-commercial-v1.in.yaml");
 const OPENAPI_OUT = join(ROOT, "schemas", "openapi-commercial-v1.yaml");
 const OPENAPI_PUBLIC = join(ROOT, "website", "public", "openapi-commercial-v1.yaml");
 const LLMS_PUBLIC = join(ROOT, "website", "public", "llms.txt");
+const LLMS_REPO_ROOT = join(ROOT, "llms.txt");
 const README_PATH = join(ROOT, "README.md");
 const PKG_PATH = join(ROOT, "package.json");
 
@@ -99,50 +100,6 @@ function validateAnchors() {
 
 function escapeYamlDoubleQuotedOneLiner(s) {
   return String(s).replace(/\\/g, "\\\\").replace(/"/g, '\\"');
-}
-
-/**
- * Plain-text entry point for tools and agents (canonical URLs only).
- * @param {Record<string, unknown>} anchors
- * @param {string} canonicalOrigin normalized origin
- * @param {string} integrateUrl
- * @param {string} openapiSelfCanonical
- */
-function buildLlmsText(anchors, canonicalOrigin, integrateUrl, openapiSelfCanonical) {
-  const lines = [
-    "# Workflow Verifier",
-    "",
-    "## Summary",
-    String(anchors.identityOneLiner),
-    "",
-    "## Primary links",
-    `- Canonical site: ${canonicalOrigin}/`,
-    `- First-run integration: ${integrateUrl}`,
-    `- OpenAPI (canonical): ${openapiSelfCanonical}`,
-    `- Source repository: ${anchors.gitRepositoryUrl}`,
-    `- npm package: ${anchors.npmPackageUrl}`,
-    "",
-  ];
-  return lines.join("\n");
-}
-
-/**
- * @param {Record<string, unknown>} anchors
- * @param {string} canonicalOrigin
- * @param {string} integrateUrl
- * @param {string} openapiSelfCanonical
- * @param {Record<string, unknown>} discovery
- */
-function buildLlmsTextWithDiscovery(
-  anchors,
-  canonicalOrigin,
-  integrateUrl,
-  openapiSelfCanonical,
-  discovery,
-) {
-  const base = buildLlmsText(anchors, canonicalOrigin, integrateUrl, openapiSelfCanonical);
-  const { appendDiscoveryLlmsAppendix } = require("./discovery-acquisition.lib.cjs");
-  return appendDiscoveryLlmsAppendix(base, discovery, canonicalOrigin);
 }
 
 function assertNextPublicOriginParity() {
@@ -238,18 +195,13 @@ function syncPublicProductAnchors() {
     .replace("__OPENAPI_SELF_URL__", openapiSelfEffective);
   writeFileSync(OPENAPI_PUBLIC, publicYaml, "utf8");
 
+  const discoveryPayload = require("./discovery-payload.lib.cjs");
+  const discoveryPayloadObj = discoveryPayload.buildDiscoveryPayload(ROOT);
+  const llmsNormalized = discoveryPayload.renderLlmsTextFromPayload(discoveryPayloadObj);
+
   mkdirSync(dirname(LLMS_PUBLIC), { recursive: true });
-  writeFileSync(
-    LLMS_PUBLIC,
-    buildLlmsTextWithDiscovery(
-      anchors,
-      canonicalOrigin,
-      integrateUrl,
-      openapiSelfCanonical,
-      discovery,
-    ),
-    "utf8",
-  );
+  writeFileSync(LLMS_PUBLIC, llmsNormalized, "utf8");
+  writeFileSync(LLMS_REPO_ROOT, llmsNormalized, "utf8");
 
   const pkgRaw = readFileSync(PKG_PATH, "utf8");
   const pkg = JSON.parse(pkgRaw);
@@ -277,6 +229,7 @@ function syncPublicProductAnchors() {
   if (!readme.includes(README_START) || !readme.includes(README_END)) {
     throw new Error("README.md must contain public-product-anchors markers");
   }
+  const pl = discoveryPayloadObj.links;
   const inner = [
     anchors.identityOneLiner,
     "",
@@ -285,7 +238,9 @@ function syncPublicProductAnchors() {
     `- **Canonical site:** ${canonicalOrigin}`,
     `- **Integrate:** ${integrateUrl}`,
     `- **OpenAPI (canonical):** ${openapiSelfCanonical}`,
-    `- **llms.txt (agents):** ${canonicalOrigin}/llms.txt`,
+    `- **llms.txt (agents, site):** ${canonicalOrigin}/llms.txt`,
+    `- **llms.txt (repo, raw):** ${pl.llmsRaw}`,
+    `- **llms.txt (repo, blob):** ${pl.llmsBlob}`,
     "",
   ].join("\n");
   const block = `${README_START}\n${inner}\n${README_END}`;

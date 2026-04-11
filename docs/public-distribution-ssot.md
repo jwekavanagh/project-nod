@@ -17,7 +17,13 @@ Single place for **public identity**, **anchor sync**, **CI / Vitest public orig
 | `test/distribution-*.test.mjs` | Clause, traceability, pipeline unit tests | No |
 | `config/discovery-acquisition.json` | Acquisition copy, visitor problem answer, homepage CTA label, `llms` appendix arrays, README fold template; consumed by sync and the website | Yes |
 | `config/discovery-acquisition.schema.json` | JSON Schema (draft-07): product-law patterns on `visitorProblemAnswer`, required fields | Yes |
-| `scripts/discovery-acquisition.lib.cjs` | Validate discovery JSON, build README fold body (including appended acquisition markdown link), append `llms.txt` discovery sections | No (logic) |
+| `scripts/discovery-acquisition.lib.cjs` | Validate discovery JSON, build README fold body (including appended acquisition markdown link); `llms` appendix sections consumed via [`discovery-payload.lib.cjs`](../scripts/discovery-payload.lib.cjs) | No (logic) |
+| `scripts/discovery-payload.lib.cjs` | Single `DiscoveryPayload` v1 builder + `llms.txt` / CI Markdown renders + PR upsert selector | No (logic) |
+| `scripts/write-discovery-payload.mjs` | Writes `dist/discovery-payload-v1.json` during build | No |
+| `scripts/render-discovery-ci.mjs` | Consumer CI CLI: `summary` / `pr_body` from frozen payload | No |
+| `dist/discovery-payload-v1.json` | Frozen payload shipped in npm tarball (gitignored until build) | No |
+| `llms.txt` (repo root) | Committed agent surface; byte-synced with `website/public/llms.txt` after sync | No |
+| `docs/ambient-ci-distribution.md` | Ambient GitHub Actions contract (sizes, upsert, permissions) | Yes |
 | `scripts/validate-discovery-acquisition.mjs` | CLI: run validation only (`npm run check:discovery-acquisition`) | No |
 | `schemas/openapi-commercial-v1.in.yaml` | OpenAPI source with sync tokens only (no hardcoded distribution URLs) | Yes |
 | `schemas/openapi-commercial-v1.yaml` | Derived from sync | No |
@@ -54,6 +60,7 @@ The website **`prebuild`** must be exactly:
   - `info.contact.url` — canonical site origin
   - Root **`externalDocs`** (not under `info`) — first-run integration guide at `{canonical}/integrate` with **`description: "First-run integration guide"`**
   - `info.x-workflow-verifier-distribution` with keys **`repository`**, **`npmPackage`**, **`openApi`**
+- **Ambient CI (GitHub):** job summary + optional PR upsert for commercial verify — single contract in [`ambient-ci-distribution.md`](ambient-ci-distribution.md); payload + renders live in [`scripts/discovery-payload.lib.cjs`](../scripts/discovery-payload.lib.cjs).
 
 API semantics remain in **`docs/commercial-ssot.md`**.
 

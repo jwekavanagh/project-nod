@@ -1,0 +1,3 @@
+{
+  "body": "## Workflow Verifier — verification failed\n\nState verification engine: read-only SQL checks that database state matches expectations from structured tool activity (not arbitrary logs)—not proof of execution\n\n## CLI stderr (last 20 lines)\n\n_(no stderr)_\n---\n\n- https://workflow-verifier.vercel.app/\n- https://workflow-verifier.vercel.app/integrate\n- https://github.com/jwekavanagh/workflow-verifier\n\n<!-- workflow-verifier-discovery:v1 -->\n"
+}

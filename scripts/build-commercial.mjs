@@ -16,3 +16,4 @@ run(process.execPath, ["scripts/sync-failure-origin-from-schema.mjs"]);
 const tscJs = path.join(root, "node_modules", "typescript", "lib", "tsc.js");
 run(process.execPath, [tscJs]);
 run(process.execPath, ["scripts/copy-debug-ui.mjs"]);
+run(process.execPath, ["scripts/write-discovery-payload.mjs"]);

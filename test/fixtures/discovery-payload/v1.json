@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "identityOneLiner": "State verification engine: read-only SQL checks that database state matches expectations from structured tool activity (not arbitrary logs)—not proof of execution",
+  "llmBranch": "main",
+  "links": {
+    "site": "https://workflow-verifier.vercel.app/",
+    "integrate": "https://workflow-verifier.vercel.app/integrate",
+    "openapiCanonical": "https://workflow-verifier.vercel.app/openapi-commercial-v1.yaml",
+    "repo": "https://github.com/jwekavanagh/workflow-verifier",
+    "npm": "https://www.npmjs.com/package/workflow-verifier",
+    "llmsRaw": "https://raw.githubusercontent.com/jwekavanagh/workflow-verifier/refs/heads/main/llms.txt",
+    "llmsBlob": "https://github.com/jwekavanagh/workflow-verifier/blob/main/llms.txt"
+  },
+  "appendix": {
+    "slug": "/database-truth-vs-traces",
+    "visitorProblemAnswer": "Teams ship agent and automation workflows where traces, tool responses, and success flags look green while the database row is missing, stale, or wrong. Workflow Verifier closes that gap by comparing structured tool activity to read-only SQL against your SQLite or Postgres at verification time: it tells you whether observed state matched expectations derived from what the workflow claimed—not whether a step narrative sounded successful. It is a snapshot check, not proof of causality or execution.",
+    "intentPhrases": [
+      "verify agent workflow against database rows",
+      "trace says success but CRM row missing",
+      "read-only SQL check after automation run",
+      "structured tool activity NDJSON verification",
+      "ROW_ABSENT inconsistent workflow result"
+    ],
+    "notFor": [
+      "unstructured log search as verification",
+      "proof that a specific HTTP request caused a write",
+      "non-SQL systems without a queryable mirror"
+    ],
+    "relatedQueries": [
+      "how to verify AI agent wrote to postgres",
+      "green trace but database inconsistent",
+      "workflow verification sqlite read only",
+      "compare tool parameters to sql row",
+      "agent run record workflow result json"
+    ]
+  }
+}
