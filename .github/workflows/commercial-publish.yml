@@ -61,5 +61,6 @@ jobs:
       - name: Verify tarball reached registry (HTTP)
         run: |
           set -e
-          curl -fsS -o /dev/null "https://registry.npmjs.org/agentskeptic/latest"
-          npm view agentskeptic@0.1.1 version --registry=https://registry.npmjs.org
+          ver=$(node -p "require('./package.json').version")
+          curl -fsS -o /dev/null "https://registry.npmjs.org/agentskeptic/${ver}"
+          npm view "agentskeptic@${ver}" version --registry=https://registry.npmjs.org
