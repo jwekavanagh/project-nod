@@ -173,12 +173,28 @@ export function formatDistributionFooter(): string {
 
 /**
  * @param {Record<string, unknown>} anchors
+ * @param {Record<string, unknown>} discovery
  */
-function writeAgentsMd(anchors) {
+function writeAgentsMd(anchors, discovery) {
   const url = distributionSsotBlobUrl(anchors);
+  const origin = normalize(anchors.productionCanonicalOrigin);
+  const slug = String(discovery.slug);
+  const acquisitionUrl = `${origin}${slug}`;
+  const dp = require("./discovery-payload.lib.cjs");
+  const { owner, repo } = dp.parseGithubRepoFromUrl(String(anchors.gitRepositoryUrl));
+  const branch = dp.DISCOVERY_LLM_BRANCH;
+  const llmsRaw = `https://raw.githubusercontent.com/${owner}/${repo}/refs/heads/${branch}/llms.txt`;
+  const openapiRaw = `https://raw.githubusercontent.com/${owner}/${repo}/refs/heads/${branch}/schemas/openapi-commercial-v1.yaml`;
   const body = `# AGENTS
 
 Normative **public distribution**, anchor sync, and consumer pipeline contracts: [\`docs/public-distribution-ssot.md\`](docs/public-distribution-ssot.md) (same content as ${url}).
+
+## Machine-readable product entrypoints
+
+- Committed \`llms.txt\` at repo root (same bytes as site \`/llms.txt\` after prebuild sync).
+- Raw GitHub \`llms.txt\`: ${llmsRaw}
+- OpenAPI YAML (repo raw): ${openapiRaw}
+- Acquisition page (canonical): ${acquisitionUrl}
 `;
   writeFileSync(join(ROOT, "AGENTS.md"), body, "utf8");
 }
@@ -299,7 +315,7 @@ function syncPublicProductAnchors() {
   writeFileSync(README_PATH, readme, "utf8");
 
   writePublicDistributionGenerated(anchors, discovery);
-  writeAgentsMd(anchors);
+  writeAgentsMd(anchors, discovery);
 }
 
 function main() {

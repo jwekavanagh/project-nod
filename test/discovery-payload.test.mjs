@@ -75,6 +75,25 @@ test("llms.txt normalized equals renderLlmsTextFromPayload(build)", () => {
   assert.equal(dp.normalizeDiscoveryText(onDisk), rendered);
 });
 
+test("rendered llms Primary links include repo-raw OpenAPI and llms.txt", () => {
+  const payload = dp.buildDiscoveryPayload(root);
+  const rendered = dp.renderLlmsTextFromPayload(payload);
+  assert.ok(rendered.includes("- OpenAPI (repo raw): "));
+  assert.ok(rendered.includes("- llms.txt (repo raw): "));
+  assert.ok(rendered.includes(String(payload.links.openapiRaw)));
+  assert.ok(rendered.includes(String(payload.links.llmsRaw)));
+});
+
+test("rendered llms includes pasteable terminal demo before Intent phrases", () => {
+  const payload = dp.buildDiscoveryPayload(root);
+  const rendered = dp.renderLlmsTextFromPayload(payload);
+  const hDemo = rendered.indexOf(`## ${payload.appendix.shareableTerminalDemo.title}`);
+  const hIntent = rendered.indexOf("## Intent phrases");
+  assert.ok(hDemo >= 0);
+  assert.ok(hIntent > hDemo);
+  assert.ok(rendered.includes(payload.appendix.shareableTerminalDemo.transcript.slice(0, 80)));
+});
+
 test("rendered llms includes When this hurts demand section", () => {
   const payload = dp.buildDiscoveryPayload(root);
   const rendered = dp.renderLlmsTextFromPayload(payload);

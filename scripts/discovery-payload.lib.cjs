@@ -98,9 +98,11 @@ function buildDiscoveryPayload(root) {
   const { owner, repo } = parseGithubRepoFromUrl(anchors.gitRepositoryUrl);
   const llmsRaw = `https://raw.githubusercontent.com/${owner}/${repo}/refs/heads/${DISCOVERY_LLM_BRANCH}/llms.txt`;
   const llmsBlob = `https://github.com/${owner}/${repo}/blob/${DISCOVERY_LLM_BRANCH}/llms.txt`;
+  const openapiRaw = `https://raw.githubusercontent.com/${owner}/${repo}/refs/heads/${DISCOVERY_LLM_BRANCH}/schemas/openapi-commercial-v1.yaml`;
   const llms = /** @type {{ intentPhrases: string[]; notFor: string[]; relatedQueries: string[] }} */ (
     discovery.llms
   );
+  const demo = /** @type {{ title: string; transcript: string }} */ (discovery.shareableTerminalDemo);
   return {
     schemaVersion: 1,
     identityOneLiner: String(anchors.identityOneLiner),
@@ -109,6 +111,7 @@ function buildDiscoveryPayload(root) {
       site: `${canonicalOrigin}/`,
       integrate: integrateUrl,
       openapiCanonical: openapiSelfCanonical,
+      openapiRaw,
       repo: String(anchors.gitRepositoryUrl),
       npm: String(anchors.npmPackageUrl),
       llmsRaw,
@@ -121,6 +124,10 @@ function buildDiscoveryPayload(root) {
       notFor: llms.notFor.map(String),
       relatedQueries: llms.relatedQueries.map(String),
       demandMoments: /** @type {string[]} */ (discovery.demandMoments).map(String),
+      shareableTerminalDemo: {
+        title: String(demo.title),
+        transcript: String(demo.transcript),
+      },
     },
   };
 }
@@ -129,10 +136,10 @@ function buildDiscoveryPayload(root) {
  * @param {Record<string, unknown>} payload
  */
 function discoveryObjectFromAppendix(payload) {
-  const ap = /** @type {{ slug: string; visitorProblemAnswer: string; intentPhrases: string[]; notFor: string[]; relatedQueries: string[]; demandMoments: string[] }} */ (
+  const ap = /** @type {{ slug: string; visitorProblemAnswer: string; intentPhrases: string[]; notFor: string[]; relatedQueries: string[]; demandMoments: string[]; shareableTerminalDemo?: { title: string; transcript: string } }} */ (
     payload.appendix
   );
-  return {
+  const out = {
     slug: ap.slug,
     visitorProblemAnswer: ap.visitorProblemAnswer,
     demandMoments: ap.demandMoments,
@@ -142,6 +149,10 @@ function discoveryObjectFromAppendix(payload) {
       relatedQueries: ap.relatedQueries,
     },
   };
+  if (ap.shareableTerminalDemo) {
+    Object.assign(out, { shareableTerminalDemo: ap.shareableTerminalDemo });
+  }
+  return out;
 }
 
 /**
@@ -168,8 +179,10 @@ function renderLlmsTextFromPayload(payload) {
     `- Canonical site: ${links.site}`,
     `- First-run integration: ${integrateUrl}`,
     `- OpenAPI (canonical): ${openapiSelfCanonical}`,
+    `- OpenAPI (repo raw): ${links.openapiRaw}`,
     `- Source repository: ${links.repo}`,
     `- npm package: ${links.npm}`,
+    `- llms.txt (repo raw): ${links.llmsRaw}`,
     "",
   ];
   const base = lines.join("\n");
@@ -193,6 +206,7 @@ function renderCiSummaryMarkdownFromPayload(payload) {
     "- Canonical site: " + L.site,
     "- Integrate: " + L.integrate,
     "- OpenAPI: " + L.openapiCanonical,
+    "- OpenAPI (repo raw): " + L.openapiRaw,
     "- Repository: " + L.repo,
     "- npm: " + L.npm,
     "- llms.txt (raw): " + L.llmsRaw,

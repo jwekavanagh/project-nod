@@ -1,5 +1,6 @@
 import { demoExampleSnippets } from "@/content/demoExampleSnippets";
 import { productCopy } from "@/content/productCopy";
+import discoveryAcquisition from "@/lib/discoveryAcquisition";
 import Link from "next/link";
 import { Fragment } from "react";
 import { TryItSection } from "./home/TryItSection";
@@ -45,6 +46,17 @@ export default function HomePage() {
             Pricing
           </Link>
         </p>
+      </section>
+    ),
+    coldProof: (
+      <section
+        key="coldProof"
+        className="home-section"
+        data-testid={productCopy.uiTestIds.coldProof}
+        aria-labelledby="cold-proof-heading"
+      >
+        <h2 id="cold-proof-heading">{discoveryAcquisition.shareableTerminalDemo.title}</h2>
+        <pre className="truth-report-pre">{discoveryAcquisition.shareableTerminalDemo.transcript}</pre>
       </section>
     ),
     scenario: (

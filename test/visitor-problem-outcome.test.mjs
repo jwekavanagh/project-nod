@@ -69,6 +69,13 @@ test("invalid visitorProblemAnswer fails schema (negative)", () => {
       relatedQueries: ["1", "2", "3", "4", "5"],
     },
     readmeFold: { templateLines: ["x"] },
+    shareableTerminalDemo: {
+      title: "Pasteable terminal proof (bundled demo)",
+      transcript:
+        "wf_complete wf_missing ROW_ABSENT " +
+        "x".repeat(120) +
+        "Teams ship agent workflows where traces look green while the database row is wrong. AgentSkeptic compares structured tool activity to read-only SQL against SQLite at verification time.",
+    },
   };
   assert.equal(validate(bad), false);
 });
@@ -116,6 +123,28 @@ test("invalid pageMetadata.description fails schema (negative)", () => {
       relatedQueries: ["1", "2", "3", "4", "5"],
     },
     readmeFold: { templateLines: ["x"] },
+    shareableTerminalDemo: {
+      title: "Pasteable terminal proof (bundled demo)",
+      transcript:
+        "wf_complete wf_missing ROW_ABSENT " +
+        "x".repeat(120) +
+        "Teams ship agent workflows where traces look green while the database row is wrong. AgentSkeptic compares structured tool activity to read-only SQL against SQLite at verification time.",
+    },
+  };
+  assert.equal(validate(bad), false);
+});
+
+test("shareableTerminalDemo transcript containing markdown fence fails schema", () => {
+  const schemaPath = join(root, "config", "discovery-acquisition.schema.json");
+  const schema = JSON.parse(readFileSync(schemaPath, "utf8"));
+  const ajv = new Ajv({ allErrors: true, strict: true });
+  addFormats(ajv);
+  const validate = ajv.compile(schema);
+  const discovery = lib.loadDiscoveryAcquisition(root);
+  const bad = structuredClone(discovery);
+  bad.shareableTerminalDemo = {
+    title: "Pasteable terminal proof (bundled demo)",
+    transcript: `${discovery.shareableTerminalDemo.transcript}\n\`\`\`\n`,
   };
   assert.equal(validate(bad), false);
 });

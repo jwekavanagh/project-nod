@@ -7,8 +7,51 @@ State verification engine: read-only SQL checks that database state matches expe
 - Canonical site: https://agentskeptic.com/
 - First-run integration: https://agentskeptic.com/integrate
 - OpenAPI (canonical): https://agentskeptic.com/openapi-commercial-v1.yaml
+- OpenAPI (repo raw): https://raw.githubusercontent.com/jwekavanagh/agentskeptic/refs/heads/main/schemas/openapi-commercial-v1.yaml
 - Source repository: https://github.com/jwekavanagh/agentskeptic
 - npm package: https://www.npmjs.com/package/agentskeptic
+- llms.txt (repo raw): https://raw.githubusercontent.com/jwekavanagh/agentskeptic/refs/heads/main/llms.txt
+
+## Pasteable terminal proof (bundled demo)
+
+```text
+### Success (`wf_complete`)
+
+workflow_id: wf_complete
+workflow_status: complete
+trust: TRUSTED: Every step matched the database under the configured verification rules.
+steps:
+  - seq=0 tool=crm.upsert_contact result=Matched the database.
+
+{
+  "schemaVersion": 15,
+  "workflowId": "wf_complete",
+  "status": "complete",
+  "steps": [{ "seq": 0, "toolId": "crm.upsert_contact", "status": "verified" }]
+}
+
+### Failure (`wf_missing`)
+
+workflow_id: wf_missing
+workflow_status: inconsistent
+steps:
+  - seq=0 tool=crm.upsert_contact result=Expected row is missing from the database (the log implies a write that is not present).
+    reference_code: ROW_ABSENT
+
+{
+  "schemaVersion": 15,
+  "workflowId": "wf_missing",
+  "status": "inconsistent",
+  "steps": [
+    {
+      "seq": 0,
+      "toolId": "crm.upsert_contact",
+      "status": "missing",
+      "reasons": [{ "code": "ROW_ABSENT" }]
+    }
+  ]
+}
+```
 
 ## Intent phrases
 - green trace wrong database row agent workflow

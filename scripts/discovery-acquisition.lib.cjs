@@ -11,6 +11,8 @@ const PLACEHOLDER_KEYS = [
   ["{{HERO_TITLE}}", "HERO_TITLE"],
   ["{{HERO_SUBTITLE}}", "HERO_SUBTITLE"],
   ["{{VISITOR_PROBLEM_ANSWER}}", "VISITOR_PROBLEM_ANSWER"],
+  ["{{TERMINAL_TITLE}}", "TERMINAL_TITLE"],
+  ["{{TERMINAL_TRANSCRIPT}}", "TERMINAL_TRANSCRIPT"],
 ];
 
 /**
@@ -37,12 +39,15 @@ function loadDiscoveryAcquisition(root) {
  */
 function buildDiscoveryFoldBody(discovery, originNormalized) {
   const slug = String(discovery.slug);
+  const demo = /** @type {{ title: string; transcript: string }} */ (discovery.shareableTerminalDemo);
   const map = {
     "{{ORIGIN}}": originNormalized,
     "{{ACQUISITION_PATH}}": slug,
     "{{HERO_TITLE}}": String(discovery.heroTitle),
     "{{HERO_SUBTITLE}}": String(discovery.heroSubtitle),
     "{{VISITOR_PROBLEM_ANSWER}}": String(discovery.visitorProblemAnswer),
+    "{{TERMINAL_TITLE}}": String(demo.title),
+    "{{TERMINAL_TRANSCRIPT}}": String(demo.transcript),
   };
   const lines = discovery.readmeFold.templateLines.map((line) => substituteTemplateLine(String(line), map));
   const body = lines.join("\n");
@@ -92,6 +97,10 @@ function appendDiscoveryLlmsAppendix(baseLlms, discovery, canonicalOrigin) {
   const bullets = (/** @type {string[]} */ arr) => arr.map((x) => `- ${x}`).join("\n");
 
   let out = String(baseLlms).replace(/\s*$/, "") + "\n";
+  const demo = discovery.shareableTerminalDemo;
+  if (demo && typeof demo.title === "string" && typeof demo.transcript === "string") {
+    out += `\n## ${demo.title}\n\n\`\`\`text\n${demo.transcript}\n\`\`\`\n`;
+  }
   out += "\n## Intent phrases\n";
   out += bullets(llms.intentPhrases) + "\n";
   out += "\n## Not for\n";
@@ -127,6 +136,12 @@ function validateDiscoveryAcquisition(root) {
   const { normalize } = require("./public-product-anchors.cjs");
   const origin = normalize(anchors.productionCanonicalOrigin);
   buildDiscoveryFoldBody(discovery, origin);
+  const demo = discovery.shareableTerminalDemo;
+  if (demo && String(demo.transcript).includes("```")) {
+    throw new Error(
+      "discovery-acquisition: shareableTerminalDemo.transcript must not contain markdown fence ```",
+    );
+  }
   return discovery;
 }
 

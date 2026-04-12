@@ -6,6 +6,7 @@
     "site": "https://agentskeptic.com/",
     "integrate": "https://agentskeptic.com/integrate",
     "openapiCanonical": "https://agentskeptic.com/openapi-commercial-v1.yaml",
+    "openapiRaw": "https://raw.githubusercontent.com/jwekavanagh/agentskeptic/refs/heads/main/schemas/openapi-commercial-v1.yaml",
     "repo": "https://github.com/jwekavanagh/agentskeptic",
     "npm": "https://www.npmjs.com/package/agentskeptic",
     "llmsRaw": "https://raw.githubusercontent.com/jwekavanagh/agentskeptic/refs/heads/main/llms.txt",
@@ -38,6 +39,10 @@
       "OpenAI-style tool loop reported success; CRM or SQLite state does not match",
       "CI passed on workflow logs; database side effect never showed up",
       "Need a gate before production: read-only verification, not more log volume"
-    ]
+    ],
+    "shareableTerminalDemo": {
+      "title": "Pasteable terminal proof (bundled demo)",
+      "transcript": "### Success (`wf_complete`)\n\nworkflow_id: wf_complete\nworkflow_status: complete\ntrust: TRUSTED: Every step matched the database under the configured verification rules.\nsteps:\n  - seq=0 tool=crm.upsert_contact result=Matched the database.\n\n{\n  \"schemaVersion\": 15,\n  \"workflowId\": \"wf_complete\",\n  \"status\": \"complete\",\n  \"steps\": [{ \"seq\": 0, \"toolId\": \"crm.upsert_contact\", \"status\": \"verified\" }]\n}\n\n### Failure (`wf_missing`)\n\nworkflow_id: wf_missing\nworkflow_status: inconsistent\nsteps:\n  - seq=0 tool=crm.upsert_contact result=Expected row is missing from the database (the log implies a write that is not present).\n    reference_code: ROW_ABSENT\n\n{\n  \"schemaVersion\": 15,\n  \"workflowId\": \"wf_missing\",\n  \"status\": \"inconsistent\",\n  \"steps\": [\n    {\n      \"seq\": 0,\n      \"toolId\": \"crm.upsert_contact\",\n      \"status\": \"missing\",\n      \"reasons\": [{ \"code\": \"ROW_ABSENT\" }]\n    }\n  ]\n}"
+    }
   }
 }

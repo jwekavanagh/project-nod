@@ -137,6 +137,7 @@ describe(
         homepageAcquisitionCtaLabel: string;
         homepageHero: { what: string; why: string; when: string };
         pageMetadata: { description: string };
+        shareableTerminalDemo: { title: string; transcript: string };
       };
 
       const html = await (await fetch("http://127.0.0.1:34100/")).text();
@@ -163,8 +164,19 @@ describe(
       expect(llmsText).toContain(a.gitRepositoryUrl);
       expect(llmsText).toContain(a.npmPackageUrl);
       expect(llmsText.includes("example.invalid")).toBe(false);
+      expect(llmsText).toContain("- OpenAPI (repo raw): ");
+      expect(llmsText).toContain("- llms.txt (repo raw): ");
+      expect(llmsText).toContain(
+        "raw.githubusercontent.com/jwekavanagh/agentskeptic/refs/heads/main/schemas/openapi-commercial-v1.yaml",
+      );
+      expect(llmsText).toContain(
+        "raw.githubusercontent.com/jwekavanagh/agentskeptic/refs/heads/main/llms.txt",
+      );
 
+      const hDemo = llmsText.indexOf(`## ${disc.shareableTerminalDemo.title}`);
       const hIntent = llmsText.indexOf("## Intent phrases");
+      expect(hDemo).toBeGreaterThanOrEqual(0);
+      expect(hIntent).toBeGreaterThan(hDemo);
       const hNot = llmsText.indexOf("## Not for");
       const hRel = llmsText.indexOf("## Related queries");
       const hHurts = llmsText.indexOf("## When this hurts (search-shaped)");
@@ -191,6 +203,10 @@ describe(
       expect(acqHtml).toContain(disc.heroTitle);
       expect(acqHtml).toContain('data-testid="visitor-problem-answer"');
       expect(acqHtml).toContain(disc.visitorProblemAnswer);
+      expect(acqHtml).toContain('data-testid="acquisition-terminal-demo"');
+      expect(htmlForTextNeedleMatch(acqHtml)).toContain(
+        disc.shareableTerminalDemo.transcript.slice(0, 80),
+      );
 
       const homeAgain = await (await fetch("http://127.0.0.1:34100/")).text();
       const homeAgainText = htmlForTextNeedleMatch(homeAgain);
@@ -198,6 +214,8 @@ describe(
       expect(homeAgainText).toContain(disc.homepageHero.what);
       expect(homeAgainText).toContain(disc.homepageHero.why);
       expect(homeAgainText).toContain(disc.homepageHero.when);
+      expect(homeAgain).toContain('data-testid="home-cold-proof"');
+      expect(homeAgainText).toContain(disc.shareableTerminalDemo.transcript.slice(0, 80));
       const ctaNeedle = 'data-testid="homepage-acquisition-cta"';
       const ctaIdx = homeAgain.indexOf(ctaNeedle);
       expect(ctaIdx).toBeGreaterThanOrEqual(0);

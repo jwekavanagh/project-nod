@@ -13,6 +13,7 @@ export const productCopy = {
 
   uiTestIds: {
     hero: "home-hero",
+    coldProof: "home-cold-proof",
     scenario: "home-scenario",
     mechanism: "home-mechanism",
     qualification: "home-qualification",

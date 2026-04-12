@@ -5,6 +5,7 @@ describe("HOME_SECTION_ORDER", () => {
   it("matches conversion funnel order", () => {
     expect([...HOME_SECTION_ORDER]).toEqual([
       "hero",
+      "coldProof",
       "scenario",
       "mechanism",
       "qualification",
@@ -14,6 +15,14 @@ describe("HOME_SECTION_ORDER", () => {
       "commercialSurface",
       "nextSteps",
     ]);
+  });
+
+  it("places coldProof after hero and before scenario", () => {
+    const he = HOME_SECTION_ORDER.indexOf("hero");
+    const cp = HOME_SECTION_ORDER.indexOf("coldProof");
+    const sc = HOME_SECTION_ORDER.indexOf("scenario");
+    expect(he).toBeLessThan(cp);
+    expect(cp).toBeLessThan(sc);
   });
 
   it("places tryIt before commercialSurface and nextSteps; example before tryIt", () => {

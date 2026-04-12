@@ -18,7 +18,8 @@
     "readmeTitle",
     "homepageHero",
     "demandMoments",
-    "cliFollowupLines"
+    "cliFollowupLines",
+    "shareableTerminalDemo"
   ],
   "properties": {
     "schemaVersion": { "type": "integer", "const": 1 },
@@ -137,6 +138,29 @@
           "type": "array",
           "minItems": 1,
           "items": { "type": "string", "minLength": 0 }
+        }
+      }
+    },
+    "shareableTerminalDemo": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["title", "transcript"],
+      "properties": {
+        "title": {
+          "type": "string",
+          "minLength": 8,
+          "maxLength": 120
+        },
+        "transcript": {
+          "type": "string",
+          "minLength": 100,
+          "maxLength": 6000,
+          "not": { "pattern": "```" },
+          "allOf": [
+            { "pattern": "wf_complete" },
+            { "pattern": "wf_missing" },
+            { "pattern": "ROW_ABSENT" }
+          ]
         }
       }
     }

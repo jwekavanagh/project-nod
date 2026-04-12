@@ -9,6 +9,47 @@ AgentSkeptic answers with read-only SQL at verification time—not with trace su
 
 Teams ship agent and automation workflows where traces, tool responses, and success flags look green while the database row is missing, stale, or wrong. AgentSkeptic closes that gap by comparing structured tool activity to read-only SQL against your SQLite or Postgres at verification time: it tells you whether observed state matched expectations derived from what the workflow claimed—not whether a step narrative sounded successful. It is a snapshot check, not proof of causality or execution.
 
+### Pasteable terminal proof (bundled demo)
+
+```text
+### Success (`wf_complete`)
+
+workflow_id: wf_complete
+workflow_status: complete
+trust: TRUSTED: Every step matched the database under the configured verification rules.
+steps:
+  - seq=0 tool=crm.upsert_contact result=Matched the database.
+
+{
+  "schemaVersion": 15,
+  "workflowId": "wf_complete",
+  "status": "complete",
+  "steps": [{ "seq": 0, "toolId": "crm.upsert_contact", "status": "verified" }]
+}
+
+### Failure (`wf_missing`)
+
+workflow_id: wf_missing
+workflow_status: inconsistent
+steps:
+  - seq=0 tool=crm.upsert_contact result=Expected row is missing from the database (the log implies a write that is not present).
+    reference_code: ROW_ABSENT
+
+{
+  "schemaVersion": 15,
+  "workflowId": "wf_missing",
+  "status": "inconsistent",
+  "steps": [
+    {
+      "seq": 0,
+      "toolId": "crm.upsert_contact",
+      "status": "missing",
+      "reasons": [{ "code": "ROW_ABSENT" }]
+    }
+  ]
+}
+```
+
 [Why traces are not database truth](https://agentskeptic.com/database-truth-vs-traces)
 <!-- discovery-acquisition-fold:end -->
 
