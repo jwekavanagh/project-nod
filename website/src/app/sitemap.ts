@@ -14,6 +14,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     "/guides/verify-langgraph-workflows",
     "/integrate",
     "/pricing",
+    "/security",
     "/privacy",
     "/terms",
     "/auth/signin",

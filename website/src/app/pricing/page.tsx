@@ -6,8 +6,10 @@ import { PricingClient, type PlanRow } from "./PricingClient";
 export const dynamic = "force-dynamic";
 
 export default function PricingPage() {
-  const { plans: raw } = loadCommercialPlans();
+  const commercial = loadCommercialPlans();
+  const raw = commercial.plans;
   const order: PlanId[] = ["starter", "individual", "team", "business", "enterprise"];
+  const recommendedPlanId = commercial.recommendedPlanId;
   const plans: PlanRow[] = order.map((id) => {
     const p = raw[id];
     return {
@@ -18,6 +20,7 @@ export default function PricingPage() {
       includedMonthly: p.includedMonthly,
       audience: p.audience,
       valueUnlock: p.valueUnlock,
+      recommended: id === recommendedPlanId,
     };
   });
   const enterpriseMailto = enterpriseMailtoHref();
@@ -25,6 +28,9 @@ export default function PricingPage() {
     <main>
       <h1>Pricing</h1>
       <p className="muted pricing-recap">{productCopy.pricingRecap}</p>
+      <p className="muted pricing-oss-reminder" data-testid="pricing-oss-reminder">
+        {productCopy.pricingOssPathReminder}
+      </p>
       <PricingClient plans={plans} enterpriseMailto={enterpriseMailto} />
     </main>
   );

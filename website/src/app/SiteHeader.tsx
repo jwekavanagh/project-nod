@@ -1,6 +1,7 @@
 import { auth } from "@/auth";
 import { productCopy } from "@/content/productCopy";
 import Link from "next/link";
+import { SignOutButton } from "./SignOutButton";
 
 export async function SiteHeader() {
   const session = await auth();
@@ -14,13 +15,17 @@ export async function SiteHeader() {
         </Link>
         <nav className="site-nav" aria-label="Primary">
           <Link href="/#try-it">Try</Link>
+          <Link href={productCopy.homepageAcquisitionCta.href}>{productCopy.navAcquisitionLabel}</Link>
           <Link href="/integrate">Integrate</Link>
           <a href={productCopy.links.cliQuickstart} rel="noreferrer">
             CLI
           </a>
           <Link href="/pricing">Pricing</Link>
           {signedIn ? (
-            <Link href="/account">Account</Link>
+            <>
+              <Link href="/account">Account</Link>
+              <SignOutButton variant="nav" />
+            </>
           ) : (
             <Link href="/auth/signin?callbackUrl=%2Faccount">Sign in</Link>
           )}

@@ -14,6 +14,7 @@ export type PlanRow = {
   includedMonthly: number | null;
   audience: string;
   valueUnlock: string;
+  recommended: boolean;
 };
 
 export function PricingClient({
@@ -35,14 +36,32 @@ export function PricingClient({
       const r = await fetch("/api/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "same-origin",
         body: JSON.stringify({ plan }),
       });
-      const j = (await r.json()) as { url?: string; error?: string };
+      const text = await r.text();
+      let j: { url?: string; error?: string };
+      try {
+        j = JSON.parse(text) as { url?: string; error?: string };
+      } catch {
+        setErr(
+          r.ok
+            ? "Unexpected response from checkout. Please refresh and try again."
+            : `Checkout failed (${r.status}). If this persists, contact support.`,
+        );
+        return;
+      }
       if (!r.ok) {
         setErr(j.error ?? "Checkout failed");
         return;
       }
-      if (j.url) window.location.href = j.url;
+      if (typeof j.url === "string" && j.url.length > 0) {
+        window.location.assign(j.url);
+        return;
+      }
+      setErr(j.error ?? "Checkout did not return a payment link. Check Stripe configuration.");
+    } catch (e) {
+      setErr(e instanceof Error ? e.message : "Network error starting checkout.");
     } finally {
       setLoading(null);
     }
@@ -61,7 +80,18 @@ export function PricingClient({
       </section>
       <div className="pricing-grid" style={{ marginTop: "1.5rem" }}>
         {plans.map((p) => (
-          <div key={p.id} className="card" data-plan={p.id}>
+          <div
+            key={p.id}
+            className={`card${p.recommended ? " pricing-card-recommended" : ""}`}
+            data-plan={p.id}
+            data-recommended={p.recommended ? "true" : "false"}
+            aria-label={p.recommended ? `${p.headline} — recommended for most teams` : undefined}
+          >
+            {p.recommended && (
+              <p className="pricing-recommended-pill" data-testid="pricing-recommended-pill">
+                Recommended for most teams
+              </p>
+            )}
             <h2>{p.headline}</h2>
             <p style={{ fontSize: "1.5rem" }}>{p.displayPrice}</p>
             <p

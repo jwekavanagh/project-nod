@@ -76,6 +76,10 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
         { status: 500 },
       );
     }
-    throw e;
+    console.error("[api/demo/verify] unexpected error", e);
+    return NextResponse.json(
+      { ok: false, error: DEMO_ERROR_CODES.ENGINE_FAILED },
+      { status: 500 },
+    );
   }
 }

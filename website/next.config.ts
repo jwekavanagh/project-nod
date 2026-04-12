@@ -1,6 +1,7 @@
 import type { NextConfig } from "next";
 import { createRequire } from "node:module";
 import path from "path";
+import { DEMO_VERIFY_OUTPUT_FILE_TRACING_GLOBS } from "./src/lib/demoVerifyOutputFileTracingGlobs";
 
 const require = createRequire(import.meta.url);
 require("../scripts/public-product-anchors.cjs").assertNextPublicOriginParity();
@@ -17,6 +18,14 @@ const traceRoot =
 const nextConfig: NextConfig = {
   serverExternalPackages: ["nodemailer", "postgres", "agentskeptic"],
   ...(traceRoot ? { outputFileTracingRoot: traceRoot } : {}),
+  /**
+   * `agentskeptic` loads JSON Schemas and the demo reads `examples/*` via runtime `readFileSync` paths
+   * that file tracing cannot infer. Without these globs, Vercel serverless bundles miss the assets and
+   * the route returns a non-JSON 500 (the Try-it client then shows "Network error" from `response.json()`).
+   */
+  outputFileTracingIncludes: {
+    "/api/demo/verify": [...DEMO_VERIFY_OUTPUT_FILE_TRACING_GLOBS],
+  },
   async headers() {
     return [
       {

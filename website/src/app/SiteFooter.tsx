@@ -20,7 +20,9 @@ export function SiteFooter() {
           <span className="site-footer-sep"> · </span>
           <a href={openapiHref}>OpenAPI</a>
         </nav>
-        <nav aria-label="Legal">
+        <nav aria-label="Trust and legal">
+          <Link href="/security">Security & Trust</Link>
+          <span className="site-footer-sep"> · </span>
           <Link href="/privacy">Privacy</Link>
           <span className="site-footer-sep"> · </span>
           <Link href="/terms">Terms</Link>

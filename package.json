@@ -76,6 +76,7 @@
   },
   "files": [
     "dist/",
+    "schemas/",
     "scripts/discovery-payload.lib.cjs",
     "scripts/discovery-acquisition.lib.cjs",
     "scripts/render-discovery-ci.mjs"

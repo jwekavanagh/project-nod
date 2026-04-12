@@ -26,6 +26,13 @@ export const productCopy = {
     subtitle: discoveryAcquisition.heroSubtitle,
   },
 
+  /** Discovery SSOT: outcome framing before mechanism (`hero.subtitle`). */
+  homepageHeroNarrative: {
+    why: discoveryAcquisition.homepageHero.why,
+    what: discoveryAcquisition.homepageHero.what,
+    when: discoveryAcquisition.homepageHero.when,
+  },
+
   howItWorks: {
     sectionTitle: "How it works",
   },
@@ -39,6 +46,57 @@ export const productCopy = {
     label: discoveryAcquisition.homepageAcquisitionCtaLabel,
     testId: "homepage-acquisition-cta" as const,
   },
+
+  /** Primary nav label for the acquisition page (same `href` as homepage acquisition CTA). */
+  navAcquisitionLabel: "Database truth vs traces",
+
+  /** Shown once above the pricing grid; must stay aligned with commercial-ssot OSS path. */
+  pricingOssPathReminder:
+    "Contract verification from the open-source repo remains free without a subscription. The tiers below are for licensed npm usage, quota, and API keys on the commercial path.",
+
+  /** Security & Trust page — factual only; link out to normative docs for guarantees. */
+  securityTrust: {
+    title: "Security & Trust",
+    intro:
+      "This page summarizes how the product and website handle data at a high level. Authoritative verification semantics and limits are in the linked documentation—not marketing paraphrase.",
+    sections: [
+      {
+        heading: "Verification and read-only SQL",
+        paragraphs: [
+          "Verification compares structured tool activity to read-only `SELECT` results at verification time. It does not prove that a specific call caused a row. See the verification product SSOT for the trust boundary and vocabulary.",
+        ],
+      },
+      {
+        heading: "What runs in your environment",
+        paragraphs: [
+          "The open-source CLI and engine run in your infrastructure against databases you configure. The homepage demo runs bundled fixtures on the server for evaluation only.",
+        ],
+      },
+      {
+        heading: "Commercial surface",
+        paragraphs: [
+          "Licensed npm verification, quota, API keys, and billing are described in the commercial SSOT. Do not infer SLAs or certifications that are not explicitly published here.",
+        ],
+      },
+      {
+        heading: "Website, auth, and privacy",
+        paragraphs: [
+          "Account sign-in uses email magic links. See the Privacy Policy and Terms for data handling on this site.",
+        ],
+      },
+    ],
+    docLinks: {
+      verificationProductSsot: `${publicProductAnchors.gitRepositoryUrl}/blob/main/docs/verification-product-ssot.md`,
+      commercialSsot: `${publicProductAnchors.gitRepositoryUrl}/blob/main/docs/commercial-ssot.md`,
+    },
+  },
+
+  /** `<details>` summary on /integrate for the full embedded integration guide. */
+  integrateFullGuideSummary: "Full integration guide (prose SSOT — open when wiring semantics)",
+
+  /** Shown above partner quickstart on /integrate. */
+  integrateIntro:
+    "Start with the command quickstart below, then open the full guide when you need semantics, guarantees, and common mistakes.",
 
   scenario: {
     title: "Concrete scenario",

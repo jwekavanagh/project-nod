@@ -73,16 +73,29 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     plan,
     userId: session.user.id,
   });
-  const checkout = await getStripe().checkout.sessions.create(sessionParams);
+  try {
+    const checkout = await getStripe().checkout.sessions.create(sessionParams);
+    const url = checkout.url;
+    if (!url) {
+      return NextResponse.json(
+        { error: "Checkout session did not return a redirect URL." },
+        { status: 502 },
+      );
+    }
 
-  await logFunnelEvent({
-    event: "checkout_started",
-    userId: session.user.id,
-    metadata: buildCheckoutStartedMetadata(
-      plan as CheckoutStartedMetadata["plan"],
-      postActivation,
-    ),
-  });
+    await logFunnelEvent({
+      event: "checkout_started",
+      userId: session.user.id,
+      metadata: buildCheckoutStartedMetadata(
+        plan as CheckoutStartedMetadata["plan"],
+        postActivation,
+      ),
+    });
 
-  return NextResponse.json({ url: checkout.url });
+    return NextResponse.json({ url });
+  } catch (e) {
+    const message =
+      e instanceof Error ? e.message : "Checkout failed. Please try again or contact support.";
+    return NextResponse.json({ error: message }, { status: 500 });
+  }
 }

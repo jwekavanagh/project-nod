@@ -32,6 +32,8 @@ export const paidEnforcementPlanIds: readonly PlanId[] = [
 
 export type CommercialPlansFile = {
   schemaVersion: number;
+  /** Website pricing highlight only; not exposed on public plans API. */
+  recommendedPlanId: PlanId;
   plans: Record<
     PlanId,
     {

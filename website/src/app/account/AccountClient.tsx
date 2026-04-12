@@ -10,6 +10,7 @@ import {
   STRIPE_CUSTOMER_MISSING_ERROR,
   STRIPE_CUSTOMER_MISSING_MESSAGE,
 } from "@/lib/billingPortalConstants";
+import { SignOutButton } from "../SignOutButton";
 
 const ghMain = `${publicProductAnchors.gitRepositoryUrl}/blob/main`;
 
@@ -125,6 +126,9 @@ export function AccountClient({
 
   return (
     <div className="card" style={{ marginTop: "1rem" }}>
+      <p style={{ marginTop: 0, marginBottom: "1rem" }}>
+        <SignOutButton variant="account" />
+      </p>
       <h2>Subscription and entitlements</h2>
       <p>
         <strong>Plan:</strong> {commercial.plan}

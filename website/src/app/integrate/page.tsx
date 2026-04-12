@@ -1,8 +1,9 @@
-import ReactMarkdown from "react-markdown";
-import remarkGfm from "remark-gfm";
+import { productCopy } from "@/content/productCopy";
 import { siteMetadata } from "@/content/siteMetadata";
 import { embeddedFirstRunIntegrationMd } from "@/generated/integratorDocsEmbedded";
 import type { Metadata } from "next";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import { FirstRunActivationGuide } from "./FirstRunActivationGuide";
 
 export const metadata: Metadata = {
@@ -14,11 +15,14 @@ export default function IntegratePage() {
   const md = embeddedFirstRunIntegrationMd;
   return (
     <main className="integrate-main">
+      <p className="muted">{productCopy.integrateIntro}</p>
       <FirstRunActivationGuide />
-      <h2 className="integrate-full-doc-heading">Full integration guide (prose SSOT)</h2>
-      <article className="integrate-prose">
-        <ReactMarkdown remarkPlugins={[remarkGfm]}>{md}</ReactMarkdown>
-      </article>
+      <details className="integrate-full-doc-details">
+        <summary className="integrate-full-doc-summary">{productCopy.integrateFullGuideSummary}</summary>
+        <article className="integrate-prose">
+          <ReactMarkdown remarkPlugins={[remarkGfm]}>{md}</ReactMarkdown>
+        </article>
+      </details>
     </main>
   );
 }

@@ -2,11 +2,18 @@ import { siteMetadata } from "@/content/siteMetadata";
 import discoveryAcquisition from "@/lib/discoveryAcquisition";
 import { publicProductAnchors } from "@/lib/publicProductAnchors";
 import { Analytics } from "@vercel/analytics/react";
+import { DM_Sans } from "next/font/google";
 import type { Metadata } from "next";
 import "./globals.css";
 import { Providers } from "./providers";
 import { SiteFooter } from "./SiteFooter";
 import { SiteHeader } from "./SiteHeader";
+
+const headingFont = DM_Sans({
+  subsets: ["latin"],
+  variable: "--font-heading",
+  display: "swap",
+});
 
 const productJsonLd = {
   "@context": "https://schema.org",
@@ -52,7 +59,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" className={headingFont.variable}>
       <body>
         <script
           type="application/ld+json"

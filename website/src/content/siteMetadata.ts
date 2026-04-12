@@ -8,6 +8,11 @@ export const siteMetadata = {
     description:
       "Copy-paste steps: NDJSON tool observations, tools.json registry, SQLite or Postgres, and the agentskeptic CLI.",
   },
+  security: {
+    title: "Security & Trust — AgentSkeptic",
+    description:
+      "High-level data handling, verification boundary, and links to authoritative product and commercial documentation.",
+  },
   openGraph: {
     title: "AgentSkeptic — check database state against what your workflow claimed",
     description: discoveryAcquisition.pageMetadata.description,

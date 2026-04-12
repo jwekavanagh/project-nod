@@ -1,7 +1,11 @@
 "use client";
 
 import { productCopy } from "@/content/productCopy";
-import { DEMO_SCENARIO_IDS, type DemoScenarioId } from "@/lib/demoScenarioIds";
+import {
+  DEMO_SCENARIO_IDS,
+  DEMO_SCENARIO_PRESENTATION,
+  type DemoScenarioId,
+} from "@/lib/demoScenarioIds";
 import { useState } from "react";
 
 type DemoResponse =
@@ -65,16 +69,22 @@ export function TryItSection() {
           value={scenarioId}
           onChange={(e) => setScenarioId(e.target.value as DemoScenarioId)}
         >
-          {DEMO_SCENARIO_IDS.map((id) => (
-            <option key={id} value={id}>
-              {id}
-            </option>
-          ))}
+          {DEMO_SCENARIO_IDS.map((id) => {
+            const { label } = DEMO_SCENARIO_PRESENTATION[id];
+            return (
+              <option key={id} value={id}>
+                {label} ({id})
+              </option>
+            );
+          })}
         </select>
         <button type="button" className="btn try-it-run" disabled={loading} onClick={run}>
           {loading ? productCopy.tryIt.running : productCopy.tryIt.runButton}
         </button>
       </div>
+      <p className="muted try-it-scenario-hint" data-testid="try-it-scenario-one-liner">
+        {DEMO_SCENARIO_PRESENTATION[scenarioId].oneLiner}
+      </p>
       {result && !result.ok && <p className="error-text">{result.error}</p>}
       {result && result.ok && (
         <div className="try-it-output">

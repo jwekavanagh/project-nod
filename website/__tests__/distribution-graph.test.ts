@@ -6,6 +6,7 @@ import { createRequire } from "node:module";
 import { describe, expect, beforeAll, afterAll, it } from "vitest";
 import { extract as extractTar } from "tar";
 import { parse } from "yaml";
+import { productCopy } from "@/content/productCopy";
 import {
   getRepoRoot,
   loadAnchors,
@@ -200,6 +201,17 @@ describe(
       expect(visitorBodyRaw.trim()).toBe(disc.visitorProblemAnswer.trim());
 
       const acqHtml = await (await fetch(`http://127.0.0.1:34100${disc.slug}`)).text();
+      const acqText = htmlForTextNeedleMatch(acqHtml);
+      const acqWhy = acqText.indexOf(disc.homepageHero.why);
+      const acqWhat = acqText.indexOf(disc.homepageHero.what);
+      const acqWhen = acqText.indexOf(disc.homepageHero.when);
+      const acqSub = acqText.indexOf(disc.heroSubtitle);
+      const acqVis = acqText.indexOf(disc.visitorProblemAnswer);
+      expect(acqWhy).toBeGreaterThanOrEqual(0);
+      expect(acqWhat).toBeGreaterThan(acqWhy);
+      expect(acqWhen).toBeGreaterThan(acqWhat);
+      expect(acqSub).toBeGreaterThan(acqWhen);
+      expect(acqVis).toBeGreaterThan(acqSub);
       expect(acqHtml).toContain('data-testid="acquisition-hero-title"');
       expect(acqHtml).toContain(disc.heroTitle);
       expect(acqHtml).toContain('data-testid="visitor-problem-answer"');
@@ -209,12 +221,21 @@ describe(
         disc.shareableTerminalDemo.transcript.slice(0, 80),
       );
 
-      // Homepage `/` contract (simplified): hero title + subtitle only, no cold-proof block,
-      // no pasted terminal transcript; acquisition page still carries shareableTerminalDemo.
+      // Homepage `/`: homepageHero why→what→when, then heroSubtitle, then how-it-works; no terminal transcript.
       const homeAgain = await (await fetch("http://127.0.0.1:34100/")).text();
       const homeAgainText = htmlForTextNeedleMatch(homeAgain);
       expect(homeAgainText).toContain(disc.heroTitle);
       expect(homeAgainText).toContain(disc.heroSubtitle);
+      const idxWhy = homeAgainText.indexOf(disc.homepageHero.why);
+      const idxWhat = homeAgainText.indexOf(disc.homepageHero.what);
+      const idxWhen = homeAgainText.indexOf(disc.homepageHero.when);
+      const idxSub = homeAgainText.indexOf(disc.heroSubtitle);
+      const idxHow = homeAgainText.indexOf('data-testid="home-how-it-works"');
+      expect(idxWhy).toBeGreaterThanOrEqual(0);
+      expect(idxWhat).toBeGreaterThan(idxWhy);
+      expect(idxWhen).toBeGreaterThan(idxWhat);
+      expect(idxSub).toBeGreaterThan(idxWhen);
+      expect(idxHow).toBeGreaterThan(idxSub);
       expect(homeAgain).not.toContain('data-testid="home-cold-proof"');
       expect(homeAgainText).not.toContain(disc.shareableTerminalDemo.transcript.slice(0, 80));
       expect(homeAgain).toContain('data-testid="home-how-it-works"');
@@ -230,10 +251,23 @@ describe(
       expect(aTag.includes(`href="${disc.slug}"`)).toBe(true);
       expect(aTag.replace(/\s+/g, " ").trim()).toContain(disc.homepageAcquisitionCtaLabel);
 
+      const navPrimary = homeAgain.indexOf('aria-label="Primary"');
+      expect(navPrimary).toBeGreaterThanOrEqual(0);
+      const navSlice = homeAgain.slice(navPrimary, navPrimary + 4000);
+      expect(navSlice).toContain(`href="${disc.slug}"`);
+      expect(htmlForTextNeedleMatch(navSlice)).toContain("Database truth vs traces");
+      expect(homeAgain).toContain('href="/security"');
+
+      const secRes = await fetch("http://127.0.0.1:34100/security");
+      expect(secRes.status).toBe(200);
+      const secHtml = await secRes.text();
+      expect(htmlForTextNeedleMatch(secHtml)).toContain(productCopy.securityTrust.title);
+
       const sitemapXml = await (await fetch("http://127.0.0.1:34100/sitemap.xml")).text();
       expect(sitemapXml).toContain(`${canonicalOrigin}/llms.txt`);
       expect(sitemapXml).toContain(`${canonicalOrigin}/integrate`);
       expect(sitemapXml).toContain(`${canonicalOrigin}/openapi-commercial-v1.yaml`);
+      expect(sitemapXml).toContain(`${canonicalOrigin}/security`);
       expect(sitemapXml).toContain(acquisitionAbs);
 
       const robotsTxt = await (await fetch("http://127.0.0.1:34100/robots.txt")).text();

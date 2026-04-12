@@ -4,6 +4,15 @@
   --muted: #8b98a5;
   --accent: #1d9bf0;
   --card: #16181c;
+  /* Populated by next/font variable on <html> (see layout.tsx). */
+  --font-heading: ui-sans-serif, system-ui, sans-serif;
+}
+
+h1,
+h2,
+h3,
+.site-logo {
+  font-family: var(--font-heading), ui-sans-serif, system-ui, sans-serif;
 }
 * {
   box-sizing: border-box;
@@ -87,6 +96,20 @@ button.secondary {
   font-weight: 500;
 }
 .site-nav a:hover {
+  text-decoration: underline;
+}
+.site-nav button.site-nav-signout {
+  background: none;
+  border: none;
+  color: var(--accent);
+  padding: 0;
+  border-radius: 0;
+  font: inherit;
+  font-weight: 500;
+  cursor: pointer;
+  text-decoration: none;
+}
+.site-nav button.site-nav-signout:hover {
   text-decoration: underline;
 }
 
@@ -213,6 +236,30 @@ button.secondary {
   font-weight: 600;
 }
 
+.pricing-oss-reminder {
+  max-width: 42rem;
+  margin-top: 0.75rem;
+}
+
+.pricing-card-recommended {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 1px var(--accent);
+}
+
+.pricing-recommended-pill {
+  margin: 0 0 0.5rem;
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--accent);
+}
+
+.try-it-scenario-hint {
+  max-width: 42rem;
+  margin-top: 0.5rem;
+}
+
 .signin-benefits {
   margin: 0.5rem 0 0;
   padding-left: 1.25rem;
@@ -325,6 +372,16 @@ main {
   padding-left: 1rem;
   border-left: 3px solid var(--accent);
   color: var(--muted);
+}
+
+.integrate-full-doc-details {
+  margin-top: 1.5rem;
+}
+
+.integrate-full-doc-summary {
+  cursor: pointer;
+  font-weight: 600;
+  color: var(--accent);
 }
 
 .truth-report-pre {

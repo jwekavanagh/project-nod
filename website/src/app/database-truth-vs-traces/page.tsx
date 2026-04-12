@@ -1,3 +1,4 @@
+import { productCopy } from "@/content/productCopy";
 import discoveryAcquisition from "@/lib/discoveryAcquisition";
 import type { Metadata } from "next";
 
@@ -7,9 +8,13 @@ export const metadata: Metadata = {
 };
 
 export default function DatabaseTruthVsTracesPage() {
+  const { why, what, when } = productCopy.homepageHeroNarrative;
   return (
     <main className="integrate-main">
       <h1 data-testid="acquisition-hero-title">{discoveryAcquisition.heroTitle}</h1>
+      <p className="lede">{why}</p>
+      <p className="lede">{what}</p>
+      <p className="lede">{when}</p>
       <p className="lede">{discoveryAcquisition.heroSubtitle}</p>
       <p className="lede" data-testid="visitor-problem-answer">
         {discoveryAcquisition.visitorProblemAnswer}
