@@ -40,6 +40,33 @@
       "CI passed on workflow logs; database side effect never showed up",
       "Need a gate before production: read-only verification, not more log volume"
     ],
+    "indexableGuides": [
+      {
+        "path": "/guides/verify-langgraph-workflows",
+        "navLabel": "LangGraph workflows and your database",
+        "problemAnchor": "LangGraph runs produce structured tool parameters; traces and success flags do not prove the Postgres or SQLite row exists with the values your graph implied at verification time."
+      },
+      {
+        "path": "/guides/trace-green-postgres-row-missing",
+        "navLabel": "Green trace, missing Postgres row",
+        "problemAnchor": "Green LangGraph or agent trace but wrong or missing Postgres row"
+      },
+      {
+        "path": "/guides/tool-loop-success-crm-state-wrong",
+        "navLabel": "Tool loop success, CRM state wrong",
+        "problemAnchor": "OpenAI-style tool loop reported success; CRM or SQLite state does not match"
+      },
+      {
+        "path": "/guides/ci-green-logs-row-absent",
+        "navLabel": "CI green logs, row absent",
+        "problemAnchor": "CI passed on workflow logs; database side effect never showed up"
+      },
+      {
+        "path": "/guides/pre-production-read-only-sql-gate",
+        "navLabel": "Pre-production read-only SQL gate",
+        "problemAnchor": "Need a gate before production: read-only verification, not more log volume"
+      }
+    ],
     "shareableTerminalDemo": {
       "title": "Pasteable terminal proof (bundled demo)",
       "transcript": "### Success (`wf_complete`)\n\nworkflow_id: wf_complete\nworkflow_status: complete\ntrust: TRUSTED: Every step matched the database under the configured verification rules.\nsteps:\n  - seq=0 tool=crm.upsert_contact result=Matched the database.\n\n{\n  \"schemaVersion\": 15,\n  \"workflowId\": \"wf_complete\",\n  \"status\": \"complete\",\n  \"steps\": [{ \"seq\": 0, \"toolId\": \"crm.upsert_contact\", \"status\": \"verified\" }]\n}\n\n### Failure (`wf_missing`)\n\nworkflow_id: wf_missing\nworkflow_status: inconsistent\nsteps:\n  - seq=0 tool=crm.upsert_contact result=Expected row is missing from the database (the log implies a write that is not present).\n    reference_code: ROW_ABSENT\n\n{\n  \"schemaVersion\": 15,\n  \"workflowId\": \"wf_missing\",\n  \"status\": \"inconsistent\",\n  \"steps\": [\n    {\n      \"seq\": 0,\n      \"toolId\": \"crm.upsert_contact\",\n      \"status\": \"missing\",\n      \"reasons\": [{ \"code\": \"ROW_ABSENT\" }]\n    }\n  ]\n}"

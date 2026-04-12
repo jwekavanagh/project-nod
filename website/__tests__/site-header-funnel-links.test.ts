@@ -5,7 +5,8 @@ import { describe, expect, it } from "vitest";
 describe("SiteHeader funnel links", () => {
   const src = readFileSync(path.join(__dirname, "..", "src", "app", "SiteHeader.tsx"), "utf8");
 
-  it("exposes acquisition, integrate, pricing, sign-in callback, account, sign-out, and CLI quickstart in primary nav", () => {
+  it("exposes guides, acquisition, integrate, pricing, sign-in callback, account, sign-out, and CLI quickstart in primary nav", () => {
+    expect(src).toContain('href="/guides"');
     expect(src).toContain("href={productCopy.homepageAcquisitionCta.href}");
     expect(src).toContain("{productCopy.navAcquisitionLabel}");
     expect(src).toContain('href="/integrate"');

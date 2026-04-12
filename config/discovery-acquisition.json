@@ -38,7 +38,7 @@
       "heading": "What to do next",
       "paragraphs": [
         "Run the homepage demo, follow /integrate for first-run on your database, or install the CLI from the repository README. When you need licensed npm features, use the commercial package and API keys described on the site.",
-        "To turn a verification run into a pasteable URL, use the CLI flag documented in docs/shareable-verification-reports.md and read the LangGraph-oriented guide at /guides/verify-langgraph-workflows."
+        "To turn a verification run into a private pasteable URL, use the CLI flag documented in docs/shareable-verification-reports.md. For indexable discovery pages, see /guides and docs/discovery-guides.md."
       ]
     }
   ],
@@ -92,5 +92,32 @@
       "{{TERMINAL_TRANSCRIPT}}",
       "```"
     ]
-  }
+  },
+  "indexableGuides": [
+    {
+      "path": "/guides/verify-langgraph-workflows",
+      "navLabel": "LangGraph workflows and your database",
+      "problemAnchor": "LangGraph runs produce structured tool parameters; traces and success flags do not prove the Postgres or SQLite row exists with the values your graph implied at verification time."
+    },
+    {
+      "path": "/guides/trace-green-postgres-row-missing",
+      "navLabel": "Green trace, missing Postgres row",
+      "problemAnchor": "Green LangGraph or agent trace but wrong or missing Postgres row"
+    },
+    {
+      "path": "/guides/tool-loop-success-crm-state-wrong",
+      "navLabel": "Tool loop success, CRM state wrong",
+      "problemAnchor": "OpenAI-style tool loop reported success; CRM or SQLite state does not match"
+    },
+    {
+      "path": "/guides/ci-green-logs-row-absent",
+      "navLabel": "CI green logs, row absent",
+      "problemAnchor": "CI passed on workflow logs; database side effect never showed up"
+    },
+    {
+      "path": "/guides/pre-production-read-only-sql-gate",
+      "navLabel": "Pre-production read-only SQL gate",
+      "problemAnchor": "Need a gate before production: read-only verification, not more log volume"
+    }
+  ]
 }

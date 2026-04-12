@@ -8,10 +8,11 @@ function abs(path: string): string {
 }
 
 export default function sitemap(): MetadataRoute.Sitemap {
+  const guidePaths = discoveryAcquisition.indexableGuides.map((g) => g.path);
   const paths = [
     "/",
     discoveryAcquisition.slug,
-    "/guides/verify-langgraph-workflows",
+    ...guidePaths,
     "/integrate",
     "/pricing",
     "/security",

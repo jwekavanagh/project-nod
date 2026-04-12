@@ -12,6 +12,13 @@ State verification engine: read-only SQL checks that database state matches expe
 - npm package: https://www.npmjs.com/package/agentskeptic
 - llms.txt (repo raw): https://raw.githubusercontent.com/jwekavanagh/agentskeptic/refs/heads/main/llms.txt
 
+## Indexable guides
+- https://agentskeptic.com/guides/verify-langgraph-workflows
+- https://agentskeptic.com/guides/trace-green-postgres-row-missing
+- https://agentskeptic.com/guides/tool-loop-success-crm-state-wrong
+- https://agentskeptic.com/guides/ci-green-logs-row-absent
+- https://agentskeptic.com/guides/pre-production-read-only-sql-gate
+
 ## Pasteable terminal proof (bundled demo)
 
 ```text

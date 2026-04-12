@@ -13,6 +13,11 @@ Single source of truth for **public persisted reports**, the **`POST /api/public
 - The server stores the **exact JSON envelope** accepted by **`schemas/public-verification-report-v1.schema.json`** after AJV validation. **There is no redaction** in v1: tool parameters and human-readable lines may contain secrets. **Do not** publish reports that include credentials or regulated data unless you accept public persistence.
 - Reports are **immutable** after insert (no update API v1).
 
+## Indexable marketing vs `/r/*`
+
+- **`GET /r/{id}`** remains **`noindex`** (see HTML + `X-Robots-Tag` in this doc). It is for **private** artifact sharing, not organic discovery.
+- **Indexable** problem-oriented pages live under **`/guides/*`** driven by **`indexableGuides`** in [`config/discovery-acquisition.json`](discovery-acquisition.json). Narrative SSOT: [`docs/discovery-guides.md`](discovery-guides.md).
+
 ## Wire: POST `/api/public/verification-reports`
 
 - **Request body:** UTF-8 JSON matching **`public-verification-report-v1`** (`kind: workflow` with **`workflowResult`** + **`truthReportText`**, or `kind: quick` with **`workflowDisplayId`**, **`quickReport`**, **`humanReportText`**). Inner **`workflowResult`** must satisfy **`workflow-result`**; inner **`quickReport`** must satisfy **`quick-verify-report`**.

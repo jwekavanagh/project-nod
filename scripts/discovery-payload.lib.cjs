@@ -124,6 +124,7 @@ function buildDiscoveryPayload(root) {
       notFor: llms.notFor.map(String),
       relatedQueries: llms.relatedQueries.map(String),
       demandMoments: /** @type {string[]} */ (discovery.demandMoments).map(String),
+      indexableGuides: /** @type {unknown} */ (discovery.indexableGuides),
       shareableTerminalDemo: {
         title: String(demo.title),
         transcript: String(demo.transcript),
@@ -136,7 +137,7 @@ function buildDiscoveryPayload(root) {
  * @param {Record<string, unknown>} payload
  */
 function discoveryObjectFromAppendix(payload) {
-  const ap = /** @type {{ slug: string; visitorProblemAnswer: string; intentPhrases: string[]; notFor: string[]; relatedQueries: string[]; demandMoments: string[]; shareableTerminalDemo?: { title: string; transcript: string } }} */ (
+  const ap = /** @type {{ slug: string; visitorProblemAnswer: string; intentPhrases: string[]; notFor: string[]; relatedQueries: string[]; demandMoments: string[]; indexableGuides?: { path: string; navLabel: string; problemAnchor: string }[]; shareableTerminalDemo?: { title: string; transcript: string } }} */ (
     payload.appendix
   );
   const out = {
@@ -151,6 +152,9 @@ function discoveryObjectFromAppendix(payload) {
   };
   if (ap.shareableTerminalDemo) {
     Object.assign(out, { shareableTerminalDemo: ap.shareableTerminalDemo });
+  }
+  if (Array.isArray(ap.indexableGuides)) {
+    Object.assign(out, { indexableGuides: ap.indexableGuides });
   }
   return out;
 }

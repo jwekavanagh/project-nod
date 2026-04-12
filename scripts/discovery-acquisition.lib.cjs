@@ -86,6 +86,38 @@ function escapeMdLinkText(s) {
 }
 
 /**
+ * @param {Record<string, unknown>} discovery
+ */
+function validateIndexableGuides(discovery) {
+  const guides = /** @type {{ path: string; navLabel: string; problemAnchor: string }[]} */ (
+    discovery.indexableGuides
+  );
+  if (!Array.isArray(guides)) {
+    throw new Error("discovery-acquisition: indexableGuides must be an array");
+  }
+  const paths = guides.map((g) => String(g.path));
+  const uniq = new Set(paths);
+  if (uniq.size !== paths.length) {
+    throw new Error("discovery-acquisition: indexableGuides paths must be unique");
+  }
+  const demandMoments = /** @type {string[]} */ (discovery.demandMoments);
+  for (let k = 0; k < guides.length; k++) {
+    const pa = String(guides[k].problemAnchor);
+    if (pa.includes("`")) {
+      throw new Error("discovery-acquisition: problemAnchor must not contain backtick");
+    }
+    if (k >= 1) {
+      const dm = String(demandMoments[k - 1]);
+      if (!dm.includes(pa)) {
+        throw new Error(
+          `discovery-acquisition: indexableGuides[${k}].problemAnchor must be a substring of demandMoments[${k - 1}]`,
+        );
+      }
+    }
+  }
+}
+
+/**
  * @param {string} baseLlms
  * @param {Record<string, unknown>} discovery
  * @param {string} canonicalOrigin
@@ -97,6 +129,13 @@ function appendDiscoveryLlmsAppendix(baseLlms, discovery, canonicalOrigin) {
   const bullets = (/** @type {string[]} */ arr) => arr.map((x) => `- ${x}`).join("\n");
 
   let out = String(baseLlms).replace(/\s*$/, "") + "\n";
+  const guides = /** @type {{ path: string }[] | undefined} */ (discovery.indexableGuides);
+  if (Array.isArray(guides) && guides.length > 0) {
+    out += "\n## Indexable guides\n";
+    for (const g of guides) {
+      out += `- ${origin}${String(g.path)}\n`;
+    }
+  }
   const demo = discovery.shareableTerminalDemo;
   if (demo && typeof demo.title === "string" && typeof demo.transcript === "string") {
     out += `\n## ${demo.title}\n\n\`\`\`text\n${demo.transcript}\n\`\`\`\n`;
@@ -142,6 +181,7 @@ function validateDiscoveryAcquisition(root) {
       "discovery-acquisition: shareableTerminalDemo.transcript must not contain markdown fence ```",
     );
   }
+  validateIndexableGuides(discovery);
   return discovery;
 }
 
@@ -150,5 +190,6 @@ module.exports = {
   buildDiscoveryFoldBody,
   appendDiscoveryLlmsAppendix,
   validateDiscoveryAcquisition,
+  validateIndexableGuides,
   discoveryPaths,
 };

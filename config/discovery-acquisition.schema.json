@@ -19,7 +19,8 @@
     "homepageHero",
     "demandMoments",
     "cliFollowupLines",
-    "shareableTerminalDemo"
+    "shareableTerminalDemo",
+    "indexableGuides"
   ],
   "properties": {
     "schemaVersion": { "type": "integer", "const": 1 },
@@ -161,6 +162,33 @@
             { "pattern": "wf_missing" },
             { "pattern": "ROW_ABSENT" }
           ]
+        }
+      }
+    },
+    "indexableGuides": {
+      "type": "array",
+      "minItems": 3,
+      "maxItems": 5,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["path", "navLabel", "problemAnchor"],
+        "properties": {
+          "path": {
+            "type": "string",
+            "pattern": "^/guides/[a-z0-9-]+$"
+          },
+          "navLabel": {
+            "type": "string",
+            "minLength": 8,
+            "maxLength": 80
+          },
+          "problemAnchor": {
+            "type": "string",
+            "minLength": 40,
+            "maxLength": 400,
+            "not": { "pattern": "`" }
+          }
         }
       }
     }

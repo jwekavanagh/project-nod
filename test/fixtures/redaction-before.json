@@ -1,0 +1,6 @@
+{
+  "note": "Bearer sk- and email for redaction-rules tests",
+  "auth": "Bearer sk-testtoken12345678901234567890",
+  "contact": "ops@example.com",
+  "short": "ok"
+}
