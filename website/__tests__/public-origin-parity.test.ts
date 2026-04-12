@@ -68,6 +68,14 @@ describe("public origin parity (assertNextPublicOriginParity)", () => {
     expect(() => assertNextPublicOriginParity()).not.toThrow();
   });
 
+  it("row: local next build — VERCEL_ENV unset and NEXT_PUBLIC_APP_URL empty — skips parity", () => {
+    stashEnv();
+    process.env.NODE_ENV = "production";
+    delete process.env.VERCEL_ENV;
+    delete process.env.NEXT_PUBLIC_APP_URL;
+    expect(() => assertNextPublicOriginParity()).not.toThrow();
+  });
+
   it("row: local next build — VERCEL_ENV unset throws when URL mismatches", () => {
     stashEnv();
     process.env.NODE_ENV = "production";

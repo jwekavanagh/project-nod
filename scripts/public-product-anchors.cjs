@@ -109,7 +109,12 @@ function assertNextPublicOriginParity() {
   const canonicalFromJson = anchors.productionCanonicalOrigin;
   const skip =
     process.env.NODE_ENV !== "production" || process.env.VERCEL_ENV === "preview";
-  if (!skip && normalize(process.env.NEXT_PUBLIC_APP_URL || "") !== normalize(canonicalFromJson)) {
+  if (skip) return;
+  const url = String(process.env.NEXT_PUBLIC_APP_URL || "").trim();
+  // `next build` sets NODE_ENV=production; CI and local builds often omit NEXT_PUBLIC_APP_URL.
+  // When unset, skip parity (siteTestServer / Vercel set it for runtime). When set, it must match anchors.
+  if (!url) return;
+  if (normalize(url) !== normalize(canonicalFromJson)) {
     throw new Error("NEXT_PUBLIC_APP_URL must equal productionCanonicalOrigin");
   }
 }
