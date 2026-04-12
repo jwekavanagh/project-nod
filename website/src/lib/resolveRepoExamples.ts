@@ -76,6 +76,7 @@ export function resolveRepoExamplesPaths(): RepoExamplesPaths {
   const candidates = [
     path.join(process.cwd(), "examples"),
     path.join(process.cwd(), "..", "examples"),
+    path.join(process.cwd(), "..", "..", "examples"),
   ];
   for (const examplesDir of candidates) {
     if (!committedExampleFixturesPresent(examplesDir)) continue;

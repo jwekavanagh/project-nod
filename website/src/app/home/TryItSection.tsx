@@ -26,7 +26,17 @@ export function TryItSection() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ scenarioId }),
       });
-      const j = (await r.json()) as Record<string, unknown>;
+      const text = await r.text();
+      let j: Record<string, unknown>;
+      try {
+        j = JSON.parse(text) as Record<string, unknown>;
+      } catch {
+        setResult({
+          ok: false,
+          error: `Request failed (${r.status}). The demo endpoint did not return JSON.`,
+        });
+        return;
+      }
       if (!r.ok) {
         setResult({
           ok: false,

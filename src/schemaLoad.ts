@@ -1,6 +1,6 @@
 import { Ajv2020, type ValidateFunction } from "ajv/dist/2020.js";
 import ajvFormats from "ajv-formats";
-import { readFileSync } from "fs";
+import { existsSync, readFileSync } from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
 
@@ -8,8 +8,46 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 const applyAjvFormats = ajvFormats as unknown as (ajv: InstanceType<typeof Ajv2020>) => InstanceType<typeof Ajv2020>;
 
+const SCHEMA_SENTINEL = "workflow-result.schema.json";
+
+function dirContainsSentinel(dir: string): boolean {
+  try {
+    return existsSync(path.join(dir, SCHEMA_SENTINEL));
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Directory holding `*.schema.json` files used by AJV.
+ *
+ * Default is the published package layout (`../schemas` next to `dist/`). Next.js / Vercel serverless
+ * may place traced copies under `process.cwd()` instead, so we probe common locations. Override
+ * with `AGENTSKEPTIC_SCHEMAS_DIR` when embedding outside the npm layout.
+ */
+let resolvedSchemasDir: string | null = null;
+
+function resolveSchemasDir(): string {
+  const env = process.env.AGENTSKEPTIC_SCHEMAS_DIR?.trim();
+  if (env && dirContainsSentinel(env)) return env;
+
+  const fromPackage = path.join(__dirname, "..", "schemas");
+  if (dirContainsSentinel(fromPackage)) return fromPackage;
+
+  const cwdSchemas = path.join(process.cwd(), "schemas");
+  if (dirContainsSentinel(cwdSchemas)) return cwdSchemas;
+
+  const parentSchemas = path.join(process.cwd(), "..", "schemas");
+  if (dirContainsSentinel(parentSchemas)) return parentSchemas;
+
+  return fromPackage;
+}
+
 export function schemasDir(): string {
-  return path.join(__dirname, "..", "schemas");
+  if (!resolvedSchemasDir) {
+    resolvedSchemasDir = resolveSchemasDir();
+  }
+  return resolvedSchemasDir;
 }
 
 let ajvInstance: InstanceType<typeof Ajv2020> | null = null;

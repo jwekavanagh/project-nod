@@ -22,9 +22,10 @@ function escapeRegExp(s: string): string {
   return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
-/** React escapes `"` in text nodes as `&quot;`; match discovery copy against fetch() HTML after decoding common entities. */
+/** Decode common HTML entities so discovery copy (with `&`, quotes) matches fetch() HTML from React/Next. */
 function htmlForTextNeedleMatch(html: string): string {
   return html
+    .replace(/&amp;/g, "&")
     .replace(/&quot;/g, '"')
     .replace(/&#34;/g, '"')
     .replace(/&apos;/g, "'")
