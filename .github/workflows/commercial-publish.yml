@@ -1,14 +1,5 @@
-# secrets.NPM_TOKEN: granular token, Read and write on agentskeptic (or All packages).
-#
-# CI publish + 2FA: if the website has no "Bypass two-factor authentication" checkbox, try:
-# 1) Under Packages and scopes, pick "All packages" or your package and set Read and write,
-#    then scroll General again (some UIs only show bypass after write is selected).
-# 2) Create the token via CLI (npm ≥ 11); bypass still needs one OTP from your authenticator:
-#    npm token create --name=github-actions-publish --packages-all --packages-and-scopes-permission=read-write --bypass-2fa
-#    https://docs.npmjs.com/cli/v11/commands/npm-token
-# 3) One-time local publish: npm publish ... --otp=<6-digit> from your machine.
-# 4) After the package exists on npm: Trusted Publishing (OIDC) — no long-lived publish token.
-#    https://docs.npmjs.com/trusted-publishers
+# Commercial npm publish uses Trusted Publishing (OIDC). Operator details: CONTRIBUTING.md
+# (GitHub Actions). npm: https://docs.npmjs.com/trusted-publishers
 name: Commercial npm publish
 
 on:
@@ -31,16 +22,7 @@ jobs:
         with:
           node-version: "22"
           cache: npm
-          registry-url: https://registry.npmjs.org
       - run: npm ci
-      - name: Registry auth and target (diagnostics)
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-        run: |
-          set -e
-          echo "node $(node -v) npm $(npm -v)"
-          npm config get registry
-          npm whoami --registry https://registry.npmjs.org
       - name: Build commercial CLI
         env:
           WF_BUILD_PROFILE: commercial
@@ -52,7 +34,6 @@ jobs:
         run: npm install -g npm@11.5.1
       - name: Publish root package to npmjs
         env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
           WF_BUILD_PROFILE: commercial
           COMMERCIAL_LICENSE_API_BASE_URL: ${{ github.event.inputs.commercial_license_api_base_url }}
         run: |
