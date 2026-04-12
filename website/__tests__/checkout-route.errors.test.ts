@@ -40,7 +40,7 @@ describe("POST /api/checkout — JSON error contract", () => {
       .mockResolvedValueOnce([]);
     vi.mocked(auth).mockResolvedValue({
       user: { id: "user-checkout-errors", email: "checkout-errors@example.com", name: null },
-    } as Awaited<ReturnType<typeof auth>>);
+    } as never);
     vi.stubEnv("STRIPE_PRICE_TEAM", "price_checkout_errors_team");
   });
 

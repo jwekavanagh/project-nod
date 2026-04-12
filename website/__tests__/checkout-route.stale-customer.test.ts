@@ -53,7 +53,7 @@ describe("POST /api/checkout — stale stripe_customer_id", () => {
     });
     vi.mocked(auth).mockResolvedValue({
       user: { id: "user-stale-cus", email: "stale-cus@example.com", name: null },
-    } as Awaited<ReturnType<typeof auth>>);
+    } as never);
     vi.stubEnv("STRIPE_PRICE_TEAM", "price_stale_cus_team");
     vi.mocked(logFunnelEvent).mockClear();
   });

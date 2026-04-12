@@ -22,6 +22,9 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
+  const userId = session.user.id;
+  const customerEmail = session.user.email;
+
   let plan: PlanId;
   let envKey: string;
   try {
@@ -55,7 +58,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
   const [urow] = await db
     .select({ stripeCustomerId: users.stripeCustomerId })
     .from(users)
-    .where(eq(users.id, session.user.id))
+    .where(eq(users.id, userId))
     .limit(1);
 
   const trimmedStoredCustomerId =
@@ -65,18 +68,18 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     .select()
     .from(funnelEvents)
     .where(
-      and(eq(funnelEvents.userId, session.user.id), eq(funnelEvents.event, "reserve_allowed")),
+      and(eq(funnelEvents.userId, userId), eq(funnelEvents.event, "reserve_allowed")),
     )
     .limit(1);
   const postActivation = priorReserve.length > 0;
 
   const sessionParams = buildStripeCheckoutSessionCreateParams({
     stripeCustomerId: urow?.stripeCustomerId,
-    customerEmail: session.user.email,
+    customerEmail,
     priceId,
     baseUrl: base,
     plan,
-    userId: session.user.id,
+    userId,
   });
 
   const stripe = getStripe();
@@ -95,7 +98,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
 
     await logFunnelEvent({
       event: "checkout_started",
-      userId: session.user.id,
+      userId,
       metadata: buildCheckoutStartedMetadata(
         plan as CheckoutStartedMetadata["plan"],
         postActivation,
@@ -109,14 +112,14 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     return await createCheckoutAndRespond(sessionParams);
   } catch (e) {
     if (trimmedStoredCustomerId.length > 0 && isStripeMissingCustomerError(e)) {
-      await db.update(users).set({ stripeCustomerId: null }).where(eq(users.id, session.user.id));
+      await db.update(users).set({ stripeCustomerId: null }).where(eq(users.id, userId));
       const fallbackParams = buildStripeCheckoutSessionCreateParams({
         stripeCustomerId: null,
-        customerEmail: session.user.email,
+        customerEmail,
         priceId,
         baseUrl: base,
         plan,
-        userId: session.user.id,
+        userId,
       });
       try {
         return await createCheckoutAndRespond(fallbackParams);
