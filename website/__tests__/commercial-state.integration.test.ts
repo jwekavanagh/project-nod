@@ -101,4 +101,29 @@ describe.skipIf(!hasDatabaseUrl)("GET /api/account/commercial-state", () => {
     expect(j.checkoutActivationReady).toBe(false);
     expect(j.hasStripeCustomer).toBe(false);
   });
+
+  it("returns billingPriceSyncHint when subscription price is not in env mapping", async () => {
+    const [u] = await db
+      .insert(users)
+      .values({
+        email: "cs-unmapped@example.com",
+        emailVerified: new Date(),
+        plan: "individual",
+        subscriptionStatus: "active",
+        stripePriceId: "price_from_stripe_only",
+        stripeCustomerId: "cus_x",
+      })
+      .returning();
+    authMock.mockResolvedValue({
+      user: { id: u!.id, email: "cs-unmapped@example.com", name: null },
+    });
+    const res = await getCommercialState(new NextRequest("http://localhost/api/account/commercial-state"));
+    expect(res.status).toBe(200);
+    const j = (await res.json()) as CommercialAccountStatePayload;
+    expect(j.priceMapping).toBe("unmapped");
+    expect(j.billingPriceSyncHint).toEqual({
+      subscriptionStripePriceId: "price_from_stripe_only",
+      planStripePriceEnvKey: "STRIPE_PRICE_INDIVIDUAL",
+    });
+  });
 });

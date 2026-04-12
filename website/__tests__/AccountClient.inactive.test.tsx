@@ -34,6 +34,7 @@ function baseCommercial(overrides: Partial<CommercialAccountStatePayload> = {}):
     entitlementSummary: "Licensed verification (npm) needs an active subscription.",
     checkoutActivationReady: false,
     hasStripeCustomer: false,
+    billingPriceSyncHint: null,
     ...overrides,
   };
 }
@@ -89,5 +90,24 @@ describe("AccountClient inactive subscription", () => {
       />,
     );
     expect(screen.queryByTestId("inactive-subscription-notice")).not.toBeInTheDocument();
+  });
+
+  it("shows billing price sync hint when price is unmapped", () => {
+    render(
+      <AccountClient
+        hasKey={false}
+        initialCommercial={baseCommercial({
+          subscriptionStatus: "active",
+          priceMapping: "unmapped",
+          billingPriceSyncHint: {
+            subscriptionStripePriceId: "price_test_hint",
+            planStripePriceEnvKey: "STRIPE_PRICE_INDIVIDUAL",
+          },
+        })}
+      />,
+    );
+    const hint = screen.getByTestId("billing-price-sync-hint");
+    expect(hint).toHaveTextContent("price_test_hint");
+    expect(hint).toHaveTextContent("STRIPE_PRICE_INDIVIDUAL");
   });
 });

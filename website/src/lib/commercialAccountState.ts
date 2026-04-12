@@ -6,7 +6,7 @@ import {
   resolveCommercialEntitlement,
   type SubscriptionStatusForEntitlement,
 } from "@/lib/commercialEntitlement";
-import type { PlanId } from "@/lib/plans";
+import { loadCommercialPlans, type PlanId } from "@/lib/plans";
 import { priceIdToPlanId } from "@/lib/priceIdToPlanId";
 
 export function normalizeSubscriptionStatusForAccount(
@@ -55,6 +55,13 @@ export function computeCheckoutActivationReady(input: {
   return verify.proceedToQuota === true;
 }
 
+/** Shown when `priceMapping` is `unmapped` so the account holder can align hosting env with Stripe. */
+export type BillingPriceSyncHint = {
+  subscriptionStripePriceId: string;
+  /** Self-serve env var for the plan row in `commercial-plans.json`; null for starter/enterprise. */
+  planStripePriceEnvKey: string | null;
+};
+
 export type CommercialAccountStatePayload = {
   plan: PlanId;
   subscriptionStatus: SubscriptionStatusForEntitlement;
@@ -63,6 +70,8 @@ export type CommercialAccountStatePayload = {
   checkoutActivationReady: boolean;
   /** True when `user.stripe_customer_id` is set; drives Billing Portal entry control. */
   hasStripeCustomer: boolean;
+  /** Present only when Stripe price id is set but not recognized by this deployment's `STRIPE_PRICE_*` env. */
+  billingPriceSyncHint: BillingPriceSyncHint | null;
 };
 
 export function computeHasStripeCustomer(stripeCustomerId: string | null | undefined): boolean {
@@ -99,6 +108,18 @@ export function buildCommercialAccountStatePayload(input: {
     subscriptionStatus,
     priceMapping,
   });
+
+  const trimmedPriceId = typeof stripePriceId === "string" ? stripePriceId.trim() : "";
+  let billingPriceSyncHint: BillingPriceSyncHint | null = null;
+  if (priceMapping === "unmapped" && trimmedPriceId.length > 0) {
+    const plans = loadCommercialPlans();
+    const planStripePriceEnvKey = plans.plans[plan]?.stripePriceEnvKey ?? null;
+    billingPriceSyncHint = {
+      subscriptionStripePriceId: trimmedPriceId,
+      planStripePriceEnvKey,
+    };
+  }
+
   return {
     plan,
     subscriptionStatus,
@@ -106,5 +127,6 @@ export function buildCommercialAccountStatePayload(input: {
     entitlementSummary,
     checkoutActivationReady,
     hasStripeCustomer,
+    billingPriceSyncHint,
   };
 }

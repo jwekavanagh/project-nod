@@ -153,6 +153,42 @@ export function AccountClient({
           {portalErr}
         </p>
       )}
+      {commercial.billingPriceSyncHint && (
+        <div
+          className="muted"
+          style={{
+            marginTop: "0.75rem",
+            padding: "0.75rem 1rem",
+            border: "1px solid var(--muted)",
+            borderRadius: "6px",
+          }}
+          data-testid="billing-price-sync-hint"
+        >
+          <p style={{ margin: 0 }}>
+            <strong>Fix billing sync (no CLI command fixes this):</strong> Stripe reports subscription price id{" "}
+            <code style={{ wordBreak: "break-all" }}>{commercial.billingPriceSyncHint.subscriptionStripePriceId}</code>
+            . This deployment must list that exact id in a{" "}
+            <code style={{ whiteSpace: "nowrap" }}>STRIPE_PRICE_*</code> environment variable (Production on
+            Vercel, then redeploy).{" "}
+            {commercial.billingPriceSyncHint.planStripePriceEnvKey ? (
+              <>
+                For your current plan, start with{" "}
+                <code style={{ wordBreak: "break-all" }}>
+                  {commercial.billingPriceSyncHint.planStripePriceEnvKey}
+                </code>{" "}
+                (comma-separated ids are supported).
+              </>
+            ) : (
+              <>Match it to the correct paid plan variable from your operator checklist.</>
+            )}
+          </p>
+          <p style={{ margin: "0.5rem 0 0", fontSize: "0.95rem" }}>
+            Confirm the same id under Stripe → Customers → your subscription → Pricing. If it already matches
+            Production env, ensure you redeployed after saving variables (Preview env does not affect the live
+            site).
+          </p>
+        </div>
+      )}
       {showInactiveBillingCta && (
         <div
           className="muted"
