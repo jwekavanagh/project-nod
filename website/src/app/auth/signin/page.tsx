@@ -12,24 +12,33 @@ function SignInForm() {
   const rawCallback = searchParams.get("callbackUrl");
 
   const [email, setEmail] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [notice, setNotice] = useState<{ mode: "polite" | "assertive"; text: string } | null>(null);
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
+    if (isSubmitting) return;
     setNotice(null);
-    const r = await signIn("email", emailSignInOptions(email, rawCallback));
-    if (r?.error) {
-      let text = productCopy.signInA11y.sendEmailError;
-      if (r.error === "CredentialsSignin") {
-        if (r.code === "resend_testing_recipients") {
-          text = productCopy.signInA11y.sendEmailResendTestingRecipients;
-        } else if (r.code === "resend_from_domain_unverified") {
-          text = productCopy.signInA11y.sendEmailResendFromDomainUnverified;
+    setIsSubmitting(true);
+    try {
+      const r = await signIn("email", emailSignInOptions(email, rawCallback));
+      if (r?.error) {
+        let text = productCopy.signInA11y.sendEmailError;
+        if (r.error === "CredentialsSignin") {
+          if (r.code === "resend_testing_recipients") {
+            text = productCopy.signInA11y.sendEmailResendTestingRecipients;
+          } else if (r.code === "resend_from_domain_unverified") {
+            text = productCopy.signInA11y.sendEmailResendFromDomainUnverified;
+          } else if (r.code === "magic_link_rate_limited") {
+            text = productCopy.signInA11y.sendEmailRateLimited;
+          }
         }
+        setNotice({ mode: "assertive", text });
+      } else {
+        setNotice({ mode: "polite", text: productCopy.signInA11y.magicLinkSent });
       }
-      setNotice({ mode: "assertive", text });
-    } else {
-      setNotice({ mode: "polite", text: productCopy.signInA11y.magicLinkSent });
+    } finally {
+      setIsSubmitting(false);
     }
   }
 
@@ -62,7 +71,7 @@ function SignInForm() {
             color: "var(--fg)",
           }}
         />
-        <button type="submit" style={{ marginTop: "1rem" }}>
+        <button type="submit" disabled={isSubmitting} style={{ marginTop: "1rem" }}>
           Send magic link
         </button>
       </form>

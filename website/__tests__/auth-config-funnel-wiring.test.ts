@@ -9,4 +9,10 @@ describe("auth.config funnel wiring", () => {
     expect(src).toContain("signIn");
     expect(src).toContain("recordSignInFunnel");
   });
+
+  it("delegates sendVerificationRequest to runMagicLinkVerificationRequest", () => {
+    const src = readFileSync(path.join(__dirname, "..", "src", "auth.config.ts"), "utf8");
+    expect(src).toContain("runMagicLinkVerificationRequest");
+    expect(src).toContain("sendVerificationRequest");
+  });
 });

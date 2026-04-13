@@ -81,4 +81,49 @@ describe("sign-in a11y", () => {
       expect(polite?.textContent).toContain(productCopy.signInA11y.magicLinkSent);
     });
   });
+
+  it("shows rate-limit guidance when signIn returns magic_link_rate_limited", async () => {
+    signInMock.mockResolvedValue({
+      error: "CredentialsSignin",
+      code: "magic_link_rate_limited",
+      status: 401,
+      ok: false,
+      url: null,
+    });
+    render(
+      <Suspense fallback={null}>
+        <SignInPage />
+      </Suspense>,
+    );
+    fireEvent.change(screen.getByLabelText(/email/i), { target: { value: "a@b.com" } });
+    fireEvent.click(screen.getByRole("button", { name: /send magic link/i }));
+    await waitFor(() => {
+      expect(screen.getByRole("alert")).toHaveTextContent(productCopy.signInA11y.sendEmailRateLimited);
+    });
+  });
+
+  it("does not fire a second signIn while the first submit is in flight", async () => {
+    let release!: (v: unknown) => void;
+    const pending = new Promise((resolve) => {
+      release = resolve;
+    });
+    signInMock.mockImplementation(() => pending as Promise<unknown>);
+    render(
+      <Suspense fallback={null}>
+        <SignInPage />
+      </Suspense>,
+    );
+    fireEvent.change(screen.getByLabelText(/email/i), { target: { value: "a@b.com" } });
+    const btn = screen.getByRole("button", { name: /send magic link/i });
+    fireEvent.click(btn);
+    await waitFor(() => {
+      expect(btn).toBeDisabled();
+    });
+    fireEvent.click(btn);
+    expect(signInMock).toHaveBeenCalledTimes(1);
+    release({ error: null, status: 200, ok: true, url: "http://x" });
+    await waitFor(() => {
+      expect(btn).not.toBeDisabled();
+    });
+  });
 });

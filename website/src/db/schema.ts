@@ -69,6 +69,20 @@ export const verificationTokens = pgTable(
   }),
 );
 
+/** Magic-link send rate limits: one row per (scope, scope_key). */
+export const magicLinkSendCounters = pgTable(
+  "magic_link_send_counter",
+  {
+    scope: text("scope").notNull(),
+    scopeKey: text("scope_key").notNull(),
+    windowStart: timestamp("window_start", { withTimezone: true, mode: "date" }).notNull(),
+    count: integer("count").notNull(),
+  },
+  (t) => ({
+    pk: primaryKey({ columns: [t.scope, t.scopeKey] }),
+  }),
+);
+
 export const apiKeys = pgTable("api_key", {
   id: text("id")
     .primaryKey()

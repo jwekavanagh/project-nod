@@ -36,6 +36,13 @@
       "when": 1775695068000,
       "tag": "0004_shared_verification_report",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1775695069000,
+      "tag": "0005_magic_link_send_counter",
+      "breakpoints": true
     }
   ]
 }

@@ -12,6 +12,8 @@ npm run dev
 
 Open **http://127.0.0.1:3000** (not only `localhost` if your env binds oddly).
 
+**Magic link send rate limits** (per-email and per-IP caps, Postgres-backed): see **[`docs/website-magic-link-rate-limit.md`](../docs/website-magic-link-rate-limit.md)**.
+
 Use **`npm run dev`** for day-to-day work. Use **`npm run build` + `npm run start`** only when you need a production-like run.
 
 ## If `next build` fails with `EBUSY` (Windows)

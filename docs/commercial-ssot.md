@@ -144,6 +144,7 @@ Operational codes include: `LICENSE_KEY_MISSING`, `LICENSE_DENIED`, `LICENSE_USA
 
 - **Production:** **Resend** SDK only (`resend` package).
 - **E2E only:** When `E2E_COMMERCIAL_FUNNEL=1`, magic link email is sent via **Nodemailer SMTP** to **Mailpit** at `smtp://127.0.0.1:1025`. **Never** set `E2E_COMMERCIAL_FUNNEL` in production deploys.
+- **Rate limits:** Magic link send throttling (caps, reservation algorithm, deny logs) is normative in **[website-magic-link-rate-limit.md](website-magic-link-rate-limit.md)** — do not duplicate numeric caps here.
 
 ## Legal effective date
 

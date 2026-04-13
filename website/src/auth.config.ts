@@ -5,7 +5,7 @@ import Email from "next-auth/providers/email";
 import { db } from "./db/client";
 import { resolvedMagicLinkFrom } from "./lib/emailFrom";
 import { recordSignInFunnel } from "./lib/recordSignInFunnel";
-import { sendMagicLink } from "./lib/sendMagicLink";
+import { runMagicLinkVerificationRequest } from "./lib/runMagicLinkVerificationRequest";
 import {
   accounts,
   sessions,
@@ -36,8 +36,8 @@ export const authConfig = {
         auth: { user: "", pass: "" },
       },
       from: resolvedMagicLinkFrom(),
-      sendVerificationRequest: async ({ identifier, url }) => {
-        await sendMagicLink(identifier, url);
+      sendVerificationRequest: async (params) => {
+        await runMagicLinkVerificationRequest(params);
       },
     }),
   ],

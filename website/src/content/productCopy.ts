@@ -355,6 +355,9 @@ export const productCopy = {
     /** Shown when `from` uses a domain that is not verified in Resend. */
     sendEmailResendFromDomainUnverified:
       "The sign-in email could not be sent because the sender domain is not verified with the mail provider. The operator should verify the domain in Resend and set EMAIL_FROM to an address on that domain.",
+    /** Too many magic-link send attempts for this email or IP in the current hour. */
+    sendEmailRateLimited:
+      "Too many sign-in emails were requested. Wait up to an hour and try again, or contact support if this keeps happening.",
     magicLinkSent: "Check your email for the sign-in link.",
   },
 
