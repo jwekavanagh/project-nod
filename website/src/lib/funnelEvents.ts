@@ -7,6 +7,9 @@ export const FUNNEL_EVENT_NAMES = [
   "reserve_allowed",
   "report_share_created",
   "report_share_view",
+  "acquisition_landed",
+  "integrate_landed",
+  "licensed_verify_outcome",
 ] as const;
 
 export type FunnelEventName = (typeof FUNNEL_EVENT_NAMES)[number];

@@ -8,6 +8,8 @@ When the license server denies a run because the subscription is inactive (`SUBS
 
 **Machine-readable contracts** (plans + reserve API): see [`commercial-ssot.md`](commercial-ssot.md) — **`GET /api/v1/commercial/plans`** and **`/openapi-commercial-v1.yaml`** on your deployed site origin.
 
+**Operator metrics:** funnel event names, HTTP contracts, SQL examples, and CLI beacon semantics are in [`funnel-observability-ssot.md`](funnel-observability-ssot.md).
+
 Send this to someone who should **try it in one sitting**. **All shell commands** for the bundled partner quickstart live in **[partner-quickstart-commands.md](partner-quickstart-commands.md)** (generated; do not duplicate here). This file is **prose, semantics, and guarantees** only.
 
 ## 0. Bootstrap pack (optional shortcut)

@@ -16,7 +16,12 @@ import { loadEventsForWorkflow } from "./loadEvents.js";
 import { verifyWorkflow } from "./pipeline.js";
 import { argValue, argValues, parseBatchVerifyCliArgs, parseQuickCliArgs } from "./cliArgv.js";
 import { ENFORCE_OSS_GATE_MESSAGE, runEnforce } from "./enforceCli.js";
-import { runStandardVerifyWorkflowCliFlow } from "./standardVerifyWorkflowCli.js";
+import {
+  CLI_EXITED_AFTER_ERROR,
+  emitVerifyWorkflowCliJsonAndExitByStatus,
+  runStandardVerifyWorkflowCliFlow,
+  runStandardVerifyWorkflowCliToTerminalResult,
+} from "./standardVerifyWorkflowCli.js";
 import {
   formatRegistryValidationHumanReport,
   validateToolsRegistry,
@@ -56,6 +61,12 @@ import type { QuickContractExport } from "./quickVerify/buildQuickContractEvents
 import { checkAssuranceReportStale } from "./assurance/checkStale.js";
 import { runAssuranceFromManifest } from "./assurance/runAssurance.js";
 import { runLicensePreflightIfNeeded } from "./commercial/licensePreflight.js";
+import { postVerifyOutcomeBeacon } from "./commercial/postVerifyOutcomeBeacon.js";
+import { quickVerifyVerdictToTerminalStatus } from "./commercial/quickVerifyFunnelTerminalStatus.js";
+import {
+  classifyBatchVerifyWorkload,
+  classifyQuickVerifyWorkload,
+} from "./commercial/verifyWorkloadClassify.js";
 import { LICENSE_PREFLIGHT_ENABLED } from "./generated/commercialBuildFlags.js";
 import { runBatchCiLockFromRestArgs, runQuickCiLockFromRestArgs } from "./ciLockWorkflow.js";
 import { formatDistributionFooter } from "./distributionFooter.js";
@@ -486,8 +497,9 @@ async function runQuickSubcommand(args: string[]): Promise<void> {
     throw e;
   }
   const { inputPath, exportPath, emitEventsPath, workflowIdQuick, dbPath, postgresUrl, shareReportOrigin } = pq;
+  let quickPreflight: { runId: string | null };
   try {
-    await runLicensePreflightIfNeeded("verify");
+    quickPreflight = await runLicensePreflightIfNeeded("verify");
   } catch (e) {
     if (e instanceof TruthLayerError) {
       writeCliError(e.code, e.message);
@@ -580,6 +592,16 @@ async function runQuickSubcommand(args: string[]): Promise<void> {
   }
   console.error(human);
   process.stderr.write(formatDistributionFooter());
+  await postVerifyOutcomeBeacon({
+    runId: quickPreflight.runId,
+    terminal_status: quickVerifyVerdictToTerminalStatus(report.verdict),
+    workload_class: classifyQuickVerifyWorkload({
+      inputPath: inputPath,
+      sqlitePath: dbPath ?? undefined,
+      postgresUrl: postgresUrl ?? undefined,
+    }),
+    subcommand: "quick_verify",
+  });
   if (report.verdict === "pass") process.exit(0);
   if (report.verdict === "fail") process.exit(1);
   process.exit(2);
@@ -1098,8 +1120,9 @@ async function main(): Promise<void> {
     throw e;
   }
 
+  let batchPreflight: { runId: string | null };
   try {
-    await runLicensePreflightIfNeeded("verify");
+    batchPreflight = await runLicensePreflightIfNeeded("verify");
   } catch (e) {
     if (e instanceof TruthLayerError) {
       writeCliError(e.code, e.message);
@@ -1109,46 +1132,63 @@ async function main(): Promise<void> {
   }
 
   const suppressTruthToStderr = parsedBatch.noTruthReport || parsedBatch.shareReportOrigin !== undefined;
-  await runStandardVerifyWorkflowCliFlow({
-    shareReportOrigin: parsedBatch.shareReportOrigin,
-    runVerify: () =>
-      verifyWorkflow({
-        workflowId: parsedBatch.workflowId,
+  const batchIo = {
+    consoleLog: (line: string) => {
+      console.log(line);
+    },
+    stderrLine: (line: string) => {
+      console.error(line);
+    },
+    exit: (code: number) => {
+      process.exit(code);
+    },
+  };
+  try {
+    const result = await runStandardVerifyWorkflowCliToTerminalResult({
+      shareReportOrigin: parsedBatch.shareReportOrigin,
+      runVerify: () =>
+        verifyWorkflow({
+          workflowId: parsedBatch.workflowId,
+          eventsPath: parsedBatch.eventsPath,
+          registryPath: parsedBatch.registryPath,
+          database: parsedBatch.database,
+          verificationPolicy: parsedBatch.verificationPolicy,
+          ...(suppressTruthToStderr ?
+            { truthReport: () => {} }
+          : {
+              truthReport: (report: string) => {
+                process.stderr.write(`${report}\n`);
+                process.stderr.write(formatDistributionFooter());
+              },
+            }),
+        }),
+      maybeWriteBundle:
+        parsedBatch.writeRunBundleDir === undefined
+          ? undefined
+          : (wfResult: WorkflowResult) =>
+              writeRunBundleCli(
+                parsedBatch.writeRunBundleDir!,
+                readFileSync(path.resolve(parsedBatch.eventsPath)),
+                wfResult,
+                parsedBatch.signPrivateKeyPath,
+              ),
+      io: batchIo,
+    });
+    await postVerifyOutcomeBeacon({
+      runId: batchPreflight.runId,
+      terminal_status: result.status,
+      workload_class: classifyBatchVerifyWorkload({
         eventsPath: parsedBatch.eventsPath,
         registryPath: parsedBatch.registryPath,
         database: parsedBatch.database,
-        verificationPolicy: parsedBatch.verificationPolicy,
-        ...(suppressTruthToStderr ?
-          { truthReport: () => {} }
-        : {
-            truthReport: (report: string) => {
-              process.stderr.write(`${report}\n`);
-              process.stderr.write(formatDistributionFooter());
-            },
-          }),
       }),
-    maybeWriteBundle:
-      parsedBatch.writeRunBundleDir === undefined
-        ? undefined
-        : (result) =>
-            writeRunBundleCli(
-              parsedBatch.writeRunBundleDir!,
-              readFileSync(path.resolve(parsedBatch.eventsPath)),
-              result,
-              parsedBatch.signPrivateKeyPath,
-            ),
-    io: {
-      consoleLog: (line) => {
-        console.log(line);
-      },
-      stderrLine: (line) => {
-        console.error(line);
-      },
-      exit: (code) => {
-        process.exit(code);
-      },
-    },
-  });
+      subcommand: "batch_verify",
+    });
+    emitVerifyWorkflowCliJsonAndExitByStatus(result, batchIo);
+  } catch (e) {
+    if (e instanceof Error && e.message === CLI_EXITED_AFTER_ERROR) return;
+    throw e;
+  }
 }
 
 void main().catch((e) => {

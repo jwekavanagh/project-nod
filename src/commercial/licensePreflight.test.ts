@@ -51,10 +51,12 @@ describe("runLicensePreflightIfNeeded", () => {
         headers: { "Content-Type": "application/json" },
       }),
     );
-    await runLicensePreflightIfNeeded("verify");
+    const out = await runLicensePreflightIfNeeded("verify");
     expect(fetch).toHaveBeenCalled();
     const init = vi.mocked(fetch).mock.calls[0]![1] as RequestInit;
-    expect(JSON.parse(init.body as string)).toMatchObject({ intent: "verify" });
+    const sent = JSON.parse(init.body as string) as { run_id: string; intent: string };
+    expect(sent).toMatchObject({ intent: "verify" });
+    expect(out.runId).toBe(sent.run_id);
   });
 
   it("sends intent enforce when requested", async () => {
@@ -182,7 +184,10 @@ describe("runLicensePreflightIfNeeded", () => {
         headers: { "Content-Type": "application/json" },
       }),
     );
-    await runLicensePreflightIfNeeded("verify");
+    const out = await runLicensePreflightIfNeeded("verify");
     expect(fetch).toHaveBeenCalled();
+    const init = vi.mocked(fetch).mock.calls[0]![1] as RequestInit;
+    const sent = JSON.parse(init.body as string) as { run_id: string };
+    expect(out.runId).toBe(sent.run_id);
   });
 });

@@ -4,6 +4,8 @@ This document is the **narrative SSOT** for the thin commercial layer (website, 
 
 **Related (integrator, not duplicated here):** [first-run-integration.md](first-run-integration.md) — run verification against your own SQL database; rendered on the site as **`/integrate`**.
 
+**Operator funnel metrics (North Star):** [funnel-observability-ssot.md](funnel-observability-ssot.md) — acquisition and integrate impressions plus licensed CLI completion beacons in Postgres (`funnel_event` / `verify_outcome_beacon`).
+
 ## Approved product scope (v1)
 
 **Original stakeholder narrative (reference):** Starter free (100/mo); Individual $25/mo (2k included); Team $100/mo (10k included, per-run overage); Business $300/mo (50k + volume); Enterprise custom.

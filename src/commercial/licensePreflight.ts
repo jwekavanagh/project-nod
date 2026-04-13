@@ -23,14 +23,16 @@ type ReserveDeny = {
 
 type ReserveBody = ReserveOk | ReserveDeny;
 
+export type LicensePreflightResult = { runId: string | null };
+
 /**
  * Before contract-mode verification (commercial npm build), contact license API.
- * No-op when LICENSE_PREFLIGHT_ENABLED is false (OSS profile).
+ * Returns `{ runId: null }` when LICENSE_PREFLIGHT_ENABLED is false (OSS profile).
  */
 export async function runLicensePreflightIfNeeded(
   intent: LicensePreflightIntent = "verify",
-): Promise<void> {
-  if (!LICENSE_PREFLIGHT_ENABLED) return;
+): Promise<LicensePreflightResult> {
+  if (!LICENSE_PREFLIGHT_ENABLED) return { runId: null };
 
   const apiKey =
     process.env.AGENTSKEPTIC_API_KEY?.trim() ||
@@ -131,7 +133,7 @@ export async function runLicensePreflightIfNeeded(
           "License server returned an unexpected response.",
         );
       }
-      return;
+      return { runId };
     } catch (e) {
       if (e instanceof TruthLayerError) throw e;
       lastErr = e;

@@ -141,6 +141,23 @@ export const funnelEvents = pgTable("funnel_event", {
     .defaultNow(),
 });
 
+/** Idempotent receipt for POST /api/v1/funnel/verify-outcome (one row per api_key + run_id). */
+export const verifyOutcomeBeacons = pgTable(
+  "verify_outcome_beacon",
+  {
+    apiKeyId: text("api_key_id")
+      .notNull()
+      .references(() => apiKeys.id, { onDelete: "cascade" }),
+    runId: text("run_id").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true, mode: "date" })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => ({
+    pk: primaryKey({ columns: [t.apiKeyId, t.runId] }),
+  }),
+);
+
 /** Persisted public verification report (POST /api/public/verification-reports). */
 export const sharedVerificationReports = pgTable("shared_verification_report", {
   id: uuid("id").primaryKey().defaultRandom(),

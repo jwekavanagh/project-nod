@@ -1,3 +1,4 @@
+import { FunnelSurfaceBeacon } from "@/components/FunnelSurfaceBeacon";
 import { productCopy } from "@/content/productCopy";
 import { siteMetadata } from "@/content/siteMetadata";
 import { embeddedFirstRunIntegrationMd } from "@/generated/integratorDocsEmbedded";
@@ -17,6 +18,7 @@ export default function IntegratePage() {
   const md = embeddedFirstRunIntegrationMd;
   return (
     <main className="integrate-main">
+      <FunnelSurfaceBeacon surface="integrate" />
       <h1>{siteMetadata.integrate.title}</h1>
       <p className="muted">{productCopy.integrateIntro}</p>
       <p className="muted">
