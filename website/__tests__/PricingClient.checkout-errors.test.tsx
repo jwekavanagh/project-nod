@@ -4,6 +4,7 @@ import type { ReactNode } from "react";
 import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { PricingClient, type PlanRow } from "@/app/pricing/PricingClient";
+import { productCopy } from "@/content/productCopy";
 
 vi.mock("next-auth/react", () => ({
   useSession: () => ({ status: "authenticated" }),
@@ -47,6 +48,10 @@ describe("PricingClient checkout — no silent failures on bad responses", () =>
   it("surfaces an error when the server returns HTML instead of JSON (regression: r.json threw)", async () => {
     render(
       <PricingClient plans={[individualPlan]} enterpriseMailto="mailto:sales@example.com" />,
+    );
+
+    expect(screen.getByTestId("pricing-entry-paid-pill")).toHaveTextContent(
+      productCopy.pricingIndividualEntryPill,
     );
 
     fireEvent.click(screen.getByRole("button", { name: /^subscribe$/i }));

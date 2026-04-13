@@ -114,10 +114,10 @@ export const examplesHubIntegrateLede = {
 } as const;
 
 export const pricingTrustBandBeforeGrid = {
-  title: "Buying confidence",
+  title: "Billing and plan changes",
   paragraphs: [
-    "Plans cover licensed npm verification, API keys, and monthly quota on the commercial path. Open-source contract verification from the repository remains available without a subscription—the OSS reminder above stays authoritative for what is free versus licensed.",
-    "Checkout and billing run through Stripe (Checkout for subscribe; Customer Portal from Account). For procurement, custom limits, or enterprise terms, use Contact sales on the Enterprise pricing card—do not email a sales inbox from this page unless your deployment operator publishes one.",
+    "Subscribe with Stripe Checkout; manage payment methods, invoices, and plan changes from the Customer Portal on Account. You can upgrade tiers as usage grows—no need to pick the final plan on day one.",
+    "For procurement, custom limits, or enterprise terms, use Contact sales on the Enterprise pricing card—do not email a sales inbox from this page unless your deployment operator publishes one.",
   ],
   links: [
     { label: "Security & Trust", href: "/security" as const },
@@ -229,11 +229,11 @@ export const productCopy = {
   /** Commercial terms above pricing grid — server-rendered from this list. */
   pricingCommercialTermsBullets: [
     {
-      lead: "Licensed npm CLI",
+      lead: "Published package",
       body: "Licensed verification with the published npm CLI requires an active Individual, Team, Business, or Enterprise subscription (trial counts); monthly quota applies after subscribe.",
     },
     {
-      lead: "CI and enforce",
+      lead: "CI enforcement",
       body: "CI locks, the enforce command, and quick verify with lock flags use the same subscription requirement.",
     },
   ] as const,
@@ -259,10 +259,6 @@ export const productCopy = {
     label: discoveryAcquisition.homepageAcquisitionCtaLabel,
     testId: "homepage-acquisition-cta" as const,
   },
-
-  /** Shown once above the pricing grid; must stay aligned with commercial-ssot OSS path. */
-  pricingOssPathReminder:
-    "Contract verification from the open-source repo remains free without a subscription. The tiers below are for licensed npm usage, quota, and API keys on the commercial path.",
 
   /** Security & Trust page — factual only; link out to normative docs for guarantees. */
   securityTrust: {
@@ -388,7 +384,14 @@ export const productCopy = {
   },
 
   pricingRecap:
-    "You subscribe for licensed npm verification and higher monthly quota; OSS/source remains free for verify. Each tier states who it is for and what it unlocks.",
+    "Use the open-source repository build for contract verification at no charge. Subscribe when you want the published CLI, API keys, monthly verification quota, and CI enforcement—the tiers below spell out who each plan fits.",
+
+  /** Short plan-choice guide on `/pricing` (server-rendered, after hero recap). */
+  pricingPlanChoiceGuide:
+    "Starter is for signing in and exploring the commercial surface without paid verification runs. Most solo buyers start on Individual for the published CLI and CI. Team is the default for engineering teams; Business adds headroom; Enterprise covers procurement and custom limits.",
+
+  /** Pill on the Individual pricing card (client). */
+  pricingIndividualEntryPill: "Default paid entry (solo)",
 
   pricingSignInCta: "Sign in to subscribe",
 

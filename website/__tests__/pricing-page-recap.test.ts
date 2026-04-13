@@ -8,8 +8,9 @@ describe("pricing page", () => {
     "utf8",
   );
 
-  it("imports productCopy for recap", () => {
+  it("imports productCopy for recap and plan-choice guide", () => {
     expect(src).toContain('from "@/content/productCopy"');
     expect(src).toContain("productCopy.pricingRecap");
+    expect(src).toContain("productCopy.pricingPlanChoiceGuide");
   });
 });

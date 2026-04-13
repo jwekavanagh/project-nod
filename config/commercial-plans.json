@@ -7,8 +7,8 @@
       "monthlyUsdCents": 0,
       "displayPrice": "Free",
       "marketingHeadline": "Starter",
-      "audience": "Trying the commercial surface: sign in, explore, and compare with the OSS build from source.",
-      "valueUnlock": "Evaluation only on the commercial path—licensed npm verify and enforce require a paid subscription. Use the default OSS build from this repo for free contract verify without a subscription.",
+      "audience": "Exploring the site: sign in, browse Account, and compare the commercial surface with a source build—no paid verification runs on this tier.",
+      "valueUnlock": "Account access only. Published-CLI verification, API keys, quota, and CI enforcement start on Individual or higher; use a repository build for free contract verification without a subscription.",
       "stripePriceEnvKey": null
     },
     "individual": {
@@ -16,8 +16,8 @@
       "monthlyUsdCents": 2500,
       "displayPrice": "$25/mo",
       "marketingHeadline": "Individual",
-      "audience": "Solo developers and early adopters who need licensed npm verify and CI enforcement without team-scale volume.",
-      "valueUnlock": "Licensed contract and quick verify with monthly quota; CI locks and enforce under the same active subscription.",
+      "audience": "Solo engineers who want the published CLI, API keys, and monthly quota for verification and CI enforcement without team-scale volume.",
+      "valueUnlock": "First paid tier that unlocks published-package verification with reserve-backed quota, plus enforce and CI lock flows on the same subscription.",
       "stripePriceEnvKey": "STRIPE_PRICE_INDIVIDUAL"
     },
     "team": {
@@ -25,8 +25,8 @@
       "monthlyUsdCents": 10000,
       "displayPrice": "$100/mo",
       "marketingHeadline": "Team",
-      "audience": "Small teams running licensed verification in production CI or staging with steady volume.",
-      "valueUnlock": "Higher monthly quota for multi-repo or multi-service pipelines; same subscription covers enforce and CI lock flows.",
+      "audience": "Engineering teams running repeatable verification in shared CI with steady production or staging volume.",
+      "valueUnlock": "Higher monthly quota for multi-repo or multi-service pipelines; enforce and CI locks stay on the same subscription.",
       "stripePriceEnvKey": "STRIPE_PRICE_TEAM"
     },
     "business": {
@@ -34,8 +34,8 @@
       "monthlyUsdCents": 30000,
       "displayPrice": "$300/mo",
       "marketingHeadline": "Business",
-      "audience": "Larger pipelines or multiple services needing headroom and predictable billing.",
-      "valueUnlock": "Highest licensed verify limits; CI locks and enforce included under the same subscription.",
+      "audience": "High-volume pipelines or many services that need headroom, predictable billing, and room to grow.",
+      "valueUnlock": "Highest self-serve quota on published-package verification; enforce and CI locks remain on the same subscription.",
       "stripePriceEnvKey": "STRIPE_PRICE_BUSINESS"
     },
     "enterprise": {
@@ -43,8 +43,8 @@
       "monthlyUsdCents": null,
       "displayPrice": "Custom",
       "marketingHeadline": "Enterprise",
-      "audience": "Organizations needing custom limits, terms, or procurement.",
-      "valueUnlock": "Tailored volume and sales-led onboarding.",
+      "audience": "Organizations that need procurement-friendly buying, custom limits, or tailored terms.",
+      "valueUnlock": "Sales-led onboarding, tailored volume, and contract terms outside self-serve checkout.",
       "stripePriceEnvKey": null
     }
   }

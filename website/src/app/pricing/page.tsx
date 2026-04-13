@@ -28,9 +28,11 @@ export default function PricingPage() {
   return (
     <main>
       <h1>Pricing</h1>
-      <p className="muted pricing-recap">{productCopy.pricingRecap}</p>
-      <p className="muted pricing-oss-reminder" data-testid="pricing-oss-reminder">
-        {productCopy.pricingOssPathReminder}
+      <p className="muted pricing-recap" data-testid="pricing-hero-recap">
+        {productCopy.pricingRecap}
+      </p>
+      <p className="muted pricing-plan-choice" data-testid="pricing-plan-choice-guide">
+        {productCopy.pricingPlanChoiceGuide}
       </p>
       <ul aria-label="Commercial terms" className="muted" style={{ marginTop: "1rem", maxWidth: "42rem" }}>
         {productCopy.pricingCommercialTermsBullets.map((row) => (

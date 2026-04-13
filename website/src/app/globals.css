@@ -306,11 +306,6 @@ button.secondary, .btn.secondary {
   font-weight: 600;
 }
 
-.pricing-oss-reminder {
-  max-width: 42rem;
-  margin-top: 0.75rem;
-}
-
 .pricing-card-recommended {
   border-color: var(--accent);
   box-shadow: 0 0 0 1px var(--accent);
@@ -338,6 +333,15 @@ button.secondary, .btn.secondary {
   color: var(--accent-on-card);
 }
 
+.pricing-entry-paid-pill {
+  margin: 0 0 0.5rem;
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+}
+
 .try-it-scenario-hint {
   max-width: 42rem;
   margin-top: 0.5rem;
@@ -352,6 +356,11 @@ button.secondary, .btn.secondary {
 .pricing-recap {
   max-width: 42rem;
   margin-top: 0.5rem;
+}
+
+.pricing-plan-choice {
+  max-width: 42rem;
+  margin-top: 0.75rem;
 }
 
 .btn-pricing-secondary {

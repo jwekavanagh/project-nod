@@ -89,6 +89,11 @@ export function PricingClient({
                 Recommended for most teams
               </p>
             )}
+            {p.id === "individual" && (
+              <p className="pricing-entry-paid-pill" data-testid="pricing-entry-paid-pill">
+                {productCopy.pricingIndividualEntryPill}
+              </p>
+            )}
             <h2>{p.headline}</h2>
             <p style={{ fontSize: "1.5rem" }}>{p.displayPrice}</p>
             <p
