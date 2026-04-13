@@ -94,7 +94,7 @@ Normative implementation: skip link ([`website/src/components/SkipToMainContent.
 ### Operator
 
 - **When:** `npm run verify:web-marketing-copy` from repo root (after `npm run validate-commercial` in CI so Postgres is migrated). The script appends **`node scripts/website-holistic-gate.mjs`** after website Vitest.
-- **Env parity:** The gate requires the **same** keys as the `commercial` job env in [`.github/workflows/ci.yml`](../.github/workflows/ci.yml) (`DATABASE_URL`, `AUTH_SECRET` ≥32 chars, `CONTACT_SALES_EMAIL`, Stripe keys and three price ids). The gate injects `PORT=3040`, `NEXT_PUBLIC_APP_URL=http://127.0.0.1:3040`, and `NEXTAUTH_SECRET=$AUTH_SECRET`.
+- **Env parity:** The gate requires the **same** keys as the `commercial` job env in [`.github/workflows/ci.yml`](../.github/workflows/ci.yml) (`DATABASE_URL`, `AUTH_SECRET` ≥32 chars, `CONTACT_SALES_EMAIL`, Stripe keys and three price ids). The gate injects `PORT=3040` and `NEXTAUTH_SECRET=$AUTH_SECRET`. It does **not** set `NEXT_PUBLIC_APP_URL` on the Next process (production `next.config` asserts that when set it matches `productionCanonicalOrigin`; Playwright/LHCI still target `http://127.0.0.1:3040` in their configs).
 - **Playwright browser:** CI runs `npx playwright install chromium` before `verify:web-marketing-copy` on the commercial job.
 - **LHCI routes:** `/` (discovery shell), `/pricing` (commercial + session chrome), `/security` (trust / long-form). `/auth/signin` is covered by Vitest only (not in LHCI collection).
 

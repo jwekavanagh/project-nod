@@ -2,6 +2,8 @@
 /**
  * Starts Next production server for agentskeptic-web, runs Playwright holistic specs, then LHCI.
  * Requires the same env keys as .github/workflows/ci.yml commercial job (plus AUTH_SECRET length).
+ * Does not set NEXT_PUBLIC_APP_URL on the Next server: in production NODE_ENV, next.config would
+ * assert it equals productionCanonicalOrigin when set (scripts/public-product-anchors.cjs).
  * Exit: 0 ok, 1 test/assert failure, 2 missing env, 3 readiness/5xx.
  */
 import { spawn, spawnSync } from "node:child_process";
@@ -35,12 +37,9 @@ if (!process.env.AUTH_SECRET || process.env.AUTH_SECRET.length < 32) {
   process.exit(2);
 }
 
-const env = {
-  ...process.env,
-  PORT: String(port),
-  NEXT_PUBLIC_APP_URL: base,
-  NEXTAUTH_SECRET: process.env.AUTH_SECRET,
-};
+/** Env for `next start` — omit NEXT_PUBLIC_APP_URL so origin parity check skips (unset in prod). */
+const serverEnv = { ...process.env, PORT: String(port), NEXTAUTH_SECRET: process.env.AUTH_SECRET };
+delete serverEnv.NEXT_PUBLIC_APP_URL;
 
 function killProcessTree(child) {
   if (!child?.pid) return;
@@ -74,7 +73,7 @@ async function httpOk(url) {
 
 const child = spawn("npx", ["next", "start", "-p", String(port)], {
   cwd: websiteDir,
-  env,
+  env: serverEnv,
   stdio: "ignore",
   shell: true,
 });
@@ -131,7 +130,7 @@ if (pw.error || pw.status !== 0) {
 
 const lhci = spawnSync("npx", ["lhci", "autorun", "--config=./website/lighthouserc.cjs"], {
   cwd: root,
-  env,
+  env: serverEnv,
   stdio: "inherit",
   shell: true,
 });
