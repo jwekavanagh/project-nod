@@ -32,7 +32,7 @@ Tokens: `agentskeptic quick --input <path> (--postgres-url <url> | --db <sqliteP
 1. Build complete `QuickVerifyReport` in memory (including final `exportableRegistry.tools`).
 2. Compute `registryUtf8 = canonicalToolsArrayUtf8(report.exportableRegistry.tools)`.
 3. **`atomicWriteUtf8File(exportRegistryPath, registryUtf8)`:** `mkdirSync(dirname(exportRegistryPath), { recursive: true })`; write to `exportRegistryPath + ".tmp." + randomSuffix` in same directory; `fsyncSync`; `renameSync` to final path; `readFileSync(exportRegistryPath, "utf8")` must **strict-equal** `registryUtf8`; else phase A.
-4. If **`--emit-events <path>`** is present: `atomicWriteUtf8File(emitEventsPath, eventsUtf8)` where `eventsUtf8` is UTF-8 NDJSON (`schemaVersion: 1` `tool_observed` lines for each exported row tool, `seq` in sorted-`toolId` order) or the **empty string** (final file length **0**) when there are no exported row tools.
+4. If **`--emit-events <path>`** is present: `atomicWriteUtf8File(emitEventsPath, eventsUtf8)` where `eventsUtf8` is UTF-8 NDJSON (`schemaVersion: 1` `tool_observed` lines for **each exported tool** in `exportableRegistry.tools`, `seq` in sorted-`toolId` order) or the **empty string** (final file length **0**) when there are no exported tools.
 5. Serialize `reportUtf8 = stableStringify(report) + "\n"`.
 6. `process.stdout.write(reportUtf8)`.
 
@@ -49,6 +49,15 @@ Tokens: `agentskeptic quick --input <path> (--postgres-url <url> | --db <sqliteP
 Lines 4–6 after the anchors are **fixed banner** strings exported as `QUICK_VERIFY_BANNER_LINE_1`, `QUICK_VERIFY_BANNER_LINE_2`, and `QUICK_VERIFY_BANNER_LINE_3` from **`src/quickVerify/formatQuickVerifyHumanReport.ts`**.
 
 Under each **unit** bullet (after that unit’s summary line), the formatter emits **exactly four** lines in dimension-ID order, using the same prefixes as [`src/reconciliationPresentation.ts`](../src/reconciliationPresentation.ts): `declared:`, `expected:`, `observed_database:`, `verification_verdict:` — values are copied **only** from **`report.units[i].reconciliation`** on stdout JSON (see [verification-product-ssot.md — Reconciliation vocabulary](verification-product-ssot.md#reconciliation-vocabulary-canonical)).
+
+## A.3b Synthetic `tool_observed` lines (contract replay)
+
+After sorting exported tools by `toolId` (UTF-16), emit one NDJSON object per tool with `schemaVersion: 1`, `workflowId` equal to the CLI `--workflow-id` value for that run, integer `seq` from **0** upward in that sorted order, `type: "tool_observed"`, and `toolId` equal to the registry entry’s `toolId`.
+
+- **Exported `sql_row` tools:** `params` is `{ "__qvFields": { … } }` with keys sorted UTF-16 and values from the row `VerificationRequest.requiredFields` (same as pre-relational-export behavior).
+- **Exported eligible `related_exists` tools** (Advanced `sql_relational` with a single const-only `related_exists` check): synthetic lines use **`"params": {}`** (empty JSON object). Batch resolution uses only registry `const` fields; see `resolveVerificationRequest` for `sql_relational` + `related_exists` in [`src/resolveExpectation.ts`](../src/resolveExpectation.ts).
+
+**Eligibility (normative name):** **`eligible_export_related_exists`** — a `related_exists` quick unit is exportable when its stdout fields satisfy the predicate implemented in [`src/quickVerify/runQuickVerify.ts`](../src/quickVerify/runQuickVerify.ts) (verified rollup unit, confidence gate, and `resolveVerificationRequest(prospectiveEntry, {})` succeeds).
 
 Additional prose after those lines may change without bumping `quickVerifyVersion`. Integrators must use **stdout JSON** and **exit codes** for automation.
 
@@ -161,6 +170,6 @@ Row: SELECT LIMIT 2; 0 rows `ROW_ABSENT`; ≥2 `DUPLICATE_ROWS`; else scalar com
 ## A.13 Scope string (fixed)
 
 Report `scope.quickVerifyVersion` = `1.1.0`; `scope.capabilities` = fixed enum array `["inferred_row","inferred_related_exists"]`; `scope.ingestContract` = `structured_tool_activity`; `scope.groundTruth` = `read_only_sql`; `scope.limitations` = fixed tuple  
-`["quick_verify_inferred_row_and_related_exists_only","no_multi_effect_contract","no_destructive_or_forbidden_row_contract","contract_replay_export_row_tools_only"]` (see schema).
+`["quick_verify_inferred_row_and_related_exists_only","no_multi_effect_contract","no_destructive_or_forbidden_row_contract","contract_replay_export_row_and_eligible_related_exists_tools"]` (see schema).
 
 Report `schemaVersion` is **4** (includes required `productTruth`, required per-unit **`reconciliation`** with four string fields, and **declared / expected / observed** layer copy; non-pass units require `correctnessDefinition` per schema). Report `verificationMode` is always **`inferred`**. Per-unit `sourceAction` and `contractEligible` and merged row `verification` fields are defined only in [`schemas/quick-verify-report.schema.json`](../schemas/quick-verify-report.schema.json)—do not restate here.

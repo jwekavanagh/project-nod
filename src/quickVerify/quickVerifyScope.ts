@@ -6,7 +6,7 @@ export const QUICK_SCOPE_LIMITATIONS = [
   "quick_verify_inferred_row_and_related_exists_only",
   "no_multi_effect_contract",
   "no_destructive_or_forbidden_row_contract",
-  "contract_replay_export_row_tools_only",
+  "contract_replay_export_row_and_eligible_related_exists_tools",
 ] as const;
 
 export type QuickVerifyScope = {

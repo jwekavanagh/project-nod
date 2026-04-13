@@ -9,7 +9,7 @@ import { fileURLToPath } from "node:url";
 import { dirname } from "node:path";
 import { runQuickVerify } from "../dist/quickVerify/runQuickVerify.js";
 import { loadSchemaValidator } from "../dist/schemaLoad.js";
-import { DEFAULT_QUICK_VERIFY_PRODUCT_TRUTH } from "../dist/quickVerify/quickVerifyProductTruth.js";
+import { buildQuickVerifyProductTruth } from "../dist/quickVerify/quickVerifyProductTruth.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const root = join(__dirname, "..");
@@ -28,7 +28,9 @@ describe("Quick Verify Postgres", () => {
       postgresUrl: verifyUrl,
     });
     assert.equal(report.schemaVersion, 4);
-    assert.deepEqual(report.productTruth, DEFAULT_QUICK_VERIFY_PRODUCT_TRUTH);
+    const expectedPartial =
+      report.exportableRegistry.tools.length > 0 && report.units.some((u) => !u.contractEligible);
+    assert.deepEqual(report.productTruth, buildQuickVerifyProductTruth(expectedPartial));
     assert.equal(report.verdict, "pass");
     const v = loadSchemaValidator("quick-verify-report");
     assert.ok(v(report), JSON.stringify(v.errors ?? []));

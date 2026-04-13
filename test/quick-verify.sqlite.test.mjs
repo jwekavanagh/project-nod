@@ -25,7 +25,7 @@ import {
   QUICK_VERIFY_BANNER_LINE_2,
   QUICK_VERIFY_BANNER_LINE_3,
 } from "../dist/quickVerify/formatQuickVerifyHumanReport.js";
-import { DEFAULT_QUICK_VERIFY_PRODUCT_TRUTH } from "../dist/quickVerify/quickVerifyProductTruth.js";
+import { buildQuickVerifyProductTruth } from "../dist/quickVerify/quickVerifyProductTruth.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const root = join(__dirname, "..");
@@ -62,7 +62,9 @@ describe("Quick Verify SQLite", () => {
       sqlitePath: dbPath,
     });
     assert.equal(report.schemaVersion, 4);
-    assert.deepEqual(report.productTruth, DEFAULT_QUICK_VERIFY_PRODUCT_TRUTH);
+    const expectedPartial =
+      report.exportableRegistry.tools.length > 0 && report.units.some((u) => !u.contractEligible);
+    assert.deepEqual(report.productTruth, buildQuickVerifyProductTruth(expectedPartial));
     assert.equal(report.verdict, "pass");
     assert.equal(report.verificationMode, "inferred");
     assert.ok(report.units.length >= 1);
@@ -80,7 +82,7 @@ describe("Quick Verify SQLite", () => {
       "quick_verify_inferred_row_and_related_exists_only",
       "no_multi_effect_contract",
       "no_destructive_or_forbidden_row_contract",
-      "contract_replay_export_row_tools_only",
+      "contract_replay_export_row_and_eligible_related_exists_tools",
     ]);
     const readBack = canonicalToolsArrayUtf8(report.exportableRegistry.tools);
     assert.equal(registryUtf8, readBack);
@@ -297,6 +299,120 @@ describe("Quick Verify SQLite", () => {
     assert.equal(report.units[0].sourceAction.toolName, "crm.upsert_contact");
     const v = loadSchemaValidator("quick-verify-report");
     assert.ok(v(report), JSON.stringify(v.errors ?? []));
+  });
+
+  it("contract replay: user-outcome fixture is complete with quick:rel verified", () => {
+    const tdir = mkdtempSync(join(tmpdir(), "qv-user-contract-"));
+    const uo = join(root, "test", "fixtures", "related-exists-export-user-outcome");
+    try {
+      const dbp = join(tdir, "uo.db");
+      const db = new DatabaseSync(dbp);
+      db.exec(readFileSync(join(uo, "schema.sql"), "utf8"));
+      db.close();
+      const reg = join(tdir, "reg.json");
+      const ev = join(tdir, "ev.ndjson");
+      const r1 = spawnSync(
+        process.execPath,
+        [
+          cliJs,
+          "quick",
+          "--input",
+          join(uo, "input.ndjson"),
+          "--db",
+          dbp,
+          "--export-registry",
+          reg,
+          "--emit-events",
+          ev,
+          "--workflow-id",
+          "quick-verify",
+        ],
+        { encoding: "utf8", cwd: root, maxBuffer: 10_000_000 },
+      );
+      assert.equal(r1.status, 0, r1.stderr);
+      const quickLine = r1.stdout.trim().split("\n").filter(Boolean).pop();
+      const quickReport = JSON.parse(quickLine);
+      assert.ok(quickReport.exportableRegistry.tools.some((t) => t.toolId.startsWith("quick:rel:")));
+      const r2 = spawnSync(
+        process.execPath,
+        [cliJs, "--workflow-id", "quick-verify", "--events", ev, "--registry", reg, "--db", dbp],
+        { encoding: "utf8", cwd: root, maxBuffer: 10_000_000 },
+      );
+      assert.equal(r2.status, 0, r2.stderr);
+      const batch = JSON.parse(r2.stdout.trim());
+      assert.equal(batch.status, "complete");
+      assert.equal(batch.steps.length, quickReport.exportableRegistry.tools.length);
+      const rel = batch.steps.find((s) => s.toolId.startsWith("quick:rel:"));
+      assert.ok(rel);
+      assert.equal(rel.status, "verified");
+    } finally {
+      rmSync(tdir, { recursive: true, force: true });
+    }
+  });
+
+  it("deterministic quick export bytes for user-outcome fixture", () => {
+    const uo = join(root, "test", "fixtures", "related-exists-export-user-outcome");
+    const run = () => {
+      const tdir = mkdtempSync(join(tmpdir(), "qv-det-"));
+      try {
+        const dbp = join(tdir, "uo.db");
+        const db = new DatabaseSync(dbp);
+        db.exec(readFileSync(join(uo, "schema.sql"), "utf8"));
+        db.close();
+        const reg = join(tdir, "reg.json");
+        const ev = join(tdir, "ev.ndjson");
+        const r1 = spawnSync(
+          process.execPath,
+          [
+            cliJs,
+            "quick",
+            "--input",
+            join(uo, "input.ndjson"),
+            "--db",
+            dbp,
+            "--export-registry",
+            reg,
+            "--emit-events",
+            ev,
+            "--workflow-id",
+            "quick-verify",
+          ],
+          { encoding: "utf8", cwd: root, maxBuffer: 10_000_000 },
+        );
+        assert.equal(r1.status, 0, r1.stderr);
+        return { reg: readFileSync(reg, "utf8"), ev: readFileSync(ev, "utf8") };
+      } finally {
+        rmSync(tdir, { recursive: true, force: true });
+      }
+    };
+    const a = run();
+    const b = run();
+    assert.equal(a.reg, b.reg);
+    assert.equal(a.ev, b.ev);
+  });
+
+  it("corrupt relational registry yields incomplete batch and INVALID_IDENTIFIER", () => {
+    const r = spawnSync(
+      process.execPath,
+      [
+        cliJs,
+        "--workflow-id",
+        "w-corrupt",
+        "--events",
+        join(root, "test", "fixtures", "quick-verify", "corrupt-relational-events.ndjson"),
+        "--registry",
+        join(root, "test", "fixtures", "quick-verify", "corrupt-relational-registry.json"),
+        "--db",
+        join(root, "examples", "demo.db"),
+      ],
+      { encoding: "utf8", cwd: root, maxBuffer: 10_000_000 },
+    );
+    assert.equal(r.status, 2, r.stderr);
+    const batch = JSON.parse(r.stdout.trim());
+    assert.equal(batch.status, "incomplete");
+    assert.equal(batch.steps.length, 1);
+    assert.equal(batch.steps[0].status, "incomplete_verification");
+    assert.equal(batch.steps[0].reasons[0].code, "INVALID_IDENTIFIER");
   });
 
   it("tampered synthetic event (__qvFields removed) fails batch resolution", () => {

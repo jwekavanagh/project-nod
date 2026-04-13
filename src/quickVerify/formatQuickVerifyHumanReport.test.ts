@@ -7,7 +7,7 @@ import {
 } from "./formatQuickVerifyHumanReport.js";
 import { HUMAN_REPORT_BEGIN, HUMAN_REPORT_END, verdictLine } from "./quickVerifyHumanCopy.js";
 import { DEFAULT_QUICK_VERIFY_SCOPE } from "./quickVerifyScope.js";
-import { DEFAULT_QUICK_VERIFY_PRODUCT_TRUTH } from "./quickVerifyProductTruth.js";
+import { buildQuickVerifyProductTruth } from "./quickVerifyProductTruth.js";
 import type { QuickVerifyReport } from "./runQuickVerify.js";
 
 function minimalReport(verdict: "pass" | "fail" | "uncertain"): QuickVerifyReport {
@@ -17,7 +17,7 @@ function minimalReport(verdict: "pass" | "fail" | "uncertain"): QuickVerifyRepor
     summary: `Inferred provisional check — rollup ${verdict} is not a production-safety or audit-final verdict. 0 unit(s).`,
     verificationMode: "inferred",
     scope: { ...DEFAULT_QUICK_VERIFY_SCOPE },
-    productTruth: DEFAULT_QUICK_VERIFY_PRODUCT_TRUTH,
+    productTruth: buildQuickVerifyProductTruth(false),
     ingest: { reasonCodes: ["INGEST_NO_ACTIONS"], malformedLineCount: 0 },
     units: [],
     exportableRegistry: { tools: [] },

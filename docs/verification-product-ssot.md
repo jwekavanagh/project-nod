@@ -64,7 +64,7 @@ Quick Verify is **provisional**: inference-based mapping, **uncertain** as a nor
 
 ## Contract replay is partial coverage
 
-**Export → replay** verifies **exported row tools** against synthetic events and the exported registry. It is **not** full-fidelity replay of everything Quick Verify may have inferred (**`related_exists`** and other contract rules are not fully carried by the export). Operators must not treat “I ran quick → replay → verified” as blanket coverage.
+**Export → replay** verifies **exported tools** in `exportableRegistry.tools` (high-confidence **`sql_row`** entries and eligible **`sql_relational`** / **`related_exists`** exports) against synthetic `tool_observed` NDJSON and the exported registry. It is **not** full-fidelity replay of everything Quick Verify may have inferred (non-exported inferred units, non-eligible **`related_exists`**, and other Advanced checks are not carried by the export). `productTruth.contractReplayPartialCoverage` is **`true`** when at least one tool was exported and at least one inferred unit has `contractEligible: false`. Operators must not treat “I ran quick → replay → verified” as blanket coverage.
 
 ## For engineers (first run)
 
@@ -73,7 +73,7 @@ Quick Verify is **provisional**: inference-based mapping, **uncertain** as a nor
 3. **`npm run build && node scripts/first-run.mjs`** — creates **`examples/demo.db`** and runs the narrated onboarding smoke (see [`agentskeptic.md`](agentskeptic.md) onboarding; also runs as part of **`npm test`**).
 4. **Quick verify:**  
    `node dist/cli.js quick --input test/fixtures/quick-verify/pass-line.ndjson --db examples/demo.db --export-registry ./quick-export.json`  
-   Supply structured tool activity on **stdin** with **`--input -`** when convenient. Optional **`--emit-events`** writes synthetic **`tool_observed`** NDJSON for **exported row tools** only; **`related_exists`** inference is **not** exported to the registry in this release (`contractEligible` is false on those units).
+   Supply structured tool activity on **stdin** with **`--input -`** when convenient. Optional **`--emit-events`** writes synthetic **`tool_observed`** NDJSON for **every exported tool** (see [`quick-verify-normative.md`](quick-verify-normative.md) § A.3b). Eligible inferred **`related_exists`** units are exported when **`eligible_export_related_exists`** holds (see [`quick-verify-normative.md`](quick-verify-normative.md) § A.3b); otherwise they stay quick-only with `contractEligible: false`.
 
 ## For integrators
 
@@ -81,7 +81,7 @@ Quick Verify is **provisional**: inference-based mapping, **uncertain** as a nor
 - **Do not** parse human stderr for automation. stderr begins with three **fixed** anchor lines (see [`quick-verify-normative.md`](quick-verify-normative.md) § A.3a); remaining lines are user-facing only.
 - **Contract replay** (repeatable batch path, **partial** vs quick scope): after quick, run  
   `agentskeptic --workflow-id <id> --events <emit-path> --registry <export-path> --db <sqlitePath>`  
-  (or **`--postgres-url`**) with the same DB snapshot. Row tools in the export file align with synthetic events by `toolId` and `seq`. Treat this as **row-tool replay**, not “everything quick checked is now contract-checked.”
+  (or **`--postgres-url`**) with the same DB snapshot. Exported tools in the registry file align with synthetic events by `toolId` and `seq` (see [`quick-verify-normative.md`](quick-verify-normative.md) § A.3b). Treat this as **exported-tool replay**, not “everything quick inferred is now contract-checked.”
 
 ## For operators
 
@@ -92,9 +92,9 @@ Quick Verify is **provisional**: inference-based mapping, **uncertain** as a nor
 
 `validate-ttfv` (see [`scripts/validate-ttfv.mjs`](../scripts/validate-ttfv.mjs) and [`scripts/lib/quickVerifyPostbuildGate.mjs`](../scripts/lib/quickVerifyPostbuildGate.mjs)) runs **after** a successful **`npm run build`**. It enforces a **spawn timeout** and post-run wall clock (**120s**), parses the **stdout** **`QuickVerifyReport`** line (**`schemaVersion` 4**), and checks that the **exported registry file** matches **`canonicalToolsArrayUtf8`** of the report’s tools. `npm install` duration is network-bound and excluded. A run that completes within three minutes on CI hardware is sufficient evidence that a typical user can reach a first meaningful result within thirty minutes including reading the README and supplying structured tool activity (file or stdin).
 
-## Why contract replay is row-only (today)
+## Quick export vs contract replay coverage
 
-Quick verify exports **`sql_row`** registry entries for high-confidence mappings. **`related_exists`** units remain **inferred-only** in the quick report; repeating them in batch mode requires an explicit registry extension (out of scope for this wedge). This is a **coverage boundary**, not a promise of end-to-end parity between quick and contract runs.
+Quick verify exports **`sql_row`** registry entries for high-confidence row mappings. Inferred **`related_exists`** units are exported as Advanced **`sql_relational`** registry entries (single const-only **`related_exists`** check) when **`eligible_export_related_exists`** is satisfied; see [`quick-verify-normative.md`](quick-verify-normative.md) § A.3b. Non-eligible **`related_exists`** units stay quick-only (`contractEligible: false`) until you extend the registry by hand. This is a **coverage boundary**, not a promise of end-to-end parity between quick and contract runs.
 
 ## Langgraph reference documentation boundaries
 

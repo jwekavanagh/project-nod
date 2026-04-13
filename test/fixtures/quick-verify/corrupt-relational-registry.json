@@ -1,0 +1,17 @@
+[
+  {
+    "toolId": "bad:rel",
+    "effectDescriptionTemplate": "Corrupt related_exists for resolver test",
+    "verification": {
+      "kind": "sql_relational",
+      "checks": [
+        {
+          "checkKind": "related_exists",
+          "id": "fk:test",
+          "childTable": { "const": "bad name" },
+          "matchEq": [{ "column": { "const": "id" }, "value": { "const": "x" } }]
+        }
+      ]
+    }
+  }
+]

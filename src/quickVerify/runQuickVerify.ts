@@ -13,17 +13,15 @@ import { planRelationalFromFlat } from "./relationalPlan.js";
 import type { SchemaCatalog } from "./schemaCatalogTypes.js";
 import { PostgresSchemaCatalog } from "./postgresCatalog.js";
 import { SqliteSchemaCatalog } from "./sqliteCatalog.js";
-import { exportSqlRowTool } from "./exportTool.js";
+import { exportSqlRelationalRelatedExistsTool, exportSqlRowTool } from "./exportTool.js";
 import { verifyRowPostgres, verifyRowSqlite, verifyRelatedExists } from "./verifyExecution.js";
 import { T_EXPORT, MAX_UNITS } from "./thresholds.js";
 import { compareUtf16Id } from "../resolveExpectation.js";
 import { MSG_NO_STRUCTURED_TOOL_ACTIVITY, MSG_NO_TOOL_CALLS } from "./quickVerifyHumanCopy.js";
 import type { QuickContractExport } from "./buildQuickContractEventsNdjson.js";
 import { DEFAULT_QUICK_VERIFY_SCOPE, type QuickVerifyScope } from "./quickVerifyScope.js";
-import {
-  DEFAULT_QUICK_VERIFY_PRODUCT_TRUTH,
-  type QuickVerifyProductTruth,
-} from "./quickVerifyProductTruth.js";
+import { buildQuickVerifyProductTruth, type QuickVerifyProductTruth } from "./quickVerifyProductTruth.js";
+import { resolveVerificationRequest } from "../resolveExpectation.js";
 import { buildQuickUnitReconciliation } from "../reconciliationPresentation.js";
 
 export type QuickVerifyReport = {
@@ -117,7 +115,7 @@ export async function runQuickVerify(opts: RunQuickVerifyOptions): Promise<RunQu
       summary: buildSummary("uncertain", units, ingestBlock),
       verificationMode: "inferred",
       scope: { ...DEFAULT_QUICK_VERIFY_SCOPE },
-      productTruth: DEFAULT_QUICK_VERIFY_PRODUCT_TRUTH,
+      productTruth: buildQuickVerifyProductTruth(false),
       ingest: ingestBlock,
       units,
       exportableRegistry: { tools: [] },
@@ -220,7 +218,7 @@ export async function runQuickVerify(opts: RunQuickVerifyOptions): Promise<RunQu
             tid = `quick:${uid}:${n++}`;
           }
           exportTools.push(exportSqlRowTool(tid, plan.request));
-          contractExports.push({ toolId: tid, request: plan.request });
+          contractExports.push({ toolId: tid, kind: "sql_row", request: plan.request });
         }
         const rowReconciliation =
           rowOut.verdict === "verified"
@@ -289,14 +287,37 @@ export async function runQuickVerify(opts: RunQuickVerifyOptions): Promise<RunQu
           dialect === "postgres"
             ? await verifyRelatedExists("postgres", pgClient!, rel)
             : await verifyRelatedExists("sqlite", sqliteDb!, rel);
+        const relConfidence = 0.8;
+        let relContractEligible = false;
+        if (rout.verdict === "verified" && relConfidence >= T_EXPORT) {
+          const rtid0 = `quick:rel:${rel.id}`;
+          let rtid = rtid0;
+          let entry = exportSqlRelationalRelatedExistsTool(rtid, rel);
+          let res = resolveVerificationRequest(entry, {});
+          if (res.ok) {
+            const used = new Set(exportTools.map((t) => t.toolId));
+            let n = 1;
+            while (used.has(rtid)) {
+              rtid = `${rtid0}:${n++}`;
+              entry = exportSqlRelationalRelatedExistsTool(rtid, rel);
+              res = resolveVerificationRequest(entry, {});
+              if (!res.ok) break;
+            }
+            if (res.ok) {
+              exportTools.push(entry);
+              contractExports.push({ toolId: rtid, kind: "related_exists_export" });
+              relContractEligible = true;
+            }
+          }
+        }
         const relBase = {
           unitId: uid,
           kind: "related_exists" as const,
           verdict: rout.verdict,
-          confidence: 0.8,
+          confidence: relConfidence,
           reasonCodes: rout.reasonCodes,
           sourceAction,
-          contractEligible: false,
+          contractEligible: relContractEligible,
           inference: { table: rel.childTable, rationale: [`FK ${rel.id}`] },
           verification: rout.verification,
           explanation: rout.explanation,
@@ -308,7 +329,7 @@ export async function runQuickVerify(opts: RunQuickVerifyOptions): Promise<RunQu
             check: rel,
             verdict: rout.verdict,
             reasonCodes: rout.reasonCodes,
-            confidence: 0.8,
+            confidence: relConfidence,
           }),
         };
         pushUnit(
@@ -335,13 +356,16 @@ export async function runQuickVerify(opts: RunQuickVerifyOptions): Promise<RunQu
     exportTools.sort((a, b) => compareUtf16Id(a.toolId, b.toolId));
     contractExports.sort((a, b) => compareUtf16Id(a.toolId, b.toolId));
 
+    const anyNotContractEligible = units.some((u) => !u.contractEligible);
+    const contractReplayPartialCoverage = exportTools.length > 0 && anyNotContractEligible;
+
     const report: QuickVerifyReport = {
       schemaVersion: 4,
       verdict,
       summary: buildSummary(verdict, units, ingestBlock),
       verificationMode: "inferred",
       scope: { ...DEFAULT_QUICK_VERIFY_SCOPE },
-      productTruth: DEFAULT_QUICK_VERIFY_PRODUCT_TRUTH,
+      productTruth: buildQuickVerifyProductTruth(contractReplayPartialCoverage),
       ingest: ingestBlock,
       ...(ingestWarnings ? { ingestWarnings } : {}),
       ...(runHeaderReasonCodes.length ? { runHeaderReasonCodes } : {}),

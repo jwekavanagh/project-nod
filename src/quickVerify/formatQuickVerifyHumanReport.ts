@@ -94,7 +94,7 @@ export function formatQuickVerifyHumanReport(
       ? `--db ${ctx.dbFlag}`
       : `--db <sqlitePath>`;
   body.push(
-    `Optional contract replay (partial coverage — exported row tools only; not full relational/multi-effect parity with quick scope): agentskeptic --workflow-id ${wf} --events ${ev} --registry ${reg} ${dbPart}`,
+    `Optional contract replay (partial coverage — exported tools only, not full quick inferred parity): agentskeptic --workflow-id ${wf} --events ${ev} --registry ${reg} ${dbPart}`,
   );
 
   const anchors = [HUMAN_REPORT_BEGIN, verdictLine(report.verdict), HUMAN_REPORT_END];

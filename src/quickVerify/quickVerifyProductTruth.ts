@@ -15,7 +15,17 @@ export const DEFAULT_QUICK_VERIFY_PRODUCT_TRUTH = {
     observed: "Observed: read-only SQL results at verification time.",
   },
   quickVerifyProvisional: true as const,
-  contractReplayPartialCoverage: true as const,
+  contractReplayPartialCoverage: true,
 } as const;
 
-export type QuickVerifyProductTruth = typeof DEFAULT_QUICK_VERIFY_PRODUCT_TRUTH;
+/** Mutable copy for stdout JSON (`contractReplayPartialCoverage` is computed per run). */
+export type QuickVerifyProductTruth = Omit<typeof DEFAULT_QUICK_VERIFY_PRODUCT_TRUTH, "contractReplayPartialCoverage"> & {
+  contractReplayPartialCoverage: boolean;
+};
+
+export function buildQuickVerifyProductTruth(contractReplayPartialCoverage: boolean): QuickVerifyProductTruth {
+  return {
+    ...DEFAULT_QUICK_VERIFY_PRODUCT_TRUTH,
+    contractReplayPartialCoverage,
+  };
+}

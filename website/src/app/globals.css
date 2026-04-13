@@ -316,6 +316,19 @@ button.secondary, .btn.secondary {
   box-shadow: 0 0 0 1px var(--accent);
 }
 
+/* Spacing for adjacent in-flow links (axe / Lighthouse `target-size`). */
+.pricing-trust-band-links {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  column-gap: 0.75rem;
+  row-gap: 0.35rem;
+}
+.pricing-trust-band-links-sep {
+  color: var(--muted);
+  user-select: none;
+}
+
 .pricing-recommended-pill {
   margin: 0 0 0.5rem;
   font-size: 0.8rem;
@@ -343,7 +356,6 @@ button.secondary, .btn.secondary {
 
 .btn-pricing-secondary {
   display: inline-block;
-  margin-top: 0.75rem;
   background: var(--surface-2);
   color: var(--fg);
   border: none;
@@ -356,6 +368,19 @@ button.secondary, .btn.secondary {
 }
 .btn-pricing-secondary:hover {
   filter: brightness(1.08);
+}
+
+/* After `.btn-pricing-secondary` so layout wins; comfortable hit targets (axe / Lighthouse `target-size`). */
+.pricing-grid a.btn-pricing-secondary.pricing-card-cta,
+.pricing-grid button.pricing-card-cta,
+.pricing-grid a.btn.pricing-card-cta {
+  margin-top: 0.75rem;
+  min-height: 44px;
+  padding-inline: 1.1rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
 }
 
 main {

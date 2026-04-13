@@ -22,6 +22,7 @@ export type {
 } from "./quickVerify/runQuickVerify.js";
 export {
   DEFAULT_QUICK_VERIFY_PRODUCT_TRUTH,
+  buildQuickVerifyProductTruth,
   type QuickVerifyProductTruth,
 } from "./quickVerify/quickVerifyProductTruth.js";
 export type { QuickContractExport } from "./quickVerify/buildQuickContractEventsNdjson.js";

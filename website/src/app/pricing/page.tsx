@@ -43,11 +43,13 @@ export default function PricingPage() {
         <h2 id="pricing-trust-band-title">{productCopy.pricingTrustBandBeforeGrid.title}</h2>
         <p>{productCopy.pricingTrustBandBeforeGrid.paragraphs[0]}</p>
         <p>{productCopy.pricingTrustBandBeforeGrid.paragraphs[1]}</p>
-        <p>
+        <p className="pricing-trust-band-links">
           <Link href={productCopy.pricingTrustBandBeforeGrid.links[0].href}>
             {productCopy.pricingTrustBandBeforeGrid.links[0].label}
           </Link>
-          {" · "}
+          <span className="pricing-trust-band-links-sep" aria-hidden="true">
+            ·
+          </span>
           <Link href={productCopy.pricingTrustBandBeforeGrid.links[1].href}>
             {productCopy.pricingTrustBandBeforeGrid.links[1].label}
           </Link>

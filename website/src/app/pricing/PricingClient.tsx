@@ -109,27 +109,22 @@ export function PricingClient({
               (authed ? (
                 <button
                   type="button"
+                  className="pricing-card-cta"
                   disabled={loading !== null}
                   onClick={() => checkout(p.checkoutPlanId!)}
-                  style={{ marginTop: "0.75rem" }}
                 >
                   {loading === p.checkoutPlanId ? "…" : "Subscribe"}
                 </button>
               ) : (
                 <Link
-                  className="btn-pricing-secondary"
+                  className="btn-pricing-secondary pricing-card-cta"
                   href="/auth/signin?callbackUrl=%2Fpricing"
-                  style={{ marginTop: "0.75rem" }}
                 >
                   {productCopy.pricingSignInCta}
                 </Link>
               ))}
             {p.id === "enterprise" && (
-              <a
-                className="btn"
-                href={enterpriseMailto}
-                style={{ display: "inline-block", marginTop: "0.75rem" }}
-              >
+              <a className="btn pricing-card-cta" href={enterpriseMailto}>
                 Contact sales
               </a>
             )}
