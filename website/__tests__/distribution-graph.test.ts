@@ -35,6 +35,7 @@ function escapeRegExp(s: string): string {
  */
 function htmlForTextNeedleMatch(html: string): string {
   const { window } = new JSDOM(html);
+  const { Node: DomNode } = window;
   const root = window.document.documentElement;
   if (!root) return "";
 
@@ -45,9 +46,9 @@ function htmlForTextNeedleMatch(html: string): string {
       parts.push(attributes[i]!.value);
     }
     for (const child of Array.from(el.childNodes)) {
-      if (child.nodeType === Node.TEXT_NODE) {
+      if (child.nodeType === DomNode.TEXT_NODE) {
         parts.push(child.textContent ?? "");
-      } else if (child.nodeType === Node.ELEMENT_NODE) {
+      } else if (child.nodeType === DomNode.ELEMENT_NODE) {
         visit(child as Element);
       }
     }
