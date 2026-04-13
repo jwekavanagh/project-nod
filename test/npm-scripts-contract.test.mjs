@@ -41,4 +41,44 @@ describe("npm scripts contract (test / test:ci)", () => {
   it("test must still run first-run for local onboarding smoke", () => {
     assert.equal(pkg.scripts.test.includes("first-run"), true);
   });
+
+  it("scripts.test runs root vitest before filtered LangGraph primacy website vitest", () => {
+    const s = pkg.scripts.test;
+    const a = s.indexOf("npm run test:vitest");
+    const b = s.indexOf("langgraph-reference-primacy.dom.test.tsx");
+    assert.ok(a !== -1 && b !== -1 && a < b);
+  });
+
+  it("scripts.test:ci runs root vitest before filtered LangGraph primacy website vitest", () => {
+    const s = pkg.scripts["test:ci"];
+    const a = s.indexOf("npm run test:vitest");
+    const b = s.indexOf("langgraph-reference-primacy.dom.test.tsx");
+    assert.ok(a !== -1 && b !== -1 && a < b);
+  });
+
+  it("scripts.test runs partner-quickstart before langgraph-reference-verify driver", () => {
+    const s = pkg.scripts.test;
+    const a = s.indexOf("npm run partner-quickstart");
+    const b = s.indexOf("node scripts/langgraph-reference-verify.mjs");
+    assert.ok(a !== -1 && b !== -1 && a < b);
+  });
+
+  it("scripts.test:ci runs partner-quickstart before langgraph-reference-verify driver", () => {
+    const s = pkg.scripts["test:ci"];
+    const a = s.indexOf("npm run partner-quickstart");
+    const b = s.indexOf("node scripts/langgraph-reference-verify.mjs");
+    assert.ok(a !== -1 && b !== -1 && a < b);
+  });
+
+  it("scripts.test includes exactly one filtered LangGraph primacy vitest and one langgraph driver", () => {
+    const s = pkg.scripts.test;
+    assert.equal((s.match(/langgraph-reference-primacy\.dom\.test\.tsx/g) || []).length, 1);
+    assert.equal((s.match(/node scripts\/langgraph-reference-verify\.mjs/g) || []).length, 1);
+  });
+
+  it("scripts.test:ci includes exactly one filtered LangGraph primacy vitest and one langgraph driver", () => {
+    const s = pkg.scripts["test:ci"];
+    assert.equal((s.match(/langgraph-reference-primacy\.dom\.test\.tsx/g) || []).length, 1);
+    assert.equal((s.match(/node scripts\/langgraph-reference-verify\.mjs/g) || []).length, 1);
+  });
 });

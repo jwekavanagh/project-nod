@@ -61,6 +61,8 @@ textarea:focus-visible,
   --fg: #e7e9ee;
   --muted: #98a1ad;
   --accent: #5c6cfa;
+  /* Readable on `var(--card)` at small sizes (WCAG AA); primary `--accent` is for fills/large UI. */
+  --accent-on-card: #aab4ff;
   --accent-contrast: #ffffff;
   --card: #151922;
   --border: #2a3140;
@@ -320,7 +322,7 @@ button.secondary, .btn.secondary {
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.04em;
-  color: var(--accent);
+  color: var(--accent-on-card);
 }
 
 .try-it-scenario-hint {

@@ -83,6 +83,10 @@ The human report on stderr will state that the workflow **matched the database**
 - **Commands out of date** — regenerate `docs/partner-quickstart-commands.md` with **`node scripts/generate-partner-quickstart-commands.mjs`** after changing quickstart wiring (CI checks this).
 - **Node SQLite warning** — `ExperimentalWarning: SQLite is...` on stderr is from Node; it does not mean verification failed.
 
+## LangGraph reference path
+
+For LangGraph-style orchestration, start from [`examples/langgraph-reference/README.md`](../examples/langgraph-reference/README.md) and treat documentation boundaries as frozen in [`verification-product-ssot.md`](verification-product-ssot.md#langgraph-reference-documentation-boundaries) (do not restate the authority matrix in this prose file).
+
 ---
 
 NPM package: **agentskeptic**. Installed CLI name: **agentskeptic** (same flags as `node dist/cli.js`).

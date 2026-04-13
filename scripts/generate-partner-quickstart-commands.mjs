@@ -56,6 +56,28 @@ node dist/cli.js --workflow-id wf_partner --events examples/partner-quickstart/p
 \`\`\`bash
 node dist/cli.js --workflow-id wf_partner --events examples/partner-quickstart/partner.events.ndjson --registry examples/partner-quickstart/partner.tools.json --postgres-url "$PARTNER_POSTGRES_URL"
 \`\`\`
+
+## LangGraph reference (emit events, then verify)
+
+Minimal graph sample: \`examples/langgraph-reference/\` (see its README). From **repository root** after \`npm run build\`:
+
+\`\`\`bash
+npm ci --prefix examples/langgraph-reference
+EVENTS="$(mktemp)"
+node examples/langgraph-reference/run.mjs "$EVENTS"
+DB="$(mktemp).db"
+sqlite3 "$DB" < examples/partner-quickstart/partner.seed.sql
+node dist/cli.js --workflow-id wf_partner --events "$EVENTS" --registry examples/partner-quickstart/partner.tools.json --db "$DB"
+\`\`\`
+
+Postgres (same \`PARTNER_POSTGRES_URL\` contract as above; apply the seed with your usual SQL client, then verify against the emitted file):
+
+\`\`\`bash
+npm ci --prefix examples/langgraph-reference
+EVENTS="$(mktemp)"
+node examples/langgraph-reference/run.mjs "$EVENTS"
+node dist/cli.js --workflow-id wf_partner --events "$EVENTS" --registry examples/partner-quickstart/partner.tools.json --postgres-url "$PARTNER_POSTGRES_URL"
+\`\`\`
 `;
 
 const mode = process.argv.includes("--check") ? "check" : "write";

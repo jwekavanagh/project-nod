@@ -1,0 +1,9 @@
+{
+  "name": "agentskeptic-langgraph-reference",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@langchain/core": "^0.3.78",
+    "@langchain/langgraph": "^0.2.74"
+  }
+}

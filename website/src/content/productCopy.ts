@@ -278,6 +278,12 @@ export const productCopy = {
   integrateIntro:
     "Start with the command quickstart below, then open the full guide when you need semantics, guarantees, and common mistakes.",
 
+  /** Primary outbound CTA on /integrate (LangGraph reference README — above activation commands). */
+  integratorPrimaryCtaLabel: "LangGraph reference: emit partner-shaped NDJSON from a minimal graph",
+
+  /** Primary outbound CTA on /guides/verify-langgraph-workflows (same README URL as /integrate). */
+  langgraphGuidePrimaryCtaLabel: "Open the LangGraph reference README (emit, then verify)",
+
   scenario: {
     title: "Concrete scenario",
     body: "A support tool reports “ticket closed” and the trace step is green. In the CRM database, the ticket row should be `status = resolved`. Verification compares that expectation to a real `SELECT`—not to the narrative.",
