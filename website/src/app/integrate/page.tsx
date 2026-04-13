@@ -41,6 +41,7 @@ export default function IntegratePage() {
       </div>
 
       <h2>{a.successHeading}</h2>
+      <p className="muted">{a.successIntro}</p>
       <ol className="muted">
         {a.successBullets.map((b, i) => (
           <li key={i}>{b}</li>

@@ -5,9 +5,9 @@ export const siteMetadata = {
   title: "AgentSkeptic — check database state against what your workflow claimed",
   description: discoveryAcquisition.pageMetadata.description,
   integrate: {
-    title: "Run your first verification",
+    title: "Verify workflow claims against the database",
     description:
-      "One command: clone AgentSkeptic, build, and run a bundled read-only check that compares workflow claims to SQL.",
+      "One command to verify whether what a workflow claimed actually matches what exists in the database.",
   },
   security: {
     title: "Security & Trust — AgentSkeptic",

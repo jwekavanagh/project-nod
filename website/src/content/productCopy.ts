@@ -139,8 +139,8 @@ export const securityQuickFacts = {
 export const integrateActivation = {
   whyHeading: "Why this matters",
   whyParagraphs: [
-    "Workflows, agents, and automation often report success while the database is wrong or incomplete.",
-    "AgentSkeptic runs read-only SQL at verification time and compares what actually exists to what your captured tool activity claims—so you see database truth, not chat or trace color alone.",
+    "Traces can look successful while the database is wrong—missing rows, wrong values, or writes that never landed.",
+    "AgentSkeptic runs read-only SQL at verification time and compares what actually exists to what your captured tool activity claims, so you get database truth instead of narrative or trace color alone.",
   ],
   icp: "If you build workflows, agents, or systems that write to a database, this is the fastest way to see how verification reads that ground truth.",
   requirementsHeading: "You need",
@@ -150,6 +150,8 @@ export const integrateActivation = {
   command:
     "git clone --depth 1 https://github.com/jwekavanagh/agentskeptic.git && cd agentskeptic && npm install && npm run build && npm run first-run-verify",
   successHeading: "What success looks like",
+  successIntro:
+    "When it works, you will see proof from both the human report and the machine-readable result.",
   successBullets: [
     "Stderr shows the human verification report, including the line: Matched the database.",
     'Stdout shows one JSON object with "status":"complete" and a step marked verified.',
@@ -161,7 +163,7 @@ export const integrateActivation = {
     "A bundled example wrote expectations from structured tool activity and confirmed them with read-only SQL against a fresh SQLite database—the same engine you will use with your own NDJSON and database.",
   nextHeading: "Next: your system",
   next:
-    "Point the same CLI at your append-only NDJSON tool log, your tools.json registry, and your SQLite or Postgres database (read-only at verification time). The clone you just created already contains the binary under dist/.",
+    "You can now reuse the same CLI with your own NDJSON, registry, and database. Point it at your append-only tool log, your tools.json, and your SQLite or Postgres (read-only at verification time).",
 } as const;
 
 export const homeHeroCtaLabels = {
