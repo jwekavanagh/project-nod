@@ -8,7 +8,7 @@
     { "file": "website/package.json", "path": ["dependencies", "nodemailer"], "value": "8.0.5" },
     { "file": "website/package.json", "path": ["devDependencies", "@types/nodemailer"], "value": "6.4.17" },
     { "file": "package.json", "path": ["devDependencies", "@lhci/cli"], "value": "0.15.1" },
-    { "file": "package.json", "path": ["overrides", "esbuild"], "value": "0.25.0" },
+    { "file": "package.json", "path": ["overrides", "esbuild"], "value": "0.25.12" },
     { "file": "package.json", "path": ["overrides", "tmp"], "value": "0.2.4" },
     { "file": "package.json", "path": ["overrides", "cookie"], "value": "0.7.2" },
     { "file": "examples/langgraph-reference/package.json", "path": ["dependencies", "@langchain/core"], "value": "0.3.80" },
@@ -18,7 +18,7 @@
   "lockfileAssertions": [
     { "lockfile": "root", "package": "drizzle-orm", "match": "websiteWorkspaceExact", "exactVersion": "0.45.2" },
     { "lockfile": "root", "package": "nodemailer", "match": "websiteWorkspaceExact", "exactVersion": "8.0.5" },
-    { "lockfile": "root", "package": "esbuild", "match": "everyInstanceExact", "exactVersion": "0.25.0" },
+    { "lockfile": "root", "package": "esbuild", "match": "everyInstanceExact", "exactVersion": "0.25.12" },
     { "lockfile": "root", "package": "tmp", "match": "everyInstanceExact", "exactVersion": "0.2.4" },
     { "lockfile": "root", "package": "cookie", "match": "everyInstanceExact", "exactVersion": "0.7.2" },
     { "lockfile": "example", "package": "langsmith", "match": "everyInstanceExact", "exactVersion": "0.5.18" }

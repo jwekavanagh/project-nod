@@ -70,7 +70,7 @@
     "yaml": "^2.8.3"
   },
   "overrides": {
-    "esbuild": "0.25.0",
+    "esbuild": "0.25.12",
     "tmp": "0.2.4",
     "cookie": "0.7.2"
   },
