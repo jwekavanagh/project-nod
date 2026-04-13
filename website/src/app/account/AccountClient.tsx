@@ -5,6 +5,9 @@ import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import type { CommercialAccountStatePayload } from "@/lib/commercialAccountState";
 import type { PriceMapping } from "@/lib/accountEntitlementSummary";
+import { LiveStatus } from "@/components/LiveStatus";
+import { productCopy } from "@/content/productCopy";
+import { accountAssertiveMessage } from "@/lib/accountAssertiveMessage";
 import {
   STRIPE_CUSTOMER_MISSING_ERROR,
   STRIPE_CUSTOMER_MISSING_MESSAGE,
@@ -121,12 +124,24 @@ export function AccountClient({
 
   const showInactiveBillingCta = commercial.subscriptionStatus === "inactive";
 
+  const assertiveAccountMessage = accountAssertiveMessage(portalErr, err, activationUi);
+
   return (
     <div className="card" style={{ marginTop: "1rem" }}>
       <p style={{ marginTop: 0, marginBottom: "1rem" }}>
         <SignOutButton variant="account" />
       </p>
       <h2>Subscription and entitlements</h2>
+      {assertiveAccountMessage && (
+        <LiveStatus mode="assertive">
+          <p
+            className="error-text"
+            data-testid={portalErr && assertiveAccountMessage === portalErr ? "billing-portal-error" : "account-assertive-message"}
+          >
+            {assertiveAccountMessage}
+          </p>
+        </LiveStatus>
+      )}
       <p>
         <strong>Plan:</strong> {commercial.plan}
       </p>
@@ -146,11 +161,6 @@ export function AccountClient({
           >
             {portalLoading ? "…" : "Manage billing"}
           </button>
-        </p>
-      )}
-      {portalErr && (
-        <p className="error-text" data-testid="billing-portal-error" style={{ marginTop: "0.35rem" }}>
-          {portalErr}
         </p>
       )}
       {commercial.billingPriceSyncHint && (
@@ -206,20 +216,18 @@ export function AccountClient({
       {checkout === "success" && expectedPlanRaw && (
         <div style={{ marginTop: "0.75rem" }}>
           {activationUi === "pending" && (
-            <p className="muted" data-testid="checkout-activation-pending">
-              Finishing subscription setup… This usually takes a few seconds. You can refresh the page
-              if it does not update.
-            </p>
+            <LiveStatus mode="polite">
+              <p className="muted" data-testid="checkout-activation-pending">
+                {productCopy.account.checkoutActivationPending}
+              </p>
+            </LiveStatus>
           )}
           {activationUi === "ready" && (
-            <p style={{ color: "var(--muted)" }} data-testid="checkout-activation-ready">
-              Your subscription is active. You can use licensed verify with your API key.
-            </p>
-          )}
-          {activationUi === "timeout" && (
-            <p style={{ color: "#f4212e" }} data-testid="checkout-activation-timeout">
-              Still processing—refresh in a minute or contact the operator if this persists.
-            </p>
+            <LiveStatus mode="polite">
+              <p style={{ color: "var(--muted)" }} data-testid="checkout-activation-ready">
+                {productCopy.account.checkoutActivationReady}
+              </p>
+            </LiveStatus>
           )}
         </div>
       )}
@@ -231,11 +239,15 @@ export function AccountClient({
           Generate API key
         </button>
       )}
-      {err && <p style={{ color: "#f4212e" }}>{err}</p>}
       {key && (
-        <p data-testid="api-key-plaintext" style={{ wordBreak: "break-all", marginTop: "0.75rem" }}>
-          {key}
-        </p>
+        <>
+          <LiveStatus mode="polite">
+            <p className="muted">{productCopy.account.a11yApiKeyReady}</p>
+          </LiveStatus>
+          <p data-testid="api-key-plaintext" style={{ wordBreak: "break-all", marginTop: "0.75rem" }}>
+            {key}
+          </p>
+        </>
       )}
 
       <h2 style={{ marginTop: "1.5rem" }}>Next steps</h2>

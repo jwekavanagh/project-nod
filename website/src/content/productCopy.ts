@@ -327,6 +327,23 @@ export const productCopy = {
     runButton: "Run verification",
     running: "Running…",
     scenarioLabel: "Scenario",
+    /** Live region (polite) after a successful demo verification run. */
+    a11ySuccessAnnouncement: "Verification finished. Human report and JSON are shown below.",
+  },
+
+  /** Account client: activation copy and a11y announcements (keep in sync with AccountClient UI). */
+  account: {
+    a11yApiKeyReady: "API key generated. Copy it from the page and store it safely.",
+    checkoutActivationPending:
+      "Finishing subscription setup… This usually takes a few seconds. You can refresh the page if it does not update.",
+    checkoutActivationReady: "Your subscription is active. You can use licensed verify with your API key.",
+    checkoutActivationTimeout:
+      "Still processing—refresh in a minute or contact the operator if this persists.",
+  },
+
+  signInA11y: {
+    sendEmailError: "Could not send sign-in email.",
+    magicLinkSent: "Check your email for the sign-in link.",
   },
 
   commercialSurface: {

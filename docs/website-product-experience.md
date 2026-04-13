@@ -77,6 +77,27 @@ When you change discovery acquisition JSON, **`productCopy.ts`**, or any route m
 2. Confirm the **npm** package page renders the same README discovery fold (published tarball root `README.md`).
 3. After production deploy, verify **`{canonical}/llms.txt`**, **`{canonical}/database-truth-vs-traces`**, **`{canonical}/guides`**, and **`{canonical}/security`** return **200** and that `llms.txt` lists both canonical and repo-raw OpenAPI / `llms.txt` links and **`## Indexable guides`**.
 
+## Holistic quality bar (a11y + CI gate)
+
+Normative implementation: skip link ([`website/src/components/SkipToMainContent.tsx`](../website/src/components/SkipToMainContent.tsx)), live regions ([`website/src/components/LiveStatus.tsx`](../website/src/components/LiveStatus.tsx)), focus and reduced-motion CSS ([`website/src/app/globals.css`](../website/src/app/globals.css)), reduced-motion snippet SSOT ([`website/src/a11y/cssMotionContract.ts`](../website/src/a11y/cssMotionContract.ts)), account assertive priority ([`website/src/lib/accountAssertiveMessage.ts`](../website/src/lib/accountAssertiveMessage.ts)).
+
+### Engineer
+
+- **Direct proof (runtime):** Vitest + Testing Library in `website/__tests__/` (live-region matrix, `SkipToMainContent`, reduced-motion file contract). Playwright in [`test/website-holistic/`](../test/website-holistic/) against a running production server: skip-to-main focus, focus-ring outline contract on `/`.
+- **Backstop proof:** Lighthouse CI via [`website/lighthouserc.cjs`](../website/lighthouserc.cjs) on **`http://127.0.0.1:3040/`**, `/pricing`, `/security` with fixed category floors (performance **0.72**, accessibility / best-practices / SEO **0.96**). LHCI scores are **not** treated as primary proof of focus rings or live-region wiring; they catch gross aggregate regressions.
+- **Orchestrator:** [`scripts/website-holistic-gate.mjs`](../scripts/website-holistic-gate.mjs) — validates env, starts `next start` for the website workspace on port **3040**, probes readiness, runs Playwright then `lhci autorun`. Exit **2** = missing env, **3** = readiness or **5xx** on probed routes, **1** = Playwright or LHCI failure.
+
+### Integrator
+
+- No change to public HTTP APIs or OpenAPI from this bar. Copy for announcements lives in [`website/src/content/productCopy.ts`](../website/src/content/productCopy.ts) (`tryIt.a11ySuccessAnnouncement`, `account.*`, `signInA11y.*`).
+
+### Operator
+
+- **When:** `npm run verify:web-marketing-copy` from repo root (after `npm run validate-commercial` in CI so Postgres is migrated). The script appends **`node scripts/website-holistic-gate.mjs`** after website Vitest.
+- **Env parity:** The gate requires the **same** keys as the `commercial` job env in [`.github/workflows/ci.yml`](../.github/workflows/ci.yml) (`DATABASE_URL`, `AUTH_SECRET` ≥32 chars, `CONTACT_SALES_EMAIL`, Stripe keys and three price ids). The gate injects `PORT=3040`, `NEXT_PUBLIC_APP_URL=http://127.0.0.1:3040`, and `NEXTAUTH_SECRET=$AUTH_SECRET`.
+- **Playwright browser:** CI runs `npx playwright install chromium` before `verify:web-marketing-copy` on the commercial job.
+- **LHCI routes:** `/` (discovery shell), `/pricing` (commercial + session chrome), `/security` (trust / long-form). `/auth/signin` is covered by Vitest only (not in LHCI collection).
+
 ## Commercial (pointers only)
 
 - Plan marketing fields and numeric limits: [`config/commercial-plans.json`](../config/commercial-plans.json); parity checks: `npm run check:commercial-ssot` (see [`docs/commercial-ssot.md`](commercial-ssot.md)).

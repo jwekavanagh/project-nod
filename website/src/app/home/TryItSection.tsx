@@ -1,6 +1,7 @@
 "use client";
 
 import { productCopy } from "@/content/productCopy";
+import { LiveStatus } from "@/components/LiveStatus";
 import {
   DEMO_SCENARIO_IDS,
   DEMO_SCENARIO_PRESENTATION,
@@ -66,6 +67,7 @@ export function TryItSection() {
       className="home-section"
       data-testid={productCopy.uiTestIds.tryIt}
       aria-labelledby="try-it-heading"
+      aria-busy={loading}
     >
       <h2 id="try-it-heading">{productCopy.tryIt.title}</h2>
       <p className="muted">{productCopy.tryIt.intro}</p>
@@ -95,7 +97,16 @@ export function TryItSection() {
       <p className="muted try-it-scenario-hint" data-testid="try-it-scenario-one-liner">
         {DEMO_SCENARIO_PRESENTATION[scenarioId].oneLiner}
       </p>
-      {result && !result.ok && <p className="error-text">{result.error}</p>}
+      {result && !result.ok && (
+        <LiveStatus mode="assertive">
+          <p className="error-text">{result.error}</p>
+        </LiveStatus>
+      )}
+      {result && result.ok && (
+        <LiveStatus mode="polite">
+          <p className="muted">{productCopy.tryIt.a11ySuccessAnnouncement}</p>
+        </LiveStatus>
+      )}
       {result && result.ok && (
         <div className="try-it-output">
           <h3 className="try-it-subheading">Human report</h3>

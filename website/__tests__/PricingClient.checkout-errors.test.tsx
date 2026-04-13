@@ -52,9 +52,9 @@ describe("PricingClient checkout — no silent failures on bad responses", () =>
     fireEvent.click(screen.getByRole("button", { name: /^subscribe$/i }));
 
     await waitFor(() => {
-      expect(screen.getByText(/Checkout failed \(500\)/i)).toBeInTheDocument();
+      expect(screen.getByRole("alert")).toHaveTextContent(/Checkout failed \(500\)/i);
     });
-    expect(screen.getByText(/contact support/i)).toBeInTheDocument();
+    expect(screen.getByRole("alert")).toHaveTextContent(/contact support/i);
   });
 
   it("shows a configuration hint when JSON is OK but checkout URL is missing", async () => {
@@ -71,9 +71,9 @@ describe("PricingClient checkout — no silent failures on bad responses", () =>
     fireEvent.click(screen.getByRole("button", { name: /^subscribe$/i }));
 
     await waitFor(() => {
-      expect(screen.getByText(/payment link/i)).toBeInTheDocument();
+      expect(screen.getByRole("alert")).toHaveTextContent(/payment link/i);
     });
-    expect(screen.getByText(/Stripe configuration/i)).toBeInTheDocument();
+    expect(screen.getByRole("alert")).toHaveTextContent(/Stripe configuration/i);
   });
 
   it("POSTs JSON to /api/checkout with same-origin credentials and leaves no error when url is returned", async () => {

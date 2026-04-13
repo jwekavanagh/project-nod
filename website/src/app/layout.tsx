@@ -6,6 +6,7 @@ import { DM_Sans } from "next/font/google";
 import type { Metadata } from "next";
 import "./globals.css";
 import { Providers } from "./providers";
+import { SkipToMainContent } from "@/components/SkipToMainContent";
 import { SiteFooter } from "./SiteFooter";
 import { SiteHeader } from "./SiteHeader";
 
@@ -65,9 +66,12 @@ export default function RootLayout({
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(productJsonLd) }}
         />
+        <SkipToMainContent />
         <SiteHeader />
         <Providers>
-          <div className="site-main">{children}</div>
+          <div id="site-main" className="site-main" tabIndex={-1}>
+            {children}
+          </div>
         </Providers>
         <SiteFooter />
         <Analytics />

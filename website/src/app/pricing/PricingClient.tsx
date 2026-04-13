@@ -1,5 +1,6 @@
 "use client";
 
+import { LiveStatus } from "@/components/LiveStatus";
 import { productCopy } from "@/content/productCopy";
 import type { PlanId } from "@/lib/plans";
 import Link from "next/link";
@@ -69,7 +70,11 @@ export function PricingClient({
 
   return (
     <>
-      {err && <p className="error-text">{err}</p>}
+      {err && (
+        <LiveStatus mode="assertive">
+          <p className="error-text">{err}</p>
+        </LiveStatus>
+      )}
       <div className="pricing-grid" style={{ marginTop: "1.5rem" }}>
         {plans.map((p) => (
           <div

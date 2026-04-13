@@ -1,3 +1,59 @@
+/* Focus ring contract: outline-based for Playwright getComputedStyle checks (>=2px). */
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+.btn:focus-visible,
+.link-secondary:focus-visible,
+.link-tertiary:focus-visible,
+.skip-to-main:focus-visible,
+.site-logo:focus-visible,
+.site-nav a:focus-visible,
+.site-nav button.site-nav-signout:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+.skip-to-main {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+.skip-to-main:focus-visible {
+  position: static;
+  width: auto;
+  height: auto;
+  margin: 0.5rem 1rem;
+  padding: 0.5rem 1rem;
+  clip: auto;
+  overflow: visible;
+  white-space: normal;
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--fg);
+  font-weight: 600;
+  text-decoration: none;
+  z-index: 100;
+}
+
 :root {
   --bg: #0b0d10;
   --surface: #12151a;

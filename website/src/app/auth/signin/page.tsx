@@ -1,5 +1,6 @@
 "use client";
 
+import { LiveStatus } from "@/components/LiveStatus";
 import { productCopy } from "@/content/productCopy";
 import { emailSignInOptions } from "@/lib/sanitizeInternalCallbackUrl";
 import { signIn } from "next-auth/react";
@@ -11,16 +12,16 @@ function SignInForm() {
   const rawCallback = searchParams.get("callbackUrl");
 
   const [email, setEmail] = useState("");
-  const [msg, setMsg] = useState<string | null>(null);
+  const [notice, setNotice] = useState<{ mode: "polite" | "assertive"; text: string } | null>(null);
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
-    setMsg(null);
+    setNotice(null);
     const r = await signIn("email", emailSignInOptions(email, rawCallback));
     if (r?.error) {
-      setMsg("Could not send sign-in email.");
+      setNotice({ mode: "assertive", text: productCopy.signInA11y.sendEmailError });
     } else {
-      setMsg("Check your email for the sign-in link.");
+      setNotice({ mode: "polite", text: productCopy.signInA11y.magicLinkSent });
     }
   }
 
@@ -57,7 +58,11 @@ function SignInForm() {
           Send magic link
         </button>
       </form>
-      {msg && <p style={{ marginTop: "1rem" }}>{msg}</p>}
+      {notice && (
+        <LiveStatus mode={notice.mode}>
+          <p style={{ marginTop: "1rem" }}>{notice.text}</p>
+        </LiveStatus>
+      )}
     </>
   );
 }
