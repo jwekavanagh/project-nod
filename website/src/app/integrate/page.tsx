@@ -1,13 +1,7 @@
 import { FunnelSurfaceBeacon } from "@/components/FunnelSurfaceBeacon";
-import { productCopy } from "@/content/productCopy";
+import { integrateActivation } from "@/content/productCopy";
 import { siteMetadata } from "@/content/siteMetadata";
-import { embeddedFirstRunIntegrationMd } from "@/generated/integratorDocsEmbedded";
-import { langgraphReferenceReadmeUrl } from "@/lib/langgraphReferenceReadmeUrl";
 import type { Metadata } from "next";
-import Link from "next/link";
-import ReactMarkdown from "react-markdown";
-import remarkGfm from "remark-gfm";
-import { FirstRunActivationGuide } from "./FirstRunActivationGuide";
 
 export const metadata: Metadata = {
   title: siteMetadata.integrate.title,
@@ -15,26 +9,49 @@ export const metadata: Metadata = {
 };
 
 export default function IntegratePage() {
-  const md = embeddedFirstRunIntegrationMd;
+  const a = integrateActivation;
   return (
-    <main className="integrate-main">
+    <main className="integrate-main integrate-prose">
       <FunnelSurfaceBeacon surface="integrate" />
       <h1>{siteMetadata.integrate.title}</h1>
-      <p className="muted">{productCopy.integrateIntro}</p>
-      <p className="muted">
-        <Link href={langgraphReferenceReadmeUrl} data-testid="integrator-primary-cta">
-          {productCopy.integratorPrimaryCtaLabel}
-        </Link>
-      </p>
+      <p className="muted">{siteMetadata.integrate.description}</p>
+
+      <h2>{a.whyHeading}</h2>
+      {a.whyParagraphs.map((p, i) => (
+        <p key={i} className="muted">
+          {p}
+        </p>
+      ))}
+
+      <p className="muted">{a.icp}</p>
+
+      <h2>{a.requirementsHeading}</h2>
+      <ul className="muted">
+        {a.requirements.map((item) => (
+          <li key={item}>{item}</li>
+        ))}
+      </ul>
+
+      <h2>{a.runHeading}</h2>
+      <p className="muted">{a.runCaption}</p>
       <div data-testid="integrator-activation-commands">
-        <FirstRunActivationGuide />
+        <pre>
+          <code>{a.command}</code>
+        </pre>
       </div>
-      <details className="integrate-full-doc-details">
-        <summary className="integrate-full-doc-summary">{productCopy.integrateFullGuideSummary}</summary>
-        <article className="integrate-prose">
-          <ReactMarkdown remarkPlugins={[remarkGfm]}>{md}</ReactMarkdown>
-        </article>
-      </details>
+
+      <h2>{a.successHeading}</h2>
+      <ol className="muted">
+        {a.successBullets.map((b, i) => (
+          <li key={i}>{b}</li>
+        ))}
+      </ol>
+
+      <h2>{a.provedHeading}</h2>
+      <p className="muted">{a.proved}</p>
+
+      <h2>{a.nextHeading}</h2>
+      <p className="muted">{a.next}</p>
     </main>
   );
 }

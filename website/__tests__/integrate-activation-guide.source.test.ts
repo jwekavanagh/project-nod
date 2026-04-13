@@ -1,20 +1,31 @@
 import { readFileSync } from "node:fs";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
+import { integrateActivation } from "@/content/productCopy";
 
-describe("integrate activation guide wiring", () => {
-  it("page imports FirstRunActivationGuide and guide uses embedded first-run commands markdown", () => {
+describe("/integrate activation wiring", () => {
+  it("page uses integrateActivation only and exposes a single command block", () => {
     const pageSrc = readFileSync(
       path.join(__dirname, "..", "src", "app", "integrate", "page.tsx"),
       "utf8",
     );
-    expect(pageSrc).toContain("FirstRunActivationGuide");
-    expect(pageSrc).toContain("embeddedFirstRunIntegrationMd");
-    const guideSrc = readFileSync(
-      path.join(__dirname, "..", "src", "app", "integrate", "FirstRunActivationGuide.tsx"),
-      "utf8",
-    );
-    expect(guideSrc).toContain("embeddedPartnerQuickstartCommandsMd");
-    expect(guideSrc).toContain("integratorDocsEmbedded");
+    expect(pageSrc).toContain("integrateActivation");
+    expect(pageSrc).not.toContain("FirstRunActivationGuide");
+    expect(pageSrc).not.toContain("embeddedFirstRunIntegrationMd");
+    expect(pageSrc).not.toContain("langgraphReferenceReadmeUrl");
+    expect(pageSrc).not.toMatch(/<details/i);
+    const preOpens = pageSrc.match(/<pre/g);
+    expect(preOpens?.length).toBe(1);
+    expect(integrateActivation.command).toContain("npm run first-run-verify");
+    expect(pageSrc.toLowerCase()).not.toContain("partner");
+    expect(pageSrc.toLowerCase()).not.toContain("repository root");
+    expect(pageSrc).not.toContain("PARTNER_");
+  });
+
+  it("integrateActivation copy has no banned integrator terms", () => {
+    const blob = JSON.stringify(integrateActivation).toLowerCase();
+    expect(blob).not.toContain("partner");
+    expect(blob).not.toContain("repository root");
+    expect(blob).not.toContain("partner_");
   });
 });

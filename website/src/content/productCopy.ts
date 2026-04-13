@@ -135,6 +135,35 @@ export const securityQuickFacts = {
   ],
 } as const satisfies SecurityQuickFacts;
 
+/** Static copy for `/integrate` activation (no embedded docs on this route). */
+export const integrateActivation = {
+  whyHeading: "Why this matters",
+  whyParagraphs: [
+    "Workflows, agents, and automation often report success while the database is wrong or incomplete.",
+    "AgentSkeptic runs read-only SQL at verification time and compares what actually exists to what your captured tool activity claims—so you see database truth, not chat or trace color alone.",
+  ],
+  icp: "If you build workflows, agents, or systems that write to a database, this is the fastest way to see how verification reads that ground truth.",
+  requirementsHeading: "You need",
+  requirements: ["Node.js 22.13 or newer", "Git", "npm"],
+  runHeading: "Run this",
+  runCaption: "Copy the whole block, paste it in a terminal, and wait until it finishes.",
+  command:
+    "git clone --depth 1 https://github.com/jwekavanagh/agentskeptic.git && cd agentskeptic && npm install && npm run build && npm run first-run-verify",
+  successHeading: "What success looks like",
+  successBullets: [
+    "Stderr shows the human verification report, including the line: Matched the database.",
+    'Stdout shows one JSON object with "status":"complete" and a step marked verified.',
+    "The last line printed on stdout is exactly: first-run-verify: ok (sqlite)",
+    "If you see a Node experimental SQLite warning on stderr, you can ignore it—it does not mean the check failed.",
+  ],
+  provedHeading: "What you just proved",
+  proved:
+    "A bundled example wrote expectations from structured tool activity and confirmed them with read-only SQL against a fresh SQLite database—the same engine you will use with your own NDJSON and database.",
+  nextHeading: "Next: your system",
+  next:
+    "Point the same CLI at your append-only NDJSON tool log, your tools.json registry, and your SQLite or Postgres database (read-only at verification time). The clone you just created already contains the binary under dist/.",
+} as const;
+
 export const homeHeroCtaLabels = {
   verify: "Run verification",
 } as const satisfies HomeHeroCtaLabels;
@@ -270,18 +299,7 @@ export const productCopy = {
     },
   },
 
-  /** `<details>` summary on /integrate for the full embedded integration guide. */
-  integrateFullGuideSummary: "Full integration guide (prose SSOT — open when wiring semantics)",
-
-  /** Shown above the first-run command block on /integrate. */
-  integrateIntro:
-    "Start with the command quickstart below, then open the full guide when you need semantics, guarantees, and common mistakes.",
-
-  /** Primary outbound CTA on /integrate (LangGraph reference README — above activation commands). */
-  integratorPrimaryCtaLabel:
-    "LangGraph reference: emit NDJSON matching the integration quickstart contract from a minimal graph",
-
-  /** Primary outbound CTA on /guides/verify-langgraph-workflows (same README URL as /integrate). */
+  /** Primary outbound CTA on /guides/verify-langgraph-workflows (LangGraph reference README). */
   langgraphGuidePrimaryCtaLabel: "Open the LangGraph reference README (emit, then verify)",
 
   scenario: {

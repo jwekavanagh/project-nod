@@ -79,6 +79,17 @@ function assertVerified(stdout) {
   }
 }
 
+/** After success: replay CLI stderr, then stdout (each with trailing newline), then driver tail line. */
+function emitSuccessReplay(r, mode) {
+  if (r.stderr) {
+    process.stderr.write(r.stderr.endsWith("\n") ? r.stderr : r.stderr + "\n");
+  }
+  if (r.stdout) {
+    process.stdout.write(r.stdout.endsWith("\n") ? r.stdout : r.stdout + "\n");
+  }
+  console.log(`first-run-verify: ok (${mode})`);
+}
+
 async function main() {
   assertMinNode();
 
@@ -101,7 +112,7 @@ async function main() {
       fail("CLI exited " + r.status);
     }
     assertVerified(r.stdout);
-    console.log("partner-quickstart-verify: ok (postgres)");
+    emitSuccessReplay(r, "postgres");
   } else {
     const dbFile = path.join(tmpdir(), `wf-partner-${randomUUID()}.db`);
     try {
@@ -126,7 +137,7 @@ async function main() {
       fail("CLI exited " + r.status);
     }
     assertVerified(r.stdout);
-    console.log("partner-quickstart-verify: ok (sqlite)");
+    emitSuccessReplay(r, "sqlite");
   }
 }
 

@@ -57,7 +57,7 @@ The homepage **Try it** flow calls `POST /api/demo/verify`, which runs the same 
 
 Architecture, contracts, and operator checklist: **[`docs/website-product-experience.md`](../docs/website-product-experience.md)**.
 
-**First-run verification (repo root):** `npm run partner-quickstart` (see root `package.json`). **`/integrate`** renders generated **[`docs/partner-quickstart-commands.md`](../docs/partner-quickstart-commands.md)** then **[`docs/first-run-integration.md`](../docs/first-run-integration.md)**.
+**First-run verification (repo root):** `npm run partner-quickstart` or **`npm run first-run-verify`** (see root `package.json`). **`/integrate`** is static activation copy in the Next app; integrator SSOT remains **[`docs/partner-quickstart-commands.md`](../docs/partner-quickstart-commands.md)** and **[`docs/first-run-integration.md`](../docs/first-run-integration.md)** in the repo.
 
 ## Commercial operator env (Stripe, webhooks, account APIs)
 

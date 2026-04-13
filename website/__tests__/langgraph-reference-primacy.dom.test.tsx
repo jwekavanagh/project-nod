@@ -26,14 +26,10 @@ afterEach(() => {
 });
 
 describe("langgraph reference integrator primacy", () => {
-  it("/integrate: primary CTA precedes activation commands in DOM order", () => {
+  it("/integrate: no LangGraph primary CTA; activation commands present", () => {
     const { container } = render(<IntegratePage /> as ReactElement);
-    const primary = container.querySelector('[data-testid="integrator-primary-cta"]');
-    const activation = container.querySelector('[data-testid="integrator-activation-commands"]');
-    expect(primary).toBeTruthy();
-    expect(activation).toBeTruthy();
-    const pos = primary!.compareDocumentPosition(activation!);
-    expect(pos & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(container.querySelector('[data-testid="integrator-primary-cta"]')).toBeNull();
+    expect(container.querySelector('[data-testid="integrator-activation-commands"]')).toBeTruthy();
   });
 
   it("LangGraph guide: primary block first https link matches canonical README blob URL", () => {
