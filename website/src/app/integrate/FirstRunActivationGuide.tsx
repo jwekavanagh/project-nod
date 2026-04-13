@@ -9,7 +9,7 @@ export function FirstRunActivationGuide() {
   const md = embeddedPartnerQuickstartCommandsMd;
   return (
     <section className="integrate-guide" aria-labelledby="integrate-guide-heading">
-      <h2 id="integrate-guide-heading">Partner quickstart (commands)</h2>
+      <h2 id="integrate-guide-heading">First run (commands)</h2>
       <p className="muted">
         Same content as <code>docs/partner-quickstart-commands.md</code> — sole SSOT for copy-paste shell
         commands (embedded at build time). Narrative and guarantees follow below.

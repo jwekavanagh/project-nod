@@ -2,7 +2,7 @@
 
 This is the **single integrator path** for running AgentSkeptic against **your own** database and workflow shape. It replaces scattered copies of the same steps elsewhere in the repo.
 
-**Why one path:** One document reduces drift between the website, README, and ad-hoc partner notes. **Production and CI** with the **published npm** `agentskeptic`: complete **Stripe checkout** for a self-serve paid plan (**Individual**, **Team**, or **Business**; trial is fine) or an **Enterprise** arrangement so your account has an **active subscription**, then create an **`AGENTSKEPTIC_API_KEY`** (legacy **`WORKFLOW_VERIFIER_API_KEY`** is still accepted by the CLI) and use your deployed license server—**licensed `verify` / `quick` require that subscription** before each run (see [`commercial-entitlement-policy.md`](commercial-entitlement-policy.md)). **Building from this repository** with the default **`WF_BUILD_PROFILE=oss`** is for **local development, forks, and air-gapped** **`verify`** without a key; **CI locks** (`--output-lock` / `--expect-lock`) and **`enforce`** require a **commercial** build — [README.md](../README.md), **[`docs/commercial-enforce-gate-normative.md`](commercial-enforce-gate-normative.md)**.
+**Why one path:** One document reduces drift between the website, README, and ad-hoc integrator notes. **Production and CI** with the **published npm** `agentskeptic`: complete **Stripe checkout** for a self-serve paid plan (**Individual**, **Team**, or **Business**; trial is fine) or an **Enterprise** arrangement so your account has an **active subscription**, then create an **`AGENTSKEPTIC_API_KEY`** (legacy **`WORKFLOW_VERIFIER_API_KEY`** is still accepted by the CLI) and use your deployed license server—**licensed `verify` / `quick` require that subscription** before each run (see [`commercial-entitlement-policy.md`](commercial-entitlement-policy.md)). **Building from this repository** with the default **`WF_BUILD_PROFILE=oss`** is for **local development, forks, and air-gapped** **`verify`** without a key; **CI locks** (`--output-lock` / `--expect-lock`) and **`enforce`** require a **commercial** build — [README.md](../README.md), **[`docs/commercial-enforce-gate-normative.md`](commercial-enforce-gate-normative.md)**.
 
 When the license server denies a run because the subscription is inactive (`SUBSCRIPTION_INACTIVE`), the commercial CLI appends the **`upgrade_url`** returned by **`POST /api/v1/usage/reserve`** (typically your site’s **Pricing** URL) to the error message so operators can fix billing without hunting logs.
 
@@ -10,7 +10,7 @@ When the license server denies a run because the subscription is inactive (`SUBS
 
 **Operator metrics:** funnel event names, HTTP contracts, SQL examples, and CLI beacon semantics are in [`funnel-observability-ssot.md`](funnel-observability-ssot.md).
 
-Send this to someone who should **try it in one sitting**. **All shell commands** for the bundled partner quickstart live in **[partner-quickstart-commands.md](partner-quickstart-commands.md)** (generated; do not duplicate here). This file is **prose, semantics, and guarantees** only.
+Send this to someone who should **try it in one sitting**. **All shell commands** for the bundled integration quickstart live in **[partner-quickstart-commands.md](partner-quickstart-commands.md)** (generated; do not duplicate here). This file is **prose, semantics, and guarantees** only.
 
 ## 0. Bootstrap pack (optional shortcut)
 
@@ -20,7 +20,7 @@ If you already have **OpenAI-style `tool_calls`** JSON (see **`BootstrapPackInpu
 agentskeptic bootstrap --input path/to/bootstrap-input.json --db path/to/your.db --out path/to/new-pack-dir
 ```
 
-Normative flags, stdout/stderr, exit codes, and trust inheritance are **only** in [`bootstrap-pack-normative.md`](bootstrap-pack-normative.md). After a successful run (exit `0`), use the generated files as the starting contract for production NDJSON emission, or continue with the demo and partner steps below.
+Normative flags, stdout/stderr, exit codes, and trust inheritance are **only** in [`bootstrap-pack-normative.md`](bootstrap-pack-normative.md). After a successful run (exit `0`), use the generated files as the starting contract for production NDJSON emission, or continue with the demo and integration steps below.
 
 ## 1. What this does
 
@@ -48,7 +48,7 @@ This builds, seeds **`examples/demo.db`**, runs two workflows from the bundled f
 
 ## 4. Step 2: Try on your system (minimal)
 
-Canonical partner files (do not duplicate their contents in this doc):
+Canonical example files (do not duplicate their contents in this doc):
 
 | File | Role |
 |------|------|

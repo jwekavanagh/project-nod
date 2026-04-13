@@ -11,8 +11,8 @@ describe("integrate embedded SSOT", () => {
     expect(embeddedFirstRunIntegrationMd.toLowerCase()).not.toContain("integration guide unavailable");
   });
 
-  it("includes partner quickstart generated banner", () => {
-    expect(embeddedPartnerQuickstartCommandsMd).toContain("Partner quickstart");
+  it("includes first-run commands generated banner", () => {
+    expect(embeddedPartnerQuickstartCommandsMd).toContain("First run");
     expect(embeddedPartnerQuickstartCommandsMd.toLowerCase()).not.toContain("unavailable");
   });
 });

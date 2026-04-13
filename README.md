@@ -75,7 +75,7 @@ State verification engine: read-only SQL checks that database state matches expe
 
 **Prerequisite:** **Node.js ≥ 22.13** (built-in [`node:sqlite`](https://nodejs.org/api/sqlite.html)), or use [Docker](#docker-quickstart-optional) below.
 
-**Fast first run on your own DB (bundled partner files):** after `npm install` and `npm run build`, run **`npm run partner-quickstart`** from the repo root (SQLite temp DB). Commands reference: **[`docs/partner-quickstart-commands.md`](docs/partner-quickstart-commands.md)**; narrative: **[`docs/first-run-integration.md`](docs/first-run-integration.md)** and **`/integrate`** on the site.
+**Fast first run on your own DB (bundled quickstart example):** after `npm install` and `npm run build`, run **`npm run partner-quickstart`** from the repo root (SQLite temp DB). Commands reference: **[`docs/partner-quickstart-commands.md`](docs/partner-quickstart-commands.md)**; narrative: **[`docs/first-run-integration.md`](docs/first-run-integration.md)** and **`/integrate`** on the site.
 
 ```bash
 npm install

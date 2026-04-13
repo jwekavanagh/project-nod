@@ -273,12 +273,13 @@ export const productCopy = {
   /** `<details>` summary on /integrate for the full embedded integration guide. */
   integrateFullGuideSummary: "Full integration guide (prose SSOT — open when wiring semantics)",
 
-  /** Shown above partner quickstart on /integrate. */
+  /** Shown above the first-run command block on /integrate. */
   integrateIntro:
     "Start with the command quickstart below, then open the full guide when you need semantics, guarantees, and common mistakes.",
 
   /** Primary outbound CTA on /integrate (LangGraph reference README — above activation commands). */
-  integratorPrimaryCtaLabel: "LangGraph reference: emit partner-shaped NDJSON from a minimal graph",
+  integratorPrimaryCtaLabel:
+    "LangGraph reference: emit NDJSON matching the integration quickstart contract from a minimal graph",
 
   /** Primary outbound CTA on /guides/verify-langgraph-workflows (same README URL as /integrate). */
   langgraphGuidePrimaryCtaLabel: "Open the LangGraph reference README (emit, then verify)",
