@@ -9,7 +9,7 @@ const DOCS_SECTION_NEEDLES: Record<string, readonly string[]> = {
     "getSiteHtml",
     "pricing-commercial-terms-html",
     "homepage-causality-invariant",
-    "AccountLicensedStepsList",
+    "account-verification-region",
     "database-truth-vs-traces",
   ],
   "### Integrator: server-rendered commercial and account copy": [
@@ -90,6 +90,22 @@ describe("docs marketing contract", () => {
     const body = sectionAfterHeader(doc, h);
     for (const n of DOCS_SECTION_NEEDLES[h]) {
       expect(body, `CONTRIBUTING.md § ${h} missing ${n}`).toContain(n);
+    }
+  });
+
+  it("website-product-experience documents account verification ownership paths", () => {
+    const doc = readFileSync(join(root, "docs", "website-product-experience.md"), "utf8");
+    const needles = [
+      "account-verification-region",
+      "accountVerificationActivityUi.ts",
+      "productCopy.ts",
+      "funnelObservabilityQueries.ts",
+      "apiKeyCrypto.ts",
+      "AccountServerAboveFold.tsx",
+      "AccountClient.tsx",
+    ] as const;
+    for (const n of needles) {
+      expect(doc, `website-product-experience.md missing ${n}`).toContain(n);
     }
   });
 });

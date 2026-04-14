@@ -6,6 +6,9 @@ import {
 } from "node:crypto";
 
 const PREFIX = "wf_sk_live_";
+
+/** Issued live API keys: prefix + 64 lowercase hex (see `randomHexWithWfSkLivePrefix`). Tests and account SSR checks import this only. */
+export const API_KEY_ISSUED_PATTERN = /^wf_sk_live_[0-9a-f]{64}$/;
 const SCRYPT_PARAMS = { N: 16384, r: 8, p: 1, keylen: 64 } as const;
 
 /**
@@ -46,7 +49,11 @@ export function verifyApiKey(plaintext: string, stored: string): boolean {
 
 /** `wf_sk_live_` + 64 hex chars (256-bit CSPRNG). Name avoids password heuristics; this is not a user-chosen password. */
 export function randomHexWithWfSkLivePrefix(): string {
-  return PREFIX + randomBytes(32).toString("hex");
+  const k = PREFIX + randomBytes(32).toString("hex");
+  if (!API_KEY_ISSUED_PATTERN.test(k)) {
+    throw new Error("API_KEY_ISSUED_PATTERN mismatch: randomHexWithWfSkLivePrefix drift");
+  }
+  return k;
 }
 
 export function maskApiKey(k: string): string {

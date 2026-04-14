@@ -10,6 +10,8 @@ This document is the **SSOT** for **North Star funnel metrics**: measurable prog
 
 ### Engineer
 
+The signed-in **`/account`** page lists recent **licensed verify outcomes** per user by reading `funnel_event` rows where `event === 'licensed_verify_outcome'` and `user_id` matches the signed-in account. The loader **`loadAccountPageVerificationActivity`** in [`website/src/lib/funnelObservabilityQueries.ts`](../website/src/lib/funnelObservabilityQueries.ts) is the only supported read path for that UI; there is **no** new public HTTP route for it.
+
 | Surface | Method | Path | Response |
 |---------|--------|------|----------|
 | Anonymous page beacon | `POST` | `/api/funnel/surface-impression` | **`200`** JSON success; `400` bad JSON/body/attribution; `403` failed origin guard |

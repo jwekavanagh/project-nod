@@ -20,35 +20,35 @@ export type AccountEntitlementSummaryInput = {
  */
 const MAPPED_SUMMARY: Record<`${PlanId}|${SubscriptionStatusForEntitlement}`, string> = {
   "starter|none":
-    "Licensed verification (npm) needs a paid Individual, Team, Business, or Enterprise plan—see Pricing. Enforcement and CI locks need the same (not available on Starter).",
+    "Commercial CLI verification needs a paid Individual, Team, Business, or Enterprise plan—see Pricing. Enforcement and CI locks need the same (not available on Starter).",
   "starter|active":
-    "Licensed verification (npm) needs a paid Individual, Team, Business, or Enterprise plan—see Pricing. Enforcement and CI locks need the same (not available on Starter).",
+    "Commercial CLI verification needs a paid Individual, Team, Business, or Enterprise plan—see Pricing. Enforcement and CI locks need the same (not available on Starter).",
   "starter|inactive":
-    "Licensed verification (npm) needs a paid Individual, Team, Business, or Enterprise plan—see Pricing. Enforcement and CI locks need the same (not available on Starter).",
+    "Commercial CLI verification needs a paid Individual, Team, Business, or Enterprise plan—see Pricing. Enforcement and CI locks need the same (not available on Starter).",
   "individual|none":
-    "Licensed verification (npm) needs an active subscription. Enforcement and CI locks need an active subscription.",
+    "Commercial CLI verification needs an active subscription. Enforcement and CI locks need an active subscription.",
   "individual|active":
-    "Licensed verification (npm) is enabled. Enforcement and CI locks are enabled.",
+    "Commercial CLI verification is enabled. Enforcement and CI locks are enabled.",
   "individual|inactive":
-    "Licensed verification (npm) needs an active subscription. Enforcement and CI locks need an active subscription.",
+    "Commercial CLI verification needs an active subscription. Enforcement and CI locks need an active subscription.",
   "team|none":
-    "Licensed verification (npm) needs an active subscription. Enforcement and CI locks need an active subscription.",
+    "Commercial CLI verification needs an active subscription. Enforcement and CI locks need an active subscription.",
   "team|active":
-    "Licensed verification (npm) is enabled. Enforcement and CI locks are enabled.",
+    "Commercial CLI verification is enabled. Enforcement and CI locks are enabled.",
   "team|inactive":
-    "Licensed verification (npm) needs an active subscription. Enforcement and CI locks need an active subscription.",
+    "Commercial CLI verification needs an active subscription. Enforcement and CI locks need an active subscription.",
   "business|none":
-    "Licensed verification (npm) needs an active subscription. Enforcement and CI locks need an active subscription.",
+    "Commercial CLI verification needs an active subscription. Enforcement and CI locks need an active subscription.",
   "business|active":
-    "Licensed verification (npm) is enabled. Enforcement and CI locks are enabled.",
+    "Commercial CLI verification is enabled. Enforcement and CI locks are enabled.",
   "business|inactive":
-    "Licensed verification (npm) needs an active subscription. Enforcement and CI locks need an active subscription.",
+    "Commercial CLI verification needs an active subscription. Enforcement and CI locks need an active subscription.",
   "enterprise|none":
-    "Licensed verification (npm) needs an active subscription. Enforcement and CI locks need an active subscription.",
+    "Commercial CLI verification needs an active subscription. Enforcement and CI locks need an active subscription.",
   "enterprise|active":
-    "Licensed verification (npm) is enabled. Enforcement and CI locks are enabled.",
+    "Commercial CLI verification is enabled. Enforcement and CI locks are enabled.",
   "enterprise|inactive":
-    "Licensed verification (npm) needs an active subscription. Enforcement and CI locks need an active subscription.",
+    "Commercial CLI verification needs an active subscription. Enforcement and CI locks need an active subscription.",
 };
 
 function assertMatchesResolver(

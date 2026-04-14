@@ -1,9 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import type { CommercialAccountStatePayload } from "@/lib/commercialAccountState";
+import type { AccountPageVerificationActivity } from "@/lib/funnelObservabilityQueries";
 import type { PriceMapping } from "@/lib/accountEntitlementSummary";
 import { LiveStatus } from "@/components/LiveStatus";
 import { productCopy } from "@/content/productCopy";
@@ -12,27 +13,67 @@ import {
   STRIPE_CUSTOMER_MISSING_ERROR,
   STRIPE_CUSTOMER_MISSING_MESSAGE,
 } from "@/lib/billingPortalConstants";
+import {
+  ACCOUNT_ACTIVITY_SCOPE_LINE,
+  accountActivityMetaLine,
+  accountActivityStatusLabel,
+} from "@/lib/accountVerificationActivityUi";
+import type { LicensedVerifyOutcomeMetadata } from "@/lib/funnelCommercialMetadata";
 import { SignOutButton } from "../SignOutButton";
+
+function TrustFootnoteSecondLine({ text }: { text: string }) {
+  const needle = "Security & Trust";
+  const i = text.indexOf(needle);
+  if (i < 0) {
+    return (
+      <p className="muted" style={{ fontSize: "0.95rem", marginBottom: "0.35rem" }}>
+        {text}
+      </p>
+    );
+  }
+  return (
+    <p className="muted" style={{ fontSize: "0.95rem", marginBottom: "0.35rem" }}>
+      {text.slice(0, i)}
+      <Link href="/security">{needle}</Link>
+      {text.slice(i + needle.length)}
+    </p>
+  );
+}
 
 function billingSyncDisplay(mapping: PriceMapping): { label: string; title: string } {
   if (mapping === "mapped") {
     return {
-      label: "Billing sync: OK",
-      title: "Your subscription is linked to your plan for quota and licensed features.",
+      label: "Subscription linked to plan: OK",
+      title: "Your Stripe subscription maps to your plan for quota and paid verification features.",
     };
   }
   return {
-    label: "Billing sync: needs attention",
-    title: "We have not finished linking your subscription to your plan yet.",
+    label: "Subscription linked to plan: needs attention",
+    title: "We have not finished linking your subscription to your plan in billing records yet.",
   };
+}
+
+function statusLabelFromRow(row: { terminalStatus: string }): string {
+  const allowed: LicensedVerifyOutcomeMetadata["terminal_status"][] = [
+    "complete",
+    "inconsistent",
+    "incomplete",
+  ];
+  const ts = row.terminalStatus;
+  if (allowed.includes(ts as LicensedVerifyOutcomeMetadata["terminal_status"])) {
+    return accountActivityStatusLabel(ts as LicensedVerifyOutcomeMetadata["terminal_status"]);
+  }
+  return row.terminalStatus;
 }
 
 export function AccountClient({
   hasKey,
   initialCommercial,
+  activity,
 }: {
   hasKey: boolean;
   initialCommercial: CommercialAccountStatePayload;
+  activity: AccountPageVerificationActivity;
 }) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -47,7 +88,12 @@ export function AccountClient({
   const [portalLoading, setPortalLoading] = useState(false);
   const [portalErr, setPortalErr] = useState<string | null>(null);
 
+  const checkoutRefreshKeyRef = useRef<string | null>(null);
+
   const billing = billingSyncDisplay(commercial.priceMapping);
+
+  const monthCount =
+    activity.ok === true ? activity.licensedOutcomesThisUtcMonth : 0;
 
   useEffect(() => {
     setCommercial(initialCommercial);
@@ -59,6 +105,7 @@ export function AccountClient({
 
   useEffect(() => {
     if (checkout !== "success" || !expectedPlanRaw) {
+      checkoutRefreshKeyRef.current = null;
       setActivationUi("idle");
       return;
     }
@@ -97,6 +144,15 @@ export function AccountClient({
     };
   }, [checkout, expectedPlanRaw]);
 
+  useEffect(() => {
+    if (activationUi !== "ready") return;
+    if (checkout !== "success" || !expectedPlanRaw) return;
+    const k = `${checkout}:${expectedPlanRaw}`;
+    if (checkoutRefreshKeyRef.current === k) return;
+    checkoutRefreshKeyRef.current = k;
+    router.refresh();
+  }, [activationUi, checkout, expectedPlanRaw, router]);
+
   async function openBillingPortal() {
     setPortalErr(null);
     setPortalLoading(true);
@@ -108,7 +164,11 @@ export function AccountClient({
         return;
       }
       if (!r.ok) {
-        setPortalErr(j.error === "Internal Server Error" ? "Billing portal is unavailable. Try again later." : (j.error ?? "Billing portal failed"));
+        setPortalErr(
+          j.error === "Internal Server Error"
+            ? "Billing portal is unavailable. Try again later."
+            : (j.error ?? "Billing portal failed"),
+        );
         return;
       }
       if (j.url) window.location.href = j.url;
@@ -134,7 +194,7 @@ export function AccountClient({
   async function revokeKey() {
     if (
       !window.confirm(
-        "Revoke your API key? Licensed verification will stop until you generate a new key.",
+        "Revoke your API key? Paid verification stops until you generate a new key.",
       )
     ) {
       return;
@@ -155,177 +215,263 @@ export function AccountClient({
     router.refresh();
   }
 
+  function acknowledgeSavedKey() {
+    setKey(null);
+    router.refresh();
+  }
+
   const showInactiveBillingCta = commercial.subscriptionStatus === "inactive";
 
   const assertiveAccountMessage = accountAssertiveMessage(portalErr, err, activationUi);
+
+  const latestRow = activity.ok === true && activity.rows[0] ? activity.rows[0] : null;
+  const showExactEmpty =
+    activity.ok === true &&
+    activity.rows.length === 0 &&
+    activity.licensedOutcomesThisUtcMonth === 0;
 
   return (
     <div className="card" style={{ marginTop: "1rem" }}>
       <p style={{ marginTop: 0, marginBottom: "1rem" }}>
         <SignOutButton variant="account" />
       </p>
-      <h2>Subscription and entitlements</h2>
-      {assertiveAccountMessage && (
-        <LiveStatus mode="assertive">
-          <p
-            className="error-text"
-            data-testid={portalErr && assertiveAccountMessage === portalErr ? "billing-portal-error" : "account-assertive-message"}
-          >
-            {assertiveAccountMessage}
-          </p>
-        </LiveStatus>
-      )}
-      <p>
-        <strong>Plan:</strong> {commercial.plan}
-      </p>
-      <p>
-        <strong>Subscription status:</strong> {commercial.subscriptionStatus}
-      </p>
-      <p title={billing.title}>
-        <strong>Billing:</strong> {billing.label}
-      </p>
-      <div style={{ marginTop: "1rem" }} data-testid="account-monthly-quota">
-        <h3 style={{ marginTop: 0 }}>{productCopy.account.monthlyQuotaHeading}</h3>
-        <p className="muted">{productCopy.account.monthlyQuotaYearMonth(commercial.monthlyQuota.yearMonth)}</p>
-        {commercial.monthlyQuota.keys.length === 0 ? (
-          <p className="muted">No active API key. Create a key below to use licensed verification quota.</p>
-        ) : (
-          commercial.monthlyQuota.keys.map((k) => (
-            <p key={k.apiKeyId}>
-              <strong>{k.label}:</strong>{" "}
-              {productCopy.account.monthlyQuotaKeyLine(
-                k.used,
-                k.limit === null ? productCopy.account.monthlyQuotaUnlimited : String(k.limit),
-              )}
-            </p>
-          ))
-        )}
-        <p className="muted">
-          {productCopy.account.monthlyQuotaDistinctDays(
-            commercial.monthlyQuota.distinctReserveUtcDaysThisMonth,
-          )}
+
+      <section data-testid="account-verification-region">
+        <h2 style={{ marginTop: 0 }}>Verification</h2>
+        <p>
+          <strong>Outcomes this billing month (UTC):</strong> {monthCount}
         </p>
-        <p data-testid="quota-urgency-line">
-          {productCopy.account.quotaUrgencyCopy[commercial.monthlyQuota.worstUrgency]}
-        </p>
-      </div>
-      {commercial.hasStripeCustomer && (
-        <p style={{ marginTop: "0.5rem" }}>
-          <button
-            type="button"
-            data-testid="manage-billing-button"
-            disabled={portalLoading}
-            onClick={() => void openBillingPortal()}
-          >
-            {portalLoading ? "…" : "Manage billing"}
-          </button>
-        </p>
-      )}
-      {commercial.billingPriceSyncHint && (
-        <div
-          className="muted"
-          style={{
-            marginTop: "0.75rem",
-            padding: "0.75rem 1rem",
-            border: "1px solid var(--muted)",
-            borderRadius: "6px",
-          }}
-          data-testid="billing-price-sync-hint"
-        >
-          <p style={{ margin: 0 }}>
-            <strong>Billing setup is still finishing.</strong> Your payment looks active, but we have not fully
-            connected it to your plan yet. If this message stays after refreshing in a few minutes,{" "}
-            {commercial.billingPriceSyncHint.supportEmail ? (
-              <>
-                email{" "}
-                <a href={`mailto:${commercial.billingPriceSyncHint.supportEmail}`}>
-                  {commercial.billingPriceSyncHint.supportEmail}
-                </a>{" "}
-                and include the address you use to sign in.
-              </>
-            ) : (
-              <>use the contact options in the site footer.</>
+        {latestRow ? (
+          <p className="muted">
+            <strong>Most recent row:</strong> {statusLabelFromRow(latestRow)} ·{" "}
+            {accountActivityMetaLine(
+              latestRow.workloadClass as LicensedVerifyOutcomeMetadata["workload_class"],
+              latestRow.subcommand as LicensedVerifyOutcomeMetadata["subcommand"],
             )}
           </p>
-        </div>
-      )}
-      {showInactiveBillingCta && (
-        <div
-          className="muted"
-          style={{
-            marginTop: "0.75rem",
-            padding: "0.75rem 1rem",
-            border: "1px solid var(--muted)",
-            borderRadius: "6px",
-          }}
-          data-testid="inactive-subscription-notice"
-        >
-          <p style={{ margin: 0 }}>
-            Your subscription is not active, so licensed verification and enforcement are paused.
-            {commercial.hasStripeCustomer
-              ? " Use Manage billing above to update payment or your subscription, or choose a plan again from Pricing."
-              : " Subscribe from Pricing to restore access."}
-          </p>
-          <p style={{ margin: "0.5rem 0 0" }}>
-            <Link href="/pricing">View pricing and subscribe</Link>
-          </p>
-        </div>
-      )}
-      {checkout === "success" && expectedPlanRaw && (
-        <div style={{ marginTop: "0.75rem" }}>
-          {activationUi === "pending" && (
-            <LiveStatus mode="polite">
-              <p className="muted" data-testid="checkout-activation-pending">
-                {productCopy.account.checkoutActivationPending}
-              </p>
-            </LiveStatus>
-          )}
-          {activationUi === "ready" && (
-            <LiveStatus mode="polite">
-              <p style={{ color: "var(--muted)" }} data-testid="checkout-activation-ready">
-                {productCopy.account.checkoutActivationReady}
-              </p>
-            </LiveStatus>
-          )}
-        </div>
-      )}
-      <p style={{ marginTop: "0.75rem" }}>{commercial.entitlementSummary}</p>
-
-      <h2 style={{ marginTop: "1.5rem" }}>API key</h2>
-      {(hasActiveKey || key) && (
-        <p style={{ marginTop: "0.5rem" }}>
-          <button type="button" onClick={() => void revokeKey()}>
-            Revoke API key
-          </button>
+        ) : null}
+        <p className="muted" data-testid="account-activity-scope">
+          {ACCOUNT_ACTIVITY_SCOPE_LINE}
         </p>
-      )}
-      {!hasActiveKey && !key && (
-        <button type="button" onClick={createKey}>
-          Generate API key
-        </button>
-      )}
-      {key && (
-        <>
-          <LiveStatus mode="polite">
-            <p className="muted">{productCopy.account.a11yApiKeyReady}</p>
-          </LiveStatus>
-          <p data-testid="api-key-plaintext" style={{ wordBreak: "break-all", marginTop: "0.75rem" }}>
-            {key}
+        {activity.ok === false ? (
+          <p className="muted" data-testid="account-activity-error">
+            {productCopy.account.activityLoadError}
           </p>
-        </>
-      )}
+        ) : showExactEmpty ? (
+          <p className="muted">{productCopy.account.activityEmpty}</p>
+        ) : (
+          <ul style={{ marginTop: "0.5rem", paddingLeft: "1.25rem" }}>
+            {activity.rows.map((row) => (
+              <li key={row.createdAtIso} style={{ marginBottom: "0.35rem" }}>
+                <span>{statusLabelFromRow(row)}</span>
+                <span className="muted"> · {row.createdAtIso}</span>
+                <div className="muted" style={{ fontSize: "0.95rem" }}>
+                  {accountActivityMetaLine(
+                    row.workloadClass as LicensedVerifyOutcomeMetadata["workload_class"],
+                    row.subcommand as LicensedVerifyOutcomeMetadata["subcommand"],
+                  )}
+                </div>
+              </li>
+            ))}
+          </ul>
+        )}
+        <p style={{ marginTop: "1rem" }}>
+          <Link href="/integrate" data-testid="account-primary-cta">
+            Run verification (Integrate)
+          </Link>
+        </p>
+      </section>
 
-      <h2 style={{ marginTop: "1.5rem" }}>Next steps</h2>
-      <p style={{ marginTop: "0.35rem" }}>
-        <Link href="/integrate">Run your first verification</Link> — step-by-step commands you can paste
-        for your database.
-      </p>
-      <p className="muted" style={{ marginTop: "0.5rem", fontSize: "0.95rem" }}>
-        Commercial CLI: set <code>AGENTSKEPTIC_API_KEY</code> (legacy <code>WORKFLOW_VERIFIER_API_KEY</code> still
-        works), then run{" "}
-        <code style={{ wordBreak: "break-all" }}>npx agentskeptic verify …</code> from your repo (see
-        Integrate for the full command).
-      </p>
+      <section
+        data-testid="account-starter-upgrade"
+        hidden={commercial.plan !== "starter"}
+        style={{ marginTop: "1.25rem" }}
+      >
+        <h2 style={{ marginTop: 0 }}>Upgrade from Starter</h2>
+        <p className="muted">
+          Starter does not include paid CLI verification. Move to Individual, Team, or Business for
+          quota-backed verification and CI features.
+        </p>
+        <p style={{ marginTop: "0.5rem" }}>
+          <Link href="/pricing">View plans and upgrade</Link>
+        </p>
+      </section>
+
+      <section data-testid="account-subscription-region" style={{ marginTop: "1.25rem" }}>
+        <h2 style={{ marginTop: 0 }}>Subscription</h2>
+        {assertiveAccountMessage && (
+          <LiveStatus mode="assertive">
+            <p
+              className="error-text"
+              data-testid={
+                portalErr && assertiveAccountMessage === portalErr
+                  ? "billing-portal-error"
+                  : "account-assertive-message"
+              }
+            >
+              {assertiveAccountMessage}
+            </p>
+          </LiveStatus>
+        )}
+        <p>
+          <strong>Plan:</strong> {commercial.plan}
+        </p>
+        <p>
+          <strong>Subscription status:</strong> {commercial.subscriptionStatus}
+        </p>
+        <p title={billing.title}>
+          <strong>Billing:</strong> {billing.label}
+        </p>
+        {commercial.hasStripeCustomer && (
+          <p style={{ marginTop: "0.5rem" }}>
+            <button
+              type="button"
+              data-testid="manage-billing-button"
+              disabled={portalLoading}
+              onClick={() => void openBillingPortal()}
+            >
+              {portalLoading ? "…" : "Manage billing"}
+            </button>
+          </p>
+        )}
+        {commercial.billingPriceSyncHint && (
+          <div
+            className="muted"
+            style={{
+              marginTop: "0.75rem",
+              padding: "0.75rem 1rem",
+              border: "1px solid var(--muted)",
+              borderRadius: "6px",
+            }}
+            data-testid="billing-price-sync-hint"
+          >
+            <p style={{ margin: 0 }}>
+              <strong>Billing setup is still finishing.</strong> Your payment looks active, but we have not fully
+              connected it to your plan yet. If this message stays after refreshing in a few minutes,{" "}
+              {commercial.billingPriceSyncHint.supportEmail ? (
+                <>
+                  email{" "}
+                  <a href={`mailto:${commercial.billingPriceSyncHint.supportEmail}`}>
+                    {commercial.billingPriceSyncHint.supportEmail}
+                  </a>{" "}
+                  and include the address you use to sign in.
+                </>
+              ) : (
+                <>use the contact options in the site footer.</>
+              )}
+            </p>
+          </div>
+        )}
+        {showInactiveBillingCta && (
+          <div
+            className="muted"
+            style={{
+              marginTop: "0.75rem",
+              padding: "0.75rem 1rem",
+              border: "1px solid var(--muted)",
+              borderRadius: "6px",
+            }}
+            data-testid="inactive-subscription-notice"
+          >
+            <p style={{ margin: 0 }}>
+              Your subscription is not active, so paid verification and enforcement are paused.
+              {commercial.hasStripeCustomer
+                ? " Use Manage billing above to update payment or your subscription, or choose a plan again from Pricing."
+                : " Subscribe from Pricing to restore access."}
+            </p>
+            <p style={{ margin: "0.5rem 0 0" }}>
+              <Link href="/pricing">View pricing and subscribe</Link>
+            </p>
+          </div>
+        )}
+        {checkout === "success" && expectedPlanRaw && (
+          <div style={{ marginTop: "0.75rem" }}>
+            {activationUi === "pending" && (
+              <LiveStatus mode="polite">
+                <p className="muted" data-testid="checkout-activation-pending">
+                  {productCopy.account.checkoutActivationPending}
+                </p>
+              </LiveStatus>
+            )}
+            {activationUi === "ready" && (
+              <LiveStatus mode="polite">
+                <p style={{ color: "var(--muted)" }} data-testid="checkout-activation-ready">
+                  {productCopy.account.checkoutActivationReady}
+                </p>
+              </LiveStatus>
+            )}
+          </div>
+        )}
+        <p style={{ marginTop: "0.75rem" }}>{commercial.entitlementSummary}</p>
+      </section>
+
+      <section data-testid="account-usage-region" style={{ marginTop: "1.25rem" }}>
+        <div data-testid="account-monthly-quota">
+          <h2 style={{ marginTop: 0 }}>{productCopy.account.monthlyQuotaHeading}</h2>
+          <p className="muted">{productCopy.account.monthlyQuotaYearMonth(commercial.monthlyQuota.yearMonth)}</p>
+          {commercial.monthlyQuota.keys.length === 0 ? (
+            <p className="muted">No active API key. Create a key below to draw on your monthly quota.</p>
+          ) : (
+            commercial.monthlyQuota.keys.map((k) => (
+              <p key={k.apiKeyId}>
+                <strong>{k.label}:</strong>{" "}
+                {productCopy.account.monthlyQuotaKeyLine(
+                  k.used,
+                  k.limit === null ? productCopy.account.monthlyQuotaUnlimited : String(k.limit),
+                )}
+              </p>
+            ))
+          )}
+          <p className="muted">
+            {productCopy.account.monthlyQuotaDistinctDays(commercial.monthlyQuota.distinctReserveUtcDaysThisMonth)}
+          </p>
+          <p data-testid="quota-urgency-line">
+            {productCopy.account.quotaUrgencyCopy[commercial.monthlyQuota.worstUrgency]}
+          </p>
+        </div>
+      </section>
+
+      <section data-testid="account-api-key-region" style={{ marginTop: "1.25rem" }}>
+        <h2 style={{ marginTop: 0 }}>API key</h2>
+        {(hasActiveKey || key) && (
+          <p style={{ marginTop: "0.5rem" }}>
+            <button type="button" onClick={() => void revokeKey()}>
+              Revoke API key
+            </button>
+          </p>
+        )}
+        {!hasActiveKey && !key && (
+          <button type="button" onClick={() => void createKey()}>
+            Generate API key
+          </button>
+        )}
+        {key ? (
+          <>
+            <LiveStatus mode="polite">
+              <p className="muted">{productCopy.account.a11yApiKeyReady}</p>
+            </LiveStatus>
+            <p data-testid="api-key-plaintext" style={{ wordBreak: "break-all", marginTop: "0.75rem" }}>
+              {key}
+            </p>
+            <p style={{ marginTop: "0.75rem" }}>
+              <button type="button" onClick={acknowledgeSavedKey}>
+                I&apos;ve saved my key
+              </button>
+            </p>
+          </>
+        ) : null}
+        <p className="muted" style={{ marginTop: "0.75rem", fontSize: "0.95rem" }}>
+          Set <code>AGENTSKEPTIC_API_KEY</code> (legacy <code>WORKFLOW_VERIFIER_API_KEY</code> still works), then run{" "}
+          <code style={{ wordBreak: "break-all" }}>npx agentskeptic verify …</code> from your repo.
+        </p>
+      </section>
+
+      <section data-testid="account-trust-footnote" style={{ marginTop: "1.25rem" }}>
+        <p className="muted" style={{ fontSize: "0.95rem", marginBottom: "0.35rem" }}>
+          {productCopy.account.trustFootnoteLines[0]}
+        </p>
+        <TrustFootnoteSecondLine text={productCopy.account.trustFootnoteLines[1]} />
+      </section>
     </div>
   );
 }

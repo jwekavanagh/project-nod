@@ -30,12 +30,14 @@ afterEach(() => {
   cleanup();
 });
 
+const idleActivity = { ok: true as const, rows: [], licensedOutcomesThisUtcMonth: 0 };
+
 function baseCommercial(overrides: Partial<CommercialAccountStatePayload> = {}): CommercialAccountStatePayload {
   return {
     plan: "individual",
     subscriptionStatus: "inactive",
     priceMapping: "mapped",
-    entitlementSummary: "Licensed verification (npm) needs an active subscription.",
+    entitlementSummary: "Commercial CLI verification needs an active subscription. Enforcement and CI locks need an active subscription.",
     checkoutActivationReady: false,
     hasStripeCustomer: false,
     billingPriceSyncHint: null,
@@ -46,12 +48,12 @@ function baseCommercial(overrides: Partial<CommercialAccountStatePayload> = {}):
 
 describe("AccountClient inactive subscription", () => {
   it("shows recovery notice and pricing link", () => {
-    render(<AccountClient hasKey={false} initialCommercial={baseCommercial()} />);
+    render(<AccountClient hasKey={false} initialCommercial={baseCommercial()} activity={idleActivity} />);
 
     const notice = screen.getByTestId("inactive-subscription-notice");
     expect(notice).toBeInTheDocument();
     expect(notice).toHaveTextContent(/not active/i);
-    expect(notice).toHaveTextContent(/licensed verification and enforcement are paused/i);
+    expect(notice).toHaveTextContent(/paid verification and enforcement are paused/i);
     expect(notice).toHaveTextContent(/subscribe from pricing to restore access/i);
 
     const pricing = screen.getByRole("link", { name: /view pricing and subscribe/i });
@@ -59,12 +61,24 @@ describe("AccountClient inactive subscription", () => {
   });
 
   it("does not render Manage billing when hasStripeCustomer is false", () => {
-    render(<AccountClient hasKey={false} initialCommercial={baseCommercial({ hasStripeCustomer: false })} />);
+    render(
+      <AccountClient
+        hasKey={false}
+        initialCommercial={baseCommercial({ hasStripeCustomer: false })}
+        activity={idleActivity}
+      />,
+    );
     expect(screen.queryByTestId("manage-billing-button")).not.toBeInTheDocument();
   });
 
   it("renders exactly one Manage billing button when hasStripeCustomer is true", () => {
-    render(<AccountClient hasKey={false} initialCommercial={baseCommercial({ hasStripeCustomer: true })} />);
+    render(
+      <AccountClient
+        hasKey={false}
+        initialCommercial={baseCommercial({ hasStripeCustomer: true })}
+        activity={idleActivity}
+      />,
+    );
     const buttons = screen.getAllByRole("button", { name: /^manage billing$/i });
     expect(buttons).toHaveLength(1);
   });
@@ -74,6 +88,7 @@ describe("AccountClient inactive subscription", () => {
       <AccountClient
         hasKey={false}
         initialCommercial={baseCommercial({ hasStripeCustomer: true })}
+        activity={idleActivity}
       />,
     );
     const notice = screen.getByTestId("inactive-subscription-notice");
@@ -81,7 +96,7 @@ describe("AccountClient inactive subscription", () => {
   });
 
   it("documents licensed CLI prerequisites next to API key", () => {
-    render(<AccountClient hasKey={false} initialCommercial={baseCommercial()} />);
+    render(<AccountClient hasKey={false} initialCommercial={baseCommercial()} activity={idleActivity} />);
     expect(screen.getByText(/AGENTSKEPTIC_API_KEY/i)).toBeInTheDocument();
     expect(screen.getByText(/npx agentskeptic verify/i)).toBeInTheDocument();
   });
@@ -91,6 +106,7 @@ describe("AccountClient inactive subscription", () => {
       <AccountClient
         hasKey={false}
         initialCommercial={baseCommercial({ subscriptionStatus: "active" })}
+        activity={idleActivity}
       />,
     );
     expect(screen.queryByTestId("inactive-subscription-notice")).not.toBeInTheDocument();
@@ -107,6 +123,7 @@ describe("AccountClient inactive subscription", () => {
             supportEmail: "billing-support@example.com",
           },
         })}
+        activity={idleActivity}
       />,
     );
     const hint = screen.getByTestId("billing-price-sync-hint");
@@ -125,6 +142,7 @@ describe("AccountClient inactive subscription", () => {
           priceMapping: "unmapped",
           billingPriceSyncHint: { supportEmail: null },
         })}
+        activity={idleActivity}
       />,
     );
     expect(screen.getByTestId("billing-price-sync-hint")).toHaveTextContent("site footer");

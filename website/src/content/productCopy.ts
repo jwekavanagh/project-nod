@@ -319,13 +319,18 @@ export const productCopy = {
     },
   ] as const,
 
-  /** Ordered steps shown on the account page (server); do not duplicate in AccountClient. */
-  accountLicensedVerifySteps: [
-    "Keep an active paid subscription (Individual, Team, Business, or Enterprise) and a Stripe price this deployment maps to your plan.",
-    "Each licensed run must succeed license reserve—your API key alone does not grant verification until subscription, price mapping, and reserve conditions hold.",
-    "Set AGENTSKEPTIC_API_KEY (legacy WORKFLOW_VERIFIER_API_KEY still works), then run the commercial CLI from your repo (see Integrate for the full verify command).",
-    "Machine contracts: OpenAPI at /openapi-commercial-v1.yaml and plans JSON at /api/v1/commercial/plans; entitlements in commercial-entitlement-matrix.md and commercial-entitlement-policy.md on GitHub main; open Pricing to subscribe or change plans.",
-  ] as const,
+  /** Server intro on `/account` (AccountServerAboveFold); links are composed in TSX. */
+  accountPage: {
+    line1:
+      "This page is your verification control center: see recent outcomes your keys reported, confirm subscription and quota, and manage API keys.",
+    line2BeforePricing: "Subscribe or change plans from",
+    pricingLinkLabel: "Pricing",
+    line2BeforeIntegrate: "; run your first verification from",
+    integrateLinkLabel: "Integrate",
+    line2AfterIntegrate: ". Machine-readable limits live in",
+    openapiLinkLabel: "OpenAPI",
+    line2End: " on this site.",
+  } as const,
 
   howItWorks: {
     sectionTitle: "How it works",
@@ -468,13 +473,13 @@ export const productCopy = {
 
   /** Account client: activation copy and a11y announcements (keep in sync with AccountClient UI). */
   account: {
-    monthlyQuotaHeading: "Licensed verification usage (this month)",
+    monthlyQuotaHeading: "Verification quota (this billing month)",
     monthlyQuotaYearMonth: (ym: string) => `Billing month: ${ym} (UTC).`,
     monthlyQuotaKeyLine: (used: number, limitLabel: string) =>
       `${used} used · limit: ${limitLabel}`,
     monthlyQuotaUnlimited: "Unlimited",
     monthlyQuotaDistinctDays: (n: number) =>
-      `Active verification days (UTC dates with a successful reserve) this month: ${n}. This is an activity gauge, not the rolling 28-day retention KPI in operator docs.`,
+      `Distinct UTC calendar days with a successful license reserve this month: ${n}. This is a simple activity gauge for your account, not an operator retention metric.`,
     quotaUrgencyCopy: {
       ok: "Usage is comfortably below your plan limit.",
       notice: "You have used at least 75% of your included verifications for this month.",
@@ -487,6 +492,14 @@ export const productCopy = {
     checkoutActivationReady: "Your subscription is active. You can use licensed verify with your API key.",
     checkoutActivationTimeout:
       "Still processing—refresh in a minute or contact the operator if this persists.",
+    activityEmpty:
+      "No licensed verify outcomes were recorded for this billing month yet. Run a verification from Integrate when your subscription and API key are active.",
+    activityLoadError:
+      "We could not load verification activity right now. Refresh the page in a moment; if it keeps happening, contact support.",
+    trustFootnoteLines: [
+      "Billing and subscription details are managed through Stripe; use Manage billing when it appears above.",
+      "How keys and data are handled is summarized on the Security & Trust page—this page does not add new guarantees beyond that page.",
+    ] as const,
   },
 
   signInA11y: {
