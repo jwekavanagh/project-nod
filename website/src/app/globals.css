@@ -106,10 +106,145 @@ main {
   margin-bottom: 1rem;
   border: 1px solid var(--border);
 }
+.pricing-page .pricing-hero-title {
+  font-size: 1.85rem;
+  line-height: 1.2;
+  margin: 0 0 0.5rem;
+}
+.pricing-page .pricing-positioning {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--fg);
+  margin: 0 0 1rem;
+  max-width: 40rem;
+  line-height: 1.35;
+}
+.pricing-page .pricing-hero-block {
+  margin-bottom: 1.25rem;
+}
+.pricing-page .pricing-hero-subtitle {
+  margin: 0 0 0.65rem;
+  max-width: 40rem;
+  font-size: 1.05rem;
+  line-height: 1.45;
+  color: var(--fg);
+}
+.pricing-page .pricing-hero-bullets {
+  margin: 0;
+  padding-left: 1.25rem;
+  max-width: 40rem;
+  color: var(--muted);
+  line-height: 1.5;
+}
+.pricing-page .pricing-hero-bullets li {
+  margin: 0.25rem 0;
+}
+.pricing-page .pricing-example {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 1rem 1.15rem;
+  margin: 1.25rem 0;
+  max-width: 42rem;
+}
+.pricing-page .pricing-example-heading {
+  font-size: 1.05rem;
+  margin: 0 0 0.5rem;
+}
+.pricing-page .pricing-example ul {
+  margin: 0;
+  padding-left: 1.2rem;
+  color: var(--muted);
+  line-height: 1.45;
+}
+.pricing-page .pricing-risk {
+  max-width: 42rem;
+  margin: 0 0 1.25rem;
+  line-height: 1.45;
+}
+.pricing-page .pricing-compare {
+  margin: 1.5rem 0 1.25rem;
+}
+.pricing-page .pricing-compare-heading {
+  font-size: 1.15rem;
+  margin: 0 0 0.5rem;
+}
+.pricing-page .pricing-compare-scroll {
+  overflow-x: auto;
+  margin-bottom: 0.5rem;
+}
+.pricing-page .pricing-compare-table {
+  width: 100%;
+  min-width: 36rem;
+  border-collapse: collapse;
+  font-size: 0.88rem;
+}
+.pricing-page .pricing-compare-table th,
+.pricing-page .pricing-compare-table td {
+  border: 1px solid var(--border);
+  padding: 0.45rem 0.55rem;
+  text-align: left;
+}
+.pricing-page .pricing-compare-table thead th {
+  background: var(--card);
+  font-weight: 600;
+}
+.pricing-page .pricing-compare-table tbody th {
+  font-weight: 500;
+  color: var(--fg);
+  background: var(--surface);
+}
+.pricing-page .pricing-commercial-terms {
+  margin: 1.25rem 0 0;
+  padding-left: 1.2rem;
+  max-width: 42rem;
+  line-height: 1.45;
+}
+.pricing-page .pricing-commercial-terms li {
+  margin: 0.35rem 0;
+}
+.pricing-page .pricing-card-price {
+  font-size: 1.5rem;
+  margin: 0.25rem 0 0;
+}
+.pricing-page .pricing-card-quota {
+  margin: 0.15rem 0 0;
+  font-size: 0.95rem;
+}
+.pricing-page .pricing-card-outcome,
+.pricing-page .pricing-card-includes {
+  margin-top: 0.65rem;
+  font-size: 0.95rem;
+  line-height: 1.4;
+}
 .pricing-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   gap: 1rem;
+  align-items: stretch;
+}
+.pricing-page .pricing-card-starter {
+  opacity: 0.92;
+  border-color: color-mix(in srgb, var(--border) 85%, transparent);
+}
+.pricing-page .pricing-card-starter h2 {
+  font-size: 1.15rem;
+}
+.pricing-page .pricing-card-recommended {
+  position: relative;
+  z-index: 1;
+  transform: scale(1.035);
+  transform-origin: center top;
+  padding: 1.45rem 1.35rem 1.35rem;
+  margin-top: 0.15rem;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 1px var(--accent);
+}
+@media (max-width: 720px) {
+  .pricing-page .pricing-card-recommended {
+    transform: none;
+    padding: 1.25rem;
+  }
 }
 button, .btn {
   background: var(--accent);
@@ -312,11 +447,6 @@ button.secondary, .btn.secondary {
 }
 .commercial-links a {
   font-weight: 600;
-}
-
-.pricing-card-recommended {
-  border-color: var(--accent);
-  box-shadow: 0 0 0 1px var(--accent);
 }
 
 /* Spacing for adjacent in-flow links (axe / Lighthouse `target-size`). */

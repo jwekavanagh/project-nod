@@ -54,7 +54,9 @@ describe("PricingClient checkout — no silent failures on bad responses", () =>
       productCopy.pricingIndividualEntryPill,
     );
 
-    fireEvent.click(screen.getByRole("button", { name: /^subscribe$/i }));
+    fireEvent.click(
+      screen.getByRole("button", { name: productCopy.pricingPlanCtas.individual.checkoutLabel }),
+    );
 
     await waitFor(() => {
       expect(screen.getByRole("alert")).toHaveTextContent(/Checkout failed \(500\)/i);
@@ -73,7 +75,9 @@ describe("PricingClient checkout — no silent failures on bad responses", () =>
       <PricingClient plans={[individualPlan]} enterpriseMailto="mailto:sales@example.com" />,
     );
 
-    fireEvent.click(screen.getByRole("button", { name: /^subscribe$/i }));
+    fireEvent.click(
+      screen.getByRole("button", { name: productCopy.pricingPlanCtas.individual.checkoutLabel }),
+    );
 
     await waitFor(() => {
       expect(screen.getByRole("alert")).toHaveTextContent(/payment link/i);
@@ -94,7 +98,9 @@ describe("PricingClient checkout — no silent failures on bad responses", () =>
       <PricingClient plans={[individualPlan]} enterpriseMailto="mailto:sales@example.com" />,
     );
 
-    fireEvent.click(screen.getByRole("button", { name: /^subscribe$/i }));
+    fireEvent.click(
+      screen.getByRole("button", { name: productCopy.pricingPlanCtas.individual.checkoutLabel }),
+    );
 
     await waitFor(() => {
       expect(fetch).toHaveBeenCalledWith(

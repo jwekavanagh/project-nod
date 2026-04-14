@@ -25,22 +25,79 @@ export default function PricingPage() {
     };
   });
   const enterpriseMailto = enterpriseMailtoHref();
+  const hero = productCopy.pricingHero;
+  const compare = productCopy.pricingFeatureComparison;
+  const example = productCopy.pricingHeroExample;
+
   return (
-    <main>
-      <h1>Pricing</h1>
-      <p className="muted pricing-recap" data-testid="pricing-hero-recap">
-        {productCopy.pricingRecap}
+    <main className="pricing-page">
+      <h1 className="pricing-hero-title">{hero.title}</h1>
+      <p className="pricing-positioning">{hero.positioning}</p>
+      <section className="pricing-hero-block" data-testid="pricing-hero-recap" aria-label="Pricing summary">
+        <p className="pricing-hero-subtitle" data-testid="pricing-plan-choice-guide">
+          {hero.subtitle}
+        </p>
+        <ul className="pricing-hero-bullets">
+          {hero.bullets.map((b) => (
+            <li key={b}>{b}</li>
+          ))}
+        </ul>
+      </section>
+
+      <section className="pricing-example" data-testid="pricing-example" aria-labelledby="pricing-example-title">
+        <h2 id="pricing-example-title" className="pricing-example-heading">
+          {example.title}
+        </h2>
+        <ul>
+          {example.bullets.map((b) => (
+            <li key={b}>{b}</li>
+          ))}
+        </ul>
+      </section>
+
+      <p className="pricing-risk muted" data-testid="pricing-risk-reassurance">
+        {productCopy.pricingRiskReassurance}
       </p>
-      <p className="muted pricing-plan-choice" data-testid="pricing-plan-choice-guide">
-        {productCopy.pricingPlanChoiceGuide}
-      </p>
-      <ul aria-label="Commercial terms" className="muted" style={{ marginTop: "1rem", maxWidth: "42rem" }}>
+
+      <section className="pricing-compare" aria-labelledby="pricing-compare-title">
+        <h2 id="pricing-compare-title" className="pricing-compare-heading">
+          {compare.title}
+        </h2>
+        <div className="pricing-compare-scroll">
+          <table className="pricing-compare-table">
+            <thead>
+              <tr>
+                {compare.columnLabels.map((label) => (
+                  <th key={label} scope="col">
+                    {label}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {compare.rows.map((row) => (
+                <tr key={row.feature}>
+                  <th scope="row">{row.feature}</th>
+                  <td>{row.starter}</td>
+                  <td>{row.individual}</td>
+                  <td>{row.team}</td>
+                  <td>{row.business}</td>
+                  <td>{row.enterprise}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <ul aria-label="Commercial terms" className="muted pricing-commercial-terms">
         {productCopy.pricingCommercialTermsBullets.map((row) => (
-          <li key={row.lead} style={{ marginBottom: "0.5rem" }}>
+          <li key={row.lead}>
             <strong>{row.lead}</strong> {row.body}
           </li>
         ))}
       </ul>
+
       <section data-testid="pricing-trust-band" aria-labelledby="pricing-trust-band-title">
         <h2 id="pricing-trust-band-title">{productCopy.pricingTrustBandBeforeGrid.title}</h2>
         <p>{productCopy.pricingTrustBandBeforeGrid.paragraphs[0]}</p>
@@ -57,6 +114,7 @@ export default function PricingPage() {
           </Link>
         </p>
       </section>
+
       <PricingClient plans={plans} enterpriseMailto={enterpriseMailto} />
     </main>
   );

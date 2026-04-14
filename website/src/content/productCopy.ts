@@ -119,14 +119,88 @@ export const examplesHubIntegrateLede = {
 export const pricingTrustBandBeforeGrid = {
   title: "Billing and plan changes",
   paragraphs: [
-    "Subscribe with Stripe Checkout; manage payment methods, invoices, and plan changes from the Customer Portal on Account. You can upgrade tiers as usage grows—no need to pick the final plan on day one.",
-    "For procurement, custom limits, or enterprise terms, use Contact sales on the Enterprise pricing card—do not email a sales inbox from this page unless your deployment operator publishes one.",
+    "Subscribe with Stripe Checkout; manage cards, invoices, and upgrades from Account. Upgrade tiers as usage grows.",
+    "Enterprise: use Contact sales on the Enterprise card for procurement, custom limits, or contract terms—do not use unpublished sales inboxes.",
   ],
   links: [
     { label: "Security & Trust", href: "/security" as const },
     { label: "Company and support", href: "/company" as const },
   ],
 } as const satisfies PricingTrustBandBeforeGrid;
+
+/** Above-the-fold `/pricing` hero (title, stakes, subhead, tier summary). */
+export const pricingHero = {
+  title: "Pricing for database truth verification",
+  positioning: "Stop shipping workflows that look successful but write incorrect data.",
+  subtitle: "Start free. Pay when you need CI enforcement and production-scale verification.",
+  bullets: [
+    "Free: explore and test verification locally.",
+    "Paid: CI enforcement, API keys, and a monthly verification quota.",
+    "Scale: higher limits on Team and Business; enterprise controls on Enterprise.",
+  ],
+} as const;
+
+export const pricingHeroExample = {
+  title: "What you are buying",
+  bullets: [
+    "A workflow writes status = resolved.",
+    "AgentSkeptic verifies that row in CI before deploy.",
+    "If the database does not match, the build fails.",
+  ],
+} as const;
+
+export const pricingRiskReassurance =
+  "No lock-in: cancel anytime. Use the free tier and open-source build for local verification for as long as you need.";
+
+export const pricingFeatureComparison = {
+  title: "Compare plans",
+  columnLabels: ["Feature", "Starter", "Individual", "Team", "Business", "Enterprise"] as const,
+  rows: [
+    {
+      feature: "Local / repo verification",
+      starter: "Yes",
+      individual: "Yes",
+      team: "Yes",
+      business: "Yes",
+      enterprise: "Yes",
+    },
+    {
+      feature: "CI enforcement (locks / enforce)",
+      starter: "No",
+      individual: "Yes",
+      team: "Yes",
+      business: "Yes",
+      enterprise: "Yes",
+    },
+    {
+      feature: "API keys (published CLI)",
+      starter: "No",
+      individual: "Yes",
+      team: "Yes",
+      business: "Yes",
+      enterprise: "Yes",
+    },
+    {
+      feature: "Monthly verification quota (published CLI)",
+      starter: "100",
+      individual: "2,000",
+      team: "10,000",
+      business: "50,000",
+      enterprise: "Custom",
+    },
+  ],
+} as const;
+
+export const pricingRecommendedPill = "Most teams start here";
+
+/** Primary CTA labels on `/pricing` cards (sign-in still required before checkout). */
+export const pricingPlanCtas = {
+  starter: { href: "/integrate" as const, label: "Start free" },
+  individual: { signInLabel: "Get API key", checkoutLabel: "Continue to checkout" },
+  team: { signInLabel: "Start using CI enforcement", checkoutLabel: "Continue to checkout" },
+  business: { signInLabel: "Scale verification", checkoutLabel: "Continue to checkout" },
+  enterprise: { label: "Contact sales" },
+} as const;
 
 export const securityQuickFacts = {
   title: "Quick facts for buyers",
@@ -233,12 +307,12 @@ export const productCopy = {
   /** Commercial terms above pricing grid — server-rendered from this list. */
   pricingCommercialTermsBullets: [
     {
-      lead: "Published CLI",
-      body: "Licensed verification with the published npm CLI requires an active Individual, Team, Business, or Enterprise subscription (trial counts); monthly quota applies after subscribe.",
+      lead: "Paid verification",
+      body: "The published npm CLI, API keys, and quota require an active paid plan (trials count). Open-source repo builds verify without a subscription.",
     },
     {
-      lead: "CI enforcement",
-      body: "CI locks, the enforce command, and quick verify with lock flags use the same subscription requirement.",
+      lead: "Contracts",
+      body: "Limits and semantics: OpenAPI at /openapi-commercial-v1.yaml, plans JSON at /api/v1/commercial/plans, and entitlement docs on GitHub main.",
     },
   ] as const,
 
@@ -419,17 +493,21 @@ export const productCopy = {
       "Open-source lets you contract-verify from the repo without an API key; licensed npm usage, quota, and keys follow Pricing and Account. Machine-readable contracts stay on the site.",
   },
 
-  pricingRecap:
-    "Use the open-source repository build for contract verification at no charge. Subscribe when you want the published CLI, API keys, monthly verification quota, and CI enforcement—the tiers below spell out who each plan fits.",
+  /** Retained for SSOT strings; `/pricing` renders `pricingHero` instead. */
+  pricingRecap: pricingHero.subtitle,
 
-  /** Short plan-choice guide on `/pricing` (server-rendered, after hero recap). */
-  pricingPlanChoiceGuide:
-    "Starter: sign in and explore the commercial surface—no paid verification runs. Most solo buyers start on Individual for the published CLI and CI. Team is the default for engineering teams; Business adds headroom; Enterprise is for procurement and custom limits.",
+  /** Retained for SSOT strings; `/pricing` renders `pricingHero.bullets` instead. */
+  pricingPlanChoiceGuide: pricingHero.bullets.join(" "),
+
+  pricingHero,
+  pricingHeroExample,
+  pricingRiskReassurance,
+  pricingFeatureComparison,
+  pricingRecommendedPill,
+  pricingPlanCtas,
 
   /** Pill on the Individual pricing card (client). */
-  pricingIndividualEntryPill: "Default paid entry (solo)",
-
-  pricingSignInCta: "Sign in to subscribe",
+  pricingIndividualEntryPill: "Solo CI entry",
 
   signInPurpose: {
     title: "Sign in",
