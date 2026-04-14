@@ -1,6 +1,6 @@
 /** Machine-readable Quick Verify ICP; must match schemas/quick-verify-report.schema.json and runQuickVerify.ts. */
 
-export const QUICK_VERIFY_VERSION = "1.1.0" as const;
+export const QUICK_VERIFY_VERSION = "1.2.0" as const;
 
 export const QUICK_SCOPE_LIMITATIONS = [
   "quick_verify_inferred_row_and_related_exists_only",

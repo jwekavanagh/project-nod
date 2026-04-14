@@ -1,6 +1,6 @@
 # Quick Verify — normative specification
 
-**Spec id:** `quick-verify-spec` **version:** `1.1.0`
+**Spec id:** `quick-verify-spec` **version:** `1.2.0`
 
 *Source: plan Appendix A (canonical).*
 
@@ -169,7 +169,13 @@ Row: SELECT LIMIT 2; 0 rows `ROW_ABSENT`; ≥2 `DUPLICATE_ROWS`; else scalar com
 
 ## A.13 Scope string (fixed)
 
-Report `scope.quickVerifyVersion` = `1.1.0`; `scope.capabilities` = fixed enum array `["inferred_row","inferred_related_exists"]`; `scope.ingestContract` = `structured_tool_activity`; `scope.groundTruth` = `read_only_sql`; `scope.limitations` = fixed tuple  
+Report `scope.quickVerifyVersion` = `1.2.0`; `scope.capabilities` = fixed enum array `["inferred_row","inferred_related_exists"]`; `scope.ingestContract` = `structured_tool_activity`; `scope.groundTruth` = `read_only_sql`; `scope.limitations` = fixed tuple  
 `["quick_verify_inferred_row_and_related_exists_only","no_multi_effect_contract","no_destructive_or_forbidden_row_contract","contract_replay_export_row_and_eligible_related_exists_tools"]` (see schema).
 
 Report `schemaVersion` is **4** (includes required `productTruth`, required per-unit **`reconciliation`** with four string fields, and **declared / expected / observed** layer copy; non-pass units require `correctnessDefinition` per schema). Report `verificationMode` is always **`inferred`**. Per-unit `sourceAction` and `contractEligible` and merged row `verification` fields are defined only in [`schemas/quick-verify-report.schema.json`](../schemas/quick-verify-report.schema.json)—do not restate here.
+
+## A.14 Param-pointer row export (1.2.0)
+
+**Predicate `eligible_export_sql_row_param_pointer` (name frozen).** For a **row** unit, Quick MAY export to `exportableRegistry` when all hold: `verdict === "verified"`; `T_COL ≤ confidence < T_EXPORT` (`T_COL=0.50`, `T_EXPORT=0.55`); every PK mapping flat key is **pointer-complete** (`flatKeyToJsonPointer` succeeds); and **`resolveVerificationRequest`** on the pointer-style registry entry with **`buildSyntheticRowParams(action.params, __qvFields)`** succeeds with **`normalizedSqlRowRequestFingerprint(resolved)` === `normalizedSqlRowRequestFingerprint(plan.request)`**. Otherwise the legacy rule applies: export only when `confidence ≥ T_EXPORT` with const-only registry identity.
+
+**`buildSyntheticRowParams(actionParams, qvFields)` merge:** **M1** deep-clone `actionParams` via `JSON.parse(JSON.stringify(actionParams))` (throw → pointer path off). **M2** set top-level `__qvFields` from `qvFields`. **M3–M4** no other mutations. **M5** synthetic NDJSON `params` uses **`stableStringify`** on the merged object for golden bytes.

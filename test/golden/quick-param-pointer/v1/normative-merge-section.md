@@ -1,0 +1,5 @@
+## A.14 Param-pointer row export (1.2.0)
+
+**Predicate `eligible_export_sql_row_param_pointer` (name frozen).** For a **row** unit, Quick MAY export to `exportableRegistry` when all hold: `verdict === "verified"`; `T_COL ≤ confidence < T_EXPORT` (`T_COL=0.50`, `T_EXPORT=0.55`); every PK mapping flat key is **pointer-complete** (`flatKeyToJsonPointer` succeeds); and **`resolveVerificationRequest`** on the pointer-style registry entry with **`buildSyntheticRowParams(action.params, __qvFields)`** succeeds with **`normalizedSqlRowRequestFingerprint(resolved)` === `normalizedSqlRowRequestFingerprint(plan.request)`**. Otherwise the legacy rule applies: export only when `confidence ≥ T_EXPORT` with const-only registry identity.
+
+**`buildSyntheticRowParams(actionParams, qvFields)` merge:** **M1** deep-clone `actionParams` via `JSON.parse(JSON.stringify(actionParams))` (throw → pointer path off). **M2** set top-level `__qvFields` from `qvFields`. **M3–M4** no other mutations. **M5** synthetic NDJSON `params` uses **`stableStringify`** on the merged object for golden bytes.

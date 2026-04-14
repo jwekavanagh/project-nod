@@ -373,9 +373,15 @@ export function flattenParams(
 
 export function dedupeActions(
   actions: RawAction[],
-): { unique: Array<{ toolName: string; flat: Record<string, FlatScalar> }>; droppedWarnings: string[] } {
+): {
+  unique: Array<{ toolName: string; flat: Record<string, FlatScalar>; params: Record<string, unknown> }>;
+  droppedWarnings: string[];
+} {
   const droppedWarnings: string[] = [];
-  const seen = new Map<string, { toolName: string; flat: Record<string, FlatScalar> }>();
+  const seen = new Map<
+    string,
+    { toolName: string; flat: Record<string, FlatScalar>; params: Record<string, unknown> }
+  >();
   for (const a of actions) {
     const { flat } = flattenParams(a.params, FLATTEN_MAX_DEPTH, FLATTEN_MAX_NODES);
     const key = stableStringify({ toolName: a.toolName, flat });
@@ -383,7 +389,7 @@ export function dedupeActions(
       droppedWarnings.push("DEDUPE_DROPPED");
       continue;
     }
-    seen.set(key, { toolName: a.toolName, flat });
+    seen.set(key, { toolName: a.toolName, flat, params: a.params });
   }
   return { unique: [...seen.values()], droppedWarnings };
 }

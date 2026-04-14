@@ -30,7 +30,7 @@
         "groundTruth"
       ],
       "properties": {
-        "quickVerifyVersion": { "type": "string", "const": "1.1.0" },
+        "quickVerifyVersion": { "type": "string", "const": "1.2.0" },
         "capabilities": {
           "type": "array",
           "const": ["inferred_row", "inferred_related_exists"]

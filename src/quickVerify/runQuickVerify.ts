@@ -3,7 +3,7 @@ import { CLI_OPERATIONAL_CODES } from "../cliOperationalCodes.js";
 import { buildQuickUnitCorrectnessDefinition } from "../correctnessDefinition.js";
 import { TruthLayerError } from "../truthLayerError.js";
 import { loadSchemaValidator } from "../schemaLoad.js";
-import type { CorrectnessDefinitionV1, ToolRegistryEntry, VerificationRequest } from "../types.js";
+import type { CorrectnessDefinitionV1, ToolRegistryEntry, VerificationRequest, VerificationScalar } from "../types.js";
 import { connectPostgresVerificationClient } from "../sqlReadBackend.js";
 import { canonicalToolsArrayUtf8, stableStringify } from "./canonicalJson.js";
 import { bucketsForAction } from "./decomposeUnits.js";
@@ -13,9 +13,13 @@ import { planRelationalFromFlat } from "./relationalPlan.js";
 import type { SchemaCatalog } from "./schemaCatalogTypes.js";
 import { PostgresSchemaCatalog } from "./postgresCatalog.js";
 import { SqliteSchemaCatalog } from "./sqliteCatalog.js";
-import { exportSqlRelationalRelatedExistsTool, exportSqlRowTool } from "./exportTool.js";
+import {
+  exportSqlRelationalRelatedExistsTool,
+  exportSqlRowParamPointerTool,
+  exportSqlRowTool,
+} from "./exportTool.js";
 import { verifyRowPostgres, verifyRowSqlite, verifyRelatedExists } from "./verifyExecution.js";
-import { T_EXPORT, MAX_UNITS } from "./thresholds.js";
+import { T_COL, T_EXPORT, MAX_UNITS } from "./thresholds.js";
 import { compareUtf16Id } from "../resolveExpectation.js";
 import { MSG_NO_STRUCTURED_TOOL_ACTIVITY, MSG_NO_TOOL_CALLS } from "./quickVerifyHumanCopy.js";
 import type { QuickContractExport } from "./buildQuickContractEventsNdjson.js";
@@ -23,6 +27,9 @@ import { DEFAULT_QUICK_VERIFY_SCOPE, type QuickVerifyScope } from "./quickVerify
 import { buildQuickVerifyProductTruth, type QuickVerifyProductTruth } from "./quickVerifyProductTruth.js";
 import { resolveVerificationRequest } from "../resolveExpectation.js";
 import { buildQuickUnitReconciliation } from "../reconciliationPresentation.js";
+import { buildSyntheticRowParams } from "./buildSyntheticRowParams.js";
+import { flatKeyToJsonPointer } from "./flatKeyToJsonPointer.js";
+import { normalizedSqlRowRequestFingerprint } from "./verificationRequestFingerprint.js";
 
 export type QuickVerifyReport = {
   schemaVersion: 4;
@@ -209,7 +216,62 @@ export async function runQuickVerify(opts: RunQuickVerifyOptions): Promise<RunQu
           dialect === "postgres"
             ? await verifyRowPostgres(pgClient!, plan.request)
             : verifyRowSqlite(sqliteDb!, plan.request);
-        const exported = plan.confidence >= T_EXPORT;
+        const exportedLegacy = plan.confidence >= T_EXPORT;
+        let exportedPointer = false;
+        let pointerSynthetic: Record<string, unknown> | undefined;
+        let pointerSpecs: Array<{ column: string; valuePointer: string }> | undefined;
+        if (
+          rowOut.verdict === "verified" &&
+          plan.pointerComplete &&
+          plan.pkFlatBindings &&
+          plan.confidence >= T_COL &&
+          plan.confidence < T_EXPORT
+        ) {
+          const qvFieldsSorted: Record<string, VerificationScalar> = {};
+          for (const k of Object.keys(plan.request.requiredFields).sort(compareUtf16Id)) {
+            qvFieldsSorted[k] = plan.request.requiredFields[k]!;
+          }
+          try {
+            pointerSynthetic = buildSyntheticRowParams(action.params, qvFieldsSorted);
+          } catch {
+            pointerSynthetic = undefined;
+          }
+          if (pointerSynthetic) {
+            const sortedBindings = [...plan.pkFlatBindings].sort((a, b) =>
+              compareUtf16Id(a.column, b.column),
+            );
+            const specs: Array<{ column: string; valuePointer: string }> = [];
+            let ptrOk = true;
+            for (const b of sortedBindings) {
+              const fp = flatKeyToJsonPointer(b.flatKey);
+              if (!fp.ok) {
+                ptrOk = false;
+                break;
+              }
+              specs.push({ column: b.column, valuePointer: fp.pointer });
+            }
+            if (ptrOk && specs.length > 0) {
+              let tidProbe = `quick:${uid}`;
+              const usedProbe = new Set(exportTools.map((t) => t.toolId));
+              let nProbe = 1;
+              while (usedProbe.has(tidProbe)) {
+                tidProbe = `quick:${uid}:${nProbe++}`;
+              }
+              const regProbe = exportSqlRowParamPointerTool(tidProbe, plan.request.table, specs);
+              const resolved = resolveVerificationRequest(regProbe, pointerSynthetic);
+              if (
+                resolved.ok &&
+                resolved.verificationKind === "sql_row" &&
+                normalizedSqlRowRequestFingerprint(resolved.request) ===
+                  normalizedSqlRowRequestFingerprint(plan.request)
+              ) {
+                exportedPointer = true;
+                pointerSpecs = specs;
+              }
+            }
+          }
+        }
+        const exported = exportedLegacy || exportedPointer;
         let tid = `quick:${uid}`;
         if (exported) {
           const used = new Set(exportTools.map((t) => t.toolId));
@@ -217,8 +279,18 @@ export async function runQuickVerify(opts: RunQuickVerifyOptions): Promise<RunQu
           while (used.has(tid)) {
             tid = `quick:${uid}:${n++}`;
           }
-          exportTools.push(exportSqlRowTool(tid, plan.request));
-          contractExports.push({ toolId: tid, kind: "sql_row", request: plan.request });
+          if (exportedLegacy) {
+            exportTools.push(exportSqlRowTool(tid, plan.request));
+            contractExports.push({ toolId: tid, kind: "sql_row", request: plan.request });
+          } else if (exportedPointer && pointerSynthetic && pointerSpecs) {
+            exportTools.push(exportSqlRowParamPointerTool(tid, plan.request.table, pointerSpecs));
+            contractExports.push({
+              toolId: tid,
+              kind: "sql_row",
+              request: plan.request,
+              syntheticParams: pointerSynthetic,
+            });
+          }
         }
         const rowReconciliation =
           rowOut.verdict === "verified"

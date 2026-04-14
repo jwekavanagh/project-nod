@@ -5,6 +5,7 @@ import type { ActionBucket } from "./decomposeUnits.js";
 import { mappingKeyForPath } from "./decomposeUnits.js";
 import type { FlatScalar } from "./ingest.js";
 import { T_AMBIGUITY_DELTA, T_COL, T_OVERALL, columnScore, tableScoreAction } from "./tableScoring.js";
+import { flatKeyToJsonPointer } from "./flatKeyToJsonPointer.js";
 
 function toScalar(v: FlatScalar): VerificationScalar | undefined {
   if (v === null) return null;
@@ -21,12 +22,18 @@ function scalarToIdentityString(v: VerificationScalar): string {
   return v;
 }
 
+export type PkFlatBinding = { column: string; flatKey: string };
+
 export type RowUnitPlan = {
   request: VerificationRequest | null;
   confidence: number;
   reasonCodes: string[];
   rationale: string[];
   alternates?: Array<{ table: string; score: number }>;
+  /** Per-PK flat keys used for identity (sorted by column); only when `request` is non-null. */
+  pkFlatBindings?: PkFlatBinding[];
+  /** True iff every `pkFlatBindings[].flatKey` maps to a JSON Pointer (`flatKeyToJsonPointer`). */
+  pointerComplete?: boolean;
 };
 
 export async function planRowUnit(catalog: SchemaCatalog, b: ActionBucket, allTables: string[]): Promise<RowUnitPlan> {
@@ -86,6 +93,7 @@ export async function planRowUnit(catalog: SchemaCatalog, b: ActionBucket, allTa
   }));
 
   const identityEq: VerificationRequest["identityEq"] = [];
+  const pkFlatBindings: PkFlatBinding[] = [];
   let minIdScore = 1;
   for (const col of [...pk].sort(compareUtf16Id)) {
     let bestMk = "";
@@ -103,7 +111,12 @@ export async function planRowUnit(catalog: SchemaCatalog, b: ActionBucket, allTa
       return { request: null, confidence: 0, reasonCodes, rationale };
     }
     minIdScore = Math.min(minIdScore, bestS);
-    const sc = toScalar(mkEntries.find((x) => x.mk === bestMk)?.value ?? null);
+    const candidates = mkEntries.filter((x) => x.mk === bestMk);
+    const pick =
+      candidates.length === 1
+        ? candidates[0]!
+        : [...candidates].sort((a, b) => compareUtf16Id(a.path, b.path))[0]!;
+    const sc = toScalar(pick.value ?? null);
     if (sc === undefined) {
       reasonCodes.push("MAPPING_NO_UNIQUE_KEY");
       rationale.push(`PK ${col} mapped value not a verification scalar`);
@@ -113,6 +126,7 @@ export async function planRowUnit(catalog: SchemaCatalog, b: ActionBucket, allTa
       column: col,
       value: scalarToIdentityString(sc),
     });
+    pkFlatBindings.push({ column: col, flatKey: pick.path });
   }
 
   const pkSet = new Set(pk);
@@ -139,6 +153,14 @@ export async function planRowUnit(catalog: SchemaCatalog, b: ActionBucket, allTa
     identityEq,
     requiredFields: rf,
   };
+  const pointerComplete = pkFlatBindings.every((b) => flatKeyToJsonPointer(b.flatKey).ok);
   rationale.push(`Table ${tableName}, PK [${pk.join(",")}], ${Object.keys(rf).length} field(s) compared`);
-  return { request, confidence, reasonCodes, rationale };
+  return {
+    request,
+    confidence,
+    reasonCodes,
+    rationale,
+    pkFlatBindings,
+    pointerComplete,
+  };
 }

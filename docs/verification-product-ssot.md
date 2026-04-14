@@ -63,6 +63,8 @@ Given **structured tool activity** (not arbitrary logs) and **read-only SQL** (*
 
 Quick Verify is **provisional**: inference-based mapping, **uncertain** as a normal rollup outcome, and rollup **pass** **must not** be read as production safety or audit-final. Authoritative framing is on every stdout report: **`productTruth`** (`doesNotProve`, `layers`, `quickVerifyProvisional`, `contractReplayPartialCoverage`). Human stderr repeats the same themes in fixed banners after the three anchors.
 
+**Param-pointer export:** When **`eligible_export_sql_row_param_pointer`** holds (see [`quick-verify-normative.md`](quick-verify-normative.md) § A.14), Quick may export a verified inferred **`sql_row`** in the border confidence band using registry JSON Pointers into merged synthetic `params`. Merge rules and the frozen predicate are defined only in normative § A.14.
+
 ## Contract replay is partial coverage
 
 **Export → replay** verifies **exported tools** in `exportableRegistry.tools` (high-confidence **`sql_row`** entries and eligible **`sql_relational`** / **`related_exists`** exports) against synthetic `tool_observed` NDJSON and the exported registry. It is **not** full-fidelity replay of everything Quick Verify may have inferred (non-exported inferred units, non-eligible **`related_exists`**, and other Advanced checks are not carried by the export). `productTruth.contractReplayPartialCoverage` is **`true`** when at least one tool was exported and at least one inferred unit has `contractEligible: false`. Operators must not treat “I ran quick → replay → verified” as blanket coverage.

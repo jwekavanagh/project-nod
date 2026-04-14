@@ -1,8 +1,9 @@
 import { compareUtf16Id } from "../resolveExpectation.js";
 import type { VerificationRequest } from "../types.js";
+import { stableStringify } from "./canonicalJson.js";
 
 export type QuickContractExport =
-  | { toolId: string; kind: "sql_row"; request: VerificationRequest }
+  | { toolId: string; kind: "sql_row"; request: VerificationRequest; syntheticParams?: Record<string, unknown> }
   | { toolId: string; kind: "related_exists_export" };
 
 /**
@@ -31,10 +32,16 @@ export function buildQuickContractEventsNdjson(input: {
         }),
       );
     } else {
-      const __qvFields: Record<string, string | number | boolean | null> = {};
-      for (const k of Object.keys(exp.request.requiredFields).sort(compareUtf16Id)) {
-        __qvFields[k] = exp.request.requiredFields[k]!;
-      }
+      const paramsObj =
+        exp.syntheticParams !== undefined
+          ? (JSON.parse(stableStringify(exp.syntheticParams)) as Record<string, unknown>)
+          : (() => {
+              const __qvFields: Record<string, string | number | boolean | null> = {};
+              for (const k of Object.keys(exp.request.requiredFields).sort(compareUtf16Id)) {
+                __qvFields[k] = exp.request.requiredFields[k]!;
+              }
+              return { __qvFields };
+            })();
       lines.push(
         JSON.stringify({
           schemaVersion: 1,
@@ -42,7 +49,7 @@ export function buildQuickContractEventsNdjson(input: {
           seq,
           type: "tool_observed",
           toolId: exp.toolId,
-          params: { __qvFields },
+          params: paramsObj,
         }),
       );
     }

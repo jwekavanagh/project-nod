@@ -1,0 +1,1 @@
+[{"effectDescriptionTemplate":"Quick inferred row: contacts","toolId":"quick:u0","verification":{"identityEq":[{"column":{"const":"id"},"value":{"pointer":"/contacts/idid"}}],"kind":"sql_row","requiredFields":{"pointer":"/__qvFields"},"table":{"const":"contacts"}}}]

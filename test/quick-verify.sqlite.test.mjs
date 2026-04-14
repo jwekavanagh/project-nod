@@ -75,7 +75,7 @@ describe("Quick Verify SQLite", () => {
     assert.equal(row.contractEligible, true);
     const v = loadSchemaValidator("quick-verify-report");
     assert.ok(v(report), JSON.stringify(v.errors ?? []));
-    assert.equal(report.scope.quickVerifyVersion, "1.1.0");
+    assert.equal(report.scope.quickVerifyVersion, "1.2.0");
     assert.equal(report.scope.ingestContract, "structured_tool_activity");
     assert.equal(report.scope.groundTruth, "read_only_sql");
     assert.deepEqual(report.scope.limitations, [
