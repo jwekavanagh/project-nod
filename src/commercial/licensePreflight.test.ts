@@ -190,4 +190,22 @@ describe("runLicensePreflightIfNeeded", () => {
     const sent = JSON.parse(init.body as string) as { run_id: string };
     expect(out.runId).toBe(sent.run_id);
   });
+
+  it("uses opts.runId for reserve body when provided", async () => {
+    process.env.AGENTSKEPTIC_API_KEY = "wf_sk_live_test";
+    delete process.env.AGENTSKEPTIC_RUN_ID;
+    delete process.env.WORKFLOW_VERIFIER_RUN_ID;
+    vi.mocked(fetch).mockResolvedValue(
+      new Response(JSON.stringify({ allowed: true, plan: "starter", limit: 100, used: 1 }), {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      }),
+    );
+    const rid = "caller-fixed-run-id";
+    const out = await runLicensePreflightIfNeeded("verify", { runId: rid });
+    expect(out.runId).toBe(rid);
+    const init = vi.mocked(fetch).mock.calls[0]![1] as RequestInit;
+    const sent = JSON.parse(init.body as string) as { run_id: string };
+    expect(sent.run_id).toBe(rid);
+  });
 });

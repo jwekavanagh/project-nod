@@ -2,6 +2,10 @@
 
 export const PUBLIC_DISTRIBUTION_SSOT_BLOB_URL = "https://github.com/jwekavanagh/agentskeptic/blob/main/docs/public-distribution-ssot.md";
 
+export const PUBLIC_CANONICAL_SITE_ORIGIN = "https://agentskeptic.com";
+
+export const AGENTSKEPTIC_CLI_SEMVER = "0.1.6";
+
 export function formatDistributionFooter(): string {
   return "More context (green trace vs database): https://agentskeptic.com/database-truth-vs-traces\n"
     + "First-run on your database: https://agentskeptic.com/integrate\n"

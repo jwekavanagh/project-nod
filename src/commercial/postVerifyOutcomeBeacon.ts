@@ -37,6 +37,7 @@ export async function postVerifyOutcomeBeacon(input: {
         workload_class: input.workload_class,
         subcommand: input.subcommand,
       }),
+      signal: AbortSignal.timeout(400),
     });
   } catch {
     /* ignore */

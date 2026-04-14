@@ -50,6 +50,13 @@
       "when": 1775695070000,
       "tag": "0006_funnel_observability",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1775695071000,
+      "tag": "0007_product_activation_telemetry",
+      "breakpoints": true
     }
   ]
 }

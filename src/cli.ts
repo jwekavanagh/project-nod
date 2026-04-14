@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+import { randomUUID } from "node:crypto";
 import { readFileSync, statSync } from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
@@ -72,6 +73,7 @@ import { runBatchCiLockFromRestArgs, runQuickCiLockFromRestArgs } from "./ciLock
 import { formatDistributionFooter } from "./distributionFooter.js";
 import { postPublicVerificationReport } from "./shareReport/postPublicVerificationReport.js";
 import { runBootstrapSubcommand } from "./bootstrap/runBootstrapSubcommand.js";
+import { postProductActivationEvent } from "./telemetry/postProductActivationEvent.js";
 
 function usageQuick(): string {
   return `Usage:
@@ -497,9 +499,13 @@ async function runQuickSubcommand(args: string[]): Promise<void> {
     throw e;
   }
   const { inputPath, exportPath, emitEventsPath, workflowIdQuick, dbPath, postgresUrl, shareReportOrigin } = pq;
+  const activationRunId =
+    process.env.AGENTSKEPTIC_RUN_ID?.trim() ||
+    process.env.WORKFLOW_VERIFIER_RUN_ID?.trim() ||
+    randomUUID();
   let quickPreflight: { runId: string | null };
   try {
-    quickPreflight = await runLicensePreflightIfNeeded("verify");
+    quickPreflight = await runLicensePreflightIfNeeded("verify", { runId: activationRunId });
   } catch (e) {
     if (e instanceof TruthLayerError) {
       writeCliError(e.code, e.message);
@@ -517,6 +523,20 @@ async function runQuickSubcommand(args: string[]): Promise<void> {
     writeCliError(CLI_OPERATIONAL_CODES.CLI_USAGE, `Cannot read --input: ${msg}`);
     process.exit(3);
   }
+  const quickBuildProfile = LICENSE_PREFLIGHT_ENABLED ? ("commercial" as const) : ("oss" as const);
+  const quickWorkloadClass = classifyQuickVerifyWorkload({
+    inputPath: inputPath,
+    sqlitePath: dbPath ?? undefined,
+    postgresUrl: postgresUrl ?? undefined,
+  });
+  await postProductActivationEvent({
+    phase: "verify_started",
+    run_id: activationRunId,
+    issued_at: new Date().toISOString(),
+    workload_class: quickWorkloadClass,
+    subcommand: "quick_verify",
+    build_profile: quickBuildProfile,
+  });
   let registryUtf8: string;
   let report: QuickVerifyReport;
   let contractExports: QuickContractExport[] = [];
@@ -538,6 +558,15 @@ async function runQuickSubcommand(args: string[]): Promise<void> {
     writeCliError(CLI_OPERATIONAL_CODES.INTERNAL_ERROR, formatOperationalMessage(msg));
     process.exit(3);
   }
+  await postProductActivationEvent({
+    phase: "verify_outcome",
+    run_id: activationRunId,
+    issued_at: new Date().toISOString(),
+    workload_class: quickWorkloadClass,
+    subcommand: "quick_verify",
+    build_profile: quickBuildProfile,
+    terminal_status: quickVerifyVerdictToTerminalStatus(report.verdict),
+  });
   try {
     atomicWriteUtf8File(path.resolve(exportPath), registryUtf8);
   } catch (e) {
@@ -595,11 +624,7 @@ async function runQuickSubcommand(args: string[]): Promise<void> {
   await postVerifyOutcomeBeacon({
     runId: quickPreflight.runId,
     terminal_status: quickVerifyVerdictToTerminalStatus(report.verdict),
-    workload_class: classifyQuickVerifyWorkload({
-      inputPath: inputPath,
-      sqlitePath: dbPath ?? undefined,
-      postgresUrl: postgresUrl ?? undefined,
-    }),
+    workload_class: quickWorkloadClass,
     subcommand: "quick_verify",
   });
   if (report.verdict === "pass") process.exit(0);
@@ -1120,9 +1145,13 @@ async function main(): Promise<void> {
     throw e;
   }
 
+  const batchActivationRunId =
+    process.env.AGENTSKEPTIC_RUN_ID?.trim() ||
+    process.env.WORKFLOW_VERIFIER_RUN_ID?.trim() ||
+    randomUUID();
   let batchPreflight: { runId: string | null };
   try {
-    batchPreflight = await runLicensePreflightIfNeeded("verify");
+    batchPreflight = await runLicensePreflightIfNeeded("verify", { runId: batchActivationRunId });
   } catch (e) {
     if (e instanceof TruthLayerError) {
       writeCliError(e.code, e.message);
@@ -1132,6 +1161,20 @@ async function main(): Promise<void> {
   }
 
   const suppressTruthToStderr = parsedBatch.noTruthReport || parsedBatch.shareReportOrigin !== undefined;
+  const batchBuildProfile = LICENSE_PREFLIGHT_ENABLED ? ("commercial" as const) : ("oss" as const);
+  const batchWorkloadClass = classifyBatchVerifyWorkload({
+    eventsPath: parsedBatch.eventsPath,
+    registryPath: parsedBatch.registryPath,
+    database: parsedBatch.database,
+  });
+  await postProductActivationEvent({
+    phase: "verify_started",
+    run_id: batchActivationRunId,
+    issued_at: new Date().toISOString(),
+    workload_class: batchWorkloadClass,
+    subcommand: "batch_verify",
+    build_profile: batchBuildProfile,
+  });
   const batchIo = {
     consoleLog: (line: string) => {
       console.log(line);
@@ -1174,14 +1217,19 @@ async function main(): Promise<void> {
               ),
       io: batchIo,
     });
+    await postProductActivationEvent({
+      phase: "verify_outcome",
+      run_id: batchActivationRunId,
+      issued_at: new Date().toISOString(),
+      workload_class: batchWorkloadClass,
+      subcommand: "batch_verify",
+      build_profile: batchBuildProfile,
+      terminal_status: result.status,
+    });
     await postVerifyOutcomeBeacon({
       runId: batchPreflight.runId,
       terminal_status: result.status,
-      workload_class: classifyBatchVerifyWorkload({
-        eventsPath: parsedBatch.eventsPath,
-        registryPath: parsedBatch.registryPath,
-        database: parsedBatch.database,
-      }),
+      workload_class: batchWorkloadClass,
       subcommand: "batch_verify",
     });
     emitVerifyWorkflowCliJsonAndExitByStatus(result, batchIo);

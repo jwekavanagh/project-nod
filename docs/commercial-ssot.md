@@ -4,7 +4,7 @@ This document is the **narrative SSOT** for the thin commercial layer (website, 
 
 **Related (integrator, not duplicated here):** [first-run-integration.md](first-run-integration.md) — run verification against your own SQL database; rendered on the site as **`/integrate`**.
 
-**Operator funnel metrics (North Star):** [funnel-observability-ssot.md](funnel-observability-ssot.md) — acquisition and integrate impressions plus licensed CLI completion beacons in Postgres (`funnel_event` / `verify_outcome_beacon`).
+**Operator funnel metrics (North Star):** [funnel-observability-ssot.md](funnel-observability-ssot.md) — acquisition and integrate impressions, anonymous CLI activation (`verify_started` / `verify_outcome` via `product_activation_*_beacon`), and licensed CLI completion beacons in Postgres (`funnel_event` / `verify_outcome_beacon`).
 
 ## Approved product scope (v1)
 

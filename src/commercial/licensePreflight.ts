@@ -31,6 +31,7 @@ export type LicensePreflightResult = { runId: string | null };
  */
 export async function runLicensePreflightIfNeeded(
   intent: LicensePreflightIntent = "verify",
+  opts?: { runId?: string },
 ): Promise<LicensePreflightResult> {
   if (!LICENSE_PREFLIGHT_ENABLED) return { runId: null };
 
@@ -45,6 +46,7 @@ export async function runLicensePreflightIfNeeded(
   }
 
   const runId =
+    opts?.runId?.trim() ||
     process.env.AGENTSKEPTIC_RUN_ID?.trim() ||
     process.env.WORKFLOW_VERIFIER_RUN_ID?.trim() ||
     crypto.randomUUID();

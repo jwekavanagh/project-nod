@@ -158,6 +158,22 @@ export const verifyOutcomeBeacons = pgTable(
   }),
 );
 
+/** Idempotent receipt for POST /api/funnel/product-activation (verify_started). */
+export const productActivationStartedBeacons = pgTable("product_activation_started_beacon", {
+  runId: text("run_id").notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true, mode: "date" }).notNull().defaultNow(),
+}, (t) => ({
+  pk: primaryKey({ columns: [t.runId] }),
+}));
+
+/** Idempotent receipt for POST /api/funnel/product-activation (verify_outcome). */
+export const productActivationOutcomeBeacons = pgTable("product_activation_outcome_beacon", {
+  runId: text("run_id").notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true, mode: "date" }).notNull().defaultNow(),
+}, (t) => ({
+  pk: primaryKey({ columns: [t.runId] }),
+}));
+
 /** Persisted public verification report (POST /api/public/verification-reports). */
 export const sharedVerificationReports = pgTable("shared_verification_report", {
   id: uuid("id").primaryKey().defaultRandom(),
