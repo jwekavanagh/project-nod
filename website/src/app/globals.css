@@ -531,9 +531,9 @@ main {
   margin: 0 0 0.5rem;
 }
 .home-hero-terminal-pre {
-  max-height: min(22rem, 52vh);
+  max-height: min(24rem, 56vh);
   margin: 0;
-  font-size: 0.78rem;
+  font-size: 0.82rem;
   line-height: 1.45;
   overflow-x: auto;
   white-space: pre-wrap;
@@ -541,6 +541,45 @@ main {
   border: none;
   border-radius: 6px;
   padding: 0.35rem 0 0;
+}
+.home-hero-terminal-hit {
+  color: color-mix(in srgb, #f87171 92%, var(--fg));
+  font-weight: 600;
+  text-shadow: 0 0 12px color-mix(in srgb, #f87171 35%, transparent);
+}
+.home-moment-line {
+  font-weight: 500;
+  color: var(--accent-on-card);
+}
+.home-hero-try-it {
+  margin-top: 1.5rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--border);
+}
+.home-repeat-cta {
+  margin: 1.25rem 0 0;
+}
+.home-what-catches-links-caption {
+  margin: 1.5rem 0 0.35rem;
+  font-size: 0.9rem;
+}
+.home-what-catches {
+  margin-bottom: 2rem;
+}
+.home-stakes-tension {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 1rem;
+}
+.home-stakes-tension li {
+  font-weight: 600;
+  margin: 0.35rem 0;
+}
+.home-how-tight {
+  margin: 0.75rem 0 0;
+}
+.home-how-tight li {
+  margin: 0.35rem 0;
 }
 .home-hero-terminal {
   border-radius: 12px;

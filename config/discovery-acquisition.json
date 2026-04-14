@@ -3,9 +3,9 @@
   "slug": "/database-truth-vs-traces",
   "readmeTitle": "AgentSkeptic — when traces say success but your database does not match",
   "heroTitle": "Your traces say \"success.\" Your database disagrees.",
-  "heroSubtitle": "AgentSkeptic verifies your database state with read-only SQL before you ship, bill, or close.",
+  "heroSubtitle": "Verify your database state with read-only SQL before you ship, bill, or close. Not traces. Not logs. The actual database.",
   "homepageAcquisitionCtaLabel": "Read the product brief",
-  "homepageDecisionFraming": "Your traces and success flags can read clean while the database row is missing or wrong before you ship. AgentSkeptic runs read-only SQL at verification time against Postgres or SQLite, comparing persisted state to what structured tool activity claimed so you can gate shipping, billing, and compliance evidence on database truth—not on trace color alone.",
+  "homepageDecisionFraming": "Green traces do not prove your rows. AgentSkeptic runs read-only SQL at verification time on Postgres or SQLite against persisted state versus structured tool activity—before you ship, bill, or close.",
   "homepageHero": {
     "what": "You just shipped an agent or automation run—LangGraph-style graphs, OpenAI tool loops, or CRM batch jobs—and the trace or success flag says everything worked. This product runs read-only SQL against your SQLite or Postgres to check whether persisted rows actually match what structured tool activity claimed.",
     "why": "Traces and chat narratives describe intent and step outcomes; they do not prove the row you care about exists with the right values. That gap is how green CI and green traces still ship silent state failures.",

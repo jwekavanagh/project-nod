@@ -7,13 +7,18 @@ import {
   DEMO_SCENARIO_PRESENTATION,
   type DemoScenarioId,
 } from "@/lib/demoScenarioIds";
-import { useState } from "react";
+import { createElement, useState } from "react";
 
 type DemoResponse =
   | { ok: true; truthReportText: string; workflowResult: unknown }
   | { ok: false; error: string };
 
-export function TryItSection() {
+export type TryItSectionProps = {
+  /** Nested under hero `<section>` — render as `div`+`role="region"` (valid HTML). */
+  variant?: "page" | "heroEmbedded";
+};
+
+export function TryItSection({ variant = "page" }: TryItSectionProps) {
   const [scenarioId, setScenarioId] = useState<DemoScenarioId>("wf_complete");
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<DemoResponse | null>(null);
@@ -61,16 +66,14 @@ export function TryItSection() {
     }
   }
 
-  return (
-    <section
-      id="try-it"
-      className="home-section"
-      data-testid={productCopy.uiTestIds.tryIt}
-      aria-labelledby="try-it-heading"
-      aria-busy={loading}
-    >
+  const embedded = variant === "heroEmbedded";
+  const rootClassName = embedded ? "home-hero-try-it" : "home-section";
+  const tag = embedded ? "div" : "section";
+
+  const inner = (
+    <>
       <h2 id="try-it-heading">{productCopy.tryIt.title}</h2>
-      <p className="muted">{productCopy.tryIt.intro}</p>
+      <p className="muted">{embedded ? productCopy.tryIt.introHeroEmbed : productCopy.tryIt.intro}</p>
       <div className="try-it-controls">
         <label className="try-it-label" htmlFor="scenario-select">
           {productCopy.tryIt.scenarioLabel}
@@ -119,6 +122,19 @@ export function TryItSection() {
           </pre>
         </div>
       )}
-    </section>
+    </>
+  );
+
+  return createElement(
+    tag,
+    {
+      id: "try-it",
+      className: rootClassName,
+      "data-testid": productCopy.uiTestIds.tryIt,
+      "aria-labelledby": "try-it-heading",
+      "aria-busy": loading,
+      ...(embedded ? { role: "region" as const } : {}),
+    },
+    inner,
   );
 }

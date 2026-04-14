@@ -210,7 +210,7 @@ describe(
         disc.shareableTerminalDemo.transcript.slice(0, 80),
       );
 
-      // Homepage `/`: hero copy, then bundled failure excerpt (not the transcript prefix), trust strip, try-it, stakes, how-it-works; no homepageHero narrative.
+      // Homepage `/`: hero (includes try-it embed), failure excerpt, what-this-catches + strip links, stakes, how-it-works; no homepageHero narrative.
       const homeAgain = await getSiteHtml("/");
       const homeAgainText = htmlForTextNeedleMatch(homeAgain);
       expect(homeAgainText).toContain(disc.heroTitle);

@@ -44,6 +44,14 @@ const PRELUDE_SELECTORS = [
   ".home-trust-strip",
   ".home-trust-strip-heading",
   ".home-trust-strip-list",
+  ".home-hero-terminal-hit",
+  ".home-moment-line",
+  ".home-hero-try-it",
+  ".home-repeat-cta",
+  ".home-what-catches-links-caption",
+  ".home-what-catches",
+  ".home-stakes-tension",
+  ".home-how-tight",
 ] as const;
 
 function escapeRegExp(s: string): string {

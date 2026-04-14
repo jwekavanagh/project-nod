@@ -1,3 +1,4 @@
+import { HeroTerminalHighlighted } from "@/components/HeroTerminalHighlighted";
 import { productCopy } from "@/content/productCopy";
 import discoveryAcquisition from "@/lib/discoveryAcquisition";
 import { publicProductAnchors } from "@/lib/publicProductAnchors";
@@ -13,6 +14,16 @@ const anchors = {
   npmPackageUrl: publicProductAnchors.npmPackageUrl,
   bugsUrl: publicProductAnchors.bugsUrl,
 };
+
+function demoRepeatCta(testId: string) {
+  return (
+    <p className="home-repeat-cta">
+      <a className="btn" href="#try-it" data-testid={testId}>
+        {productCopy.homeHeroCtaLabels.demo}
+      </a>
+    </p>
+  );
+}
 
 export default function HomePage() {
   const trustLinks = buildHomeTrustStripLinks({
@@ -37,6 +48,7 @@ export default function HomePage() {
             <h1 id="hero-heading">{productCopy.hero.title}</h1>
             <p className="lede">{productCopy.homepageDecisionFraming}</p>
             <p className="lede">{productCopy.hero.subtitle}</p>
+            <p className="lede home-moment-line">{productCopy.homeMomentLine}</p>
             <p className="home-cta-row" data-testid="home-hero-cta-row">
               <a className="btn" href="#try-it" data-testid="home-hero-demo-cta">
                 {productCopy.homeHeroCtaLabels.demo}
@@ -53,22 +65,28 @@ export default function HomePage() {
           <div className="home-hero-terminal" data-testid="home-hero-terminal">
             <p className="home-hero-terminal-label muted">Bundled demo output (failure)</p>
             <pre className="home-hero-terminal-pre" aria-label="Example verification failure transcript">
-              {heroTerminalExcerpt}
+              <HeroTerminalHighlighted text={heroTerminalExcerpt} />
             </pre>
           </div>
         </div>
+        <TryItSection variant="heroEmbedded" />
       </section>
     ),
-    homeTrustStrip: (
+    homeWhatCatches: (
       <section
-        key="homeTrustStrip"
-        className="home-trust-strip"
-        data-testid="home-trust-strip"
-        aria-labelledby="home-trust-strip-heading"
+        key="homeWhatCatches"
+        className="home-section home-what-catches"
+        data-testid={productCopy.uiTestIds.homeWhatCatches}
+        aria-labelledby="what-catches-heading"
       >
-        <h2 id="home-trust-strip-heading" className="home-trust-strip-heading">
-          {productCopy.homeTrustStripSectionHeading}
-        </h2>
+        <h2 id="what-catches-heading">{productCopy.homeWhatCatches.sectionTitle}</h2>
+        <ul>
+          {productCopy.homeWhatCatches.bullets.map((t) => (
+            <li key={t}>{t}</li>
+          ))}
+        </ul>
+        {demoRepeatCta("home-repeat-cta-what-catches")}
+        <p className="muted home-what-catches-links-caption">{productCopy.homeWhatCatches.linksCaption}</p>
         <ul className="home-trust-strip-list">
           {trustLinks.map((item) => (
             <li key={item.key} data-testid={`home-trust-strip-${item.key}`}>
@@ -92,19 +110,17 @@ export default function HomePage() {
         aria-labelledby="home-stakes-heading"
       >
         <h2 id="home-stakes-heading">{productCopy.homeStakes.sectionTitle}</h2>
-        <p className="lede">{productCopy.homeStakes.intro}</p>
-        <h3 className="home-proof-subheading">What verification catches</h3>
-        <ul>
-          {productCopy.homeStakes.proofBullets.map((t) => (
+        <ul className="home-stakes-tension">
+          {productCopy.homeStakes.tensionBullets.map((t) => (
             <li key={t}>{t}</li>
           ))}
         </ul>
-        <h3 className="home-proof-subheading">What is at stake</h3>
         <ul>
           {productCopy.homeStakes.stakesBullets.map((t) => (
             <li key={t}>{t}</li>
           ))}
         </ul>
+        {demoRepeatCta("home-repeat-cta-stakes")}
       </section>
     ),
     howItWorks: (
@@ -115,30 +131,21 @@ export default function HomePage() {
         aria-labelledby="how-it-works-heading"
       >
         <h2 id="how-it-works-heading">{productCopy.howItWorks.sectionTitle}</h2>
-        <p>{productCopy.scenario.body}</p>
-        <div className="before-after">
-          <div>
-            <h3 className="before-after-label">{productCopy.scenario.beforeLabel}</h3>
-            <p>{productCopy.scenario.before}</p>
-          </div>
-          <div>
-            <h3 className="before-after-label">{productCopy.scenario.afterLabel}</h3>
-            <p>{productCopy.scenario.after}</p>
-          </div>
-        </div>
-        <h3 className="home-mechanism-heading">{productCopy.mechanism.title}</h3>
-        <p className="home-mechanism-intro muted">{productCopy.mechanism.intro}</p>
-        <ol className="mechanism-list">
+        <ol className="mechanism-list home-how-tight">
           {productCopy.mechanism.items.map((item) => (
             <li key={item.slice(0, 48)}>{item}</li>
           ))}
         </ol>
-        <p className="muted">{productCopy.mechanism.notObservability}</p>
         <p className="muted">
+          <Link href="/examples/wf-missing">{productCopy.howItWorks.exampleWfMissingLabel}</Link>
+          {" · "}
+          <Link href="/integrate">First-run on your database</Link>
+          {" · "}
           <Link href={discoveryAcquisition.slug}>{productCopy.howItWorks.acquisitionDepthLinkLabel}</Link>
           {" · "}
           <Link href="/security">Security & Trust</Link>
         </p>
+        {demoRepeatCta("home-repeat-cta-how-it-works")}
       </section>
     ),
     fitAndLimits: (
@@ -173,9 +180,9 @@ export default function HomePage() {
             <li key={t}>{t}</li>
           ))}
         </ul>
+        <p className="muted">{productCopy.mechanism.notObservability}</p>
       </section>
     ),
-    tryIt: <TryItSection key="tryIt" />,
     commercialSurface: (
       <section
         key="commercialSurface"
@@ -183,6 +190,7 @@ export default function HomePage() {
         data-testid={productCopy.uiTestIds.commercialSurface}
         aria-labelledby="commercial-surface-heading"
       >
+        {demoRepeatCta("home-repeat-cta-commercial")}
         <h2 id="commercial-surface-heading">{productCopy.commercialSurface.title}</h2>
         <p>{productCopy.commercialSurface.lead}</p>
         <p className="commercial-links">

@@ -170,8 +170,6 @@ export const homeHeroCtaLabels = {
   demo: "Run a real verification (~30s)",
 } as const satisfies HomeHeroCtaLabels;
 
-export const homeTrustStripSectionHeading = "OpenAPI, package, source, first-run (no signup)";
-
 export const productCopy = {
   links: {
     cliQuickstart: `${publicProductAnchors.gitRepositoryUrl}#try-it-about-one-minute`,
@@ -182,6 +180,7 @@ export const productCopy = {
 
   uiTestIds: {
     hero: "home-hero",
+    homeWhatCatches: "home-what-catches",
     homeStakes: "home-stakes",
     howItWorks: "home-how-it-works",
     fitAndLimits: "home-fit-and-limits",
@@ -250,22 +249,30 @@ export const productCopy = {
   howItWorks: {
     sectionTitle: "How it works",
     acquisitionDepthLinkLabel: "Traces vs database (full framing)",
+    exampleWfMissingLabel: "Bundled ROW_ABSENT example",
+  },
+
+  /** Moment-of-realization line directly under hero title stream. */
+  homeMomentLine: "If you've ever trusted a green trace and been wrong—this is for you.",
+
+  homeWhatCatches: {
+    sectionTitle: "What this catches",
+    bullets: [
+      "Missing rows (ROW_ABSENT) from read-only SQL at verification time.",
+      "Wrong values versus what structured tool activity claimed.",
+      "Workflows that look finished in traces but are incomplete in the database.",
+    ],
+    linksCaption: "First-run and contracts",
   },
 
   homeStakes: {
-    sectionTitle: "When traces are the only signal",
-    intro:
-      "Teams ship bugs because they trust traces and success flags while the database tells a different story—before you ship, bill, or close compliance work.",
-    proofBullets: [
-      "Detects missing rows (for example ROW_ABSENT) from read-only SQL at verification time.",
-      "Detects mismatched values versus what structured tool activity claimed.",
-      "Returns deterministic, schema-versioned JSON alongside the human report.",
+    sectionTitle: "When traces lie",
+    tensionBullets: [
+      "Trace says success.",
+      "Database is wrong.",
+      "You ship anyway.",
     ],
-    stakesBullets: [
-      "Rows are missing while steps read green.",
-      "Values are wrong while automation reported success.",
-      "Money and compliance decisions assumed state that verification would not confirm.",
-    ],
+    stakesBullets: ["Money lost.", "Compliance broken.", "Bugs reach production."],
   },
 
   fitAndLimits: {
@@ -331,9 +338,9 @@ export const productCopy = {
     title: "Three steps",
     intro: "Capture activity once, declare what the database should show, then verify with read-only SQL.",
     items: [
-      "Capture structured tool activity your pipeline can emit (for example NDJSON).",
-      "Define expected database state under your registry rules.",
-      "Verify with read-only SELECT results at verification time—verdict, not another narrative.",
+      "Capture tool activity (for example NDJSON your pipeline emits).",
+      "Define expected database state in your registry.",
+      "Verify with read-only SQL at verification time.",
     ],
     notObservability:
       "This is not generic observability or log search. It compares expected database state to read-only query results at verification time.",
@@ -365,6 +372,7 @@ export const productCopy = {
   tryIt: {
     title: "Try it (no account)",
     intro: "Pick a bundled scenario. The server runs the same verification engine as the open-source CLI against demo fixtures.",
+    introHeroEmbed: "Pick a scenario and run—the same verification engine as the open-source CLI, on bundled fixtures.",
     runButton: "Run the demo",
     running: "Running…",
     scenarioLabel: "Scenario",
@@ -425,7 +433,6 @@ export const productCopy = {
   },
 
   homeHeroCtaLabels,
-  homeTrustStripSectionHeading,
   pricingTrustBandBeforeGrid,
   securityQuickFacts,
   examplesHubLedes,
