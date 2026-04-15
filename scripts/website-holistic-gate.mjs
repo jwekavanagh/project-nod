@@ -19,6 +19,7 @@ const base = `http://127.0.0.1:${port}`;
 
 const required = [
   "DATABASE_URL",
+  "TELEMETRY_DATABASE_URL",
   "AUTH_SECRET",
   "CONTACT_SALES_EMAIL",
   "STRIPE_SECRET_KEY",
@@ -35,6 +36,13 @@ if (missing.length) {
 if (!process.env.AUTH_SECRET || process.env.AUTH_SECRET.length < 32) {
   console.error("website-holistic-gate: AUTH_SECRET must be length >= 32");
   process.exit(2);
+}
+
+const preflight = spawnSync(process.execPath, [path.join(root, "scripts", "core-database-boundary-preflight.mjs")], {
+  stdio: "inherit",
+});
+if (preflight.status !== 0) {
+  process.exit(preflight.status === null ? 1 : preflight.status);
 }
 
 /** Env for `next start` — omit NEXT_PUBLIC_APP_URL so origin parity check skips (unset in prod). */

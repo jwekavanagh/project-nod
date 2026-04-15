@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
- * Run drizzle-kit migrate from website root. Loads `website/.env` into the child env
- * when present so DATABASE_URL works locally; CI can rely on process.env only.
+ * Run drizzle-kit migrate for the telemetry schema (`drizzle.telemetry.config.ts`).
+ * Loads `website/.env` when present; respects `TELEMETRY_DATABASE_URL`.
  */
 import { spawnSync } from "node:child_process";
 import { existsSync, readFileSync } from "node:fs";
@@ -37,8 +37,13 @@ if (pre.status !== 0) {
   process.exit(pre.status === null ? 1 : pre.status);
 }
 
+if (!env.TELEMETRY_DATABASE_URL?.trim()) {
+  console.error("db-migrate-telemetry: TELEMETRY_DATABASE_URL is required");
+  process.exit(1);
+}
+
 const drizzleKit = path.join(websiteRoot, "..", "node_modules", "drizzle-kit", "bin.cjs");
-const r = spawnSync(process.execPath, [drizzleKit, "migrate"], {
+const r = spawnSync(process.execPath, [drizzleKit, "migrate", "--config", "drizzle.telemetry.config.ts"], {
   cwd: websiteRoot,
   env,
   stdio: "inherit",

@@ -87,7 +87,7 @@ Exactly **eight** variables (names only; values match `.github/workflows/ci.yml`
 
 `DATABASE_URL`, `AUTH_SECRET`, `CONTACT_SALES_EMAIL`, `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `STRIPE_PRICE_INDIVIDUAL`, `STRIPE_PRICE_TEAM`, `STRIPE_PRICE_BUSINESS`
 
-**`NEXT_PUBLIC_APP_URL`** and **`VERCEL_ENV`** are **not** set in YAML. `scripts/validate-commercial-funnel.mjs` sets them from `config/public-product-anchors.json` (`normalize(productionCanonicalOrigin)` and `VERCEL_ENV=production`) for `drizzle-kit migrate` and website Vitest.
+**`NEXT_PUBLIC_APP_URL`** and **`VERCEL_ENV`** are **not** set in YAML. `scripts/validate-commercial-funnel.mjs` sets them from `config/public-product-anchors.json` (`normalize(productionCanonicalOrigin)` and `VERCEL_ENV=production`) for Drizzle migrate steps and website Vitest.
 
 Production deploys (e.g. Vercel) must set **`NEXT_PUBLIC_APP_URL`** to the same origin as **`productionCanonicalOrigin`** in JSON.
 
@@ -105,7 +105,7 @@ if (!skip && normalize(process.env.NEXT_PUBLIC_APP_URL) !== normalize(canonicalF
 
 ### `distribution-graph.test.ts` and visitor outcome
 
-**`npm run validate-commercial`** from repo root runs, in order after `drizzle-kit migrate`: **`node --test test/visitor-problem-outcome.test.mjs`** (README discovery fold strict equality + schema validation), then **`node --test test/registry-metadata-parity.test.mjs`** (committed **`package.json` `description`** matches **`pageMetadata.description`** and not **`identityOneLiner`**), then **`npx vitest run`** in `website/` (includes `website/__tests__/distribution-graph.test.ts`), then **`scripts/check-web-demo-prereqs.mjs`**, then **`scripts/pack-smoke-commercial.mjs`**, then **`npm run build`** (restore OSS **`dist/`**). Requires Postgres **`DATABASE_URL`**, injected public origin, and full harness. Running bare `cd website && npx vitest` without that harness is **unsupported** for `distribution-graph.test.ts`.
+**`npm run validate-commercial`** from repo root runs, in order after core + telemetry Drizzle migrate: **`node --test test/visitor-problem-outcome.test.mjs`** (README discovery fold strict equality + schema validation), then **`node --test test/registry-metadata-parity.test.mjs`** (committed **`package.json` `description`** matches **`pageMetadata.description`** and not **`identityOneLiner`**), then **`npx vitest run`** in `website/` (includes `website/__tests__/distribution-graph.test.ts`), then **`scripts/check-web-demo-prereqs.mjs`**, then **`scripts/pack-smoke-commercial.mjs`**, then **`npm run build`** (restore OSS **`dist/`**). Requires Postgres **`DATABASE_URL`** and **`TELEMETRY_DATABASE_URL`**, injected public origin, and full harness. Running bare `cd website && npx vitest` without that harness is **unsupported** for `distribution-graph.test.ts`.
 
 ---
 

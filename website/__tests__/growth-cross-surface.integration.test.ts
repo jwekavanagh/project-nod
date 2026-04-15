@@ -1,7 +1,8 @@
 import { POST as postProductActivation } from "@/app/api/funnel/product-activation/route";
 import { POST as postSurface } from "@/app/api/funnel/surface-impression/route";
-import { db } from "@/db/client";
-import { funnelEvents } from "@/db/schema";
+import { dbTelemetry } from "@/db/telemetryClient";
+import { telemetryFunnelEvents } from "@/db/telemetrySchema";
+import { truncateCommercialFixtureDbs } from "./helpers/truncateCommercialFixture";
 import { getCanonicalSiteOrigin } from "@/lib/canonicalSiteOrigin";
 import { getCrossSurfaceConversionRolling7d } from "@/lib/growthMetricsCrossSurfaceConversionRolling7d";
 import { getTimeToFirstVerifyOutcomeSeconds } from "@/lib/growthMetricsTimeToFirstVerifyOutcome";
@@ -9,7 +10,7 @@ import {
   PRODUCT_ACTIVATION_CLI_PRODUCT_HEADER,
   PRODUCT_ACTIVATION_CLI_VERSION_HEADER,
 } from "@/lib/funnelProductActivationConstants";
-import { eq, sql } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -17,6 +18,7 @@ import { NextRequest } from "next/server";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const hasDatabaseUrl = Boolean(process.env.DATABASE_URL?.trim());
+const hasTelemetryUrl = Boolean(process.env.TELEMETRY_DATABASE_URL?.trim());
 
 const __dirname = fileURLToPath(new URL(".", import.meta.url));
 const rootPkgPath = join(__dirname, "..", "..", "package.json");
@@ -43,11 +45,10 @@ function activationReq(body: object): NextRequest {
   });
 }
 
-describe.skipIf(!hasDatabaseUrl)("growth cross-surface metrics", () => {
+describe.skipIf(!hasDatabaseUrl || !hasTelemetryUrl)("growth cross-surface metrics", () => {
   beforeEach(async () => {
-    await db.execute(sql`
-      TRUNCATE oss_claim_ticket, oss_claim_rate_limit_counter, product_activation_started_beacon, product_activation_outcome_beacon, verify_outcome_beacon, funnel_event, stripe_event, usage_reservation, usage_counter, api_key, session, account, "verificationToken", "user" RESTART IDENTITY CASCADE
-    `);
+    vi.stubEnv("AGENTSKEPTIC_TELEMETRY_WRITES_TELEMETRY_DB", "1");
+    await truncateCommercialFixtureDbs();
   });
 
   afterEach(() => {
@@ -83,11 +84,14 @@ describe.skipIf(!hasDatabaseUrl)("growth cross-surface metrics", () => {
     const pRes = await postProductActivation(activationReq(outBody));
     expect(pRes.status).toBe(204);
 
-    const acq = await db
+    const acq = await dbTelemetry
       .select()
-      .from(funnelEvents)
-      .where(eq(funnelEvents.event, "acquisition_landed"));
-    const out = await db.select().from(funnelEvents).where(eq(funnelEvents.event, "verify_outcome"));
+      .from(telemetryFunnelEvents)
+      .where(eq(telemetryFunnelEvents.event, "acquisition_landed"));
+    const out = await dbTelemetry
+      .select()
+      .from(telemetryFunnelEvents)
+      .where(eq(telemetryFunnelEvents.event, "verify_outcome"));
     expect(acq).toHaveLength(1);
     expect(out).toHaveLength(1);
     expect((acq[0]!.metadata as { funnel_anon_id?: string }).funnel_anon_id).toBe(fid);
@@ -98,7 +102,7 @@ describe.skipIf(!hasDatabaseUrl)("growth cross-surface metrics", () => {
   it("TimeToFirstVerifyOutcome_Seconds returns 42 for seeded timestamps", async () => {
     const fid = "c6d1ff30-5a2b-4d2b-8b2b-222222222222";
     const base = Date.now();
-    await db.insert(funnelEvents).values([
+    await dbTelemetry.insert(telemetryFunnelEvents).values([
       {
         event: "acquisition_landed",
         userId: null,
@@ -109,6 +113,8 @@ describe.skipIf(!hasDatabaseUrl)("growth cross-surface metrics", () => {
           attribution: {},
         },
         createdAt: new Date(base - 50_000),
+        serverVercelEnv: "unset",
+        serverNodeEnv: "test",
       },
       {
         event: "verify_outcome",
@@ -124,6 +130,8 @@ describe.skipIf(!hasDatabaseUrl)("growth cross-surface metrics", () => {
           funnel_anon_id: fid,
         },
         createdAt: new Date(base - 8000),
+        serverVercelEnv: "unset",
+        serverNodeEnv: "test",
       },
     ]);
     const sec = await getTimeToFirstVerifyOutcomeSeconds(fid);
@@ -134,7 +142,7 @@ describe.skipIf(!hasDatabaseUrl)("growth cross-surface metrics", () => {
     const fa = "d7e2aa41-6b3c-4e3c-ac3c-333333333333";
     const fb = "e8f3bb52-7c4d-4f4d-bd4d-444444444444";
     const now = new Date();
-    await db.insert(funnelEvents).values([
+    await dbTelemetry.insert(telemetryFunnelEvents).values([
       {
         event: "acquisition_landed",
         userId: null,
@@ -145,6 +153,8 @@ describe.skipIf(!hasDatabaseUrl)("growth cross-surface metrics", () => {
           attribution: {},
         },
         createdAt: now,
+        serverVercelEnv: "unset",
+        serverNodeEnv: "test",
       },
       {
         event: "acquisition_landed",
@@ -156,6 +166,8 @@ describe.skipIf(!hasDatabaseUrl)("growth cross-surface metrics", () => {
           attribution: {},
         },
         createdAt: now,
+        serverVercelEnv: "unset",
+        serverNodeEnv: "test",
       },
       {
         event: "verify_outcome",
@@ -171,6 +183,8 @@ describe.skipIf(!hasDatabaseUrl)("growth cross-surface metrics", () => {
           funnel_anon_id: fa,
         },
         createdAt: now,
+        serverVercelEnv: "unset",
+        serverNodeEnv: "test",
       },
     ]);
     const r = await getCrossSurfaceConversionRolling7d();

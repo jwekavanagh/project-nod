@@ -6,6 +6,8 @@ This document is the **SSOT** for **North Star funnel metrics**: measurable prog
 
 **OSS account claim (binding `run_id` → `user_id`):** Normative HTTP, CLI origin, rate limits, TTL, retention, and same-browser rules live only in [`oss-account-claim-ssot.md`](oss-account-claim-ssot.md). `run_id` is never a public bearer secret; do not add public lookup by `run_id`.
 
+**Telemetry-tier persistence:** Which rows live on core vs telemetry Postgres, cutover order, freeze, and backfill are documented only in [`docs/telemetry-storage-ssot.md`](telemetry-storage-ssot.md).
+
 ---
 
 ## Audiences
@@ -42,12 +44,14 @@ The signed-in **`/account`** page lists recent **licensed verify outcomes** per 
 - **Persistence (server):** On first successful insert for a phase, `funnel_event` rows include nullable column **`install_id`** (canonical; not duplicated inside `metadata` JSON). Value is taken from the request body when valid; otherwise SQL `NULL`. **`metadata.telemetry_source`:** v2 echoes the wire enum; v1 inserts are stored as **`legacy_unattributed`**. **`unknown` is not “external-only.”** It labels non–`local_dev` client-declared activation posts.
 - **Skew:** `issued_at` must be within **±300 seconds** of server time (same budget as `issued_at` on `POST /api/v1/usage/reserve`).
 - **Body size:** UTF-8 body must be **≤ 4096 bytes**; `Content-Length` larger than the cap yields **`413`** without reading beyond the limit when the header is present.
-- **Idempotency:** `product_activation_started_beacon.run_id` and `product_activation_outcome_beacon.run_id` (each primary key `run_id`). First successful request for a phase inserts the beacon row and **one** corresponding `funnel_event` row (`verify_started` or `verify_outcome`). Duplicates return **`204`** with **no** additional funnel rows for that phase.
+- **Idempotency:** On the telemetry Postgres, `product_activation_started_beacon.run_id` and `product_activation_outcome_beacon.run_id` (each primary key `run_id`). First successful request for a phase inserts the beacon row and **one** corresponding telemetry `funnel_event` row (`verify_started` or `verify_outcome`). Duplicates return **`204`** with **no** additional funnel rows for that phase.
 
 #### `POST /api/funnel/product-activation` HTTP semantics
 
 | Condition | Status | `funnel_event` |
 |-----------|--------|----------------|
+| `AGENTSKEPTIC_TELEMETRY_CORE_WRITE_FREEZE=1` (maintenance) | **`503`** | No |
+| Server missing `TELEMETRY_DATABASE_URL` | **`503`** | No |
 | Missing/invalid JSON or body fails validation | `400` | No |
 | Invalid **`install_id`** or **`funnel_anon_id`** (when present) | `400` | No |
 | `issued_at` skew too large | `400` | No |
@@ -141,7 +145,7 @@ These funnel surfaces are **telemetry only**. They do **not** affect whether ver
 
 From the repository root, **`npm run validate-commercial`** must pass (includes website Vitest with DB migrations applied). That is the binary gate for this SSOT’s implementation staying green.
 
-**Manual smoke:** run a local OSS `verify` or `quick` against a deployment with `DATABASE_URL` migrated, **`AGENTSKEPTIC_TELEMETRY` unset**, and confirm one `verify_started` and one `verify_outcome` row appear for a single `run_id` in `funnel_event` (and matching rows in `product_activation_*_beacon`). With **`AGENTSKEPTIC_TELEMETRY=0`**, confirm **no** new rows for that run.
+**Manual smoke:** run a local OSS `verify` or `quick` against a deployment with core + telemetry migrations applied, **`TELEMETRY_DATABASE_URL`** set, **`AGENTSKEPTIC_TELEMETRY` unset**, and confirm one `verify_started` and one `verify_outcome` row appear for a single `run_id` in **telemetry** `funnel_event` (and matching rows in telemetry `product_activation_*_beacon`). With **`AGENTSKEPTIC_TELEMETRY=0`**, confirm **no** new rows for that run.
 
 ### Operator validation (`telemetry_source`, `AGENTSKEPTIC_RUN_ID`)
 

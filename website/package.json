@@ -10,8 +10,10 @@
     "dev": "next dev --webpack",
     "build": "next build --webpack",
     "start": "next start",
-    "db:generate": "drizzle-kit generate",
+    "db:generate": "node ./scripts/drizzle-kit-guarded.mjs generate",
+    "db:generate:telemetry": "node ./scripts/drizzle-kit-guarded.mjs generate --config drizzle.telemetry.config.ts",
     "db:migrate": "node ./scripts/db-migrate.mjs",
+    "db:migrate:telemetry": "node ./scripts/db-migrate-telemetry.mjs",
     "test:vitest": "node ../scripts/sync-integrator-docs-embedded.mjs && vitest run"
   },
   "dependencies": {

@@ -1,4 +1,4 @@
-import { db } from "@/db/client";
+import { dbTelemetry } from "@/db/telemetryClient";
 import { sql } from "drizzle-orm";
 import { isFunnelAnonUuidV4 } from "@/lib/funnelAttribution";
 
@@ -26,7 +26,7 @@ export async function getTimeToFirstVerifyOutcomeSeconds(
   if (!isFunnelAnonUuidV4(funnelAnonId)) {
     throw new Error("invalid funnel_anon_id");
   }
-  const rows = await db.execute(sqlWithFunnelAnonId(funnelAnonId.toLowerCase()));
+  const rows = await dbTelemetry.execute(sqlWithFunnelAnonId(funnelAnonId.toLowerCase()));
   const row = rows[0] as { seconds: number | null } | undefined;
   if (!row || row.seconds === null || Number.isNaN(Number(row.seconds))) {
     return null;

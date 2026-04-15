@@ -140,6 +140,8 @@ export const funnelEvents = pgTable("funnel_event", {
   createdAt: timestamp("created_at", { withTimezone: true, mode: "date" })
     .notNull()
     .defaultNow(),
+  serverVercelEnv: text("server_vercel_env").notNull().default("unset"),
+  serverNodeEnv: text("server_node_env").notNull().default("unset"),
 });
 
 /** Idempotent receipt for POST /api/v1/funnel/verify-outcome (one row per api_key + run_id). */
@@ -158,22 +160,6 @@ export const verifyOutcomeBeacons = pgTable(
     pk: primaryKey({ columns: [t.apiKeyId, t.runId] }),
   }),
 );
-
-/** Idempotent receipt for POST /api/funnel/product-activation (verify_started). */
-export const productActivationStartedBeacons = pgTable("product_activation_started_beacon", {
-  runId: text("run_id").notNull(),
-  createdAt: timestamp("created_at", { withTimezone: true, mode: "date" }).notNull().defaultNow(),
-}, (t) => ({
-  pk: primaryKey({ columns: [t.runId] }),
-}));
-
-/** Idempotent receipt for POST /api/funnel/product-activation (verify_outcome). */
-export const productActivationOutcomeBeacons = pgTable("product_activation_outcome_beacon", {
-  runId: text("run_id").notNull(),
-  createdAt: timestamp("created_at", { withTimezone: true, mode: "date" }).notNull().defaultNow(),
-}, (t) => ({
-  pk: primaryKey({ columns: [t.runId] }),
-}));
 
 /** OSS claim bridge: one row per claim_secret hash; authoritative UX after redeem. */
 export const ossClaimTickets = pgTable("oss_claim_ticket", {

@@ -1,4 +1,4 @@
-import { db } from "@/db/client";
+import { dbTelemetry } from "@/db/telemetryClient";
 import { sql } from "drizzle-orm";
 
 /**
@@ -33,7 +33,9 @@ SELECT
 export type CrossSurfaceConversionRow = { d: number; n: number; rate: number | null };
 
 export async function getCrossSurfaceConversionRolling7d(): Promise<CrossSurfaceConversionRow> {
-  const rows = await db.execute(sql.raw(CrossSurface_ConversionRate_AcquisitionToVerifyOutcome_Rolling7dUtc_SQL));
+  const rows = await dbTelemetry.execute(
+    sql.raw(CrossSurface_ConversionRate_AcquisitionToVerifyOutcome_Rolling7dUtc_SQL),
+  );
   const row = rows[0] as CrossSurfaceConversionRow | undefined;
   return {
     d: row?.d ?? 0,

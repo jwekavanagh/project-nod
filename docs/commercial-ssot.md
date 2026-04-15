@@ -4,7 +4,7 @@ This document is the **narrative SSOT** for the thin commercial layer (website, 
 
 **Related (integrator, not duplicated here):** [first-run-integration.md](first-run-integration.md) — run verification against your own SQL database; rendered on the site as **`/integrate`**.
 
-**Operator funnel metrics (North Star):** [funnel-observability-ssot.md](funnel-observability-ssot.md) — acquisition and integrate impressions, anonymous CLI activation (`verify_started` / `verify_outcome` via `product_activation_*_beacon`), and licensed CLI completion beacons in Postgres (`funnel_event` / `verify_outcome_beacon`).
+**Operator funnel metrics (North Star):** [funnel-observability-ssot.md](funnel-observability-ssot.md) — acquisition and integrate impressions, anonymous CLI activation (`verify_started` / `verify_outcome` via `product_activation_*_beacon` on **telemetry** Postgres), and licensed CLI completion beacons on core (`funnel_event` / `verify_outcome_beacon`). Storage split: [telemetry-storage-ssot.md](telemetry-storage-ssot.md).
 
 ## Approved product scope (v1)
 
@@ -115,7 +115,7 @@ Single row semantics (match subscription + customer when possible; else fall bac
 
 ### Operator verification
 
-From the repo root, **`npm run validate-commercial`** requires **`DATABASE_URL`**, runs **`drizzle-kit migrate`** in **`website/`**, then full website Vitest (including funnel DB tests), then **`scripts/pack-smoke-commercial.mjs`** and **`npm run build`** to restore OSS **`dist/`**.
+From the repo root, **`npm run validate-commercial`** requires **`DATABASE_URL`** and **`TELEMETRY_DATABASE_URL`**, runs **`website/scripts/db-migrate.mjs`** and **`website/scripts/db-migrate-telemetry.mjs`**, then full website Vitest (including funnel DB tests), then **`scripts/pack-smoke-commercial.mjs`** and **`npm run build`** to restore OSS **`dist/`**.
 
 ## Machine contracts (OpenAPI)
 
@@ -157,19 +157,20 @@ Operational codes include: `LICENSE_KEY_MISSING`, `LICENSE_DENIED`, `LICENSE_USA
 
 ## Database migrations
 
-From `website/` with `DATABASE_URL` set:
+From `website/` with `DATABASE_URL` and `TELEMETRY_DATABASE_URL` set:
 
 ```bash
-npx drizzle-kit migrate
+npm run db:migrate
+npm run db:migrate:telemetry
 ```
 
-Migrations are generated in [`website/drizzle/`](../website/drizzle/) (e.g. `0000_initial.sql`).
+Core migrations live in [`website/drizzle/`](../website/drizzle/) (e.g. `0000_initial.sql`). Telemetry migrations live in [`website/drizzle-telemetry/`](../website/drizzle-telemetry/).
 
 ## Validation matrix (Layer 2)
 
 Services (see [`docker-compose.commercial-e2e.yml`](../docker-compose.commercial-e2e.yml)):
 
-- **Postgres 16** — app `DATABASE_URL`. For **Supabase** on **Vercel**, use **`sslmode=require`** (or rely on helpers in [`website/src/db/ensureSslModeRequire.ts`](../website/src/db/ensureSslModeRequire.ts)): the **`postgres.js`** client uses **`ensureSslModeRequire()`**; **`drizzle-kit migrate`** uses **`node-pg`**, which currently treats bare `sslmode=require` like **`verify-full`** and can throw **`SELF_SIGNED_CERT_IN_CHAIN`**—so **`drizzle.config.ts`** uses **`ensureDatabaseUrlForNodePgDriver()`**, which adds **`uselibpqcompat=true`** as required by the `pg` / `pg-connection-string` migration warning.
+- **Postgres 16** — app `DATABASE_URL` plus telemetry `TELEMETRY_DATABASE_URL`. For **Supabase** on **Vercel**, use **`sslmode=require`** (or rely on helpers in [`website/src/db/ensureSslModeRequire.ts`](../website/src/db/ensureSslModeRequire.ts)): the **`postgres.js`** client uses **`ensureSslModeRequire()`**; **`npm run db:migrate`** (drizzle-kit under the hood) uses **`node-pg`**, which currently treats bare `sslmode=require` like **`verify-full`** and can throw **`SELF_SIGNED_CERT_IN_CHAIN`**—so **`drizzle.config.ts`** uses **`ensureDatabaseUrlForNodePgDriver()`**, which adds **`uselibpqcompat=true`** as required by the `pg` / `pg-connection-string` migration warning.
 - **Mailpit** — SMTP `127.0.0.1:1025`, UI/API `8025`
 
 **Stripe CLI:** `stripe listen --forward-to <BASE_URL>/api/webhooks/stripe` — use the printed **`whsec_…`** as `STRIPE_WEBHOOK_SECRET` for that process.

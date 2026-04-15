@@ -81,8 +81,23 @@ mergeWebsiteDotenv();
 
 if (!process.env.DATABASE_URL?.trim()) {
   console.error(
-    "validate-commercial-funnel: DATABASE_URL is required (Postgres; drizzle-kit migrate runs before website Vitest).",
+    "validate-commercial-funnel: DATABASE_URL is required (Postgres; drizzle migrate runs before website Vitest).",
   );
+  writeVerdict("not_solved", layers);
+  process.exit(1);
+}
+
+if (!process.env.TELEMETRY_DATABASE_URL?.trim()) {
+  console.error(
+    "validate-commercial-funnel: TELEMETRY_DATABASE_URL is required (telemetry drizzle migrate + website Vitest).",
+  );
+  writeVerdict("not_solved", layers);
+  process.exit(1);
+}
+
+if (
+  !run(process.execPath, [path.join(root, "scripts", "core-database-boundary-preflight.mjs")])
+) {
   writeVerdict("not_solved", layers);
   process.exit(1);
 }
@@ -108,8 +123,15 @@ const websiteTestEnv = {
 
 websiteTestEnv.NEXT_PUBLIC_APP_URL = normalize(anchors.productionCanonicalOrigin);
 websiteTestEnv.VERCEL_ENV = "production";
+websiteTestEnv.TELEMETRY_DATABASE_URL = process.env.TELEMETRY_DATABASE_URL;
+websiteTestEnv.AGENTSKEPTIC_TELEMETRY_WRITES_TELEMETRY_DB = "1";
 
-if (!run("npx", ["drizzle-kit", "migrate"], { cwd: websiteDir, shell: true, env: websiteTestEnv })) {
+if (!run(process.execPath, ["scripts/db-migrate.mjs"], { cwd: websiteDir, env: websiteTestEnv })) {
+  writeVerdict("not_solved", layers);
+  process.exit(1);
+}
+
+if (!run(process.execPath, ["scripts/db-migrate-telemetry.mjs"], { cwd: websiteDir, env: websiteTestEnv })) {
   writeVerdict("not_solved", layers);
   process.exit(1);
 }

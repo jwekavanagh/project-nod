@@ -1,5 +1,8 @@
-import { db } from "@/db/client";
-import { productActivationOutcomeBeacons, productActivationStartedBeacons } from "@/db/schema";
+import { dbTelemetry } from "@/db/telemetryClient";
+import {
+  telemetryProductActivationOutcomeBeacons,
+  telemetryProductActivationStartedBeacons,
+} from "@/db/telemetrySchema";
 import { logFunnelEvent } from "@/lib/funnelEvent";
 import {
   PRODUCT_ACTIVATION_CLI_PRODUCT_HEADER,
@@ -16,6 +19,7 @@ import {
   rowMetadataVerifyOutcome,
   rowMetadataVerifyStarted,
 } from "@/lib/funnelProductActivationMetadata";
+import { telemetryCoreWriteFreezeActive } from "@/lib/telemetryWritesConfig";
 import { NextRequest, NextResponse } from "next/server";
 
 export const runtime = "nodejs";
@@ -52,6 +56,15 @@ function assertCliHeaders(req: NextRequest): void {
 }
 
 export async function POST(req: NextRequest): Promise<NextResponse> {
+  if (telemetryCoreWriteFreezeActive()) {
+    return new NextResponse(null, { status: 503 });
+  }
+
+  if (!process.env.TELEMETRY_DATABASE_URL?.trim()) {
+    console.error("[product-activation] TELEMETRY_DATABASE_URL is required");
+    return new NextResponse(null, { status: 503 });
+  }
+
   const rawCt = req.headers.get("content-type");
   const ct = rawCt?.toLowerCase() ?? "";
   if (!ct.startsWith("application/json")) {
@@ -109,12 +122,12 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
 
   try {
     if (body.event === "verify_started") {
-      await db.transaction(async (tx) => {
+      await dbTelemetry.transaction(async (tx) => {
         const inserted = await tx
-          .insert(productActivationStartedBeacons)
+          .insert(telemetryProductActivationStartedBeacons)
           .values({ runId: body.run_id })
           .onConflictDoNothing()
-          .returning({ runId: productActivationStartedBeacons.runId });
+          .returning({ runId: telemetryProductActivationStartedBeacons.runId });
 
         if (inserted.length === 0) {
           return;
@@ -128,15 +141,16 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
             metadata: rowMetadataVerifyStarted(body),
           },
           tx,
+          { telemetryTierDestination: "telemetry" },
         );
       });
     } else {
-      await db.transaction(async (tx) => {
+      await dbTelemetry.transaction(async (tx) => {
         const inserted = await tx
-          .insert(productActivationOutcomeBeacons)
+          .insert(telemetryProductActivationOutcomeBeacons)
           .values({ runId: body.run_id })
           .onConflictDoNothing()
-          .returning({ runId: productActivationOutcomeBeacons.runId });
+          .returning({ runId: telemetryProductActivationOutcomeBeacons.runId });
 
         if (inserted.length === 0) {
           return;
@@ -150,6 +164,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
             metadata: rowMetadataVerifyOutcome(body),
           },
           tx,
+          { telemetryTierDestination: "telemetry" },
         );
       });
     }

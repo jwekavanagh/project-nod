@@ -1,4 +1,4 @@
-import { execSync, spawn, type ChildProcess } from "node:child_process";
+import { execFileSync, execSync, spawn, type ChildProcess } from "node:child_process";
 import { existsSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { createRequire } from "node:module";
@@ -31,11 +31,21 @@ async function startInternal(): Promise<void> {
   if (!process.env.DATABASE_URL?.trim()) {
     throw new Error("siteTestServer: DATABASE_URL is required (run website Vitest with commercial env)");
   }
+  if (!process.env.TELEMETRY_DATABASE_URL?.trim()) {
+    throw new Error(
+      "siteTestServer: TELEMETRY_DATABASE_URL is required (production-like server + instrumentation)",
+    );
+  }
+  const repoRoot = getRepoRoot();
+  execFileSync(process.execPath, [join(repoRoot, "scripts", "core-database-boundary-preflight.mjs")], {
+    cwd: repoRoot,
+    env: process.env,
+    stdio: "inherit",
+  });
   const anchors0 = loadAnchors();
   process.env.NEXT_PUBLIC_APP_URL = normalize(anchors0.productionCanonicalOrigin);
   process.env.VERCEL_ENV = "production";
 
-  const repoRoot = getRepoRoot();
   execSync("npm run sync:public-product-anchors", {
     cwd: repoRoot,
     env: process.env,

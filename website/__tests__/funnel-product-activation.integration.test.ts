@@ -1,11 +1,18 @@
 import { POST as postProductActivation } from "@/app/api/funnel/product-activation/route";
 import { db } from "@/db/client";
-import { funnelEvents, productActivationOutcomeBeacons, productActivationStartedBeacons } from "@/db/schema";
+import { dbTelemetry } from "@/db/telemetryClient";
+import { funnelEvents } from "@/db/schema";
+import {
+  telemetryFunnelEvents,
+  telemetryProductActivationOutcomeBeacons,
+  telemetryProductActivationStartedBeacons,
+} from "@/db/telemetrySchema";
+import { truncateCommercialFixtureDbs } from "./helpers/truncateCommercialFixture";
 import {
   PRODUCT_ACTIVATION_CLI_PRODUCT_HEADER,
   PRODUCT_ACTIVATION_CLI_VERSION_HEADER,
 } from "@/lib/funnelProductActivationConstants";
-import { eq, sql } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -13,6 +20,7 @@ import { NextRequest } from "next/server";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const hasDatabaseUrl = Boolean(process.env.DATABASE_URL?.trim());
+const hasTelemetryUrl = Boolean(process.env.TELEMETRY_DATABASE_URL?.trim());
 
 const __dirname = fileURLToPath(new URL(".", import.meta.url));
 const rootPkgPath = join(__dirname, "..", "..", "package.json");
@@ -34,15 +42,10 @@ function activationReq(body: object, headers?: Record<string, string>): NextRequ
   });
 }
 
-describe.skipIf(!hasDatabaseUrl)("funnel product-activation", () => {
-  async function truncateAll(): Promise<void> {
-    await db.execute(sql`
-    TRUNCATE oss_claim_ticket, oss_claim_rate_limit_counter, product_activation_started_beacon, product_activation_outcome_beacon, verify_outcome_beacon, funnel_event, stripe_event, usage_reservation, usage_counter, api_key, session, account, "verificationToken", "user" RESTART IDENTITY CASCADE
-  `);
-  }
-
+describe.skipIf(!hasDatabaseUrl || !hasTelemetryUrl)("funnel product-activation", () => {
   beforeEach(async () => {
-    await truncateAll();
+    vi.stubEnv("AGENTSKEPTIC_TELEMETRY_WRITES_TELEMETRY_DB", "1");
+    await truncateCommercialFixtureDbs();
   });
 
   afterEach(() => {
@@ -64,18 +67,26 @@ describe.skipIf(!hasDatabaseUrl)("funnel product-activation", () => {
     const req1 = activationReq(startedBody);
     const res1 = await postProductActivation(req1);
     expect(res1.status).toBe(204);
-    const rows1 = await db.select().from(funnelEvents).where(eq(funnelEvents.event, "verify_started"));
+    const rows1 = await dbTelemetry
+      .select()
+      .from(telemetryFunnelEvents)
+      .where(eq(telemetryFunnelEvents.event, "verify_started"));
     expect(rows1).toHaveLength(1);
+    const coreRows = await db.select().from(funnelEvents).where(eq(funnelEvents.event, "verify_started"));
+    expect(coreRows).toHaveLength(0);
     expect((rows1[0]!.metadata as { telemetry_source?: string }).telemetry_source).toBe(
       "legacy_unattributed",
     );
-    const beacons1 = await db.select().from(productActivationStartedBeacons);
+    const beacons1 = await dbTelemetry.select().from(telemetryProductActivationStartedBeacons);
     expect(beacons1).toHaveLength(1);
 
     const req2 = activationReq(startedBody);
     const res2 = await postProductActivation(req2);
     expect(res2.status).toBe(204);
-    const rows2 = await db.select().from(funnelEvents).where(eq(funnelEvents.event, "verify_started"));
+    const rows2 = await dbTelemetry
+      .select()
+      .from(telemetryFunnelEvents)
+      .where(eq(telemetryFunnelEvents.event, "verify_started"));
     expect(rows2).toHaveLength(1);
   });
 
@@ -93,9 +104,12 @@ describe.skipIf(!hasDatabaseUrl)("funnel product-activation", () => {
     };
     expect((await postProductActivation(activationReq(body))).status).toBe(204);
     expect((await postProductActivation(activationReq(body))).status).toBe(204);
-    const rows = await db.select().from(funnelEvents).where(eq(funnelEvents.event, "verify_outcome"));
+    const rows = await dbTelemetry
+      .select()
+      .from(telemetryFunnelEvents)
+      .where(eq(telemetryFunnelEvents.event, "verify_outcome"));
     expect(rows).toHaveLength(1);
-    const beacons = await db.select().from(productActivationOutcomeBeacons);
+    const beacons = await dbTelemetry.select().from(telemetryProductActivationOutcomeBeacons);
     expect(beacons).toHaveLength(1);
   });
 
@@ -108,7 +122,10 @@ describe.skipIf(!hasDatabaseUrl)("funnel product-activation", () => {
       }),
     );
     expect(res.status).toBe(400);
-    const rows = await db.select().from(funnelEvents).where(eq(funnelEvents.event, "verify_started"));
+    const rows = await dbTelemetry
+      .select()
+      .from(telemetryFunnelEvents)
+      .where(eq(telemetryFunnelEvents.event, "verify_started"));
     expect(rows).toHaveLength(0);
   });
 
@@ -143,14 +160,20 @@ describe.skipIf(!hasDatabaseUrl)("funnel product-activation", () => {
       }),
     );
     expect(res.status).toBe(204);
-    const rows = await db.select().from(funnelEvents).where(eq(funnelEvents.event, "verify_started"));
+    const rows = await dbTelemetry
+      .select()
+      .from(telemetryFunnelEvents)
+      .where(eq(telemetryFunnelEvents.event, "verify_started"));
     expect((rows[0]!.metadata as { funnel_anon_id?: string }).funnel_anon_id).toBe(fid);
   });
 
   it("returns 204 with install_id null when install_id is omitted (old CLI)", async () => {
     const res = await postProductActivation(activationReq(startedBody));
     expect(res.status).toBe(204);
-    const rows = await db.select().from(funnelEvents).where(eq(funnelEvents.event, "verify_started"));
+    const rows = await dbTelemetry
+      .select()
+      .from(telemetryFunnelEvents)
+      .where(eq(telemetryFunnelEvents.event, "verify_started"));
     expect(rows).toHaveLength(1);
     expect(rows[0]!.installId).toBeNull();
   });
@@ -164,7 +187,10 @@ describe.skipIf(!hasDatabaseUrl)("funnel product-activation", () => {
       }),
     );
     expect(res.status).toBe(400);
-    const rows = await db.select().from(funnelEvents).where(eq(funnelEvents.event, "verify_started"));
+    const rows = await dbTelemetry
+      .select()
+      .from(telemetryFunnelEvents)
+      .where(eq(telemetryFunnelEvents.event, "verify_started"));
     expect(rows).toHaveLength(0);
   });
 
@@ -200,14 +226,14 @@ describe.skipIf(!hasDatabaseUrl)("funnel product-activation", () => {
         )
       ).status,
     ).toBe(204);
-    const started = await db
+    const started = await dbTelemetry
       .select()
-      .from(funnelEvents)
-      .where(eq(funnelEvents.event, "verify_started"));
-    const outcomes = await db
+      .from(telemetryFunnelEvents)
+      .where(eq(telemetryFunnelEvents.event, "verify_started"));
+    const outcomes = await dbTelemetry
       .select()
-      .from(funnelEvents)
-      .where(eq(funnelEvents.event, "verify_outcome"));
+      .from(telemetryFunnelEvents)
+      .where(eq(telemetryFunnelEvents.event, "verify_outcome"));
     expect(started[0]!.installId).toBe(iid);
     expect(outcomes[0]!.installId).toBe(iid);
   });
@@ -224,7 +250,10 @@ describe.skipIf(!hasDatabaseUrl)("funnel product-activation", () => {
       telemetry_source: "local_dev" as const,
     };
     expect((await postProductActivation(activationReq(body))).status).toBe(204);
-    const rows = await db.select().from(funnelEvents).where(eq(funnelEvents.event, "verify_started"));
+    const rows = await dbTelemetry
+      .select()
+      .from(telemetryFunnelEvents)
+      .where(eq(telemetryFunnelEvents.event, "verify_started"));
     expect((rows[0]!.metadata as { telemetry_source?: string }).telemetry_source).toBe("local_dev");
   });
 

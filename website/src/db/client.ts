@@ -1,3 +1,4 @@
+import { assertCoreDatabaseBoundary } from "@/lib/coreDatabaseBoundary";
 import { drizzle, type PostgresJsDatabase } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
 import { ensureSslModeRequire } from "./ensureSslModeRequire";
@@ -41,6 +42,7 @@ function resolveConnectionString(): string {
 }
 
 const connectionString = resolveConnectionString();
+assertCoreDatabaseBoundary(connectionString);
 
 const client = postgres(connectionString, { max: 10 });
 export const db: PostgresJsDatabase<typeof schema> = drizzle(client, { schema });

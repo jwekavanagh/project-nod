@@ -5,11 +5,16 @@ import {
   resolveFunnelAnonId,
 } from "@/lib/funnelAttribution";
 import { logFunnelEvent } from "@/lib/funnelEvent";
+import { telemetryCoreWriteFreezeActive } from "@/lib/telemetryWritesConfig";
 import { NextRequest, NextResponse } from "next/server";
 
 export const runtime = "nodejs";
 
 export async function POST(req: NextRequest): Promise<NextResponse> {
+  if (telemetryCoreWriteFreezeActive()) {
+    return new NextResponse(null, { status: 503 });
+  }
+
   if (!isFunnelSurfaceRequestOriginAllowed(req)) {
     return new NextResponse(null, { status: 403 });
   }

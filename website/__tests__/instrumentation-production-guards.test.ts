@@ -3,6 +3,7 @@ import {
   assertProductionCommercialGuards,
   PRODUCTION_COMMERCIAL_GUARD_VIOLATION_MESSAGE,
 } from "@/lib/assertProductionCommercialGuards";
+import { TELEMETRY_DATABASE_URL_REQUIRED_MESSAGE } from "../instrumentation";
 
 describe("assertProductionCommercialGuards", () => {
   afterEach(() => {
@@ -45,5 +46,15 @@ describe("instrumentation register", () => {
     vi.resetModules();
     const { register } = await import("../instrumentation");
     expect(() => register()).toThrow(PRODUCTION_COMMERCIAL_GUARD_VIOLATION_MESSAGE);
+  });
+
+  it("register throws when production-like and TELEMETRY_DATABASE_URL missing", async () => {
+    vi.stubEnv("VERCEL_ENV", "production");
+    delete process.env.E2E_COMMERCIAL_FUNNEL;
+    delete process.env.RESERVE_EMERGENCY_ALLOW;
+    delete process.env.TELEMETRY_DATABASE_URL;
+    vi.resetModules();
+    const { register } = await import("../instrumentation");
+    expect(() => register()).toThrow(TELEMETRY_DATABASE_URL_REQUIRED_MESSAGE);
   });
 });

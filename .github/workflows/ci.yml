@@ -69,6 +69,8 @@ jobs:
       AGENTSKEPTIC_TELEMETRY: "0"
     steps:
       - uses: actions/checkout@v5
+      - name: Assert workflow DATABASE_URL host policy
+        run: node scripts/assert-ci-workflows-database-url-hosts.mjs
       - uses: actions/setup-node@v5
         with:
           node-version: "22"
@@ -96,6 +98,8 @@ jobs:
           --health-retries 5
     env:
       DATABASE_URL: postgresql://postgres:postgres@localhost:5432/wfv_website
+      TELEMETRY_DATABASE_URL: postgresql://postgres:postgres@localhost:5432/wfv_telemetry
+      AGENTSKEPTIC_TELEMETRY_WRITES_TELEMETRY_DB: "1"
       AUTH_SECRET: ci_auth_secret_value_at_least_32_chars_ok
       CONTACT_SALES_EMAIL: sales-ci@example.com
       STRIPE_SECRET_KEY: sk_test_ci_placeholder
@@ -120,6 +124,20 @@ jobs:
           const sql = postgres('postgresql://postgres:postgres@localhost:5432/postgres');
           try {
             await sql.unsafe('CREATE DATABASE wfv_website');
+          } catch (e) {
+            const c = /** @type {{ code?: string }} */ (e).code;
+            if (c !== '42P04') throw e;
+          }
+          await sql.end();
+          "
+      - name: Create telemetry database
+        working-directory: website
+        run: |
+          node --input-type=module -e "
+          import postgres from 'postgres';
+          const sql = postgres('postgresql://postgres:postgres@localhost:5432/postgres');
+          try {
+            await sql.unsafe('CREATE DATABASE wfv_telemetry');
           } catch (e) {
             const c = /** @type {{ code?: string }} */ (e).code;
             if (c !== '42P04') throw e;

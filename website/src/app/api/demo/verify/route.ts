@@ -9,6 +9,7 @@ import {
 } from "@/lib/demoVerify";
 import { logFunnelEvent } from "@/lib/funnelEvent";
 import { DemoFixturesMissingError } from "@/lib/resolveRepoExamples";
+import { telemetryCoreWriteFreezeActive } from "@/lib/telemetryWritesConfig";
 import { NextRequest, NextResponse } from "next/server";
 
 export const runtime = "nodejs";
@@ -21,6 +22,13 @@ export async function GET(): Promise<NextResponse> {
 }
 
 export async function POST(req: NextRequest): Promise<NextResponse> {
+  if (telemetryCoreWriteFreezeActive()) {
+    return NextResponse.json(
+      { ok: false, error: DEMO_ERROR_CODES.UNAVAILABLE },
+      { status: 503 },
+    );
+  }
+
   const rawCt = req.headers.get("content-type");
   const ct = rawCt?.toLowerCase() ?? "";
   if (!ct.startsWith("application/json")) {

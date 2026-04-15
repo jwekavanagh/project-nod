@@ -5,8 +5,9 @@
 ```bash
 # From repo root (after npm install)
 cd website
-copy .env.example .env   # then edit DATABASE_URL (Supabase/Vercel: sslmode=require; app and drizzle.config auto-append TLS params for non-localhost URLs), AUTH_SECRET, etc.
-npx drizzle-kit migrate
+copy .env.example .env   # then edit DATABASE_URL, TELEMETRY_DATABASE_URL (second Postgres for funnel telemetry + product-activation), AUTH_SECRET, etc.
+npm run db:migrate
+npm run db:migrate:telemetry
 npm run dev
 ```
 
