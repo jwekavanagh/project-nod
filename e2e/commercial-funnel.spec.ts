@@ -28,8 +28,9 @@ test.describe("commercial funnel", () => {
   test("pricing shows normative commercial lines from policy doc", async ({ page }) => {
     const lines = readCommercialPricingLines(repoRoot);
     await page.goto("/pricing");
+    const terms = page.getByRole("list", { name: "Commercial terms" });
     for (const line of lines) {
-      await expect(page.getByText(line, { exact: true })).toBeVisible();
+      await expect(terms).toContainText(line);
     }
   });
 
