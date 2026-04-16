@@ -40,8 +40,8 @@ describe("docs contract (SSOT + README)", () => {
     }
     const funnelSlice = readme.slice(0, pos + 1);
     assert.ok(
-      /\*\*One-sentence value:\*\*/.test(funnelSlice),
-      "explicit one-sentence value proposition before deep sections",
+      /\*\*Core mechanism:\*\*/.test(funnelSlice),
+      "explicit core mechanism line before deep sections",
     );
     assert.ok(
       /npm start/.test(funnelSlice) && /npm install/.test(funnelSlice),
@@ -60,10 +60,10 @@ describe("docs contract (SSOT + README)", () => {
       "sample output includes interpretation lines for success and failure",
     );
     assert.ok(
-      /Canonical use case/i.test(funnelSlice) &&
-        /CRM/i.test(funnelSlice) &&
-        /support/i.test(funnelSlice),
-      "canonical commercial use case (support/CRM) appears in funnel",
+      /Buy vs build/i.test(funnelSlice) &&
+        /CRM|crm\.upsert_contact/i.test(funnelSlice) &&
+        /ROW_ABSENT|recurring/i.test(funnelSlice),
+      "wedge anchors recurring failure (CRM/ticket) and demo signal in funnel",
     );
     assert.ok(
       /This is for you if/i.test(funnelSlice) && /This is not for you if/i.test(funnelSlice),

@@ -3,13 +3,10 @@
   "headings": [
     "## Try it (about one minute)",
     "### Docker quickstart (optional)",
-    "## Canonical use case",
-    "## How to run the CLI",
     "## Minimal model (event → registry → result)",
     "## What this is (and is not)",
     "## Contract path (registry + events)",
-    "## Quick Verify (optional, zero-registry)",
-    "## Confidence over time (assurance)",
+    "## Quick Verify and assurance (optional)",
     "## Sample output (contract demo)",
     "### Success (`wf_complete`)",
     "### Failure (`wf_missing`)"

@@ -48,7 +48,7 @@ Tokens: `agentskeptic quick --input <path> (--postgres-url <url> | --db <sqliteP
 
 Lines 4–6 after the anchors are **fixed banner** strings exported as `QUICK_VERIFY_BANNER_LINE_1`, `QUICK_VERIFY_BANNER_LINE_2`, and `QUICK_VERIFY_BANNER_LINE_3` from **`src/quickVerify/formatQuickVerifyHumanReport.ts`**.
 
-Under each **unit** bullet (after that unit’s summary line), the formatter emits **exactly four** lines in dimension-ID order, using the same prefixes as [`src/reconciliationPresentation.ts`](../src/reconciliationPresentation.ts): `declared:`, `expected:`, `observed_database:`, `verification_verdict:` — values are copied **only** from **`report.units[i].reconciliation`** on stdout JSON (see [verification-product-ssot.md — Reconciliation vocabulary](verification-product-ssot.md#reconciliation-vocabulary-canonical)).
+Under each **unit** bullet (after that unit’s summary line), the formatter emits **exactly four** lines in dimension-ID order, using the same prefixes as [`src/reconciliationPresentation.ts`](../src/reconciliationPresentation.ts): `declared:`, `expected:`, `observed_database:`, `verification_verdict:` — values are copied **only** from **`report.units[i].reconciliation`** on stdout JSON (see [reconciliation-vocabulary-ssot.md](reconciliation-vocabulary-ssot.md#reconciliation-vocabulary-canonical)).
 
 ## A.3b Synthetic `tool_observed` lines (contract replay)
 

@@ -55,7 +55,20 @@ steps:
 [Read the product brief](https://agentskeptic.com/database-truth-vs-traces)
 <!-- discovery-acquisition-fold:end -->
 
-**One-sentence value:** Read-only SQL checks that your database **at verification time** matches **expectations derived from structured tool activity**—not whether a trace step “succeeded.”
+## Buy vs build: why not only SQL checks
+
+**The scar (one pattern, over and over):** the trace says the tool succeeded—here **`crm.upsert_contact`** / **`contacts`**—but the row is missing or wrong. The repo demo names it **`wf_missing`** / **`ROW_ABSENT`**; **the same failure shape** applies whenever your registry maps tool activity to SQL state (ledgers, orders, tickets—not only CRM). That is not a logging problem—it is a **money and risk** problem the moment you ship, bill, close, or treat the run as audit evidence.
+
+**Why “we’ll just write SQL checks” stops working**
+
+- **Drift:** Scripts rot when schemas and workflows change; nobody keeps them current.
+- **No ownership:** The author leaves; the checks become folklore.
+- **Not an org contract:** Expectations live in heads and one-off files—not in a shared **`tools.json`** + **NDJSON** contract everyone replays.
+- **CI and audit:** Ad-hoc checks are skipped locally and rarely ship as **repeatable artifacts**; when the issue is cross-team or compliance, scripts do not hold. Use **CI lock** / enforcement when you need pins ([`docs/ci-enforcement.md`](docs/ci-enforcement.md)).
+
+**What you standardize on instead:** when the row backs revenue or customer promises, **you stop betting the business on whoever wrote the last script.** AgentSkeptic is how the org **owns** the check: one verifier, one replayable contract, **Quick → Contract** when stakes go up—explore with **Quick Verify** ([`docs/quick-verify-normative.md`](docs/quick-verify-normative.md)), lock with **contract** mode and a **`tools.json`** registry when “we ran a query” is not evidence ([`docs/agentskeptic.md`](docs/agentskeptic.md)). **That is the responsible default** once the failure mode hurts.
+
+**Core mechanism:** Read-only SQL checks that your database **at verification time** matches **expectations derived from structured tool activity**—not whether a trace step “succeeded.”
 
 <!-- public-product-anchors:start -->
 State verification engine: read-only SQL checks that database state matches expectations from structured tool activity (not arbitrary logs)—not proof of execution
@@ -72,6 +85,8 @@ State verification engine: read-only SQL checks that database state matches expe
 <!-- public-product-anchors:end -->
 
 ## Try it (about one minute)
+
+This is the fastest way to see **`ROW_ABSENT`** versus **verified** on the same screen—the concrete failure mode the section above is about (bundled CRM-style demo, not your production incident yet).
 
 **Prerequisite:** **Node.js ≥ 22.13** (built-in [`node:sqlite`](https://nodejs.org/api/sqlite.html)), or use [Docker](#docker-quickstart-optional) below.
 
@@ -101,18 +116,6 @@ docker run --rm -it -v "$PWD:/work" -w /work node:22-bookworm bash -lc "npm inst
 ```powershell
 docker run --rm -it -v "${PWD}:/work" -w /work node:22-bookworm bash -lc "npm install && npm start"
 ```
-
-## Canonical use case
-
-**AI support or CRM-style workflows:** structured activity says the ticket or contact should look a certain way; the trace may still show success. This tool compares **expected** row shape from that activity to **observed** SQL—**inconsistent** when the row is wrong or missing, even when the narrative looked fine.
-
-## How to run the CLI
-
-- **After `npm install` and `npm run build` in this repo:** use **`agentskeptic`** (from `package.json` `bin`, pointing at `dist/cli.js`). Examples: `npm run agentskeptic -- --help` or `npx agentskeptic --help` from the repo root.
-- **From a published install** (when you install the `agentskeptic` package): same command—**`agentskeptic`** on your `PATH`.
-- **Explicit path from source:** **`node dist/cli.js`** — same entrypoint as **`agentskeptic`**; use this when you want a literal path after **`npm run build`**.
-
-Postgres: use **`--postgres-url "postgresql://…"`** instead of **`--db <sqlitePath>`** (exactly one of the two).
 
 ## Minimal model (event → registry → result)
 
@@ -158,13 +161,11 @@ Retries, partial failures, and race conditions mean a success flag in a trace is
 | A verifier for **persisted state** after agent or automation workflows | A test runner for application code |
 | Proof that **observed DB state matched expectations** at verification time | Proof that a tool **executed**, **wrote**, or **caused** that state |
 
-**This is for you if** you need SQL ground truth for persisted rows after agent or automation workflows—when the trace looks fine but the database might not be.
+**This is for you if** you need persisted-row SQL truth after agent or automation runs when the trace looks fine but the DB might not.
 
-**This is not for you if** you need proof a tool executed, generic log search as verification, or a system where read-only SQL against your app DB is not the right check.
+**This is not for you if** you need proof a tool executed, log search as verification, or a model where read-only SQL against your app DB is not the right check. Homepage “for you / not for you” copy lives in **`website/src/content/productCopy.ts`** (single source with the site).
 
-**Trust boundary (once):** a green trace or OK tool response does **not** prove the row you care about exists with the right values. This tool only shows whether **read-only `SELECT`s** at verification time matched **expected** rows/fields under your rules—**not** causality or execution correctness in the deep sense.
-
-**Web-facing qualification** (“for you” / “not for you” on the commercial site) is maintained in **`website/src/content/productCopy.ts`** so homepage copy does not drift from a second source in this README.
+**Trust boundary (once):** a green trace does **not** prove the row exists with the right values—only whether **read-only `SELECT`s** matched **expected** rows under your rules, not deep causality.
 
 **Declared → expected → observed** (how reports reason about runs):
 
@@ -173,6 +174,8 @@ Retries, partial failures, and race conditions mean a success flag in a trace is
 3. **Observed** — what read-only SQL returned at verification time.
 
 ## Contract path (registry + events)
+
+**CLI:** after **`npm install`** and **`npm run build`**, use **`agentskeptic`** (or **`npx agentskeptic`**, or **`node dist/cli.js`**). Postgres: **`--postgres-url`** instead of **`--db`** (exactly one).
 
 Typical integration:
 
@@ -185,25 +188,18 @@ npm run build
 agentskeptic --workflow-id <id> --events <path> --registry <path> --db <sqlitePath>
 ```
 
-Replay the bundled demo:
-
-```bash
-npm run build
-agentskeptic --workflow-id wf_complete --events examples/events.ndjson --registry examples/tools.json --db examples/demo.db
-```
+Replay the bundled files: **`wf_complete`** / **`examples/events.ndjson`** / **`examples/tools.json`** / **`examples/demo.db`** (same flags as above).
 
 **From source without `agentskeptic` on PATH:** `node dist/cli.js` with the same flags.
 
 **Why SQLite in the demo:** file-backed ground truth with no extra services. The demo (re)creates **`examples/demo.db`**; verification still uses read-only SQL.
 
-## Quick Verify (optional, zero-registry)
+## Quick Verify and assurance (optional)
+
+**Quick Verify** (`agentskeptic quick`): inferred checks, **no registry file**; **provisional**, not audit-final—graduate to **contract mode** for explicit per-tool expectations. Full contract: **[`docs/quick-verify-normative.md`](docs/quick-verify-normative.md)**.
 
 **Input contract:** We only accept **structured tool activity**—JSON or NDJSON that describes tool calls and parameters our ingest model can extract—not arbitrary logs, traces, or unstructured observability text.
 Verification uses read-only SQL against your database; API-only or non-SQL systems are out of scope for this tool.
-
-**Quick Verify** runs **`agentskeptic quick`** with structured tool activity and a DB: inferred checks, no registry file. It is **provisional**—rollup pass/fail/uncertain is **not** an audit-final verdict; prefer **contract mode** when you need explicit per-tool expectations.
-
-Full behavior, stdout/stderr contracts, exit codes, and replay caveats: **[`docs/quick-verify-normative.md`](docs/quick-verify-normative.md)** and **[`docs/agentskeptic.md`](docs/agentskeptic.md)** (Quick Verify sections). Product framing: **[`docs/verification-product-ssot.md`](docs/verification-product-ssot.md)**.
 
 ```bash
 npm run build
@@ -212,60 +208,17 @@ agentskeptic quick --input test/fixtures/quick-verify/pass-line.ndjson --db exam
 
 Use **`--postgres-url`** instead of **`--db`**; **`-`** as **`--input`** reads stdin.
 
-## Confidence over time (assurance)
-
-**Trust over time** uses **`agentskeptic assurance run`** with a versioned **manifest** (multi-scenario sweep by spawning the CLI) and **`agentskeptic assurance stale`** to fail closed when a saved **`AssuranceRunReport`** is missing, invalid, or older than **`--max-age-hours`**. Bundled example manifest: **[`examples/assurance/manifest.json`](examples/assurance/manifest.json)**. Normative I/O and schemas: **[Assurance subsystem](docs/agentskeptic.md#assurance-subsystem-normative)** in **`docs/agentskeptic.md`**.
+**Assurance** (`assurance run` / `assurance stale`): multi-scenario sweeps and staleness over saved reports—**[Assurance subsystem](docs/agentskeptic.md#assurance-subsystem-normative)**, **[`examples/assurance/manifest.json`](examples/assurance/manifest.json)**.
 
 ## Sample output (contract demo)
 
-The **`npm start`** driver prints the human report and workflow JSON to **stdout** (so one stream carries the story). Normal CLI use: machine JSON on **stdout**, human report on **stderr**—see [Human truth report](docs/agentskeptic.md#human-truth-report).
+The **`npm start`** driver prints human report + workflow JSON to **stdout** (one stream for the demo). Normal CLI: machine JSON on **stdout**, human report on **stderr**—[Human truth report](docs/agentskeptic.md#human-truth-report). **Full success/failure transcripts** (same strings as below) are in the [acquisition fold](#your-traces-say-success-your-database-disagrees) at the top of this README.
 
 ### Success (`wf_complete`)
-
-```text
-workflow_id: wf_complete
-workflow_status: complete
-trust: TRUSTED: Every step matched the database under the configured verification rules.
-steps:
-  - seq=0 tool=crm.upsert_contact result=Matched the database.
-```
-
-```json
-{
-  "schemaVersion": 15,
-  "workflowId": "wf_complete",
-  "status": "complete",
-  "steps": [{ "seq": 0, "toolId": "crm.upsert_contact", "status": "verified" }]
-}
-```
 
 *Interpretation:* Under the configured rules, **expected** state matched **observed SQL** for this step—**state alignment**, not proof of execution.
 
 ### Failure (`wf_missing`)
-
-```text
-workflow_id: wf_missing
-workflow_status: inconsistent
-steps:
-  - seq=0 tool=crm.upsert_contact result=Expected row is missing from the database (the log implies a write that is not present).
-    reference_code: ROW_ABSENT
-```
-
-```json
-{
-  "schemaVersion": 15,
-  "workflowId": "wf_missing",
-  "status": "inconsistent",
-  "steps": [
-    {
-      "seq": 0,
-      "toolId": "crm.upsert_contact",
-      "status": "missing",
-      "reasons": [{ "code": "ROW_ABSENT" }]
-    }
-  ]
-}
-```
 
 *Interpretation:* **Expected** state from the tool activity implied a row **observed SQL** did not find—**inconsistent**—a gap traces alone often miss. Still not proof a write was attempted or rolled back.
 
@@ -276,6 +229,7 @@ steps:
 | **Logs / traces** | A step ran, duration, errors—not “row X has columns Y.” |
 | **Unit / integration tests** | Code paths in your repo—not production agent runs against live DB state. |
 | **Metrics / APM** | Health and latency—not semantic equality of persisted records. |
+| **Ad-hoc SQL checks / one-off scripts** | Same failure mode as [**Buy vs build**](#buy-vs-build-why-not-only-sql-checks)—drift, weak ownership, not a durable contract. |
 | **agentskeptic** | Whether **observed SQL** matches **expectations from declared tool parameters** (contract mode), via read-only SQL—not proof the tool executed. |
 
 ## When to run it
@@ -288,36 +242,28 @@ Run **after** a workflow (or CI replay of its log), **before** you treat the out
 
 **CI with pinned outcomes:** **`agentskeptic enforce`** and committed **`ci-lock-v1`** fixtures—[`docs/ci-enforcement.md`](docs/ci-enforcement.md).
 
-## Advanced features
+## Further capabilities (reference)
 
-Optional capabilities; full detail in **[`docs/agentskeptic.md`](docs/agentskeptic.md)**.
-
-| Area | Entry |
-|------|--------|
-| **Cross-run compare** | `agentskeptic compare` — [Cross-run comparison](docs/agentskeptic.md#cross-run-comparison-normative) |
-| **Execution trace** | `agentskeptic execution-trace` — [End-to-end execution visibility](docs/agentskeptic.md#end-to-end-execution-visibility-normative) |
-| **In-process hook** | SQLite **`withWorkflowVerification`** — [Low-friction integration](docs/agentskeptic.md#low-friction-integration-in-process) |
-| **Registry validation** | `agentskeptic validate-registry` — [Registry validation](docs/agentskeptic.md#registry-validation-validate-registry--normative) |
-| **Run bundles / signing** | [Agent run record](docs/agentskeptic.md#agent-run-record-canonical-bundle), [Signing](docs/agentskeptic.md#cryptographic-signing-of-workflow-result-normative) |
-| **Debug Console** | `agentskeptic debug` — [Debug Console](docs/agentskeptic.md#debug-console-normative) |
-| **Plan transition** | `agentskeptic plan-transition` — [Plan transition validation](docs/agentskeptic.md#plan-transition-validation-normative) |
-
-Streams, exit codes, and operational errors: [Human truth report](docs/agentskeptic.md#human-truth-report), [CLI operational errors](docs/agentskeptic.md#cli-operational-errors).
+Everything beyond core contract verification lives in **[`docs/agentskeptic.md`](docs/agentskeptic.md)**—subcommands, hooks, bundles, debug, plan transition, human report layout, exit codes.
 
 ## Documentation map
 
 | Doc | Purpose |
 |-----|---------|
+| [README — Buy vs build](#buy-vs-build-why-not-only-sql-checks) | Canonical **buy vs build** narrative (failure mode, scripts limits, Quick → Contract) |
 | [`docs/agentskeptic.md`](docs/agentskeptic.md) | Authoritative CLI and behavior reference (SSOT) |
 | [`docs/quick-verify-normative.md`](docs/quick-verify-normative.md) | Quick Verify normative contract |
-| [`docs/verification-product-ssot.md`](docs/verification-product-ssot.md) | Product story and doc ownership |
+| [`docs/verification-product-ssot.md`](docs/verification-product-ssot.md) | Product intent, trust boundary, authority matrix |
+| [`docs/reconciliation-vocabulary-ssot.md`](docs/reconciliation-vocabulary-ssot.md) | Reconciliation dimension IDs and UI mapping |
+| [`docs/verification-operational-notes.md`](docs/verification-operational-notes.md) | First-run runbooks, TTFV, export vs replay coverage |
+| [`docs/langgraph-reference-boundaries-ssot.md`](docs/langgraph-reference-boundaries-ssot.md) | LangGraph reference path: emitter/CLI boundaries and test chain |
 | [`docs/relational-verification.md`](docs/relational-verification.md) | Relational verification semantics |
 | [`docs/ci-enforcement.md`](docs/ci-enforcement.md) | CI enforcement and lock fixtures |
 | [`docs/correctness-definition-normative.md`](docs/correctness-definition-normative.md) | Correctness and limits (normative) |
 
 ## Development and testing
 
-**Why SQLite in the demo:** file-backed ground truth with no extra services. The demo (re)creates **`examples/demo.db`**; verification still uses read-only SQL.
+**Why SQLite:** same note as under [Contract path](#contract-path-registry--events) (file-backed demo DB; read-only verification SQL).
 
 Runs build, Vitest, SQLite Node tests, first-run demo, `assurance run`, the commercial enforce test harness (minimal CI enforcement + enforce integration tests), and TTFV validation. No Postgres required.
 
@@ -325,12 +271,7 @@ Runs build, Vitest, SQLite Node tests, first-run demo, `assurance run`, the comm
 
 ## Commercial CLI (npm) vs OSS (this repo)
 
-- **Default `npm run build`** uses **`WF_BUILD_PROFILE=oss`**: contract **`verify`** does **not** call a license server or require **`AGENTSKEPTIC_API_KEY`**. **`enforce`** and **`--output-lock` / `--expect-lock`** on batch or **`quick`** are **unavailable** in this profile — see **[`docs/commercial-enforce-gate-normative.md`](docs/commercial-enforce-gate-normative.md)**. Use OSS builds for local development, forks, and air-gapped **`verify`**.
-- **Published npm (commercial profile)** is built with **`npm run build:commercial`** and **`COMMERCIAL_LICENSE_API_BASE_URL`**; it **requires** an API key, an **active subscription** (Individual, Team, or Business self-serve, or Enterprise; trial counts) for **licensed** **batch**, **`quick`**, **CI lock flags**, and **`enforce`**, and successful **`POST /api/v1/usage/reserve`** preflight. **Entitlement matrix:** **[`docs/commercial-entitlement-matrix.md`](docs/commercial-entitlement-matrix.md)** (generated). **Policy:** **[`docs/commercial-entitlement-policy.md`](docs/commercial-entitlement-policy.md)**. **Machine contracts:** **`GET /api/v1/commercial/plans`** and **`/openapi-commercial-v1.yaml`** — **[`docs/commercial-ssot.md`](docs/commercial-ssot.md)**.
-- **Production CI** should install **`agentskeptic@latest`** from npm, set **`AGENTSKEPTIC_API_KEY`** (legacy **`WORKFLOW_VERIFIER_API_KEY`** still accepted), and use a reachable license API. Example: **[`examples/github-actions/agentskeptic-commercial.yml`](examples/github-actions/agentskeptic-commercial.yml)**.
-- **Website + billing:** [`website/`](website/), **[`docs/commercial-ssot.md`](docs/commercial-ssot.md)**. First-run on your DB: **[`docs/first-run-integration.md`](docs/first-run-integration.md)** and **`/integrate`**.
-- **CLI funnel telemetry (anonymous, best-effort):** **`verify` / `quick`** emit optional **`verify_started`** / **`verify_outcome`** posts as documented in **[`docs/funnel-observability-ssot.md`](docs/funnel-observability-ssot.md)**. OSS builds default to the **canonical site origin** unless **`AGENTSKEPTIC_TELEMETRY_ORIGIN`** is set; set **`AGENTSKEPTIC_TELEMETRY=0`** to disable only those posts (licensed completion beacons unchanged). Operators: do not conflate **`verify_outcome`** with **`licensed_verify_outcome`** — see SSOT **Operator reading metrics (do not double-count)**.
-- **Validation:** `npm run validate-commercial` requires **`DATABASE_URL`** and **`TELEMETRY_DATABASE_URL`**, runs **`website/scripts/db-migrate.mjs`** and **`website/scripts/db-migrate-telemetry.mjs`**, runs website Vitest, then **`scripts/pack-smoke-commercial.mjs`** (commercial **`npm pack`** gate), then **`npm run build`** to restore OSS **`dist/`**, and writes [`artifacts/commercial-validation-verdict.json`](artifacts/commercial-validation-verdict.json). Optional: set **`COMMERCIAL_LICENSE_API_BASE_URL`** for the pack-smoke step (defaults to `https://pack-smoke.example.com`). Set **`COMMERCIAL_VALIDATE_PLAYWRIGHT=1`** for Playwright; see **`scripts/run-commercial-e2e.mjs`**. Quick pack check only: **`npm run pack-smoke`** (requires **`COMMERCIAL_LICENSE_API_BASE_URL`** for a real commercial build, or uses the script default URL).
+Canonical write-up: **[`docs/commercial-ssot.md`](docs/commercial-ssot.md)** (npm package, Stripe, keys, telemetry, validation, entitlements; operator metrics in **[`docs/funnel-observability-ssot.md`](docs/funnel-observability-ssot.md)**—disable with **`AGENTSKEPTIC_TELEMETRY=0`**). OSS builds in this repo run contract **`verify`** without a license server; **`enforce`**, CI locks, and lock flags on **`quick`/batch** require a commercial build per **[`docs/commercial-enforce-gate-normative.md`](docs/commercial-enforce-gate-normative.md)**. Example workflow: **[`examples/github-actions/agentskeptic-commercial.yml`](examples/github-actions/agentskeptic-commercial.yml)**.
 
 ## Status, contributing, security
 
@@ -343,7 +284,3 @@ Runs build, Vitest, SQLite Node tests, first-run demo, `assurance run`, the comm
 ## License
 
 Released under the **MIT License** — **[LICENSE](LICENSE)**.
-
-## CLI telemetry and privacy
-
-Anonymous OSS telemetry uses **`AGENTSKEPTIC_TELEMETRY=0`** to disable product-activation `fetch`, OSS claim-ticket `fetch`, and the stderr claim URL helper (silent; no network). **`AGENTSKEPTIC_TELEMETRY_SOURCE=local_dev`** labels emitted traffic as local development when telemetry is on; otherwise the CLI sends **`unknown`** (this is not a guarantee of “external-only” traffic—see SSOT). For operator validation keyed to a single control **`run_id`**, set a fresh **`AGENTSKEPTIC_RUN_ID`** UUID per run before **`quick`**, then query Postgres on **`metadata->>'run_id'`** as documented in **[`docs/funnel-observability-ssot.md`](docs/funnel-observability-ssot.md)** (operator validation subsection).

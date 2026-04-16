@@ -1,114 +1,126 @@
-# Verification product — single source of truth (narrative)
+# Verification product — SSOT (narrative pins & authority)
 
-This document is the **authoritative place** for product intent, audiences, onboarding narrative, and **which file owns which contract**. It does **not** duplicate ingest ladders, numeric thresholds, or JSON Schema keyword rules—those stay in the documents linked below.
+
+
+This document is the **authoritative place** for **product intent**: trust boundary, category, ICP exclusion, core promise, Quick Verify positioning, and **which file owns which contract**. It is **not** a CLI runbook, a UI string catalog, a full reconciliation field matrix, or **reference-path / test-boundary governance**—those live in the documents linked below.
+
+
+
+**Operational detail** (first-run commands, integrator stdout/stderr contracts, TTFV validation, export-vs-replay coverage): [`verification-operational-notes.md`](verification-operational-notes.md). **Reconciliation dimension IDs, stderr prefixes, and batch/Quick JSON mapping:** [`reconciliation-vocabulary-ssot.md`](reconciliation-vocabulary-ssot.md). **LangGraph-shaped integrator boundaries** (emitter vs CLI ordering, command provenance): [`langgraph-reference-boundaries-ssot.md`](langgraph-reference-boundaries-ssot.md).
+
+
 
 ## What this does **not** prove (trust boundary)
 
+
+
 Across **Quick Verify** and **contract** verification:
 
+
+
 - This does **not** prove that a tool call **actually executed** or that an effect **actually ran**—only that **observed database state** matched **expectations** when checked.
+
 - This does **not** prove that a **change occurred** (or did not occur)—verification is a **snapshot**: current SQL state vs expected state.
+
 - This **only** proves **state matches declared or inferred expectations** under the configured rules—not “execution correctness” or causality.
+
+
 
 **Declared vs expected vs observed** (first-class mental model; echoed on stdout as `productTruth.layers` on `QuickVerifyReport`):
 
+
+
 1. **Declared** — What structured **tool activity** encodes (tool identity and parameters extracted from ingest).
+
 2. **Expected** — What should hold in SQL: **quick** = **inferred** from declared parameters (provisional); **contract** = **registry-resolved** from events.
+
 3. **Observed** — What **read-only SQL** returned at verification time.
 
-## Reconciliation vocabulary (canonical)
 
-**Single implementation source:** [`src/reconciliationPresentation.ts`](../src/reconciliationPresentation.ts) exports stable dimension IDs, HTML `<th>` titles, stderr line prefixes, batch **`formatBatchObservedStateSummary`**, and Quick **`buildQuickUnitReconciliation`**. **Do not** duplicate these strings in product code outside that module and tests.
-
-**Trust boundary** for this table matches [What this does **not** prove](#what-this-does-not-prove-trust-boundary): **observed** is snapshot SQL ground truth, not proof of execution.
-
-| Dimension ID (`data-etl-dimension`, Quick `units[].reconciliation` keys) | Human title (trust panel `<th>`) | Stderr / human line prefix (exact) | Batch JSON fields (per truth step) | Quick JSON (per unit) |
-|--------------------------------------------------------------------------|----------------------------------|------------------------------------|--------------------------------------|-------------------------|
-| `declared` | Declared | `declared: ` | `toolId`, `intendedEffect.narrative`, `observedExecution.paramsCanonical` (stderr packs these into one line; see [`agentskeptic.md` — Human truth report](agentskeptic.md#human-truth-report)) | `reconciliation.declared` |
-| `expected` | Expected | `expected: ` | `verifyTarget` (`null` → sentinel in stderr) | `reconciliation.expected` |
-| `observed_database` | Observed (database) | `observed_database: ` | **`observedStateSummary`** (required, **`schemaVersion` 9**) | `reconciliation.observed_database` |
-| `verification_verdict` | Verification verdict | `verification_verdict: ` | `outcomeLabel`, human phrase, optional `failureCategory` (stderr packs into one line) | `reconciliation.verification_verdict` |
 
 ## Product category
 
+
+
 You are a **state verification engine for agent-driven systems** that have **SQL ground truth**. You are **not** a logging, tracing, or general observability product, and you are **not** a substitute for tests of application code paths.
+
+
 
 ## Who should **not** use this (ICP exclusion)
 
+
+
 - Teams **without** **structured tool activity** (JSON describing tool calls and parameters)—there is **no** “paste any logs” path.
+
 - Teams **without** **SQL-accessible** authoritative state.
+
 - Teams that need **causal** or **execution** guarantees, not **state–expectation** checks.
+
 - Teams expecting **plug-and-play** ingestion without aligning to the **event / ingest model**.
+
+
 
 ## Documentation authority matrix
 
+
+
 | Subject | Authoritative location | Elsewhere |
+
 |---------|-------------------------|-----------|
+
+| **Buy vs build** (recurring failure mode, limits of ad-hoc SQL checks, **Quick → Contract** graduation narrative) | [`README.md`](../README.md) section **Buy vs build: why not only SQL checks** (after discovery markers, before Try it) | [`docs/golden-path.md`](../docs/golden-path.md) points here first; [`docs/first-run-integration.md`](../docs/first-run-integration.md) links prerequisite only—no duplicate long narrative |
+
 | Ingest ladder L0–L5, `extractActions`, thresholds (`T_TABLE`, …), dedupe, decomposition, rollup, CLI phase ordering, registry bytes, human stderr anchor rules | [`quick-verify-normative.md`](quick-verify-normative.md) | Link only; never copy thresholds or ladder text |
+
 | **Bootstrap pack** CLI (`agentskeptic bootstrap`, `BootstrapPackInput` v1, synthesized Quick ingest, pack artifacts, exit I/O) | [`bootstrap-pack-normative.md`](bootstrap-pack-normative.md), [`schemas/bootstrap-pack-input-v1.schema.json`](../schemas/bootstrap-pack-input-v1.schema.json) | Accepts only versioned JSON (OpenAI-shaped `tool_calls` subset); not “paste any logs.” Product positioning unchanged. |
+
 | `QuickVerifyReport` JSON shape (`schemaVersion` **4**, `productTruth`, required `units[].reconciliation`, `units[].correctnessDefinition` on non-pass, …) | [`schemas/quick-verify-report.schema.json`](../schemas/quick-verify-report.schema.json) | Normative doc links schema; no second field catalog |
+
 | **Correctness definition** (forward MUST + `enforceableProjection` on batch truth + quick non-pass units) | [`correctness-definition-normative.md`](correctness-definition-normative.md), [`schemas/workflow-truth-report.schema.json`](../schemas/workflow-truth-report.schema.json) | Batch human stderr: `correctness_definition:` in [`agentskeptic.md`](agentskeptic.md); trust boundary unchanged |
+
 | User-facing English strings for quick verify (exact wording) | [`src/quickVerify/quickVerifyHumanCopy.ts`](../src/quickVerify/quickVerifyHumanCopy.ts), [`src/quickVerify/formatQuickVerifyHumanReport.ts`](../src/quickVerify/formatQuickVerifyHumanReport.ts) (banner lines), [`src/quickVerify/quickVerifyProductTruth.ts`](../src/quickVerify/quickVerifyProductTruth.ts) (stdout `productTruth`), [`src/verificationUserPhrases.ts`](../src/verificationUserPhrases.ts) (reason `user_meaning`) | Appendix H in normative lists **identifiers** only |
-| `verifyWorkflow`, batch CLI, registry resolution, Postgres read-only session, `WorkflowResult` (embedded **`workflowTruthReport.schemaVersion` 9**, required **`observedStateSummary`**) | [`agentskeptic.md`](agentskeptic.md) | This doc links there for batch semantics; reconciliation vocabulary: [above](#reconciliation-vocabulary-canonical) |
+
+| **Reconciliation vocabulary** (dimension IDs, `<th>` titles, stderr prefixes, batch vs Quick JSON mapping) | [`reconciliation-vocabulary-ssot.md`](reconciliation-vocabulary-ssot.md), [`src/reconciliationPresentation.ts`](../src/reconciliationPresentation.ts) | Do not duplicate strings outside module + tests |
+
+| `verifyWorkflow`, batch CLI, registry resolution, Postgres read-only session, `WorkflowResult` (embedded **`workflowTruthReport.schemaVersion` 9**, required **`observedStateSummary`**) | [`agentskeptic.md`](agentskeptic.md) | Batch semantics; reconciliation table: [`reconciliation-vocabulary-ssot.md`](reconciliation-vocabulary-ssot.md) |
+
 | **CI enforcement** (`enforce`, `ci-lock-v1`, bootstrap vs expect-lock recipe) | [`ci-enforcement.md`](ci-enforcement.md), [`schemas/ci-lock-v1.schema.json`](../schemas/ci-lock-v1.schema.json), [Enforce stream contract](agentskeptic.md#enforce-stream-contract-normative) in [`agentskeptic.md`](agentskeptic.md) | Lock field list only in schema; streams only in agentskeptic |
+
 | **Assurance** (`assurance run` / `assurance stale`, manifest + run report, staleness) | [Assurance subsystem](agentskeptic.md#assurance-subsystem-normative) in [`agentskeptic.md`](agentskeptic.md), [`schemas/assurance-manifest-v1.schema.json`](../schemas/assurance-manifest-v1.schema.json), [`schemas/assurance-run-report-v1.schema.json`](../schemas/assurance-run-report-v1.schema.json) | Example manifest: [`examples/assurance/manifest.json`](../examples/assurance/manifest.json); scheduled workflow: [`.github/workflows/assurance-scheduled.yml`](../.github/workflows/assurance-scheduled.yml) |
+
 | **Shareable public reports** (`POST /api/public/verification-reports`, `GET /r/{id}`, `--share-report-origin`, envelope schema, operator env **`PUBLIC_VERIFICATION_REPORTS_ENABLED`**) | [`shareable-verification-reports.md`](shareable-verification-reports.md), [`schemas/public-verification-report-v1.schema.json`](../schemas/public-verification-report-v1.schema.json) | CLI exit semantics for share failures: [`agentskeptic.md`](agentskeptic.md); OpenAPI: [`schemas/openapi-commercial-v1.yaml`](../schemas/openapi-commercial-v1.yaml) |
-| Repo entry, onboarding path, Homepage hero: discovery `heroTitle`, `homepageDecisionFraming`, `heroSubtitle`; acquisition long-form on `/database-truth-vs-traces`; acquisition `llms` demand section | [`README.md`](../README.md) (sync markers), [`config/discovery-acquisition.json`](../config/discovery-acquisition.json) (SSOT), [`docs/public-distribution-ssot.md`](public-distribution-ssot.md) | No algorithm copy; do not duplicate hero strings outside JSON + sync |
+
+| Repo entry, discovery sync markers, Homepage hero: discovery `heroTitle`, `homepageDecisionFraming`, `heroSubtitle`; acquisition long-form on `/database-truth-vs-traces`; acquisition `llms` demand section | [`README.md`](../README.md) (sync markers only for those fields), [`config/discovery-acquisition.json`](../config/discovery-acquisition.json) (SSOT), [`docs/public-distribution-ssot.md`](public-distribution-ssot.md) | **Buy vs build** narrative is **not** in discovery markers—see row **Buy vs build** above; no algorithm copy; do not duplicate hero strings outside JSON + sync |
+
+| First-run commands, integrator I/O, operator DB posture, TTFV, export vs replay coverage | [`verification-operational-notes.md`](verification-operational-notes.md) | Product SSOT links here; does not replace normative thresholds |
+
+| **LangGraph reference** (emitter ordering, integrator primacy, partner commands, test chain) | [`langgraph-reference-boundaries-ssot.md`](langgraph-reference-boundaries-ssot.md) | [`examples/langgraph-reference/README.md`](../examples/langgraph-reference/README.md) is prose-only; boundaries matrix lives here |
+
+
 
 ## Core promise
 
+
+
 Given **structured tool activity** (not arbitrary logs) and **read-only SQL** (**SQL ground truth**: SQLite or Postgres you can query), verify that **observed database state matches expectations** derived from that activity and (in contract mode) the registry—not “handle any log” or “infer everything.” API-only or non-SQL systems are **out of scope**.
+
+
 
 ## Quick Verify positioning
 
+
+
 Quick Verify is **provisional**: inference-based mapping, **uncertain** as a normal rollup outcome, and rollup **pass** **must not** be read as production safety or audit-final. Authoritative framing is on every stdout report: **`productTruth`** (`doesNotProve`, `layers`, `quickVerifyProvisional`, `contractReplayPartialCoverage`). Human stderr repeats the same themes in fixed banners after the three anchors.
 
-**Param-pointer export:** When **`eligible_export_sql_row_param_pointer`** holds (see [`quick-verify-normative.md`](quick-verify-normative.md) § A.14), Quick may export a verified inferred **`sql_row`** in the border confidence band using registry JSON Pointers into merged synthetic `params`. Merge rules and the frozen predicate are defined only in normative § A.14.
+
+
+**Export and contract bridge:** Predicate names, merge rules, eligibility bands, and appendix references for moving inferred work into registry-backed replay live only in [`quick-verify-normative.md`](quick-verify-normative.md) and in operator-oriented summary in [`verification-operational-notes.md`](verification-operational-notes.md)—not re-specified here.
+
+
 
 ## Contract replay is partial coverage
 
+
+
 **Export → replay** verifies **exported tools** in `exportableRegistry.tools` (high-confidence **`sql_row`** entries and eligible **`sql_relational`** / **`related_exists`** exports) against synthetic `tool_observed` NDJSON and the exported registry. It is **not** full-fidelity replay of everything Quick Verify may have inferred (non-exported inferred units, non-eligible **`related_exists`**, and other Advanced checks are not carried by the export). `productTruth.contractReplayPartialCoverage` is **`true`** when at least one tool was exported and at least one inferred unit has `contractEligible: false`. Operators must not treat “I ran quick → replay → verified” as blanket coverage.
 
-## For engineers (first run)
-
-1. **Clone** the repository and **`npm install`**.
-2. **`npm run build`** (or **`npm test`**, which builds first).
-3. **`npm run build && node scripts/first-run.mjs`** — creates **`examples/demo.db`** and runs the narrated onboarding smoke (see [`agentskeptic.md`](agentskeptic.md) onboarding; also runs as part of **`npm test`**).
-4. **Quick verify:**  
-   `node dist/cli.js quick --input test/fixtures/quick-verify/pass-line.ndjson --db examples/demo.db --export-registry ./quick-export.json`  
-   Supply structured tool activity on **stdin** with **`--input -`** when convenient. Optional **`--emit-events`** writes synthetic **`tool_observed`** NDJSON for **every exported tool** (see [`quick-verify-normative.md`](quick-verify-normative.md) § A.3b). Eligible inferred **`related_exists`** units are exported when **`eligible_export_related_exists`** holds (see [`quick-verify-normative.md`](quick-verify-normative.md) § A.3b); otherwise they stay quick-only with `contractEligible: false`.
-
-## For integrators
-
-- **Machine contract:** one **stdout** JSON line (`QuickVerifyReport`, **`schemaVersion` 4**), **exit code** 0/1/2/3, and on operational failure a **single-line JSON envelope** on stderr.
-- **Do not** parse human stderr for automation. stderr begins with three **fixed** anchor lines (see [`quick-verify-normative.md`](quick-verify-normative.md) § A.3a); remaining lines are user-facing only.
-- **Contract replay** (repeatable batch path, **partial** vs quick scope): after quick, run  
-  `agentskeptic --workflow-id <id> --events <emit-path> --registry <export-path> --db <sqlitePath>`  
-  (or **`--postgres-url`**) with the same DB snapshot. Exported tools in the registry file align with synthetic events by `toolId` and `seq` (see [`quick-verify-normative.md`](quick-verify-normative.md) § A.3b). Treat this as **exported-tool replay**, not “everything quick inferred is now contract-checked.”
-
-## For operators
-
-- Verification uses **read-only** SQLite opens and Postgres session guards (see [`agentskeptic.md`](agentskeptic.md)). Use a **least-privilege** DB user in production.
-- **No** writes are performed against the target database for verification.
-
-## Time to first meaningful result (Story 5)
-
-`validate-ttfv` (see [`scripts/validate-ttfv.mjs`](../scripts/validate-ttfv.mjs) and [`scripts/lib/quickVerifyPostbuildGate.mjs`](../scripts/lib/quickVerifyPostbuildGate.mjs)) runs **after** a successful **`npm run build`**. It enforces a **spawn timeout** and post-run wall clock (**120s**), parses the **stdout** **`QuickVerifyReport`** line (**`schemaVersion` 4**), and checks that the **exported registry file** matches **`canonicalToolsArrayUtf8`** of the report’s tools. `npm install` duration is network-bound and excluded. A run that completes within three minutes on CI hardware is sufficient evidence that a typical user can reach a first meaningful result within thirty minutes including reading the README and supplying structured tool activity (file or stdin).
-
-## Quick export vs contract replay coverage
-
-Quick verify exports **`sql_row`** registry entries for high-confidence row mappings. Inferred **`related_exists`** units are exported as Advanced **`sql_relational`** registry entries (single const-only **`related_exists`** check) when **`eligible_export_related_exists`** is satisfied; see [`quick-verify-normative.md`](quick-verify-normative.md) § A.3b. Non-eligible **`related_exists`** units stay quick-only (`contractEligible: false`) until you extend the registry by hand. This is a **coverage boundary**, not a promise of end-to-end parity between quick and contract runs.
-
-## Langgraph reference documentation boundaries
-
-Canonical integrator **primacy** for LangGraph-shaped orchestration is the repository [`examples/langgraph-reference/README.md`](../examples/langgraph-reference/README.md) plus the generated shell in [`partner-quickstart-commands.md`](partner-quickstart-commands.md). Full-machine validation (emitter contract, happy path, negative `ROW_ABSENT`) runs from [`scripts/langgraph-reference-verify.mjs`](../scripts/langgraph-reference-verify.mjs) during root **`npm test`**.
-
-| Boundary | Authoritative location | Notes |
-|----------|------------------------|-------|
-| Emitter strictness (`tool_observed` line, inner `params` keys) | [`scripts/lib/langgraphReferenceVerifyCore.mjs`](../scripts/lib/langgraphReferenceVerifyCore.mjs) (`assertEmitterContract`) | Throws **`langgraph-reference-verify: EMITTER_CONTRACT`** on violation |
-| Prove emitter ordering before any `dist/cli.js` spawn | [`test/langgraph-reference-emitter-before-cli-spawn.test.mjs`](../test/langgraph-reference-emitter-before-cli-spawn.test.mjs) | Uses `executeLanggraphReferencePipeline` contract probe |
-| Happy + negative SQLite verify driver | [`scripts/langgraph-reference-verify.mjs`](../scripts/langgraph-reference-verify.mjs) | Thin CLI; not used for R1a ordering proof |
-| Copy-paste emit + verify commands | Generated [`partner-quickstart-commands.md`](partner-quickstart-commands.md) § LangGraph reference | Do not duplicate fenced commands in the LangGraph README |
-| Minimal graph implementation | [`examples/langgraph-reference/`](../examples/langgraph-reference/) | README is prose + links only |
-| Rendered integrator primacy (`data-testid` order, README URL) | [`website/__tests__/langgraph-reference-primacy.dom.test.tsx`](../website/__tests__/langgraph-reference-primacy.dom.test.tsx) | Filtered website Vitest in root `npm test` |
-| Script chain (`partner-quickstart` before LangGraph driver; Vitest ordering) | [`test/npm-scripts-contract.test.mjs`](../test/npm-scripts-contract.test.mjs) | Guardrails on root `package.json` |

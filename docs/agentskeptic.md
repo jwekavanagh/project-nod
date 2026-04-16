@@ -121,7 +121,7 @@ Types: **`runTrustPanelHtml`** non-empty string (from **`renderRunTrustPanelHtml
 | **`ul[data-etl-list="introduced\|resolved\|recurring"]`** | Compare highlight lists (may be empty; no placeholder **`li`**) |
 | **`section[data-etl-section="run-trust"]`** | Trust panel root |
 | **`p[data-etl-verification-basis]`** | Fixed operator line: independent SQL basis (plan-transition runs: git + machine plan rules basis — see [Plan transition validation](#plan-transition-validation-normative)) |
-| **`table[data-etl-table="verify-evidence"]`**, **`tr[data-etl-seq]`**, **`td[data-etl-dimension="declared|expected|observed_database|verification_verdict"]`** | Step alignment + four reconciliation columns (see [verification-product-ssot.md](verification-product-ssot.md#reconciliation-vocabulary-canonical)) |
+| **`table[data-etl-table="verify-evidence"]`**, **`tr[data-etl-seq]`**, **`td[data-etl-dimension="declared|expected|observed_database|verification_verdict"]`** | Step alignment + four reconciliation columns (see [reconciliation-vocabulary-ssot.md](reconciliation-vocabulary-ssot.md#reconciliation-vocabulary-canonical)) |
 | **`tr[data-etl-alignment-warning="true"]`** | Truth/engine seq misalignment |
 | **`section[data-etl-section="execution-path"]`**, **`p[data-etl-execution-path-empty]`**, **`p[data-etl-execution-path-summary]`**, **`ol[data-etl-list="execution-findings"]`**, **`li[data-etl-finding-code]`** | Execution-path rollup |
 
@@ -488,7 +488,7 @@ When **`LICENSE_PREFLIGHT_ENABLED`** is true (commercial npm profile), the CLI m
 **Stdout contract (normative):** Emitted **`WorkflowResult`** uses **`schemaVersion` `15`**. The **`runLevelCodes`** field is **absent** on v15 objects (AJV **`additionalProperties: false`** rejects it). Operators and tools that need a flat list of run-level codes should use **`runLevelReasons[].code`** (or derive `runLevelReasons.map((r) => r.code)`). **`runLevelReasons`** remains required.
 <!-- ci:workflow-result-normative-prose:end -->
 
-**SSOT precedence (normative):** (1) JSON field names, requiredness, types, and enums on stdout are authoritative in **`schemas/*.schema.json`**; if this document’s prose disagrees, fix the prose. (2) Human stderr layout — exact line prefixes, order, and fixed phrases inside **`verification_verdict:`** — is authoritative in **this section** (Human truth report grammar) and in **`reconciliationPresentation.ts`** for the four reconciliation prefixes; **`workflowTruthReport.ts`** must match verbatim; golden tests enforce agreement. (3) Where both schema and prose describe the same JSON semantics, **the schema wins**; prose summarizes and links without redefining shapes. Canonical dimension IDs and HTML titles: [verification-product-ssot.md — Reconciliation vocabulary](verification-product-ssot.md#reconciliation-vocabulary-canonical).
+**SSOT precedence (normative):** (1) JSON field names, requiredness, types, and enums on stdout are authoritative in **`schemas/*.schema.json`**; if this document’s prose disagrees, fix the prose. (2) Human stderr layout — exact line prefixes, order, and fixed phrases inside **`verification_verdict:`** — is authoritative in **this section** (Human truth report grammar) and in **`reconciliationPresentation.ts`** for the four reconciliation prefixes; **`workflowTruthReport.ts`** must match verbatim; golden tests enforce agreement. (3) Where both schema and prose describe the same JSON semantics, **the schema wins**; prose summarizes and links without redefining shapes. Canonical dimension IDs and HTML titles: [reconciliation-vocabulary-ssot.md](reconciliation-vocabulary-ssot.md#reconciliation-vocabulary-canonical).
 
 This section is **normative**: literals and line shape match `formatWorkflowTruthReportStruct` applied to `buildWorkflowTruthReport(engine)` in `workflowTruthReport.ts` and the contract tests.
 
@@ -639,7 +639,7 @@ These fields are **verification** metadata for **external** consumers: they desc
    - Line exactly `steps:`.
    - For each step in array order:
      - One header line `  - seq=` + decimal seq + ` tool=` + toolId (defensive: `\r`/`\n` in toolId → `_`). **No** `result=` on this line.
-     - Exactly four reconciliation lines (four leading spaces each), using the same prefixes as **`reconciliationPresentation.ts`** (see [SSOT table](verification-product-ssot.md#reconciliation-vocabulary-canonical)):
+     - Exactly four reconciliation lines (four leading spaces each), using the same prefixes as **`reconciliationPresentation.ts`** (see [SSOT table](reconciliation-vocabulary-ssot.md#reconciliation-vocabulary-canonical)):
        1. `    declared: ` + single line: `tool=<toolId>; intent=<narrative>` with empty narrative → `intent=(none)`; always `; parameters_digest=<observedExecution.paramsCanonical>` (operational-message normalized).
        2. `    expected: ` + one-line **`verifyTarget`** from truth JSON when non-null; when **`verifyTarget`** is JSON **`null`**, the literal **`(none — no resolvable SQL expectation)`** (same string as **`EXPECTED_NONE_NO_SQL`** in code).
        3. `    observed_database: ` + **`observedStateSummary`** (must equal JSON **`workflowTruthReport.steps[].observedStateSummary`** byte-for-byte).

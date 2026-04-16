@@ -1,5 +1,9 @@
 # Adoption pointers
 
+## Start here (read this first)
+
+- [README — Buy vs build: why not only SQL checks](../README.md#buy-vs-build-why-not-only-sql-checks) — recurring failure mode, limits of ad-hoc SQL checks, **Quick → Contract** graduation
+
 ## Engineer
 
 - [README](../README.md)

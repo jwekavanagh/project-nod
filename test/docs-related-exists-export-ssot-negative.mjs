@@ -44,7 +44,10 @@ describe("related_exists export SSOT docs + no stale limitation literal", () => 
       assert.equal(product.includes(s), false, `verification-product-ssot.md must not contain: ${s}`);
       assert.equal(quick.includes(s), false, `quick-verify-normative.md must not contain: ${s}`);
     }
-    assert.ok(product.includes("eligible_export_related_exists"), "product SSOT must name eligible_export_related_exists");
+    assert.ok(
+      quick.includes("eligible_export_related_exists"),
+      "quick-verify-normative must name eligible_export_related_exists",
+    );
     assert.ok(quick.includes('"params": {}'), 'quick normative must document synthetic relational "params": {}');
   });
 

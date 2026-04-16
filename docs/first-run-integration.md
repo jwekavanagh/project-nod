@@ -1,46 +1,29 @@
 # First-run integration (SSOT)
 
-This is the **single integrator path** for running AgentSkeptic against **your own** database and workflow shape. It replaces scattered copies of the same steps elsewhere in the repo.
+**Prerequisite:** Read [**Buy vs build: why not only SQL checks**](../README.md#buy-vs-build-why-not-only-sql-checks) in the root [**README.md**](../README.md) so the recurring failure mode, why ad-hoc SQL checks fail as a long-term substitute, and the **Quick → Contract** path are clear before you integrate.
 
-**Why one path:** One document reduces drift between the website, README, and ad-hoc integrator notes. **Production and CI** with the **published npm** `agentskeptic`: complete **Stripe checkout** for a self-serve paid plan (**Individual**, **Team**, or **Business**; trial is fine) or an **Enterprise** arrangement so your account has an **active subscription**, then create an **`AGENTSKEPTIC_API_KEY`** (legacy **`WORKFLOW_VERIFIER_API_KEY`** is still accepted by the CLI) and use your deployed license server—**licensed `verify` / `quick` require that subscription** before each run (see [`commercial-entitlement-policy.md`](commercial-entitlement-policy.md)). **Building from this repository** with the default **`WF_BUILD_PROFILE=oss`** is for **local development, forks, and air-gapped** **`verify`** without a key; **CI locks** (`--output-lock` / `--expect-lock`) and **`enforce`** require a **commercial** build — [README.md](../README.md), **[`docs/commercial-enforce-gate-normative.md`](commercial-enforce-gate-normative.md)**.
+This is the **authoritative first-run path** for running AgentSkeptic against **your own** database and workflow shape: demo → partner quickstart → success criteria → pitfalls. Anything outside that sequence (bootstrap, LangGraph sample, production billing) is grouped **after** the spine—this file stays integrator prose, not an index of every entrypoint.
 
-When the license server denies a run because the subscription is inactive (`SUBSCRIPTION_INACTIVE`), the commercial CLI appends the **`upgrade_url`** returned by **`POST /api/v1/usage/reserve`** (typically your site’s **Pricing** URL) to the error message so operators can fix billing without hunting logs.
-
-**Machine-readable contracts** (plans + reserve API): see [`commercial-ssot.md`](commercial-ssot.md) — **`GET /api/v1/commercial/plans`** and **`/openapi-commercial-v1.yaml`** on your deployed site origin.
-
-**Operator metrics:** funnel event names, HTTP contracts, SQL examples, and CLI beacon semantics are in [`funnel-observability-ssot.md`](funnel-observability-ssot.md).
-
-**CLI anonymous funnel telemetry:** On **`verify` / `quick`**, the CLI may best-effort POST **`verify_started`** and **`verify_outcome`** (same contracts as the operator SSOT). This is **not** part of verification correctness or OpenAPI integrator guarantees. **`AGENTSKEPTIC_TELEMETRY=0`** disables only those activation posts (and skips local **`~/.agentskeptic/config.json`** access for **`install_id`**). Default OSS destination is the **canonical site origin** from anchor sync unless **`AGENTSKEPTIC_TELEMETRY_ORIGIN`** is set (required for some split deployments — see SSOT). By default the CLI attaches a stable pseudonymous **`install_id`** from that config file on every activation POST for install-cohort metrics; optional **`AGENTSKEPTIC_FUNNEL_ANON_ID`** (UUIDv4) still forwards the site beacon id for cross-surface joins (see [`funnel-observability-ssot.md`](funnel-observability-ssot.md); growth SQL in [`growth-metrics-ssot.md`](growth-metrics-ssot.md)).
+**Why one doc:** One narrative reduces drift between the website, README, and ad-hoc integrator notes.
 
 Send this to someone who should **try it in one sitting**. **All shell commands** for the bundled integration quickstart live in **[partner-quickstart-commands.md](partner-quickstart-commands.md)** (generated; do not duplicate here). This file is **prose, semantics, and guarantees** only.
 
-## 0. Bootstrap pack (optional shortcut)
-
-If you already have **OpenAI-style `tool_calls`** JSON (see **`BootstrapPackInput` v1** in [`bootstrap-pack-normative.md`](bootstrap-pack-normative.md)) and a read-only **SQLite** or **Postgres** URL, you can generate **`events.ndjson`**, **`tools.json`**, **`quick-report.json`**, and a short **`README.bootstrap.md`** in one step:
-
-```bash
-agentskeptic bootstrap --input path/to/bootstrap-input.json --db path/to/your.db --out path/to/new-pack-dir
-```
-
-Normative flags, stdout/stderr, exit codes, and trust inheritance are **only** in [`bootstrap-pack-normative.md`](bootstrap-pack-normative.md). After a successful run (exit `0`), use the generated files as the starting contract for production NDJSON emission, or continue with the demo and integration steps below.
-
-## 1. What this does
+## What this does
 
 - Takes an **append-only NDJSON log** of tool observations (what the agent claims it did).
 - Uses a small **`tools.json` registry** to turn each call into **expected SQL row/field checks**.
 - Runs **read-only `SELECT`s** against **SQLite or Postgres** and emits a **human report + machine JSON** (`complete` / `inconsistent` / `incomplete`).
 
-## 2. What you need
+## What you need
 
 | Requirement | Notes |
 |-------------|--------|
 | **Node.js** | **≥ 22.13** (demo uses built-in `node:sqlite`). |
 | **SQLite** *or* **Postgres** | One database the verifier can reach **read-only** for checks. |
 | **Docker** | Optional—handy to spin up **Postgres** locally (`postgres:16` is enough). |
+| **npm / CLI** | From this repo: **`npm install`** once, then **`npm run build`** so **`dist/`** exists. Published **npm** installs the **`agentskeptic`** binary—same CLI as **`node dist/cli.js`**. |
 
-From the repo root: **`npm install`** once.
-
-## 3. Step 1: Run the demo
+## Step 1: Run the demo
 
 ```bash
 npm start
@@ -48,7 +31,7 @@ npm start
 
 This builds, seeds **`examples/demo.db`**, runs two workflows from the bundled files, and prints reports plus JSON. You should see **`wf_complete`** end **`complete` / `verified`** and **`wf_missing`** end **`inconsistent` / `missing`** with **`ROW_ABSENT`**.
 
-## 4. Step 2: Try on your system (minimal)
+## Step 2: Try on your system (minimal)
 
 Canonical example files (do not duplicate their contents in this doc):
 
@@ -62,7 +45,7 @@ Canonical example files (do not duplicate their contents in this doc):
 
 To force a mismatch after a successful run, delete that row or change `name`/`status` in the DB and run verification again—you should get **`inconsistent`** with **`ROW_ABSENT`** or a field mismatch in the report.
 
-## 5. What success looks like
+## What success looks like
 
 - **Exit code `0`**: stdout is one **WorkflowResult** JSON object with `"status":"complete"` and the step `"verified"`.
 - **Stderr** (default) is the **human verification report** (trust line + per-step wording). Use **`--no-truth-report`** if you want stderr empty and JSON-only on stdout.
@@ -86,7 +69,7 @@ Example stdout (one JSON object; `schemaVersion` and nested fields evolve over r
 
 The human report on stderr will state that the workflow **matched the database** for that step.
 
-## 6. Common mistakes
+## Common mistakes
 
 - **Node too old** — need **22.13+**; upgrade before `npm start`.
 - **No build** — run **`npm run build`** (or **`npm start`** once) so **`dist/`** exists before calling **`node dist/cli.js`**.
@@ -97,10 +80,22 @@ The human report on stderr will state that the workflow **matched the database**
 - **Commands out of date** — regenerate `docs/partner-quickstart-commands.md` with **`node scripts/generate-partner-quickstart-commands.mjs`** after changing quickstart wiring (CI checks this).
 - **Node SQLite warning** — `ExperimentalWarning: SQLite is...` on stderr is from Node; it does not mean verification failed.
 
-## LangGraph reference path
+## Optional (after the main path)
 
-For LangGraph-style orchestration, start from [`examples/langgraph-reference/README.md`](../examples/langgraph-reference/README.md) and treat documentation boundaries as frozen in [`verification-product-ssot.md`](verification-product-ssot.md#langgraph-reference-documentation-boundaries) (do not restate the authority matrix in this prose file).
+These are **not** steps 3–4 of the integrator walkthrough—only reach for them after the demo and partner flow above.
+
+**Bootstrap pack** — If you already have **OpenAI-style `tool_calls`** JSON and a read-only **SQLite** or **Postgres** URL, you can generate **`events.ndjson`**, **`tools.json`**, **`quick-report.json`**, and **`README.bootstrap.md`** in one step—normative contract, flags, and trust rules are only in [`bootstrap-pack-normative.md`](bootstrap-pack-normative.md). Example:
+
+```bash
+agentskeptic bootstrap --input path/to/bootstrap-input.json --db path/to/your.db --out path/to/new-pack-dir
+```
+
+Use the generated artifacts as your starting contract for production NDJSON emission, or skip this entirely.
+
+**LangGraph-shaped sample** — Minimal graph run + verify: [`examples/langgraph-reference/README.md`](../examples/langgraph-reference/README.md). What that README may claim vs SSOT is fixed in [`langgraph-reference-boundaries-ssot.md`](langgraph-reference-boundaries-ssot.md#langgraph-reference-documentation-boundaries).
 
 ---
 
-NPM package: **agentskeptic**. Installed CLI name: **agentskeptic** (same flags as `node dist/cli.js`).
+## Production npm, billing, telemetry, and operator metrics
+
+Shipping the **published npm** package, **Stripe** checkout, **`AGENTSKEPTIC_API_KEY`** (or legacy **`WORKFLOW_VERIFIER_API_KEY`**), **`POST /api/v1/usage/reserve`**, CI **`enforce`**, split deployments, **`AGENTSKEPTIC_TELEMETRY=0`**, **`install_id`**, and operator funnel metrics are **not** first-run steps—read **[`commercial-ssot.md`](commercial-ssot.md)** end-to-end, then **[`commercial-entitlement-policy.md`](commercial-entitlement-policy.md)** and **[`commercial-enforce-gate-normative.md`](commercial-enforce-gate-normative.md)** for build gates. Beacon semantics, HTTP contracts, and growth SQL live in **[`funnel-observability-ssot.md`](funnel-observability-ssot.md)** and **[`growth-metrics-ssot.md`](growth-metrics-ssot.md)**. The root **[README.md](../README.md)** summarizes OSS vs commercial builds.

@@ -27,7 +27,11 @@ describe("docs quick-param-pointer SSOT", () => {
     const readme = readFileSync(join(root, "README.md"), "utf8");
     const needle = "eligible_export_sql_row_param_pointer";
     assert.strictEqual(countSubstring(normative, needle), 1);
-    assert.strictEqual(countSubstring(product, needle), 1);
+    assert.strictEqual(
+      countSubstring(product, needle),
+      0,
+      "verification-product-ssot.md must not name implementation predicates; see quick-verify-normative + operational notes",
+    );
     const merge = readFileSync(
       join(root, "test/golden/quick-param-pointer/v1/normative-merge-section.md"),
       "utf8",

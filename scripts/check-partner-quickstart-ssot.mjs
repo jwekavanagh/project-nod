@@ -57,7 +57,7 @@ for (const line of lgReadme.split(/\n/)) {
     fail("examples/langgraph-reference/README.md must not contain fenced code blocks (no ``` or ~~~ line starts)");
   }
 }
-const lgBacklink = "verification-product-ssot.md#langgraph-reference-documentation-boundaries";
+const lgBacklink = "langgraph-reference-boundaries-ssot.md#langgraph-reference-documentation-boundaries";
 if (!lgReadme.includes(lgBacklink)) {
   fail(`examples/langgraph-reference/README.md must include backlink substring: ${lgBacklink}`);
 }
@@ -79,13 +79,20 @@ if ((commands.split(lgHeading).length - 1) !== 1) {
   fail(`docs/partner-quickstart-commands.md must contain exactly one heading ${lgHeading}`);
 }
 
+const lgBoundariesPath = path.join(root, "docs", "langgraph-reference-boundaries-ssot.md");
+if (!existsSync(lgBoundariesPath)) fail("missing docs/langgraph-reference-boundaries-ssot.md");
+const lgBoundaries = readFileSync(lgBoundariesPath, "utf8");
+if (!lgBoundaries.includes("# Langgraph reference documentation boundaries")) {
+  fail("docs/langgraph-reference-boundaries-ssot.md must contain # Langgraph reference documentation boundaries");
+}
+if (!lgBoundaries.includes("| Boundary | Authoritative location | Notes |")) {
+  fail("docs/langgraph-reference-boundaries-ssot.md must include the LangGraph boundary table header row");
+}
+
 const ssotPath = path.join(root, "docs", "verification-product-ssot.md");
 const ssot = readFileSync(ssotPath, "utf8");
-if (!ssot.includes("## Langgraph reference documentation boundaries")) {
-  fail("docs/verification-product-ssot.md must contain ## Langgraph reference documentation boundaries");
-}
-if (!ssot.includes("| Boundary | Authoritative location | Notes |")) {
-  fail("docs/verification-product-ssot.md Langgraph section must include the boundary table header row");
+if (!ssot.includes("[`langgraph-reference-boundaries-ssot.md`](langgraph-reference-boundaries-ssot.md)")) {
+  fail("docs/verification-product-ssot.md must link to langgraph-reference-boundaries-ssot.md");
 }
 
 const webPxPath = path.join(root, "docs", "website-product-experience.md");

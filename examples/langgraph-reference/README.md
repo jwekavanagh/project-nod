@@ -4,4 +4,4 @@ This package is a **minimal** LangGraph graph that writes **one** NDJSON line to
 
 **Commands** for install, emit, and `node dist/cli.js` verification live in the generated document [partner-quickstart-commands.md](../../docs/partner-quickstart-commands.md) under **LangGraph reference (emit events, then verify)** — this README stays prose-only (no fenced shell blocks) so drift is impossible between copy-paste steps and CI.
 
-**Product documentation boundaries** (what belongs in SSOT vs this folder) are defined only in [verification-product-ssot.md](../../docs/verification-product-ssot.md#langgraph-reference-documentation-boundaries). Do not duplicate the authority matrix here.
+**Product documentation boundaries** (what belongs in SSOT vs this folder) are defined only in [langgraph-reference-boundaries-ssot.md](../../docs/langgraph-reference-boundaries-ssot.md#langgraph-reference-documentation-boundaries). Do not duplicate the authority matrix here.
