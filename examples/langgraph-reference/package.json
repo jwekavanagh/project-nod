@@ -7,6 +7,6 @@
     "@langchain/langgraph": "0.2.74"
   },
   "overrides": {
-    "langsmith": "0.5.18"
+    "langsmith": "0.5.19"
   }
 }
