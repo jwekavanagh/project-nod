@@ -8,6 +8,8 @@ import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
+import { assertDestructivePostgresUrlsOrExit } from "../../scripts/assert-destructive-postgres-urls.mjs";
+
 const websiteRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const env = { ...process.env };
 const envPath = path.join(websiteRoot, ".env");
@@ -30,6 +32,14 @@ if (existsSync(envPath)) {
     }
   }
 }
+
+assertDestructivePostgresUrlsOrExit(
+  [
+    { name: "DATABASE_URL", raw: env.DATABASE_URL },
+    { name: "TELEMETRY_DATABASE_URL", raw: env.TELEMETRY_DATABASE_URL },
+  ],
+  { tool: "db-migrate", env },
+);
 
 const preflight = path.join(websiteRoot, "..", "scripts", "core-database-boundary-preflight.mjs");
 const pre = spawnSync(process.execPath, [preflight], { env, stdio: "inherit" });

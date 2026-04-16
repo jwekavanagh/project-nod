@@ -1,3 +1,7 @@
+/**
+ * Local SQLite file fixture only (no Postgres); destructive DDL is scoped to ./test/fixtures/…
+ * and does not use DATABASE_URL / TELEMETRY_DATABASE_URL.
+ */
 import { DatabaseSync } from "node:sqlite";
 import { mkdirSync } from "node:fs";
 import { join, dirname } from "node:path";

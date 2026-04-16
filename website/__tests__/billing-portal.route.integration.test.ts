@@ -7,6 +7,7 @@ import {
 } from "@/lib/billingPortalConstants";
 import { eq, sql } from "drizzle-orm";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { assertPostgresUrlsSafeForTruncate } from "./helpers/assertDestructivePostgresUrlsForTests";
 
 const { portalCreate } = vi.hoisted(() => ({
   portalCreate: vi.fn(),
@@ -35,6 +36,7 @@ const hasDatabaseUrl = Boolean(process.env.DATABASE_URL?.trim());
 
 describe.skipIf(!hasDatabaseUrl)("POST /api/account/billing-portal", () => {
   beforeEach(async () => {
+    assertPostgresUrlsSafeForTruncate("billing-portal.route.integration");
     authMock.mockReset();
     portalCreate.mockReset();
     await db.execute(sql`

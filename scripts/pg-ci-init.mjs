@@ -8,6 +8,8 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import pg from "pg";
 
+import { assertDestructivePostgresUrlsOrExit } from "./assert-destructive-postgres-urls.mjs";
+
 const adminUrl = process.env.POSTGRES_ADMIN_URL;
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const root = join(__dirname, "..");
@@ -19,6 +21,10 @@ if (!adminUrl || adminUrl.trim() === "") {
   console.error("pg-ci-init: set POSTGRES_ADMIN_URL (e.g. postgresql://postgres:postgres@127.0.0.1:5432/postgres)");
   process.exit(1);
 }
+
+assertDestructivePostgresUrlsOrExit([{ name: "POSTGRES_ADMIN_URL", raw: adminUrl }], {
+  tool: "pg-ci-init",
+});
 
 const seedSql = `
 DROP TABLE IF EXISTS contacts CASCADE;

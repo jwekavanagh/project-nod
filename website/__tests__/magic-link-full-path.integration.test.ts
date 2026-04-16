@@ -1,5 +1,6 @@
 import { eq, sql } from "drizzle-orm";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { assertPostgresUrlsSafeForTruncate } from "./helpers/assertDestructivePostgresUrlsForTests";
 
 const { sendMock } = vi.hoisted(() => ({
   sendMock: vi.fn().mockResolvedValue(undefined),
@@ -25,6 +26,7 @@ describe.skipIf(!hasDatabaseUrl)("magic link full path (integration)", () => {
   const prevE2E = process.env.E2E_COMMERCIAL_FUNNEL;
 
   beforeEach(async () => {
+    assertPostgresUrlsSafeForTruncate("magic-link-full-path.integration");
     process.env.E2E_COMMERCIAL_FUNNEL = "";
     delete process.env.E2E_COMMERCIAL_FUNNEL;
     sendMock.mockClear();

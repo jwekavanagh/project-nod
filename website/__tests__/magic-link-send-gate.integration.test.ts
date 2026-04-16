@@ -1,6 +1,7 @@
 import { CredentialsSignin } from "@auth/core/errors";
 import { eq, sql } from "drizzle-orm";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { assertPostgresUrlsSafeForTruncate } from "./helpers/assertDestructivePostgresUrlsForTests";
 import { db } from "@/db/client";
 import { magicLinkSendCounters } from "@/db/schema";
 import { reserveMagicLinkSendSlot } from "@/lib/magicLinkSendGate";
@@ -20,6 +21,7 @@ describe.skipIf(!hasDatabaseUrl)("magic link send gate (integration)", () => {
   const prevE2E = process.env.E2E_COMMERCIAL_FUNNEL;
 
   beforeEach(async () => {
+    assertPostgresUrlsSafeForTruncate("magic-link-send-gate.integration");
     process.env.E2E_COMMERCIAL_FUNNEL = "";
     delete process.env.E2E_COMMERCIAL_FUNNEL;
     await db.execute(sql`TRUNCATE TABLE magic_link_send_counter`);

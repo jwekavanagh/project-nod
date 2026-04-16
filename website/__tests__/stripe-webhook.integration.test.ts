@@ -6,6 +6,7 @@ import { eq, sql } from "drizzle-orm";
 import { NextRequest } from "next/server";
 import type Stripe from "stripe";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { assertPostgresUrlsSafeForTruncate } from "./helpers/assertDestructivePostgresUrlsForTests";
 
 vi.mock("@/lib/stripeServer", () => ({
   getStripe: vi.fn(),
@@ -17,6 +18,7 @@ const hasDatabaseUrl = Boolean(process.env.DATABASE_URL?.trim());
 
 describe.skipIf(!hasDatabaseUrl)("stripe webhook integration", () => {
   async function truncateStripeAndUsers(): Promise<void> {
+    assertPostgresUrlsSafeForTruncate("stripe-webhook.integration");
     await db.execute(sql`
       TRUNCATE stripe_event, funnel_event, "user" RESTART IDENTITY CASCADE
     `);

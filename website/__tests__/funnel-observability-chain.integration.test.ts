@@ -8,6 +8,7 @@ import { countDistinctReserveDaysForUser } from "@/lib/funnelObservabilityQuerie
 import { eq, sql } from "drizzle-orm";
 import { NextRequest } from "next/server";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { assertPostgresUrlsSafeForTruncate } from "./helpers/assertDestructivePostgresUrlsForTests";
 
 vi.mock("@/auth", () => ({
   auth: vi.fn(),
@@ -35,6 +36,7 @@ const hasDatabaseUrl = Boolean(process.env.DATABASE_URL?.trim());
 
 describe.skipIf(!hasDatabaseUrl)("funnel observability chain", () => {
   async function truncateAll(): Promise<void> {
+    assertPostgresUrlsSafeForTruncate("funnel-observability-chain.integration");
     await db.execute(sql`
     TRUNCATE oss_claim_ticket, oss_claim_rate_limit_counter, verify_outcome_beacon, funnel_event, stripe_event, usage_reservation, usage_counter, api_key, session, account, "verificationToken", "user" RESTART IDENTITY CASCADE
   `);

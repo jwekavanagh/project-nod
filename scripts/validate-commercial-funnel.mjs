@@ -11,6 +11,8 @@ import { createRequire } from "node:module";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
+import { destructivePostgresUrlViolations } from "./assert-destructive-postgres-urls.mjs";
+
 const require = createRequire(import.meta.url);
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
@@ -91,6 +93,19 @@ if (!process.env.TELEMETRY_DATABASE_URL?.trim()) {
   console.error(
     "validate-commercial-funnel: TELEMETRY_DATABASE_URL is required (telemetry drizzle migrate + website Vitest).",
   );
+  writeVerdict("not_solved", layers);
+  process.exit(1);
+}
+
+const destructiveUrlViolations = destructivePostgresUrlViolations(
+  [
+    { name: "DATABASE_URL", raw: process.env.DATABASE_URL },
+    { name: "TELEMETRY_DATABASE_URL", raw: process.env.TELEMETRY_DATABASE_URL },
+  ],
+  process.env,
+);
+if (destructiveUrlViolations.length > 0) {
+  console.error(`validate-commercial-funnel: ${destructiveUrlViolations.join("\n")}`);
   writeVerdict("not_solved", layers);
   process.exit(1);
 }
