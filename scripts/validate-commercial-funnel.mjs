@@ -4,6 +4,12 @@
  * Always runs pack-smoke (commercial build + npm pack) then restores OSS `dist/` via `npm run build`.
  * Set COMMERCIAL_LICENSE_API_BASE_URL for pack-smoke (defaults to https://pack-smoke.example.com).
  * Writes artifacts/commercial-validation-verdict.json
+ *
+ * Website step: `DATABASE_URL` / `TELEMETRY_DATABASE_URL` must be disposable local Postgres (see
+ * assert-destructive-postgres-urls). `NEXT_PUBLIC_APP_URL` is set to the committed canonical public
+ * origin so locally built HTML matches distribution SSOT; page requests in Vitest are still only to
+ * `http://127.0.0.1:34100` (see website/__tests__/helpers/siteTestServer.ts). Vitest refuses fetches
+ * to that canonical host unless AGENTSKEPTIC_ALLOW_PUBLIC_ORIGIN_FETCH=1.
  */
 import { execSync, spawnSync } from "node:child_process";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";

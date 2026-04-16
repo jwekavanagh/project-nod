@@ -1,11 +1,11 @@
 {
   "schemaVersion": 1,
-  "status": "not_solved",
+  "status": "solved",
   "provenBy": "validate-commercial-funnel.mjs",
   "layers": {
     "regression": true,
     "funnel": false
   },
-  "commit": "c9fe024f333b020b279e5b2b628383af32a82530",
-  "recordedAt": "2026-04-16T21:11:14.224Z"
+  "commit": "9bb765ce41145df9d2d41852acc75895f690da28",
+  "recordedAt": "2026-04-16T21:45:47.002Z"
 }
