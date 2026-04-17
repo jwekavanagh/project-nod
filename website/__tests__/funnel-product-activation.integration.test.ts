@@ -284,4 +284,133 @@ describe.skipIf(!hasDatabaseUrl || !hasTelemetryUrl)("funnel product-activation"
     );
     expect(res.status).toBe(413);
   });
+
+  it("returns 204 for v2 verify_started without verification_hypothesis; metadata omits key (#1)", async () => {
+    const body = {
+      event: "verify_started" as const,
+      schema_version: 2 as const,
+      run_id: "run-v2-no-hyp-started",
+      issued_at: issuedNow,
+      workload_class: "non_bundled" as const,
+      subcommand: "batch_verify" as const,
+      build_profile: "oss" as const,
+      telemetry_source: "unknown" as const,
+    };
+    expect((await postProductActivation(productActivationPostRequest(body, { cliVersionSemver: cliSemver }))).status).toBe(
+      204,
+    );
+    const rows = await dbTelemetry
+      .select()
+      .from(telemetryFunnelEvents)
+      .where(eq(telemetryFunnelEvents.event, "verify_started"));
+    const hit = rows.find((r) => (r.metadata as { run_id?: string }).run_id === body.run_id);
+    expect(hit).toBeDefined();
+    expect(Object.prototype.hasOwnProperty.call(hit!.metadata, "verification_hypothesis")).toBe(false);
+  });
+
+  it("returns 204 for v2 with valid verification_hypothesis; metadata stores trimmed value (#5)", async () => {
+    const hyp = "  Expect_row_for_partner_1  ";
+    const body = {
+      event: "verify_started" as const,
+      schema_version: 2 as const,
+      run_id: "run-v2-hyp-started",
+      issued_at: issuedNow,
+      workload_class: "non_bundled" as const,
+      subcommand: "batch_verify" as const,
+      build_profile: "oss" as const,
+      telemetry_source: "unknown" as const,
+      verification_hypothesis: hyp,
+    };
+    expect((await postProductActivation(productActivationPostRequest(body, { cliVersionSemver: cliSemver }))).status).toBe(
+      204,
+    );
+    const rows = await dbTelemetry
+      .select()
+      .from(telemetryFunnelEvents)
+      .where(eq(telemetryFunnelEvents.event, "verify_started"));
+    const hit = rows.find((r) => (r.metadata as { run_id?: string }).run_id === body.run_id);
+    expect(hit).toBeDefined();
+    expect((hit!.metadata as { verification_hypothesis?: string }).verification_hypothesis).toBe(
+      "Expect_row_for_partner_1",
+    );
+  });
+
+  it("returns 400 for v2 with invalid verification_hypothesis charset (#7)", async () => {
+    const body = {
+      event: "verify_started" as const,
+      schema_version: 2 as const,
+      run_id: "run-v2-bad-hyp",
+      issued_at: issuedNow,
+      workload_class: "non_bundled" as const,
+      subcommand: "batch_verify" as const,
+      build_profile: "oss" as const,
+      telemetry_source: "unknown" as const,
+      verification_hypothesis: `bad"hyp`,
+    };
+    const res = await postProductActivation(productActivationPostRequest(body, { cliVersionSemver: cliSemver }));
+    expect(res.status).toBe(400);
+    const rows = await dbTelemetry
+      .select()
+      .from(telemetryFunnelEvents)
+      .where(eq(telemetryFunnelEvents.event, "verify_started"));
+    expect(rows.some((r) => (r.metadata as { run_id?: string }).run_id === body.run_id)).toBe(false);
+  });
+
+  it("returns 400 for v2 with empty verification_hypothesis string (#7)", async () => {
+    const body = {
+      event: "verify_started" as const,
+      schema_version: 2 as const,
+      run_id: "run-v2-empty-hyp",
+      issued_at: issuedNow,
+      workload_class: "non_bundled" as const,
+      subcommand: "batch_verify" as const,
+      build_profile: "oss" as const,
+      telemetry_source: "unknown" as const,
+      verification_hypothesis: "",
+    };
+    expect((await postProductActivation(productActivationPostRequest(body, { cliVersionSemver: cliSemver }))).status).toBe(
+      400,
+    );
+  });
+
+  it("returns 204 for v2 verify_outcome with verification_hypothesis; metadata stores value (#6)", async () => {
+    const rid = "run-v2-hyp-outcome";
+    const issued = new Date().toISOString();
+    const hyp = "Expect_complete_status";
+    const started = {
+      event: "verify_started" as const,
+      schema_version: 2 as const,
+      run_id: rid,
+      issued_at: issued,
+      workload_class: "non_bundled" as const,
+      subcommand: "batch_verify" as const,
+      build_profile: "oss" as const,
+      telemetry_source: "unknown" as const,
+      verification_hypothesis: hyp,
+    };
+    expect((await postProductActivation(productActivationPostRequest(started, { cliVersionSemver: cliSemver }))).status).toBe(
+      204,
+    );
+    const outcome = {
+      event: "verify_outcome" as const,
+      schema_version: 2 as const,
+      run_id: rid,
+      issued_at: issued,
+      workload_class: "non_bundled" as const,
+      subcommand: "batch_verify" as const,
+      build_profile: "oss" as const,
+      terminal_status: "complete" as const,
+      telemetry_source: "unknown" as const,
+      verification_hypothesis: hyp,
+    };
+    expect((await postProductActivation(productActivationPostRequest(outcome, { cliVersionSemver: cliSemver }))).status).toBe(
+      204,
+    );
+    const rows = await dbTelemetry
+      .select()
+      .from(telemetryFunnelEvents)
+      .where(eq(telemetryFunnelEvents.event, "verify_outcome"));
+    const hit = rows.find((r) => (r.metadata as { run_id?: string }).run_id === rid);
+    expect((hit!.metadata as { verification_hypothesis?: string }).verification_hypothesis).toBe(hyp);
+  });
 });

@@ -14,6 +14,7 @@ import {
   PRODUCT_ACTIVATION_CLI_PRODUCT_VALUE,
   PRODUCT_ACTIVATION_CLI_VERSION_HEADER,
 } from "./productActivationHeaders.js";
+import { verificationHypothesisForWireFromEnv } from "./verificationHypothesisContract.js";
 
 const TELEMETRY_FETCH_TIMEOUT_MS = 400;
 
@@ -62,6 +63,9 @@ export async function postProductActivationEvent(input: PostProductActivationEve
   const funnelAnonPayload =
     funnelAnonId && funnelAnonId.length > 0 ? { funnel_anon_id: funnelAnonId } : {};
 
+  const hypothesis = verificationHypothesisForWireFromEnv(process.env.AGENTSKEPTIC_VERIFICATION_HYPOTHESIS);
+  const hypothesisPayload = hypothesis ? { verification_hypothesis: hypothesis } : {};
+
   const install_id = getOrCreateInstallId();
   const telemetry_source = resolveTelemetrySource();
 
@@ -80,6 +84,7 @@ export async function postProductActivationEvent(input: PostProductActivationEve
           telemetry_source,
           install_id,
           ...funnelAnonPayload,
+          ...hypothesisPayload,
         }
       : {
           event: "verify_outcome" as const,
@@ -93,6 +98,7 @@ export async function postProductActivationEvent(input: PostProductActivationEve
           telemetry_source,
           install_id,
           ...funnelAnonPayload,
+          ...hypothesisPayload,
         };
 
   try {

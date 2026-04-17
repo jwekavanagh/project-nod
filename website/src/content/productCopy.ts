@@ -227,9 +227,14 @@ export const integrateActivation = {
   icp: "If you build workflows, agents, or systems that write to a database, this shows end to end how verification compares declared tool activity to the database state that actually exists.",
   requirementsHeading: "You need",
   requirements: ["Node.js 22.13 or newer", "Git", "npm"],
+  hypothesisLabel: "Verification hypothesis (one line)",
+  hypothesisHelper:
+    "State the database mismatch you are checking for. Allowed: ASCII printable except single or double quotes; length 1–240 after trim. Required before Copy.",
+  hypothesisInvalid: "Enter 1–240 allowed characters (ASCII printable; no quotes).",
+  copyActivationBlockLabel: "Copy activation commands",
   runHeading: "Run this",
   runCaption:
-    "Copy the block below, paste into a terminal, then wait through install, build, the bundled demo, and first-run verify. A cold clone can take several minutes and may surface typical Node or network friction.",
+    "Enter your hypothesis, then copy the block below into a terminal. Wait through install, build, the bundled demo, and first-run verify. A cold clone can take several minutes and may surface typical Node or network friction.",
   successHeading: "What success looks like",
   successIntro:
     "When it works, you will see proof from both the human report and the machine-readable result.",
@@ -250,6 +255,12 @@ export const integrateActivation = {
       body: "Step 3: use agentskeptic bootstrap when you have OpenAI-style tool_calls JSON and a DB URL—see the linked doc.",
       href: "https://github.com/jwekavanagh/agentskeptic/blob/main/docs/first-run-integration.md",
       linkLabel: "Open first-run-integration.md",
+    },
+    {
+      title: "Optional: registry draft (model-assisted)",
+      body: "Same-origin POST for a copy-only draft registry; not contract verification. Full contract in the linked SSOT.",
+      href: "https://github.com/jwekavanagh/agentskeptic/blob/main/docs/registry-draft-ssot.md",
+      linkLabel: "Open registry-draft-ssot.md",
     },
   ],
 } as const;

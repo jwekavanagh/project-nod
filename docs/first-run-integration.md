@@ -4,7 +4,9 @@
 
 This is the **authoritative first-run path** for running AgentSkeptic against **your own** database and workflow shape: **demo → `npm run first-run-verify` → bootstrap (when applicable)** → success criteria → pitfalls. Anything outside that sequence (LangGraph sample, production billing) is grouped **after** the spine—this file stays integrator prose, not an index of every entrypoint.
 
-**Optional (not part of the spine):** the website may expose a same-origin **registry draft** helper on `/integrate` when the operator enables it—semantics, schema pins, and harness proof live in [registry-draft-ssot.md](registry-draft-ssot.md); it is **not** contract verification.
+**Optional (not part of the spine):** same-origin **registry draft** (model-assisted) is linked from **`/integrate`** next steps—semantics, schema pins, and harness proof live in [registry-draft-ssot.md](registry-draft-ssot.md); it is **not** contract verification.
+
+**Verification hypothesis (optional telemetry context):** when you set **`AGENTSKEPTIC_VERIFICATION_HYPOTHESIS`** in the shell (for example from the copy block on **`/integrate`**), the CLI may include it on **`POST /api/funnel/product-activation`** so operators can see what mismatch you intended to check. Allowed characters and length are defined **only** in [`src/telemetry/verificationHypothesisContract.ts`](../src/telemetry/verificationHypothesisContract.ts); wire and metadata semantics: [`funnel-observability-ssot.md`](funnel-observability-ssot.md).
 
 **Why one doc:** One narrative reduces drift between the website, README, and ad-hoc integrator notes.
 

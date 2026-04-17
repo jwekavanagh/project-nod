@@ -1,4 +1,46 @@
+import {
+  isValidVerificationHypothesisWireValue,
+  normalizeVerificationHypothesisInput,
+  VERIFICATION_HYPOTHESIS_MAX_LEN,
+} from "agentskeptic/verificationHypothesisContract";
 import { z } from "zod";
+
+/** Present key must be non-empty after trim and satisfy charset; absent key stays absent. */
+const verificationHypothesisOptional = z.optional(
+  z.union([
+    z.undefined(),
+    z.string().superRefine((raw, ctx) => {
+      const t = normalizeVerificationHypothesisInput(raw);
+      if (raw.length > 0 && t.length === 0) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "verification_hypothesis_whitespace_only",
+        });
+        return;
+      }
+      if (t.length === 0) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "verification_hypothesis_empty",
+        });
+        return;
+      }
+      if (t.length > VERIFICATION_HYPOTHESIS_MAX_LEN) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "verification_hypothesis_too_long",
+        });
+        return;
+      }
+      if (!isValidVerificationHypothesisWireValue(t)) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "verification_hypothesis_invalid_charset",
+        });
+      }
+    }),
+  ]),
+);
 
 const issuedAtSchema = z.string().min(1).max(64);
 
@@ -48,6 +90,7 @@ export const productActivationVerifyStartedSchemaV2 = z.object({
   telemetry_source: telemetrySourceWireSchema,
   funnel_anon_id: optionalFunnelAnonIdSchema,
   install_id: optionalInstallIdSchema,
+  verification_hypothesis: verificationHypothesisOptional,
 });
 
 export const productActivationVerifyOutcomeSchemaV1 = z.object({
@@ -75,6 +118,7 @@ export const productActivationVerifyOutcomeSchemaV2 = z.object({
   telemetry_source: telemetrySourceWireSchema,
   funnel_anon_id: optionalFunnelAnonIdSchema,
   install_id: optionalInstallIdSchema,
+  verification_hypothesis: verificationHypothesisOptional,
 });
 
 /** @deprecated use V1/V2 schemas; kept for tests that referenced old export names */

@@ -1,7 +1,6 @@
 import { FunnelSurfaceBeacon } from "@/components/FunnelSurfaceBeacon";
 import { IntegrateActivationBlock } from "@/components/IntegrateActivationBlock";
-import { RegistryDraftPanel } from "@/components/RegistryDraftPanel";
-import { integrateActivation, integrateRegistryDraft } from "@/content/productCopy";
+import { integrateActivation } from "@/content/productCopy";
 import { siteMetadata } from "@/content/siteMetadata";
 import type { Metadata } from "next";
 import Link from "next/link";
@@ -76,11 +75,6 @@ export default function IntegratePage() {
           </li>
         ))}
       </ul>
-
-      <details className="integrate-registry-draft-secondary muted">
-        <summary>{integrateRegistryDraft.optionalSectionSummary}</summary>
-        <RegistryDraftPanel embedInIntegrateSecondary />
-      </details>
     </main>
   );
 }

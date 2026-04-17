@@ -6,6 +6,7 @@ describe("postProductActivationEvent", () => {
     delete process.env.AGENTSKEPTIC_TELEMETRY;
     delete process.env.AGENTSKEPTIC_TELEMETRY_ORIGIN;
     delete process.env.AGENTSKEPTIC_TELEMETRY_SOURCE;
+    delete process.env.AGENTSKEPTIC_VERIFICATION_HYPOTHESIS;
   });
 
   afterEach(() => {
@@ -65,5 +66,39 @@ describe("postProductActivationEvent", () => {
     const [, init] = fetchMock.mock.calls[0]!;
     const body = JSON.parse((init as RequestInit).body as string);
     expect(body.telemetry_source).toBe("local_dev");
+  });
+
+  it("includes verification_hypothesis in JSON when AGENTSKEPTIC_VERIFICATION_HYPOTHESIS is valid", async () => {
+    const fetchMock = vi.fn().mockResolvedValue({ ok: true, status: 204 });
+    vi.stubGlobal("fetch", fetchMock);
+    process.env.AGENTSKEPTIC_VERIFICATION_HYPOTHESIS = "  Expect_row_present  ";
+    await postProductActivationEvent({
+      phase: "verify_started",
+      run_id: "r-hyp",
+      issued_at: new Date().toISOString(),
+      workload_class: "non_bundled",
+      subcommand: "batch_verify",
+      build_profile: "oss",
+    });
+    const [, init] = fetchMock.mock.calls[0]!;
+    const body = JSON.parse((init as RequestInit).body as string);
+    expect(body.verification_hypothesis).toBe("Expect_row_present");
+  });
+
+  it("omits verification_hypothesis when AGENTSKEPTIC_VERIFICATION_HYPOTHESIS is invalid", async () => {
+    const fetchMock = vi.fn().mockResolvedValue({ ok: true, status: 204 });
+    vi.stubGlobal("fetch", fetchMock);
+    process.env.AGENTSKEPTIC_VERIFICATION_HYPOTHESIS = `bad"quote`;
+    await postProductActivationEvent({
+      phase: "verify_started",
+      run_id: "r-hyp-bad",
+      issued_at: new Date().toISOString(),
+      workload_class: "non_bundled",
+      subcommand: "batch_verify",
+      build_profile: "oss",
+    });
+    const [, init] = fetchMock.mock.calls[0]!;
+    const body = JSON.parse((init as RequestInit).body as string);
+    expect(Object.prototype.hasOwnProperty.call(body, "verification_hypothesis")).toBe(false);
   });
 });

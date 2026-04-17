@@ -14,7 +14,8 @@
   "exports": {
     ".": "./dist/index.js",
     "./registryDraft": "./dist/registryDraft/index.js",
-    "./bootstrapPackSynthesis": "./dist/bootstrap/bootstrapPackSynthesis.js"
+    "./bootstrapPackSynthesis": "./dist/bootstrap/bootstrapPackSynthesis.js",
+    "./verificationHypothesisContract": "./dist/telemetry/verificationHypothesisContract.js"
   },
   "scripts": {
     "prepublishOnly": "node scripts/build-commercial.mjs",
