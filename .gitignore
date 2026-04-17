@@ -8,6 +8,9 @@ website/public/llms.txt
 *.db
 .DS_Store
 
+# Operator-local telemetry pack exports (see docs/telemetry-daily-pack-ssot.md)
+artifacts/telemetry-packs/
+
 # Local env (secrets); keep .env.example committed
 website/.env
 website/.env.local

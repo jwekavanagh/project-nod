@@ -8,6 +8,8 @@ This document is the **SSOT** for **North Star funnel metrics**: measurable prog
 
 **Telemetry-tier persistence:** Which rows live on core vs telemetry Postgres, cutover order, freeze, and backfill are documented only in [`docs/telemetry-storage-ssot.md`](telemetry-storage-ssot.md).
 
+**Operator daily aggregate export (CSV pack):** Read-only `funnel_event` aggregates, verdict JSON, and scheduling contract are documented only in [`docs/telemetry-daily-pack-ssot.md`](telemetry-daily-pack-ssot.md).
+
 ---
 
 ## Audiences

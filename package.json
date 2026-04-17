@@ -33,6 +33,7 @@
     "migrate:workflow-result-v15": "npm run build && node scripts/migrate-workflow-result-v15.mjs",
     "check:commercial-ssot": "node scripts/check-commercial-plans-ssot.mjs",
     "stripe-bootstrap": "node scripts/stripe-bootstrap.mjs",
+    "export:telemetry-daily-pack": "node scripts/export-telemetry-daily-pack.mjs",
     "validate-commercial": "node scripts/validate-commercial-funnel.mjs",
     "pack-smoke": "node scripts/pack-smoke-commercial.mjs",
     "sync:public-product-anchors": "node scripts/public-product-anchors.cjs",
