@@ -18,8 +18,8 @@ const anchors = {
 function demoRepeatCta(testId: string) {
   return (
     <p className="home-repeat-cta">
-      <a className="btn" href="#try-it" data-testid={testId}>
-        {productCopy.homeHeroCtaLabels.demo}
+      <a className="btn secondary" href="#try-it" data-testid={testId}>
+        {productCopy.homeScrollToTryCtaLabel}
       </a>
     </p>
   );
@@ -48,7 +48,6 @@ export default function HomePage() {
             <h1 id="hero-heading">{productCopy.hero.title}</h1>
             <p className="lede">{productCopy.homepageDecisionFraming}</p>
             <p className="lede">{productCopy.homeHeroShortTagline}</p>
-            <p className="lede home-moment-line">{productCopy.homeMomentLine}</p>
             <p className="home-cta-row" data-testid="home-hero-cta-row">
               <a className="btn" href="#try-it" data-testid="home-hero-demo-cta">
                 {productCopy.homeHeroCtaLabels.demo}

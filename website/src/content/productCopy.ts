@@ -55,8 +55,14 @@ export type LearnBundledProofLedes = { primary: string; secondaryMuted: string }
 
 export type HomeHeroCtaLabels = { demo: string };
 
-/** Single label for every primary homepage demo CTA (hero, repeats, Try it button). */
-export const HOME_DEMO_PRIMARY_CTA_LABEL = "Run demo then contract verify" as const;
+/** Hero primary CTA — scrolls to bundled Try it. */
+export const HOME_HERO_DEMO_CTA_LABEL = "Run the bundled demo" as const;
+
+/** Section repeat CTAs — same anchor, different copy so the page does not read template-driven. */
+export const HOME_SCROLL_TO_TRY_CTA_LABEL = "Jump to Try it" as const;
+
+/** Try-it control — performs POST /api/demo/verify (distinct from scroll CTAs). */
+export const HOME_TRY_IT_RUN_BUTTON_LABEL = "Run sample verification" as const;
 
 export const companyPageMetadata = {
   title: "Company and support — AgentSkeptic",
@@ -113,7 +119,7 @@ export const learnBundledProofLedes = {
 /** Bundled proof section on `/guides`: visible text split around the `/integrate` link. */
 export const learnBundledProofIntegrateLede = {
   before: "For first-run on your database, follow ",
-  after: " and read-only SQL verification contracts in the repository docs.",
+  after: " for Postgres or SQLite setup, registry shape, and CLI commands.",
 } as const;
 
 export const pricingTrustBandBeforeGrid = {
@@ -292,7 +298,7 @@ export const integrateRegistryDraft = {
 } as const;
 
 export const homeHeroCtaLabels = {
-  demo: HOME_DEMO_PRIMARY_CTA_LABEL,
+  demo: HOME_HERO_DEMO_CTA_LABEL,
 } as const satisfies HomeHeroCtaLabels;
 
 export const productCopy = {
@@ -326,7 +332,7 @@ export const productCopy = {
    * `discoveryAcquisition.heroSubtitle` (that string is brief-only after IA split).
    */
   homeHeroShortTagline:
-    "For the full argument, verbatim bundled demo contrast, and deep context, open the product brief—then try the demo or follow Get started on your database.",
+    "Open the product brief for the full walkthrough and bundled contrast—then use Try it below or Get started on your database.",
 
   /** Discovery SSOT: outcome framing before mechanism (`hero.subtitle`). */
   homepageHeroNarrative: {
@@ -384,12 +390,9 @@ export const productCopy = {
 
   howItWorks: {
     sectionTitle: "How it works",
-    acquisitionDepthLinkLabel: "Traces vs database (full framing)",
+    acquisitionDepthLinkLabel: "Product brief: traces vs database",
     exampleWfMissingLabel: "Bundled ROW_ABSENT example",
   },
-
-  /** Moment-of-realization line directly under hero title stream. */
-  homeMomentLine: "If you've ever trusted a green trace and been wrong—this is for you.",
 
   homeWhatCatches: {
     sectionTitle: "What this catches",
@@ -401,13 +404,13 @@ export const productCopy = {
   },
 
   homeClosing: {
-    sectionTitle: "Stop trusting traces alone",
-    subtitle: "Verify your database state before you ship.",
+    sectionTitle: "Next: verify on your data",
+    subtitle: "Read-only SQL at verification time—not trace color alone—before you ship or gate CI.",
     integratorLinksCaption: "Docs & integration",
   },
 
   homeStakes: {
-    sectionTitle: "When traces lie",
+    sectionTitle: "When success signals hide bad rows",
     stakesTagline: "This is how bugs pass CI, billing breaks, and compliance fails.",
     tensionBullets: [
       "Trace says success.",
@@ -514,7 +517,7 @@ export const productCopy = {
     /** Shown above the run control so failures feel intentional, not random. */
     preButtonFraming:
       "Tip: choose the missing-row scenario (wf_missing)—verification fails with ROW_ABSENT when the log implies a write read-only SQL does not find.",
-    runButton: HOME_DEMO_PRIMARY_CTA_LABEL,
+    runButton: HOME_TRY_IT_RUN_BUTTON_LABEL,
     running: "Running…",
     scenarioLabel: "Scenario",
     /** Live region (polite) after a successful demo verification run. */
@@ -597,8 +600,11 @@ export const productCopy = {
   commercialSurface: {
     title: "What paid plans unlock",
     lead:
-      "Open-source lets you contract-verify from the repo without an API key; licensed npm usage, quota, and keys follow Pricing and Account. Machine-readable contracts stay on the site.",
+      "Open-source covers local verification without a site API key. Paid plans add licensed npm, monthly quota, and API keys for CI and production—Stripe checkout on Pricing. Machine-readable contracts stay on this site.",
   },
+
+  /** Homepage section CTAs that only scroll to `#try-it` (distinct from hero demo CTA). */
+  homeScrollToTryCtaLabel: HOME_SCROLL_TO_TRY_CTA_LABEL,
 
   /** Retained for SSOT strings; `/pricing` renders `pricingHero` instead. */
   pricingRecap: pricingHero.subtitle,
@@ -646,6 +652,21 @@ export const productCopy = {
   securityQuickFacts,
   learnBundledProofLedes,
   learnBundledProofIntegrateLede,
+
+  /** One-line, human captions for `/guides` list items (nav labels stay discovery-stable). */
+  learnGuideHubCaptions: {
+    "/guides/verify-langgraph-workflows": "After a graph run, confirm the rows your tools claimed.",
+    "/guides/trace-green-postgres-row-missing": "Agent trace looks fine; Postgres row is missing or wrong.",
+    "/guides/tool-loop-success-crm-state-wrong": "Tool loop succeeded; CRM or SQLite state disagrees.",
+    "/guides/ci-green-logs-row-absent": "CI passed on logs; the database write never showed up.",
+    "/guides/pre-production-read-only-sql-gate": "A read-only gate before prod—not another log pipeline.",
+    "/guides/ai-agent-wrong-crm-data": "Agent touched CRM; verify values before you trust the row.",
+    "/guides/automation-success-database-mismatch": "Automation says done; persisted rows say otherwise.",
+    "/guides/debug-postgres-after-langgraph": "Post-LangGraph debugging with row-level verification.",
+    "/guides/stripe-webhook-database-alignment": "Webhook returned OK; ledger rows still need to match.",
+    "/guides/ci-green-missing-database-side-effect": "Green CI while the side-effect row is still missing.",
+  } as const satisfies Readonly<Record<string, string>>,
+
   companyPageMetadata,
   companyPage,
 };

@@ -440,6 +440,28 @@ button.secondary, .btn.secondary {
   padding-left: 1.25rem;
   max-width: 40rem;
 }
+.guide-hub-list li {
+  margin: 0.65rem 0;
+}
+.guide-hub-link {
+  display: block;
+  text-decoration: none;
+  color: inherit;
+}
+.guide-hub-link:hover .guide-hub-link-title {
+  text-decoration: underline;
+}
+.guide-hub-link-title {
+  display: block;
+  font-weight: 600;
+}
+.guide-hub-link-caption {
+  display: block;
+  font-size: 0.9rem;
+  margin-top: 0.2rem;
+  line-height: 1.35;
+  max-width: 38rem;
+}
 .guarantee-sub {
   font-size: 1rem;
   margin: 1rem 0 0.35rem;

@@ -1,3 +1,5 @@
+import { publicProductAnchors } from "./publicProductAnchors";
+
 export type SiteChromeLink = { key: string; href: string; label: string; external: boolean };
 
 export type SiteChromeAnchors = {
@@ -6,9 +8,28 @@ export type SiteChromeAnchors = {
   bugsUrl: string;
 };
 
+function isLoopbackOrigin(raw: string): boolean {
+  try {
+    const u = new URL(/^[a-zA-Z][a-zA-Z+\-.]*:/.test(raw) ? raw : `https://${raw}`);
+    const h = u.hostname.toLowerCase();
+    return h === "localhost" || h === "127.0.0.1" || h === "::1" || h === "[::1]";
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Absolute OpenAPI URL for server-rendered chrome. Non-loopback `NEXT_PUBLIC_APP_URL` wins so
+ * preview deploys can self-reference; loopback or empty falls back to `productionCanonicalOrigin`
+ * so `next build` + `next start` HTML matches distribution tests without pinning local `.env`.
+ */
 export function openapiHrefFromProcessEnv(): string {
-  const base = (process.env.NEXT_PUBLIC_APP_URL ?? "").replace(/\/$/, "");
-  return base.length > 0 ? `${base}/openapi-commercial-v1.yaml` : "/openapi-commercial-v1.yaml";
+  const envBase = (process.env.NEXT_PUBLIC_APP_URL ?? "").replace(/\/$/, "").trim();
+  const anchorBase = publicProductAnchors.productionCanonicalOrigin.replace(/\/$/, "");
+  if (envBase.length > 0 && !isLoopbackOrigin(envBase)) {
+    return `${envBase}/openapi-commercial-v1.yaml`;
+  }
+  return `${anchorBase}/openapi-commercial-v1.yaml`;
 }
 
 export function buildSiteHeaderPrimaryLinks(args: {

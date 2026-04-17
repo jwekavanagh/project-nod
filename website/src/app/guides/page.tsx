@@ -17,12 +17,19 @@ export default function GuidesHubPage() {
       <h1>Learn</h1>
       <p className="lede">Problem-oriented guides for trace-shaped success versus database truth.</p>
       <p className="lede">{productCopy.guidesHubSupportingSentence}</p>
-      <ul className="mechanism-list">
-        {discoveryAcquisition.indexableGuides.map((g) => (
-          <li key={g.path}>
-            <Link href={g.path}>{g.navLabel}</Link>
-          </li>
-        ))}
+      <ul className="mechanism-list guide-hub-list">
+        {discoveryAcquisition.indexableGuides.map((g) => {
+          const captions = productCopy.learnGuideHubCaptions as Record<string, string>;
+          const caption = captions[g.path];
+          return (
+            <li key={g.path}>
+              <Link href={g.path} className="guide-hub-link">
+                <span className="guide-hub-link-title">{g.navLabel}</span>
+                {caption ? <span className="muted guide-hub-link-caption">{caption}</span> : null}
+              </Link>
+            </li>
+          );
+        })}
       </ul>
       <section id="bundled-proof" className="home-section" aria-labelledby="bundled-proof-heading">
         <h2 id="bundled-proof-heading">Bundled proof</h2>
