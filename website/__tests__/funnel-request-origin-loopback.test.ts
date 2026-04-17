@@ -14,6 +14,18 @@ describe("isFunnelSurfaceRequestOriginAllowed loopback", () => {
     vi.unstubAllEnvs();
   });
 
+  it("allows IPv6 bracket [::1] Origin when canonical is http://localhost (NEXT_PUBLIC)", async () => {
+    vi.stubEnv("NODE_ENV", "development");
+    vi.stubEnv("NEXT_PUBLIC_APP_URL", "http://localhost:3000");
+    const { isFunnelSurfaceRequestOriginAllowed } = await import("@/lib/funnelRequestOriginAllowed");
+    const req = new NextRequest("http://localhost:3000/api/integrator/registry-draft", {
+      method: "POST",
+      headers: { origin: "http://[::1]:3000" },
+    });
+    expect(isFunnelSurfaceRequestOriginAllowed(req)).toBe(true);
+    vi.unstubAllEnvs();
+  });
+
   it("does not equate loopback with production canonical", async () => {
     vi.stubEnv("NODE_ENV", "development");
     vi.stubEnv("NEXT_PUBLIC_APP_URL", "https://agentskeptic.com");

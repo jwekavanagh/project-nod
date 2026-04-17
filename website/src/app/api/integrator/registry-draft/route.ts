@@ -26,7 +26,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
   }
 
   if (!isFunnelSurfaceRequestOriginAllowed(req)) {
-    return new NextResponse(null, { status: 403 });
+    return NextResponse.json({ code: "FUNNEL_ORIGIN_FORBIDDEN" }, { status: 403 });
   }
 
   const rawCt = req.headers.get("content-type");

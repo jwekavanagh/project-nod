@@ -109,6 +109,8 @@ describe("POST /api/integrator/registry-draft", () => {
   it("returns 403 without same-origin Origin or Referer", async () => {
     const res = await POST(jsonPost(branchBFixture, false));
     expect(res.status).toBe(403);
+    const j = (await res.json()) as { code?: string };
+    expect(j.code).toBe("FUNNEL_ORIGIN_FORBIDDEN");
   });
 
   it("returns 400 for non-JSON content-type", async () => {

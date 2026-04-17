@@ -1,7 +1,12 @@
 import { getCanonicalSiteOrigin, isProductionLike } from "@/lib/canonicalSiteOrigin";
 import type { NextRequest } from "next/server";
 
-const LOOPBACK_HOSTS = new Set(["localhost", "127.0.0.1", "::1"]);
+const LOOPBACK_HOSTS = new Set(["localhost", "127.0.0.1", "::1", "[::1]"]);
+
+/** `URL.hostname` uses bracket form for IPv6 literals (e.g. `[::1]`, not `::1`). */
+function isLoopbackHostname(hostname: string): boolean {
+  return LOOPBACK_HOSTS.has(hostname.toLowerCase());
+}
 
 function allowLoopbackOriginAlias(): boolean {
   const n = process.env.NODE_ENV;
@@ -34,7 +39,7 @@ function funnelOriginMatchesCanonical(requestOrigin: string, canonical: string):
   }
 
   if (reqUrl.protocol !== canUrl.protocol || reqUrl.port !== canUrl.port) return false;
-  if (!LOOPBACK_HOSTS.has(reqUrl.hostname) || !LOOPBACK_HOSTS.has(canUrl.hostname)) return false;
+  if (!isLoopbackHostname(reqUrl.hostname) || !isLoopbackHostname(canUrl.hostname)) return false;
   return true;
 }
 
