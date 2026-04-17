@@ -48,14 +48,6 @@ export default function IntegratePage() {
           <li key={i}>{b}</li>
         ))}
       </ol>
-      <details className="muted integrate-success-details">
-        <summary>{a.successDetailsHeading}</summary>
-        <ol>
-          {a.successDetailsBullets.map((b, i) => (
-            <li key={i}>{b}</li>
-          ))}
-        </ol>
-      </details>
 
       <h2>{a.provedHeading}</h2>
       <p className="muted">{a.proved}</p>

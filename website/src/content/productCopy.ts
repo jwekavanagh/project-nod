@@ -220,12 +220,7 @@ export const integrateActivation = {
   ],
   icp: "If you build workflows, agents, or systems that write to a database, this shows end to end how verification compares declared tool activity to the database state that actually exists.",
   requirementsHeading: "You need",
-  requirements: [
-    "Node.js 22.13 or newer",
-    "Git",
-    "npm",
-    "Several minutes on a cold clone for install and build; Node and OS must meet the minimums above, and npm install can fail for ordinary environment reasons—fix versions or tooling and retry.",
-  ],
+  requirements: ["Node.js 22.13 or newer", "Git", "npm"],
   runHeading: "Run this",
   runCaption:
     "Copy the block below, paste into a terminal, then wait through install, build, the bundled demo, and first-run verify. A cold clone can take several minutes and may surface typical Node or network friction.",
@@ -234,16 +229,12 @@ export const integrateActivation = {
     "When it works, you will see proof from both the human report and the machine-readable result.",
   successBullets: [
     "Stderr includes the human verification report, with wording that the run matched the database.",
-    'Stdout is one JSON object with "status":"complete" and at least one step marked verified.',
-  ],
-  successDetailsHeading: "Practical stdout/stderr checks",
-  successDetailsBullets: [
-    'With the default SQLite quickstart, stdout is still the single JSON object above; you may also see a trailing status line such as first-run-verify: ok (sqlite). Treat the JSON as authoritative for pass/fail; the trailing line is a convenience transcript, not a second contract.',
+    'Stdout is one JSON object with "status":"complete" and at least one step marked verified. Treat that JSON as authoritative for pass/fail; you may also see a trailing line such as first-run-verify: ok (sqlite), which is a convenience transcript, not a second contract.',
     "If stderr mentions an experimental SQLite feature in Node, you can ignore that line for pass/fail.",
   ],
   provedHeading: "What you just proved",
   proved:
-    "You ran the bundled demo (npm start), then first-run verify on the quickstart workflow (npm run first-run-verify): read-only SQL against a temp database file, registry-backed expectations, terminal JSON on stdout, and the human report on stderr—not Quick Verify inference alone.",
+    "You ran the bundled demo (npm start), then first-run verify (npm run first-run-verify): read-only SQL against a temp database file, registry-backed expectations, terminal JSON on stdout, and the human report on stderr—not Quick Verify inference alone.",
   nextHeading: "Next: your system",
   nextLead:
     "To repeat this on your data you need three concrete artifacts: a database connection (URL you trust for read-only checks), a structured events file (for example NDJSON of tool activity from your agents), and a registry file (for example tools.json) that maps each tool name to read-only SQL expectations. The first-run doc walks through wiring them into the same CLI.",
@@ -276,31 +267,20 @@ const integrateRegistryDraftExampleBody = {
 /** Optional same-origin registry draft on `/integrate` (see docs/registry-draft-ssot.md). */
 export const integrateRegistryDraft = {
   /** Shown as the `<summary>` when this panel is collapsed under the activation spine on `/integrate`. */
-  optionalSectionSummary: "Optional: registry draft helper (model-assisted, same-origin)",
+  optionalSectionSummary: "Optional: registry draft (model-assisted, same-origin)",
   sectionHeading: "Registry draft helper (optional)",
   paragraphs: [
-    "If you already have OpenAI-style function calls (tool name plus JSON arguments), you can request draft registry JSON from this page. Treat it as autocomplete for file wiring—not a verification run and not a substitute for your own review.",
-    "The site only proposes text for you to copy out; it does not change verification semantics and it may be turned off in your environment.",
+    "If you have OpenAI-style tool_calls, you can POST JSON here for a copy-only draft registry—autocomplete for wiring, not a verification run. Full contract: docs/registry-draft-ssot.md.",
   ],
-  bullets: [
-    "You edit and keep the final registry file; nothing is applied to your systems automatically.",
-    "Review anything model-generated before you trust it in production workflows.",
-  ],
-  technicalSummary: "What happens when you submit",
+  bullets: ["You edit, review, and keep the registry locally; nothing auto-applies to your systems."],
+  technicalSummary: "Request contract, limits, and server flow",
   technicalFlowBullets: [
-    "The server validates your JSON against the published request contract.",
-    "A hosted model proposes draft tool entries; the response is validated before it is returned.",
-    "You copy the response and save it locally—this page does not write to your repo or database by itself.",
-    "Requests are processed to generate the draft and are not stored or reused after the response is returned.",
+    "POST JSON is validated against the published request contract; a hosted model returns validated draft tool entries for you to copy. Requests are not stored after the response.",
   ],
-  technicalConstraintsHeading: "Same-origin and payload limits",
   technicalBullets: [
-    "Browser requests must send this site as Origin or Referer (same-origin only).",
-    "Body is JSON: either the full bootstrap input JSON shape or a minimal tool_calls array.",
-    "Optional ddlHint is plain text and cannot contain :// (blocks URL-like patterns in a free-text field).",
-    "When the feature is disabled, the API responds with HTTP 404.",
+    "Same-origin only (Origin or Referer must be this site). Body is bootstrap-shaped JSON or a minimal tool_calls array; optional ddlHint is plain text without ://; feature off returns HTTP 404.",
   ],
-  requestLabel: "Example JSON body (edit workflow id, tool calls, or paste alternate shapes)",
+  requestLabel: "Request body (JSON)",
   submitLabel: "Request draft",
   /** Shown above the draft JSON when the API returns validated JSON. */
   resultSuccessLead:

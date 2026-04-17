@@ -686,6 +686,14 @@ main {
 .integrate-registry-draft-panel--secondary {
   font-size: 0.95rem;
 }
+.integrate-registry-draft-panel--secondary > p,
+.integrate-registry-draft-panel--secondary > ul {
+  margin-top: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+.registry-draft-technical--embed-tail {
+  margin-top: 1rem;
+}
 .registry-draft-constraints-nested {
   margin: 0.65rem 0 0;
   padding-left: 0.5rem;

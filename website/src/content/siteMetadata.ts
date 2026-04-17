@@ -7,7 +7,7 @@ export const siteMetadata = {
   integrate: {
     title: "Verify workflow claims against the database",
     description:
-      "Install Node.js 22.13+, Git, and npm. Paste one command block to clone this repo, install dependencies, build, run the bundled demo (npm start), then run read-only SQL contract verification on the quickstart workflow (npm run first-run-verify). Expect several minutes on a cold clone; install and build can fail for ordinary environment reasons.",
+      "Install Node.js 22.13+, Git, and npm. Paste one command block to clone this repo, install dependencies, build, run the bundled demo (npm start), then run first-run verify (npm run first-run-verify) with read-only SQL contract checks. Expect several minutes on a cold clone; install and build can fail for ordinary environment reasons.",
   },
   security: {
     title: "Security & Trust — AgentSkeptic",

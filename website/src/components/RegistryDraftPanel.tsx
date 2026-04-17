@@ -97,27 +97,24 @@ export function RegistryDraftPanel({ embedInIntegrateSecondary = false }: Regist
           <li key={b}>{b}</li>
         ))}
       </ul>
-      <details className="registry-draft-technical">
-        <summary>{d.technicalSummary}</summary>
-        <ul>
-          {d.technicalFlowBullets.map((b) => (
-            <li key={b}>{b}</li>
-          ))}
-        </ul>
-        <details className="registry-draft-constraints-nested">
-          <summary>{d.technicalConstraintsHeading}</summary>
+      {embedInIntegrateSecondary ? null : (
+        <details className="registry-draft-technical">
+          <summary>{d.technicalSummary}</summary>
           <ul>
-            {d.technicalBullets.map((b) => (
+            {d.technicalFlowBullets.map((b) => (
               <li key={b}>{b}</li>
+            ))}
+            {d.technicalBullets.map((b) => (
+              <li key={`registry-draft-constraint-${b}`}>{b}</li>
             ))}
           </ul>
         </details>
-      </details>
+      )}
       <p>{d.requestLabel}</p>
       <textarea
         className="registry-draft-json"
         spellCheck={false}
-        rows={embedInIntegrateSecondary ? 8 : 14}
+        rows={embedInIntegrateSecondary ? 6 : 14}
         value={body}
         onChange={(ev) => setBody(ev.target.value)}
         aria-label={d.requestLabel}
@@ -153,6 +150,19 @@ export function RegistryDraftPanel({ embedInIntegrateSecondary = false }: Regist
             <code>{result.text}</code>
           </pre>
         </div>
+      ) : null}
+      {embedInIntegrateSecondary ? (
+        <details className="registry-draft-technical registry-draft-technical--embed-tail">
+          <summary>{d.technicalSummary}</summary>
+          <ul>
+            {d.technicalFlowBullets.map((b) => (
+              <li key={b}>{b}</li>
+            ))}
+            {d.technicalBullets.map((b) => (
+              <li key={`registry-draft-constraint-${b}`}>{b}</li>
+            ))}
+          </ul>
+        </details>
       ) : null}
     </section>
   );
