@@ -3,12 +3,12 @@
 import discoveryAcquisition from "@/lib/discoveryAcquisition";
 import { publicProductAnchors } from "@/lib/publicProductAnchors";
 
-export type InternalHref = "/security" | "/company" | "/pricing" | "/privacy" | "/terms" | "/integrate";
+export type InternalHref = "/security" | "/support" | "/pricing" | "/privacy" | "/terms" | "/integrate";
 
 export type PricingTrustBandBeforeGrid = {
   title: string;
   paragraphs: readonly [string, string];
-  links: readonly [{ label: string; href: "/security" }, { label: string; href: "/company" }];
+  links: readonly [{ label: string; href: "/security" }, { label: string; href: "/support" }];
 };
 
 export type SecurityQuickFacts = {
@@ -16,7 +16,7 @@ export type SecurityQuickFacts = {
   bullets: readonly [string, string, string, string];
 };
 
-export type CompanyPage = {
+export type SupportPage = {
   h1: string;
   intro: string;
   sections: readonly [
@@ -49,7 +49,7 @@ export type CompanyPage = {
   ];
 };
 
-export type CompanyPageMetadata = { title: string; description: string };
+export type SupportPageMetadata = { title: string; description: string };
 
 export type LearnBundledProofLedes = { primary: string; secondaryMuted: string };
 
@@ -64,16 +64,16 @@ export const HOME_SCROLL_TO_TRY_CTA_LABEL = "Jump to Try it" as const;
 /** Try-it control — performs POST /api/demo/verify (distinct from scroll CTAs). */
 export const HOME_TRY_IT_RUN_BUTTON_LABEL = "Run sample verification" as const;
 
-export const companyPageMetadata = {
-  title: "Company and support — AgentSkeptic",
+export const supportPageMetadata = {
+  title: "Support and procurement — AgentSkeptic",
   description:
-    "Who operates AgentSkeptic, how to get support, how to buy Enterprise, and where legal and security documentation live.",
-} as const satisfies CompanyPageMetadata;
+    "How to get support, Enterprise procurement, and links to legal and security documentation.",
+} as const satisfies SupportPageMetadata;
 
-export const companyPage = {
-  h1: "Company and support",
+export const supportPage = {
+  h1: "Support and procurement",
   intro:
-    "AgentSkeptic is the commercial product surface for a read-only SQL verification engine shipped as open source from the same repository. This page states how to reach the operator, how to report issues, and where to read legal and security documentation.",
+    "AgentSkeptic is the commercial product surface for a read-only SQL verification engine shipped as open source from the same repository.",
   sections: [
     {
       kind: "supportIssues" as const,
@@ -107,7 +107,7 @@ export const companyPage = {
       ],
     },
   ],
-} as const satisfies CompanyPage;
+} as const satisfies SupportPage;
 
 export const learnBundledProofLedes = {
   primary:
@@ -130,7 +130,7 @@ export const pricingTrustBandBeforeGrid = {
   ],
   links: [
     { label: "Security & Trust", href: "/security" as const },
-    { label: "Company and support", href: "/company" as const },
+    { label: "Support", href: "/support" as const },
   ],
 } as const satisfies PricingTrustBandBeforeGrid;
 
@@ -211,9 +211,9 @@ export const securityQuickFacts = {
   title: "Quick facts for buyers",
   bullets: [
     "CLI and verification engine run in your infrastructure against databases you configure; the homepage demo runs bundled fixtures on this server for evaluation only.",
-    "Verification compares structured tool activity to read-only SELECT results at verification time; it does not prove a specific network call caused a row.",
+    "Structured tool activity is compared to database query results at verification time; that check does not prove a specific network call caused a row.",
     "Accounts on this site use email magic links; paid plans use Stripe; see Privacy and Terms for site-side data handling.",
-    "Authoritative semantics and commercial limits are in the linked repository markdown cited on this page—not marketing paraphrase.",
+    "Treat the repository SSOT documents linked on Security & Trust as authoritative for semantics and commercial limits.",
   ],
 } as const satisfies SecurityQuickFacts;
 
@@ -437,12 +437,12 @@ export const productCopy = {
   securityTrust: {
     title: "Security & Trust",
     intro:
-      "This page summarizes how the product and website handle data at a high level. Authoritative verification semantics and limits are in the linked documentation—not marketing paraphrase.",
+      "This page summarizes how the product and website handle data at a high level. Verification semantics, limits, and commercial rules are in the linked documentation.",
     sections: [
       {
         heading: "Verification and read-only SQL",
         paragraphs: [
-          "Verification compares structured tool activity to read-only `SELECT` results at verification time. It does not prove that a specific call caused a row. See the verification product SSOT for the trust boundary and vocabulary.",
+          "The engine compares declared tool activity to read-only `SELECT` results at verification time. It does not prove that a specific call caused a row; see the verification product SSOT for the trust boundary and vocabulary.",
         ],
       },
       {
@@ -682,6 +682,6 @@ export const productCopy = {
     "/guides/tool-loop-success-crm-state-wrong": "Tool loop says OK; CRM state does not match",
   } as const satisfies Readonly<Partial<Record<string, string>>>,
 
-  companyPageMetadata,
-  companyPage,
+  supportPageMetadata,
+  supportPage,
 };

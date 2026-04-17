@@ -1,5 +1,5 @@
 import discoveryAcquisition from "@/lib/discoveryAcquisition";
-import { companyPageMetadata } from "@/content/productCopy";
+import { supportPageMetadata } from "@/content/productCopy";
 
 export const siteMetadata = {
   title: "AgentSkeptic — check database state against what your workflow claimed",
@@ -14,9 +14,9 @@ export const siteMetadata = {
     description:
       "High-level data handling, verification boundary, and links to authoritative product and commercial documentation.",
   },
-  company: {
-    title: companyPageMetadata.title,
-    description: companyPageMetadata.description,
+  support: {
+    title: supportPageMetadata.title,
+    description: supportPageMetadata.description,
   },
   claim: {
     title: "Claim verification run — AgentSkeptic",

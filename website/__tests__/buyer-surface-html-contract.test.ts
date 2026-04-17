@@ -16,7 +16,7 @@ describe("buyer-surface HTML contracts (R2–R6)", { timeout: 180_000 }, () => {
     await ensureMarketingSiteRunning();
   });
 
-  it("footer product row order github → npm → openapi → issues → company (R2)", async () => {
+  it("footer product row order github → npm → openapi → issues → support (R2)", async () => {
     const html = await getSiteHtml("/");
     const $ = cheerio.load(html);
     const hrefs = $("footer nav[aria-label='Product links'] a")
@@ -26,7 +26,7 @@ describe("buyer-surface HTML contracts (R2–R6)", { timeout: 180_000 }, () => {
     expect(hrefs[1]).toBe(publicProductAnchors.npmPackageUrl);
     expect(hrefs[2]).toMatch(/openapi-commercial-v1\.yaml$/);
     expect(hrefs[3]).toBe(publicProductAnchors.bugsUrl);
-    expect(hrefs[4]).toBe("/company");
+    expect(hrefs[4]).toBe("/support");
     expect(hrefs).toHaveLength(5);
   });
 
@@ -70,12 +70,12 @@ describe("buyer-surface HTML contracts (R2–R6)", { timeout: 180_000 }, () => {
     }
   });
 
-  it("/company issues link href is bugsUrl and headings match productCopy (R6)", async () => {
-    const html = await getSiteHtml("/company");
+  it("/support issues link href is bugsUrl and headings match productCopy (R6)", async () => {
+    const html = await getSiteHtml("/support");
     const $ = cheerio.load(html);
-    const issues = $('[data-testid="company-issues-link"]');
+    const issues = $('[data-testid="support-issues-link"]');
     expect(issues.attr("href")).toBe(publicProductAnchors.bugsUrl);
-    expect($("main h1").first().text().trim()).toBe(productCopy.companyPage.h1);
-    expect($("main").text()).toContain(productCopy.companyPage.intro);
+    expect($("main h1").first().text().trim()).toBe(productCopy.supportPage.h1);
+    expect($("main").text()).toContain(productCopy.supportPage.intro);
   });
 });

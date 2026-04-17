@@ -10,4 +10,4 @@ AgentSkeptic provides license verification and subscription management for the c
 
 ## Contact
 
-For questions, contact the operator listed on the website.
+For questions, use the Support page on this site. It links to GitHub Issues for product support and lists procurement and legal documentation.

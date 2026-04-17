@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { readFileSync } from "node:fs";
 import path from "node:path";
 import ReactMarkdown from "react-markdown";
@@ -14,9 +13,6 @@ export default function TermsPage() {
     .replace(/\{\{TERMS_VERSION\}\}/g, meta.termsVersion);
   return (
     <main className="integrate-main">
-      <p>
-        <Link href="/">Home</Link>
-      </p>
       <article className="integrate-prose">
         <ReactMarkdown remarkPlugins={[remarkGfm]}>{body}</ReactMarkdown>
       </article>

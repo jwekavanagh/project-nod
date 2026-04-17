@@ -17,7 +17,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     ...examplePaths,
     "/integrate",
     "/guides",
-    "/company",
+    "/support",
     "/pricing",
     "/security",
     "/privacy",

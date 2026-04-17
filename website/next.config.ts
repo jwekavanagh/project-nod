@@ -19,7 +19,10 @@ const traceRoot =
 
 const nextConfig: NextConfig = {
   async redirects() {
-    return [{ source: "/examples", destination: "/guides", permanent: true }];
+    return [
+      { source: "/examples", destination: "/guides", permanent: true },
+      { source: "/company", destination: "/support", permanent: true },
+    ];
   },
   // Avoid leaking stack info (ZAP: "Server Leaks Information Via X-Powered-By").
   poweredByHeader: false,

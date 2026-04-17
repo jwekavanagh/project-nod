@@ -24,7 +24,7 @@ Single narrative for **indexable** `/guides/*` acquisition pages, the **indexabl
 
 - **Indexable** guide URLs are **only** those listed in `indexableGuides[].path`. Each page exports `metadata.robots: { index: true, follow: true }` and a **page-level** `alternates.canonical` equal to `{productionCanonicalOrigin}{path}`.
 - **Hub** `/guides` (Learn): `metadata.robots: { index: true, follow: true }`; canonical `{productionCanonicalOrigin}/guides`. The hub lists all `indexableGuides` entries and, in **`#bundled-proof`**, all `indexableExamples` entries (`/examples/wf-complete`, `/examples/wf-missing`). Primary nav label **Learn** maps to this URL.
-- **`sitemap.xml`** includes each `indexableGuides[].path`, each `indexableExamples[].path`, **and** `/guides` (position: immediately after `/integrate`, before `/company`—see [`website/src/app/sitemap.ts`](../website/src/app/sitemap.ts)).
+- **`sitemap.xml`** includes each `indexableGuides[].path`, each `indexableExamples[].path`, **and** `/guides` (position: immediately after `/integrate`, before `/support`—see [`website/src/app/sitemap.ts`](../website/src/app/sitemap.ts)).
 - **`llms.txt`** `## Primary links` includes **Learn:** `{origin}/guides` (after First-run integration). It appends `## Indexable guides` with one `- {origin}{path}` bullet per guide **in JSON array order** (before indexable examples and the terminal demo block).
 
 ## Non-indexable routes under `/guides/*`

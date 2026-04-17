@@ -5,12 +5,12 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 export const metadata: Metadata = {
-  title: siteMetadata.company.title,
-  description: siteMetadata.company.description,
+  title: siteMetadata.support.title,
+  description: siteMetadata.support.description,
 };
 
-export default function CompanyPage() {
-  const { companyPage: page } = productCopy;
+export default function SupportPage() {
+  const { supportPage: page } = productCopy;
 
   return (
     <main className="integrate-main">
@@ -24,7 +24,7 @@ export default function CompanyPage() {
               <p>{s.paragraph}</p>
               <p>
                 <a
-                  data-testid="company-issues-link"
+                  data-testid="support-issues-link"
                   href={publicProductAnchors.bugsUrl}
                   rel="noreferrer"
                   target="_blank"

@@ -63,7 +63,7 @@ export function buildSiteFooterProductLinks(args: {
     { key: "npm", href: anchors.npmPackageUrl, label: "npm", external: true },
     { key: "openapi", href: openapiHref, label: "OpenAPI", external: false },
     { key: "issues", href: anchors.bugsUrl, label: "GitHub issues", external: true },
-    { key: "company", href: "/company", label: "Company", external: false },
+    { key: "support", href: "/support", label: "Support", external: false },
   ] as const;
 }
 
