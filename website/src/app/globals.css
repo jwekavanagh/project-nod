@@ -715,6 +715,24 @@ main {
   overflow-x: auto;
   max-height: min(70vh, 36rem);
 }
+.integrate-prose textarea.registry-draft-json--draft-output {
+  margin-top: 0.15rem;
+  min-height: 0;
+  max-height: min(70vh, 36rem);
+  overflow-y: auto;
+  font-variant-ligatures: none;
+  tab-size: 2;
+  line-height: 1.45;
+}
+.integrate-prose pre.registry-draft-json--error {
+  border-color: #8b4040;
+}
+.integrate-prose .integrate-registry-draft-result-lead {
+  margin: 1rem 0 0.35rem;
+}
+.integrate-prose .integrate-registry-draft-result-actions {
+  margin: 0 0 0.5rem;
+}
 .integrate-prose code {
   font-family: ui-monospace, monospace;
   font-size: 0.9em;

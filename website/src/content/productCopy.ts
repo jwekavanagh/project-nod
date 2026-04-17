@@ -308,9 +308,12 @@ export const integrateRegistryDraft = {
   ],
   requestLabel: "Example JSON body (edit workflow id, tool calls, or paste alternate shapes)",
   submitLabel: "Request draft",
-  /** Shown above the response body when the API returns HTTP 200 with validated JSON. */
+  /** Shown above the draft JSON when the API returns validated JSON. */
   resultSuccessLead:
-    "Success: the server returned a validated draft registry (HTTP 200). Copy the JSON below and review it before use in any workflow.",
+    "The server returned a validated draft registry. Review it before use—this is a draft, not a verification result—then copy the JSON into your repo.",
+  copyDraftJsonLabel: "Copy draft JSON",
+  copiedDraftJsonFeedback: "Copied",
+  draftJsonOutputLabel: "Draft registry JSON (read-only)",
   exampleJson: JSON.stringify(integrateRegistryDraftExampleBody, null, 2),
 } as const;
 
