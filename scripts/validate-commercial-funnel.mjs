@@ -218,7 +218,14 @@ if (
   process.exit(1);
 }
 
+// BUILD:postPackSmokeOssRestore
+// PHASE:postPackSmokeOssRestoreBuild
 if (!run("npm", ["run", "build"], { shell: true })) {
+  writeVerdict("not_solved", layers);
+  process.exit(1);
+}
+
+if (!runRegistryDraftOutcomeHarness(root)) {
   writeVerdict("not_solved", layers);
   process.exit(1);
 }
@@ -243,6 +250,26 @@ const solved =
 
 writeVerdict(solved ? "solved" : "not_solved", layers);
 process.exit(solved ? 0 : 1);
+
+/**
+ * REGISTRY_DRAFT_OUTCOME_HARNESS — root `node:test` proofs (see docs/registry-draft-ssot.md).
+ * Must run only after OSS `dist/` restore (`PHASE:postPackSmokeOssRestoreBuild` above).
+ */
+function runRegistryDraftOutcomeHarness(r) {
+  // REGISTRY_DRAFT_OUTCOME_HARNESS
+  const tests = [
+    "test/validate-commercial-funnel-registry-draft-harness.test.mjs",
+    "test/registry-draft-contract.test.mjs",
+    "test/registry-draft-outcome-chain-import-guard.test.mjs",
+    "test/registry-draft-outcome-chain.test.mjs",
+  ];
+  for (const rel of tests) {
+    if (!run(process.execPath, ["--test", path.join(r, rel)])) {
+      return false;
+    }
+  }
+  return true;
+}
 
 function writeVerdict(status, lyr) {
   mkdirSync(artifactDir, { recursive: true });

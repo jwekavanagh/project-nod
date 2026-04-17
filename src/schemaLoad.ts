@@ -83,7 +83,8 @@ export type SchemaValidatorName =
   | "assurance-manifest-v1"
   | "assurance-run-report-v1"
   | "public-verification-report-v1"
-  | "bootstrap-pack-input-v1";
+  | "bootstrap-pack-input-v1"
+  | "openai-function-tool-call-item-v1";
 
 const validatorCache: Partial<Record<SchemaValidatorName, ValidateFunction>> = {};
 
@@ -180,7 +181,10 @@ export function loadSchemaValidator(name: SchemaValidatorName): ValidateFunction
       compileSchemaFile("workflow-result", "workflow-result.schema.json");
       compileSchemaFile("quick-verify-report", "quick-verify-report.schema.json");
       return compileSchemaFile(name, "public-verification-report-v1.schema.json");
+    case "openai-function-tool-call-item-v1":
+      return compileSchemaFile(name, "openai-function-tool-call-item-v1.schema.json");
     case "bootstrap-pack-input-v1":
+      compileSchemaFile("openai-function-tool-call-item-v1", "openai-function-tool-call-item-v1.schema.json");
       return compileSchemaFile(name, "bootstrap-pack-input-v1.schema.json");
     default: {
       const _exhaustive: never = name;

@@ -1,5 +1,6 @@
 import { FunnelAnonIdExport } from "@/components/FunnelAnonIdExport";
 import { FunnelSurfaceBeacon } from "@/components/FunnelSurfaceBeacon";
+import { RegistryDraftPanel } from "@/components/RegistryDraftPanel";
 import { integrateActivation } from "@/content/productCopy";
 import { siteMetadata } from "@/content/siteMetadata";
 import type { Metadata } from "next";
@@ -52,6 +53,8 @@ export default function IntegratePage() {
 
       <h2>{a.provedHeading}</h2>
       <p className="muted">{a.proved}</p>
+
+      <RegistryDraftPanel />
 
       <h2>{a.nextHeading}</h2>
       <p className="muted">{a.next}</p>

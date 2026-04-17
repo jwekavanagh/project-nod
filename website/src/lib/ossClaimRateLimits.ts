@@ -5,8 +5,10 @@ import { utcHourStart } from "@/lib/magicLinkSendGate";
 
 export const OSS_CLAIM_TICKET_IP_CAP = 60;
 export const OSS_CLAIM_REDEEM_USER_CAP = 30;
+/** Hourly cap per IP for `POST /api/integrator/registry-draft`. */
+export const REGISTRY_DRAFT_IP_CAP = 20;
 
-export type OssClaimRateScope = "claim_ticket_ip" | "claim_redeem_user";
+export type OssClaimRateScope = "claim_ticket_ip" | "claim_redeem_user" | "registry_draft_ip";
 
 export type WebsiteDbTransaction = Parameters<Parameters<typeof db.transaction>[0]>[0];
 
@@ -115,6 +117,54 @@ export async function reserveClaimRedeemUserSlot(
         eq(ossClaimRateLimitCounters.scope, scope),
         eq(ossClaimRateLimitCounters.windowStart, H),
         eq(ossClaimRateLimitCounters.scopeKey, userId),
+      ),
+    );
+
+  return { ok: true };
+}
+
+export async function reserveRegistryDraftIpSlot(
+  tx: WebsiteDbTransaction,
+  ipKey: string,
+): Promise<{ ok: true } | { ok: false }> {
+  const H = utcHourStart();
+  const scope: OssClaimRateScope = "registry_draft_ip";
+
+  const locked = await tx
+    .select()
+    .from(ossClaimRateLimitCounters)
+    .where(
+      and(
+        eq(ossClaimRateLimitCounters.scope, scope),
+        eq(ossClaimRateLimitCounters.windowStart, H),
+        eq(ossClaimRateLimitCounters.scopeKey, ipKey),
+      ),
+    )
+    .for("update");
+
+  if (locked.length === 0) {
+    await tx.insert(ossClaimRateLimitCounters).values({
+      scope,
+      windowStart: H,
+      scopeKey: ipKey,
+      count: 1,
+    });
+    return { ok: true };
+  }
+
+  const c = locked[0]!.count;
+  if (c >= REGISTRY_DRAFT_IP_CAP) {
+    return { ok: false };
+  }
+
+  await tx
+    .update(ossClaimRateLimitCounters)
+    .set({ count: sql`${ossClaimRateLimitCounters.count} + 1` })
+    .where(
+      and(
+        eq(ossClaimRateLimitCounters.scope, scope),
+        eq(ossClaimRateLimitCounters.windowStart, H),
+        eq(ossClaimRateLimitCounters.scopeKey, ipKey),
       ),
     );
 

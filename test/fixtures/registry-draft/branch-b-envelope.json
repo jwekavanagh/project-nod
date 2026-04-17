@@ -1,0 +1,15 @@
+{
+  "inputKind": "openai_tool_calls_v1",
+  "schemaVersion": 1,
+  "workflowId": "wf_bootstrap_fixture",
+  "tool_calls": [
+    {
+      "id": "call_fixture_1",
+      "type": "function",
+      "function": {
+        "name": "crm.upsert_contact",
+        "arguments": "{\"recordId\":\"c_ok\",\"fields\":{\"name\":\"Alice\",\"status\":\"active\"}}"
+      }
+    }
+  ]
+}

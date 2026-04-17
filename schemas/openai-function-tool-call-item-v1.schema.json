@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://agentskeptic.com/schemas/openai-function-tool-call-item-v1.schema.json",
+  "title": "OpenAiFunctionToolCallItemV1",
+  "type": "object",
+  "required": ["id", "type", "function"],
+  "additionalProperties": false,
+  "properties": {
+    "id": { "type": "string", "minLength": 1 },
+    "type": { "type": "string", "const": "function" },
+    "function": {
+      "type": "object",
+      "required": ["name", "arguments"],
+      "additionalProperties": false,
+      "properties": {
+        "name": { "type": "string", "minLength": 1 },
+        "arguments": { "type": "string" }
+      }
+    }
+  }
+}

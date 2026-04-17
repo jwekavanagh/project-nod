@@ -625,6 +625,21 @@ main {
   overflow-x: auto;
   font-size: 0.85rem;
 }
+.integrate-prose textarea.registry-draft-json {
+  width: 100%;
+  box-sizing: border-box;
+  display: block;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+  font-family: ui-monospace, monospace;
+  font-size: 0.85rem;
+  line-height: 1.4;
+  color: inherit;
+  resize: vertical;
+  min-height: 12rem;
+}
 .integrate-prose code {
   font-family: ui-monospace, monospace;
   font-size: 0.9em;

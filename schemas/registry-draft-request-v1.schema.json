@@ -1,0 +1,49 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://agentskeptic.com/schemas/registry-draft-request-v1.schema.json",
+  "title": "RegistryDraftRequestV1",
+  "oneOf": [
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["inputKind", "schemaVersion", "bootstrapPackInput"],
+      "properties": {
+        "inputKind": { "const": "bootstrap_pack_v1" },
+        "schemaVersion": { "type": "integer", "const": 1 },
+        "ddlHint": { "$ref": "#/$defs/ddlHint" },
+        "bootstrapPackInput": {
+          "$ref": "https://agentskeptic.com/schemas/bootstrap-pack-input-v1.schema.json"
+        }
+      }
+    },
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["inputKind", "schemaVersion", "workflowId", "tool_calls"],
+      "properties": {
+        "inputKind": { "const": "openai_tool_calls_v1" },
+        "schemaVersion": { "type": "integer", "const": 1 },
+        "workflowId": { "$ref": "#/$defs/workflowId" },
+        "ddlHint": { "$ref": "#/$defs/ddlHint" },
+        "tool_calls": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "https://agentskeptic.com/schemas/openai-function-tool-call-item-v1.schema.json"
+          }
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "workflowId": {
+      "type": "string",
+      "pattern": "^[a-zA-Z0-9_-]{1,128}$"
+    },
+    "ddlHint": {
+      "type": "string",
+      "maxLength": 8192,
+      "pattern": "^(?!.*://)[\\s\\S]*$"
+    }
+  }
+}

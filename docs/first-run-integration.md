@@ -4,6 +4,8 @@
 
 This is the **authoritative first-run path** for running AgentSkeptic against **your own** database and workflow shape: demo → partner quickstart → success criteria → pitfalls. Anything outside that sequence (bootstrap, LangGraph sample, production billing) is grouped **after** the spine—this file stays integrator prose, not an index of every entrypoint.
 
+**Optional (not part of the spine):** the website may expose a same-origin **registry draft** helper on `/integrate` when the operator enables it—semantics, schema pins, and harness proof live in [registry-draft-ssot.md](registry-draft-ssot.md); it is **not** contract verification.
+
 **Why one doc:** One narrative reduces drift between the website, README, and ad-hoc integrator notes.
 
 Send this to someone who should **try it in one sitting**. **All shell commands** for the bundled integration quickstart live in **[partner-quickstart-commands.md](partner-quickstart-commands.md)** (generated; do not duplicate here). This file is **prose, semantics, and guarantees** only.

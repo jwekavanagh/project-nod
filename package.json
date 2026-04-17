@@ -11,6 +11,11 @@
   "bin": {
     "agentskeptic": "dist/cli.js"
   },
+  "exports": {
+    ".": "./dist/index.js",
+    "./registryDraft": "./dist/registryDraft/index.js",
+    "./bootstrapPackSynthesis": "./dist/bootstrap/bootstrapPackSynthesis.js"
+  },
   "scripts": {
     "prepublishOnly": "node scripts/build-commercial.mjs",
     "build": "node scripts/write-commercial-build-flags.mjs --oss && node scripts/sync-failure-origin-from-schema.mjs && tsc && node scripts/copy-debug-ui.mjs && node scripts/write-discovery-payload.mjs",

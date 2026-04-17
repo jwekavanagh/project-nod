@@ -1,0 +1,39 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://agentskeptic.com/schemas/registry-draft-response-v1.schema.json",
+  "title": "RegistryDraftResponseEnvelopeV1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "draft", "assumptions", "warnings", "disclaimer", "model"],
+  "properties": {
+    "schemaVersion": { "type": "integer", "const": 1 },
+    "draft": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["tools"],
+      "properties": {
+        "tools": {
+          "$ref": "https://agentskeptic.com/schemas/tools-registry.schema.json"
+        }
+      }
+    },
+    "assumptions": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "warnings": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "disclaimer": { "type": "string", "minLength": 1 },
+    "model": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["provider", "model"],
+      "properties": {
+        "provider": { "type": "string", "const": "openai" },
+        "model": { "type": "string", "minLength": 1 }
+      }
+    }
+  }
+}

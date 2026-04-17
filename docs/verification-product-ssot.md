@@ -74,6 +74,8 @@ You are a **state verification engine for agent-driven systems** that have **SQL
 
 | **Bootstrap pack** CLI (`agentskeptic bootstrap`, `BootstrapPackInput` v1, synthesized Quick ingest, pack artifacts, exit I/O) | [`bootstrap-pack-normative.md`](bootstrap-pack-normative.md), [`schemas/bootstrap-pack-input-v1.schema.json`](../schemas/bootstrap-pack-input-v1.schema.json) | Accepts only versioned JSON (OpenAI-shaped `tool_calls` subset); not “paste any logs.” Product positioning unchanged. |
 
+| **Hosted registry draft** (optional same-origin `POST /api/integrator/registry-draft`, schema pins, AJV order, harness markers, outcome-chain tests) | [`registry-draft-ssot.md`](registry-draft-ssot.md), [`schemas/registry-draft-request-v1.schema.json`](../schemas/registry-draft-request-v1.schema.json), [`schemas/registry-draft-response-v1.schema.json`](../schemas/registry-draft-response-v1.schema.json) | Not verification: model-assisted draft only; trust boundary in [`verification-product-ssot.md`](verification-product-ssot.md) unchanged |
+
 | `QuickVerifyReport` JSON shape (`schemaVersion` **4**, `productTruth`, required `units[].reconciliation`, `units[].correctnessDefinition` on non-pass, …) | [`schemas/quick-verify-report.schema.json`](../schemas/quick-verify-report.schema.json) | Normative doc links schema; no second field catalog |
 
 | **Correctness definition** (forward MUST + `enforceableProjection` on batch truth + quick non-pass units) | [`correctness-definition-normative.md`](correctness-definition-normative.md), [`schemas/workflow-truth-report.schema.json`](../schemas/workflow-truth-report.schema.json) | Batch human stderr: `correctness_definition:` in [`agentskeptic.md`](agentskeptic.md); trust boundary unchanged |

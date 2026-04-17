@@ -3,6 +3,7 @@ import { createRequire } from "node:module";
 import path from "path";
 import { COMMERCIAL_SITE_SECURITY_HEADERS } from "./src/lib/httpSecurityHeaders";
 import { DEMO_VERIFY_OUTPUT_FILE_TRACING_GLOBS } from "./src/lib/demoVerifyOutputFileTracingGlobs";
+import { REGISTRY_DRAFT_API_FILE_TRACING_GLOBS } from "./src/lib/registryDraft/registryDraftApiFileTracingGlobs";
 
 const require = createRequire(import.meta.url);
 require("../scripts/public-product-anchors.cjs").assertNextPublicOriginParity();
@@ -28,6 +29,7 @@ const nextConfig: NextConfig = {
    */
   outputFileTracingIncludes: {
     "/api/demo/verify": [...DEMO_VERIFY_OUTPUT_FILE_TRACING_GLOBS],
+    "/api/integrator/registry-draft": [...REGISTRY_DRAFT_API_FILE_TRACING_GLOBS],
   },
   async headers() {
     return [

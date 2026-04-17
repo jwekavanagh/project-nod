@@ -32,22 +32,7 @@
                   "tool_calls": {
                     "type": "array",
                     "items": {
-                      "type": "object",
-                      "required": ["id", "type", "function"],
-                      "additionalProperties": false,
-                      "properties": {
-                        "id": { "type": "string", "minLength": 1 },
-                        "type": { "type": "string", "const": "function" },
-                        "function": {
-                          "type": "object",
-                          "required": ["name", "arguments"],
-                          "additionalProperties": false,
-                          "properties": {
-                            "name": { "type": "string", "minLength": 1 },
-                            "arguments": { "type": "string" }
-                          }
-                        }
-                      }
+                      "$ref": "https://agentskeptic.com/schemas/openai-function-tool-call-item-v1.schema.json"
                     }
                   }
                 }

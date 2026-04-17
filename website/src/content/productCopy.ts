@@ -242,6 +242,39 @@ export const integrateActivation = {
     "You can now reuse the same CLI with your own NDJSON, registry, and database. Point it at your append-only tool log, your tools.json, and your SQLite or Postgres (read-only at verification time).",
 } as const;
 
+const integrateRegistryDraftExampleBody = {
+  inputKind: "openai_tool_calls_v1" as const,
+  schemaVersion: 1 as const,
+  workflowId: "wf_bootstrap_fixture",
+  tool_calls: [
+    {
+      id: "call_fixture_1",
+      type: "function" as const,
+      function: {
+        name: "crm.upsert_contact",
+        arguments: '{"recordId":"c_ok","fields":{"name":"Alice","status":"active"}}',
+      },
+    },
+  ],
+};
+
+/** Optional same-origin registry draft on `/integrate` (see docs/registry-draft-ssot.md). */
+export const integrateRegistryDraft = {
+  sectionHeading: "Optional: hosted registry draft",
+  paragraphs: [
+    "This website can call an OpenAI JSON-object model to propose a tools.json-shaped draft from either a bootstrap-pack-shaped body or a small OpenAI tool_calls envelope.",
+    "It is not contract verification, not a substitute for your registry review, and not enabled unless the operator turns it on.",
+  ],
+  bullets: [
+    "Same-origin only: your browser must send this site as Origin or Referer.",
+    "Optional ddlHint in the JSON must not contain :// (schema blocks URL-like injection).",
+    "When disabled, POST /api/integrator/registry-draft returns 404.",
+  ],
+  requestLabel: "Request JSON (edit workflowId, tool_calls, or paste bootstrap_pack_v1)",
+  submitLabel: "Request draft",
+  exampleJson: JSON.stringify(integrateRegistryDraftExampleBody, null, 2),
+} as const;
+
 export const homeHeroCtaLabels = {
   demo: HOME_DEMO_PRIMARY_CTA_LABEL,
 } as const satisfies HomeHeroCtaLabels;
