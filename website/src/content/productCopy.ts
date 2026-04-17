@@ -332,7 +332,7 @@ export const productCopy = {
    * `discoveryAcquisition.heroSubtitle` (that string is brief-only after IA split).
    */
   homeHeroShortTagline:
-    "Open the product brief for the full walkthrough and bundled contrast—then use Try it below or Get started on your database.",
+    "See the product brief for depth and the full terminal contrast. Try the demo below, or Get started on your database.",
 
   /** Discovery SSOT: outcome framing before mechanism (`hero.subtitle`). */
   homepageHeroNarrative: {
@@ -348,12 +348,11 @@ export const productCopy = {
   acquisitionDeepContextSectionTitle: "How this fits the problem",
 
   /** Learn hub (`/guides`) first line under H1 (UI-only). */
-  learnHubPrimaryLede:
-    "Short reads for when a run looked fine but your Postgres or SQLite rows do not match what structured tool activity claimed.",
+  learnHubPrimaryLede: "Short reads for runs that looked fine until you checked the database.",
 
   /** Guides hub second lede (UI-only). */
   guidesHubSupportingSentence:
-    "Each piece maps a symptom to read-only checks at verification time, then points you to Get started on your own database.",
+    "Each guide ties a symptom to read-only SQL you can use as a gate, then sends you to Get started on your own data.",
 
   /** Indexable guide shell embed (UI-only). */
   indexedGuideEmbedTitle:

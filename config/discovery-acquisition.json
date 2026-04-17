@@ -7,9 +7,9 @@
   "homepageAcquisitionCtaLabel": "Product brief",
   "homepageDecisionFraming": "AgentSkeptic runs read-only SQL at verification time on Postgres or SQLite, comparing persisted rows to structured tool activity—before you ship, bill, or close.",
   "homepageHero": {
-    "what": "After an agent or automation run—LangGraph, tool loops, or batch jobs—the trace can say success while SQLite or Postgres still disagrees with structured tool activity. AgentSkeptic runs read-only SQL to check persisted rows against those claims.",
-    "why": "Traces and chat capture intent and step outcomes; they do not prove the row you care about exists with the right values. That is how green CI and green traces still ship silent state failures.",
-    "when": "Use it after a workflow or replay when you need ground truth before customer-facing actions, compliance evidence, or a CI gate—whenever \"it looked fine in the trace\" is no longer good enough."
+    "what": "AgentSkeptic turns tool parameters and registry rules into read-only SELECTs you can treat as a gate—separate from whether a step narrative read as successful.",
+    "why": "Most reviews still treat traces and chat as proof of what landed in the database; that habit is how wrong rows slip through green CI.",
+    "when": "Use it after a replay or deploy when you need a decisive check before customer-facing actions, finance touches, or a merge—not when you only want another log volume."
   },
   "visitorProblemAnswer": "Teams ship agent and automation workflows where traces, tool responses, and success flags look green while the database row is missing, stale, or wrong. AgentSkeptic compares structured tool activity to read-only SQL against your SQLite or Postgres at verification time and reports whether observed state matched expectations derived from what the workflow claimed—not whether the step narrative read as successful.\n\nUse it when you need persisted rows checked against declared tool parameters before customer-facing actions, compliance evidence, or CI gates.",
   "pageMetadata": {
