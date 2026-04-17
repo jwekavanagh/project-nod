@@ -143,6 +143,7 @@ describe(
       const llmsText = await getSiteHtml("/llms.txt");
       expect(llmsText).toContain(a.identityOneLiner);
       expect(llmsText).toContain(`${canonicalOrigin}/integrate`);
+      expect(llmsText).toContain(`- Learn: ${canonicalOrigin}/guides`);
       expect(llmsText).toContain(`${canonicalOrigin}/openapi-commercial-v1.yaml`);
       expect(llmsText).toContain(a.gitRepositoryUrl);
       expect(llmsText).toContain(a.npmPackageUrl);
@@ -215,10 +216,11 @@ describe(
       const homeAgainText = htmlForTextNeedleMatch(homeAgain);
       expect(homeAgainText).toContain(disc.heroTitle);
       expect(homeAgainText).toContain(disc.homepageDecisionFraming);
-      expect(homeAgainText).toContain(disc.heroSubtitle);
+      expect(homeAgainText).toContain(productCopy.homeHeroShortTagline);
+      expect(homeAgainText).not.toContain(disc.heroSubtitle);
       const idxTitle = homeAgainText.indexOf(disc.heroTitle);
       const idxFrame = homeAgainText.indexOf(disc.homepageDecisionFraming);
-      const idxSub = homeAgainText.indexOf(disc.heroSubtitle);
+      const idxSub = homeAgainText.indexOf(productCopy.homeHeroShortTagline);
       // htmlForTextNeedleMatch is attribute values + text only (no literal `data-testid="…"` substrings).
       const idxHow = homeAgainText.indexOf("home-how-it-works");
       expect(idxTitle).toBeGreaterThanOrEqual(0);
@@ -247,7 +249,8 @@ describe(
       expect(navPrimary).toBeGreaterThanOrEqual(0);
       const navSlice = homeAgain.slice(navPrimary, navPrimary + 4000);
       expect(navSlice).toContain(`href="${disc.slug}"`);
-      expect(navSlice).toContain('href="/examples"');
+      expect(navSlice).toContain('href="/guides"');
+      expect(navSlice).not.toContain('href="/security"');
       expect(htmlForTextNeedleMatch(navSlice)).toContain(disc.homepageAcquisitionCtaLabel);
       expect(homeAgain).toContain('href="/security"');
 
@@ -257,6 +260,7 @@ describe(
       const sitemapXml = await getSiteHtml("/sitemap.xml");
       expect(sitemapXml).toContain(`${canonicalOrigin}/llms.txt`);
       expect(sitemapXml).toContain(`${canonicalOrigin}/integrate`);
+      expect(sitemapXml).toContain(`${canonicalOrigin}/guides`);
       expect(sitemapXml).toContain(`${canonicalOrigin}/company`);
       expect(sitemapXml).toContain(`${canonicalOrigin}/openapi-commercial-v1.yaml`);
       expect(sitemapXml).toContain(`${canonicalOrigin}/security`);

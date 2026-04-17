@@ -35,6 +35,7 @@ type AuthMock = {
 const authMock = auth as unknown as AuthMock;
 
 const hasDatabaseUrl = Boolean(process.env.DATABASE_URL?.trim());
+const hasTelemetryDb = Boolean(process.env.TELEMETRY_DATABASE_URL?.trim());
 
 describe.skipIf(!hasDatabaseUrl)("funnel persistence integration", () => {
   beforeEach(async () => {
@@ -54,7 +55,16 @@ describe.skipIf(!hasDatabaseUrl)("funnel persistence integration", () => {
   });
 });
 
-describe("demo_verify_ok", () => {
+describe.skipIf(!hasDatabaseUrl || !hasTelemetryDb)("demo_verify_ok", () => {
+  beforeEach(async () => {
+    vi.stubEnv("AGENTSKEPTIC_TELEMETRY_WRITES_TELEMETRY_DB", "1");
+    await truncateCommercialFixtureDbs();
+  });
+
+  afterEach(() => {
+    vi.unstubAllEnvs();
+  });
+
   it("inserts funnel row on success", async () => {
     const req = new NextRequest("http://localhost/api/demo/verify", {
       method: "POST",
@@ -69,7 +79,16 @@ describe("demo_verify_ok", () => {
   });
 });
 
-describe("negative demo", () => {
+describe.skipIf(!hasDatabaseUrl || !hasTelemetryDb)("negative demo", () => {
+  beforeEach(async () => {
+    vi.stubEnv("AGENTSKEPTIC_TELEMETRY_WRITES_TELEMETRY_DB", "1");
+    await truncateCommercialFixtureDbs();
+  });
+
+  afterEach(() => {
+    vi.unstubAllEnvs();
+  });
+
   it("does not insert demo_verify_ok for bad scenario", async () => {
     const req = new NextRequest("http://localhost/api/demo/verify", {
       method: "POST",

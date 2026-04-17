@@ -15,8 +15,9 @@ describe("guides hub copy", { timeout: 180_000 }, () => {
 
   it("includes supporting sentence from productCopy", async () => {
     const html = await getSiteHtml("/guides");
-    expect(html.replace(/\s+/g, " ")).toContain(
-      productCopy.guidesHubSupportingSentence.replace(/\s+/g, " "),
-    );
+    const flat = html.replace(/\s+/g, " ");
+    expect(flat).toContain(productCopy.guidesHubSupportingSentence.replace(/\s+/g, " "));
+    expect(flat).toContain(productCopy.learnBundledProofLedes.primary.replace(/\s+/g, " "));
+    expect(html).toContain('id="bundled-proof"');
   });
 });

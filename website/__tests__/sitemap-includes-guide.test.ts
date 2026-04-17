@@ -4,7 +4,7 @@ import { publicProductAnchors } from "@/lib/publicProductAnchors";
 import { describe, expect, it } from "vitest";
 
 describe("sitemap", () => {
-  it("includes every indexable guide path and /security; omits /guides hub", async () => {
+  it("includes every indexable guide and example path, /guides hub in pinned order, /security; omits /examples hub", async () => {
     const entries = await sitemap();
     const urls = entries.map((e) => e.url);
     const base = publicProductAnchors.productionCanonicalOrigin.replace(/\/$/, "");
@@ -15,7 +15,17 @@ describe("sitemap", () => {
       expect(urls.some((u) => u === `${base}${e.path}`)).toBe(true);
     }
     expect(urls.some((u) => u.endsWith("/security"))).toBe(true);
-    expect(urls).not.toContain(`${base}/guides`);
+    expect(urls).toContain(`${base}/guides`);
     expect(urls).not.toContain(`${base}/examples`);
+
+    const idx = (suffix: string) => urls.findIndex((u) => u === `${base}${suffix}`);
+    const iIntegrate = idx("/integrate");
+    const iGuides = idx("/guides");
+    const iCompany = idx("/company");
+    expect(iIntegrate).toBeGreaterThanOrEqual(0);
+    expect(iGuides).toBeGreaterThanOrEqual(0);
+    expect(iCompany).toBeGreaterThanOrEqual(0);
+    expect(iGuides).toBeGreaterThan(iIntegrate);
+    expect(iCompany).toBeGreaterThan(iGuides);
   });
 });

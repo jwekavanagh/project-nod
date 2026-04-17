@@ -1,7 +1,11 @@
-import { describe, expect, it, vi, afterEach } from "vitest";
+import { describe, expect, it, vi, afterEach, beforeEach } from "vitest";
 import { getCanonicalSiteOrigin, isProductionLike } from "@/lib/canonicalSiteOrigin";
 
 describe("canonicalSiteOrigin", () => {
+  beforeEach(() => {
+    vi.stubEnv("PORT", "");
+  });
+
   afterEach(() => {
     vi.unstubAllEnvs();
   });

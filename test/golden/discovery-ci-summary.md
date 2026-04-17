@@ -4,6 +4,7 @@ State verification engine: read-only SQL checks that database state matches expe
 
 - Canonical site: https://agentskeptic.com/
 - Integrate: https://agentskeptic.com/integrate
+- Learn: https://agentskeptic.com/guides
 - OpenAPI: https://agentskeptic.com/openapi-commercial-v1.yaml
 - OpenAPI (repo raw): https://raw.githubusercontent.com/jwekavanagh/agentskeptic/refs/heads/main/schemas/openapi-commercial-v1.yaml
 - Repository: https://github.com/jwekavanagh/agentskeptic

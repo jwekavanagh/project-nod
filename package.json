@@ -44,7 +44,7 @@
     "sync:public-product-anchors": "node scripts/public-product-anchors.cjs",
     "distribution:consumer-pipeline": "node scripts/distribution-consumer-pipeline.mjs",
     "check:discovery-acquisition": "node scripts/validate-discovery-acquisition.mjs",
-    "verify:web-marketing-copy": "node scripts/validate-discovery-acquisition.mjs && node --test test/visitor-problem-outcome.test.mjs && npm run build -w agentskeptic-web && node scripts/run-website-vitest-with-reuse.mjs && node scripts/website-holistic-gate.mjs",
+    "verify:web-marketing-copy": "node scripts/run-verify-web-marketing-copy.mjs",
     "check:public-product-anchors": "node scripts/public-product-anchors.cjs --check",
     "generate:integrate-activation-shell": "node scripts/generate-integrate-activation-shell.mjs",
     "check:integrate-activation-shell": "node scripts/generate-integrate-activation-shell.mjs --check",

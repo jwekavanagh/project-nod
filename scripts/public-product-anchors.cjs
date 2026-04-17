@@ -104,6 +104,16 @@ function escapeYamlDoubleQuotedOneLiner(s) {
   return String(s).replace(/\\/g, "\\\\").replace(/"/g, '\\"');
 }
 
+function isLoopbackOrigin(raw) {
+  try {
+    const u = new URL(normalize(raw));
+    const h = u.hostname.toLowerCase();
+    return h === "localhost" || h === "127.0.0.1" || h === "::1" || h === "[::1]";
+  } catch {
+    return false;
+  }
+}
+
 function assertNextPublicOriginParity() {
   const anchors = loadAnchors();
   const canonicalFromJson = anchors.productionCanonicalOrigin;
@@ -115,6 +125,8 @@ function assertNextPublicOriginParity() {
   // When unset, skip parity (siteTestServer / Vercel set it for runtime). When set, it must match anchors.
   if (!url) return;
   if (normalize(url) !== normalize(canonicalFromJson)) {
+    // Local `next build` often inherits loopback `website/.env` from `next dev`; allow only off Vercel production.
+    if (process.env.VERCEL_ENV !== "production" && isLoopbackOrigin(url)) return;
     throw new Error("NEXT_PUBLIC_APP_URL must equal productionCanonicalOrigin");
   }
 }

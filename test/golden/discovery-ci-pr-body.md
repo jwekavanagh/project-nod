@@ -9,6 +9,7 @@ _(no stderr)_
 
 - https://agentskeptic.com/
 - https://agentskeptic.com/integrate
+- https://agentskeptic.com/guides
 - https://github.com/jwekavanagh/agentskeptic
 
 <!-- agentskeptic-discovery:v1 -->

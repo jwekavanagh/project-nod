@@ -51,7 +51,7 @@ export type CompanyPage = {
 
 export type CompanyPageMetadata = { title: string; description: string };
 
-export type ExamplesHubLedes = { primary: string; secondaryMuted: string };
+export type LearnBundledProofLedes = { primary: string; secondaryMuted: string };
 
 export type HomeHeroCtaLabels = { demo: string };
 
@@ -103,15 +103,15 @@ export const companyPage = {
   ],
 } as const satisfies CompanyPage;
 
-export const examplesHubLedes = {
+export const learnBundledProofLedes = {
   primary:
     "These pages show real verification envelopes for bundled workflows so you can see verified versus ROW_ABSENT outcomes without running the CLI.",
   secondaryMuted:
     "They are indexable public examples. Private paste links use /r/ and stay noindex by design.",
-} as const satisfies ExamplesHubLedes;
+} as const satisfies LearnBundledProofLedes;
 
-/** Third lede on `/examples`: visible text split around the `/integrate` link. */
-export const examplesHubIntegrateLede = {
+/** Bundled proof section on `/guides`: visible text split around the `/integrate` link. */
+export const learnBundledProofIntegrateLede = {
   before: "For first-run on your database, follow ",
   after: " and read-only SQL verification contracts in the repository docs.",
 } as const;
@@ -321,6 +321,13 @@ export const productCopy = {
     subtitle: discoveryAcquisition.heroSubtitle,
   },
 
+  /**
+   * Homepage hero only: one line under `homepageDecisionFraming`. Must not equal
+   * `discoveryAcquisition.heroSubtitle` (that string is brief-only after IA split).
+   */
+  homeHeroShortTagline:
+    "For the full argument, verbatim bundled demo contrast, and deep context, open the product brief—then try the demo or follow Get started on your database.",
+
   /** Discovery SSOT: outcome framing before mechanism (`hero.subtitle`). */
   homepageHeroNarrative: {
     why: discoveryAcquisition.homepageHero.why,
@@ -344,9 +351,9 @@ export const productCopy = {
   indexedGuideEmbedMuted:
     "The block below uses the bundled `wf_missing` demo so this page stays aligned with the engine.",
 
-  /** Examples index metadata.description (UI-only). */
-  examplesIndexDescription:
-    "Public examples render bundled workflow verification envelopes (wf_complete and wf_missing) for organic discovery—not private /r/ share links.",
+  /** Learn hub (`/guides`) metadata.description (UI-only); includes bundled proof list. */
+  learnHubIndexDescription:
+    "Learn: problem-oriented guides plus bundled wf_complete and wf_missing verification examples for read-only SQL discovery—not private /r/ share links.",
 
   /** Shared report view one-liner (UI-only). */
   publicShareReportIntro:
@@ -372,7 +379,7 @@ export const productCopy = {
   accountPage: {
     line1: "Recent verification runs, your plan and usage, and API keys—together in one place.",
     pricingLinkLabel: "Pricing",
-    integrateLinkLabel: "Integrate",
+    integrateLinkLabel: "Get started",
   } as const,
 
   howItWorks: {
@@ -637,8 +644,8 @@ export const productCopy = {
   homeHeroCtaLabels,
   pricingTrustBandBeforeGrid,
   securityQuickFacts,
-  examplesHubLedes,
-  examplesHubIntegrateLede,
+  learnBundledProofLedes,
+  learnBundledProofIntegrateLede,
   companyPageMetadata,
   companyPage,
 };

@@ -1,7 +1,15 @@
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, it, vi, beforeEach, afterEach } from "vitest";
 import { NextRequest } from "next/server";
 
 describe("isFunnelSurfaceRequestOriginAllowed loopback", () => {
+  beforeEach(() => {
+    vi.stubEnv("PORT", "");
+  });
+
+  afterEach(() => {
+    vi.unstubAllEnvs();
+  });
+
   it("allows localhost Origin when canonical is 127.0.0.1 in development", async () => {
     vi.stubEnv("NODE_ENV", "development");
     vi.stubEnv("NEXT_PUBLIC_APP_URL", "");
@@ -11,7 +19,6 @@ describe("isFunnelSurfaceRequestOriginAllowed loopback", () => {
       headers: { origin: "http://localhost:3000" },
     });
     expect(isFunnelSurfaceRequestOriginAllowed(req)).toBe(true);
-    vi.unstubAllEnvs();
   });
 
   it("allows IPv6 bracket [::1] Origin when canonical is http://localhost (NEXT_PUBLIC)", async () => {
@@ -23,7 +30,6 @@ describe("isFunnelSurfaceRequestOriginAllowed loopback", () => {
       headers: { origin: "http://[::1]:3000" },
     });
     expect(isFunnelSurfaceRequestOriginAllowed(req)).toBe(true);
-    vi.unstubAllEnvs();
   });
 
   it("allows Origin port when it matches Host even if NEXT_PUBLIC pins a different loopback port", async () => {
@@ -38,7 +44,6 @@ describe("isFunnelSurfaceRequestOriginAllowed loopback", () => {
       },
     });
     expect(isFunnelSurfaceRequestOriginAllowed(req)).toBe(true);
-    vi.unstubAllEnvs();
   });
 
   it("does not equate loopback with production canonical", async () => {
@@ -50,6 +55,5 @@ describe("isFunnelSurfaceRequestOriginAllowed loopback", () => {
       headers: { origin: "http://localhost:3000" },
     });
     expect(isFunnelSurfaceRequestOriginAllowed(req)).toBe(false);
-    vi.unstubAllEnvs();
   });
 });

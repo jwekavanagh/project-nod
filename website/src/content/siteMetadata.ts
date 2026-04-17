@@ -5,7 +5,7 @@ export const siteMetadata = {
   title: "AgentSkeptic — check database state against what your workflow claimed",
   description: discoveryAcquisition.pageMetadata.description,
   integrate: {
-    title: "Verify workflow claims against the database",
+    title: "Get started",
     description:
       "Install Node.js 22.13+, Git, and npm. Paste one command block to clone this repo, install dependencies, build, run the bundled demo (npm start), then run first-run verify (npm run first-run-verify) with read-only SQL contract checks. Expect several minutes on a cold clone; install and build can fail for ordinary environment reasons.",
   },

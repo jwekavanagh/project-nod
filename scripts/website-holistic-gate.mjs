@@ -2,10 +2,12 @@
 /**
  * Starts Next production server for agentskeptic-web, runs Playwright holistic specs, then LHCI.
  * Requires the same env keys as .github/workflows/ci.yml commercial job (plus AUTH_SECRET length).
- * Does not set NEXT_PUBLIC_APP_URL on the Next server: in production NODE_ENV, next.config would
- * assert it equals productionCanonicalOrigin when set (scripts/public-product-anchors.cjs).
+ * Sets `NEXT_PUBLIC_APP_URL` to `productionCanonicalOrigin` from `config/public-product-anchors.json`
+ * so `next.config` origin parity passes under `NODE_ENV=production` even when `website/.env` pins a
+ * loopback URL for local dev (Next would otherwise inject that value after an omitted key).
  * Exit: 0 ok, 1 test/assert failure, 2 missing env, 3 readiness/5xx.
  */
+import { readFileSync } from "node:fs";
 import { spawn, spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
@@ -45,9 +47,17 @@ if (preflight.status !== 0) {
   process.exit(preflight.status === null ? 1 : preflight.status);
 }
 
-/** Env for `next start` — omit NEXT_PUBLIC_APP_URL so origin parity check skips (unset in prod). */
-const serverEnv = { ...process.env, PORT: String(port), NEXTAUTH_SECRET: process.env.AUTH_SECRET };
-delete serverEnv.NEXT_PUBLIC_APP_URL;
+const anchorsPath = path.join(root, "config", "public-product-anchors.json");
+const { productionCanonicalOrigin } = JSON.parse(readFileSync(anchorsPath, "utf8"));
+const canonicalAppUrl = new URL(String(productionCanonicalOrigin).trim()).origin;
+
+/** Env for `next start` / LHCI — public URL must match anchors under production `next.config`. */
+const serverEnv = {
+  ...process.env,
+  PORT: String(port),
+  NEXTAUTH_SECRET: process.env.AUTH_SECRET,
+  NEXT_PUBLIC_APP_URL: canonicalAppUrl,
+};
 
 function killProcessTree(child) {
   if (!child?.pid) return;

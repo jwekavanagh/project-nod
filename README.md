@@ -52,7 +52,7 @@ steps:
 }
 ```
 
-[Read the product brief](https://agentskeptic.com/database-truth-vs-traces)
+[Product brief](https://agentskeptic.com/database-truth-vs-traces)
 <!-- discovery-acquisition-fold:end -->
 
 ## Buy vs build: why not only SQL checks

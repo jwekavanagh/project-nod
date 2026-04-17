@@ -39,7 +39,8 @@ export default function LangGraphVerificationGuidePage() {
         pass <code>--share-report-origin https://agentskeptic.com</code> (replace with your deployment origin when
         self-hosting). Those <code>/r/…</code> URLs are <strong>noindex</strong> by design so they are not used for organic
         discovery. For <strong>indexable</strong> discovery pages that explain the trace-vs-database gap, use{" "}
-        <Link href="/guides">/guides</Link> and the acquisition page at{" "}
+        <Link href="/guides#bundled-proof">/guides#bundled-proof</Link> (bundled proof examples), the Learn hub at{" "}
+        <Link href="/guides">/guides</Link>, and the acquisition page at{" "}
         <Link href="/database-truth-vs-traces">/database-truth-vs-traces</Link>—not <code>/r/</code> links.
       </p>
       <p className="lede">

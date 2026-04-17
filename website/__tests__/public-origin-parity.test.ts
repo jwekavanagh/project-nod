@@ -59,6 +59,14 @@ describe("public origin parity (assertNextPublicOriginParity)", () => {
     expect(() => assertNextPublicOriginParity()).toThrow(/NEXT_PUBLIC_APP_URL must equal productionCanonicalOrigin/);
   });
 
+  it("row: Vercel production — loopback NEXT_PUBLIC_APP_URL still enforces parity", () => {
+    stashEnv();
+    process.env.NODE_ENV = "production";
+    process.env.VERCEL_ENV = "production";
+    process.env.NEXT_PUBLIC_APP_URL = "http://127.0.0.1:3000";
+    expect(() => assertNextPublicOriginParity()).toThrow(/NEXT_PUBLIC_APP_URL must equal productionCanonicalOrigin/);
+  });
+
   it("row: local next build — VERCEL_ENV unset enforces parity when URL matches", () => {
     stashEnv();
     const anchors = loadAnchors();
@@ -82,5 +90,13 @@ describe("public origin parity (assertNextPublicOriginParity)", () => {
     delete process.env.VERCEL_ENV;
     process.env.NEXT_PUBLIC_APP_URL = "https://wrong-origin.example";
     expect(() => assertNextPublicOriginParity()).toThrow(/NEXT_PUBLIC_APP_URL must equal productionCanonicalOrigin/);
+  });
+
+  it("row: local next build — VERCEL_ENV unset skips parity for loopback NEXT_PUBLIC_APP_URL", () => {
+    stashEnv();
+    process.env.NODE_ENV = "production";
+    delete process.env.VERCEL_ENV;
+    process.env.NEXT_PUBLIC_APP_URL = "http://127.0.0.1:3000";
+    expect(() => assertNextPublicOriginParity()).not.toThrow();
   });
 });

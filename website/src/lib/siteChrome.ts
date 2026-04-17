@@ -18,13 +18,11 @@ export function buildSiteHeaderPrimaryLinks(args: {
 }): readonly SiteChromeLink[] {
   const { anchors, acquisitionHref, acquisitionLabel } = args;
   return [
-    { key: "pricing", href: "/pricing", label: "Pricing", external: false },
-    { key: "security", href: "/security", label: "Security", external: false },
     { key: "acquisition", href: acquisitionHref, label: acquisitionLabel, external: false },
-    { key: "integrate", href: "/integrate", label: "Integrate", external: false },
+    { key: "integrate", href: "/integrate", label: "Get started", external: false },
     { key: "try", href: "/#try-it", label: "Try", external: false },
-    { key: "guides", href: "/guides", label: "Guides", external: false },
-    { key: "examples", href: "/examples", label: "Examples", external: false },
+    { key: "guides", href: "/guides", label: "Learn", external: false },
+    { key: "pricing", href: "/pricing", label: "Pricing", external: false },
     {
       key: "cli",
       href: `${anchors.gitRepositoryUrl}#try-it-about-one-minute`,

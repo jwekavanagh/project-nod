@@ -6,9 +6,11 @@ describe("SiteHeader funnel links", () => {
   const src = readFileSync(path.join(__dirname, "..", "src", "app", "SiteHeader.tsx"), "utf8");
   const siteChromeSrc = readFileSync(path.join(__dirname, "..", "src", "lib", "siteChrome.ts"), "utf8");
 
-  it("exposes guides, acquisition, integrate, pricing, sign-in callback, account, sign-out, and CLI quickstart in primary nav", () => {
+  it("exposes Learn, acquisition, Get started, pricing, sign-in callback, account, sign-out, and CLI quickstart in primary nav", () => {
     expect(src).toContain("buildSiteHeaderPrimaryLinks");
     expect(siteChromeSrc).toContain('href: "/guides"');
+    expect(siteChromeSrc).toContain('label: "Learn"');
+    expect(siteChromeSrc).toContain('label: "Get started"');
     expect(src).toContain("href={productCopy.homepageAcquisitionCta.href}");
     expect(src).toContain("{discoveryAcquisition.homepageAcquisitionCtaLabel}");
     expect(siteChromeSrc).toContain('href: "/integrate"');

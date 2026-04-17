@@ -35,6 +35,7 @@ type AuthMock = {
 const authMock = auth as unknown as AuthMock;
 
 const hasDatabaseUrl = Boolean(process.env.DATABASE_URL?.trim());
+const hasTelemetryDb = Boolean(process.env.TELEMETRY_DATABASE_URL?.trim());
 
 function surfaceReq(body: object, origin: string | null): NextRequest {
   const headers = new Headers({ "content-type": "application/json" });
@@ -46,8 +47,9 @@ function surfaceReq(body: object, origin: string | null): NextRequest {
   });
 }
 
-describe.skipIf(!hasDatabaseUrl)("funnel north star — surface impression", () => {
+describe.skipIf(!hasDatabaseUrl || !hasTelemetryDb)("funnel north star — surface impression", () => {
   beforeEach(async () => {
+    vi.stubEnv("AGENTSKEPTIC_TELEMETRY_WRITES_TELEMETRY_DB", "1");
     await truncateCommercialFixtureDbs();
     authMock.mockReset();
     vi.mocked(getStripe).mockReset();

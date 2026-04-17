@@ -1,9 +1,9 @@
 /** @vitest-environment jsdom */
 
-import ExamplesHubPage from "@/app/examples/page";
+import GuidesHubPage from "@/app/guides/page";
 import WfCompletePage from "@/app/examples/wf-complete/page";
 import WfMissingPage from "@/app/examples/wf-missing/page";
-import * as hubMeta from "@/app/examples/page";
+import * as hubMeta from "@/app/guides/page";
 import * as completeMeta from "@/app/examples/wf-complete/page";
 import * as missingMeta from "@/app/examples/wf-missing/page";
 import discoveryAcquisition from "@/lib/discoveryAcquisition";
@@ -22,13 +22,15 @@ afterEach(() => {
 });
 
 describe("indexed examples", () => {
-  it("hub is noindex and lists exactly indexableExamples links", () => {
-    expect(hubMeta.metadata.robots).toEqual({ index: false, follow: true });
-    const { container } = render(<ExamplesHubPage />);
-    const links = container.querySelectorAll("ul.mechanism-list a[href]");
+  it("Learn hub is indexable and lists exactly indexableExamples links in bundled-proof section", () => {
+    expect(hubMeta.metadata.robots).toEqual({ index: true, follow: true });
+    const { container } = render(<GuidesHubPage />);
+    const bundled = container.querySelector("#bundled-proof");
+    expect(bundled).toBeTruthy();
+    const links = bundled!.querySelectorAll("ul.mechanism-list a[href]");
     expect(links.length).toBe(discoveryAcquisition.indexableExamples.length);
     for (const e of discoveryAcquisition.indexableExamples) {
-      expect(container.querySelector(`a[href="${e.path}"]`)).toBeTruthy();
+      expect(bundled!.querySelector(`a[href="${e.path}"]`)).toBeTruthy();
     }
   });
 

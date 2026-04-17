@@ -42,13 +42,12 @@ describe.skipIf(!isValidator && !hasBothDbs)("integrate activation telemetry off
     });
     expect(fetchMock).not.toHaveBeenCalled();
 
+    const partnerEnv = { ...process.env, AGENTSKEPTIC_TELEMETRY: "0" };
+    delete partnerEnv.PARTNER_POSTGRES_URL;
+    partnerEnv.ACTIVATION_SPINE_VALIDATOR = process.env.ACTIVATION_SPINE_VALIDATOR ?? "";
     const r = spawnSync(process.execPath, [path.join(repoRoot, "scripts", "partner-quickstart-verify.mjs")], {
       cwd: repoRoot,
-      env: {
-        ...process.env,
-        AGENTSKEPTIC_TELEMETRY: "0",
-        ACTIVATION_SPINE_VALIDATOR: process.env.ACTIVATION_SPINE_VALIDATOR ?? "",
-      },
+      env: partnerEnv,
       encoding: "utf8",
     });
     expect(r.status).toBe(0);

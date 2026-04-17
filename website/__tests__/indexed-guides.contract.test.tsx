@@ -51,14 +51,22 @@ function assertGuideContract(Page: () => ReactElement, path: string) {
 }
 
 describe("indexed guides", () => {
-  it("hub is noindex and lists exactly indexableGuides links", () => {
-    expect(hubMeta.metadata.robots).toEqual({ index: false, follow: true });
+  it("hub is indexable and lists guide links, example leaves, and /integrate", () => {
+    expect(hubMeta.metadata.robots).toEqual({ index: true, follow: true });
     const { container } = render(<GuidesHubPage />);
     const links = container.querySelectorAll("a[href]");
-    expect(links.length).toBe(discoveryAcquisition.indexableGuides.length);
+    const expectedCount =
+      discoveryAcquisition.indexableGuides.length +
+      discoveryAcquisition.indexableExamples.length +
+      1;
+    expect(links.length).toBe(expectedCount);
     for (const g of discoveryAcquisition.indexableGuides) {
       expect(container.querySelector(`a[href="${g.path}"]`)).toBeTruthy();
     }
+    for (const e of discoveryAcquisition.indexableExamples) {
+      expect(container.querySelector(`a[href="${e.path}"]`)).toBeTruthy();
+    }
+    expect(container.querySelector('a[href="/integrate"]')).toBeTruthy();
   });
 
   it("each indexable guide meets shell contract", () => {

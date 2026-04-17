@@ -5,6 +5,7 @@
   "links": {
     "site": "https://agentskeptic.com/",
     "integrate": "https://agentskeptic.com/integrate",
+    "learnHub": "https://agentskeptic.com/guides",
     "openapiCanonical": "https://agentskeptic.com/openapi-commercial-v1.yaml",
     "openapiRaw": "https://raw.githubusercontent.com/jwekavanagh/agentskeptic/refs/heads/main/schemas/openapi-commercial-v1.yaml",
     "repo": "https://github.com/jwekavanagh/agentskeptic",

@@ -94,6 +94,7 @@ function buildDiscoveryPayload(root) {
   const anchors = JSON.parse(readFileSync(anchorsPath, "utf8"));
   const canonicalOrigin = normalizeOrigin(anchors.productionCanonicalOrigin);
   const integrateUrl = `${canonicalOrigin}/integrate`;
+  const learnHubUrl = `${canonicalOrigin}/guides`;
   const openapiSelfCanonical = `${canonicalOrigin}/openapi-commercial-v1.yaml`;
   const { owner, repo } = parseGithubRepoFromUrl(anchors.gitRepositoryUrl);
   const llmsRaw = `https://raw.githubusercontent.com/${owner}/${repo}/refs/heads/${DISCOVERY_LLM_BRANCH}/llms.txt`;
@@ -110,6 +111,7 @@ function buildDiscoveryPayload(root) {
     links: {
       site: `${canonicalOrigin}/`,
       integrate: integrateUrl,
+      learnHub: learnHubUrl,
       openapiCanonical: openapiSelfCanonical,
       openapiRaw,
       repo: String(anchors.gitRepositoryUrl),
@@ -176,6 +178,7 @@ function renderLlmsTextFromPayload(payload) {
   };
   const canonicalOrigin = links.site.replace(/\/$/, "");
   const integrateUrl = links.integrate;
+  const learnHubUrl = links.learnHub;
   const openapiSelfCanonical = links.openapiCanonical;
   const lines = [
     "# AgentSkeptic",
@@ -186,6 +189,7 @@ function renderLlmsTextFromPayload(payload) {
     "## Primary links",
     `- Canonical site: ${links.site}`,
     `- First-run integration: ${integrateUrl}`,
+    `- Learn: ${learnHubUrl}`,
     `- OpenAPI (canonical): ${openapiSelfCanonical}`,
     `- OpenAPI (repo raw): ${links.openapiRaw}`,
     `- Source repository: ${links.repo}`,
@@ -213,6 +217,7 @@ function renderCiSummaryMarkdownFromPayload(payload) {
     "",
     "- Canonical site: " + L.site,
     "- Integrate: " + L.integrate,
+    "- Learn: " + L.learnHub,
     "- OpenAPI: " + L.openapiCanonical,
     "- OpenAPI (repo raw): " + L.openapiRaw,
     "- Repository: " + L.repo,
@@ -272,6 +277,7 @@ ${String(payload.identityOneLiner)}
     "",
     "- " + L.site,
     "- " + L.integrate,
+    "- " + L.learnHub,
     "- " + L.repo,
     "",
     PR_MARKER_LINE,

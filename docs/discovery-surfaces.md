@@ -9,9 +9,9 @@ This document covers **human and agent discovery** for the AgentSkeptic website.
 ## Indexable routes
 
 - **Acquisition slug** from `config/discovery-acquisition.json` → `slug` (currently `/database-truth-vs-traces`).
+- **`/guides`** — Learn hub: **indexable**; lists `indexableGuides` and bundled proof links (`indexableExamples`); appears in `sitemap.xml` after `/integrate`; `## Primary links` in `llms.txt` includes **Learn:** canonical URL.
 - **`/guides/*`** — only paths listed in `indexableGuides[]`; each has `metadata.robots` indexable and appears in `sitemap.xml` and under `## Indexable guides` in `llms.txt`.
-- **`/examples/*`** — only paths listed in `indexableExamples[]` (currently `/examples/wf-complete` and `/examples/wf-missing`); same indexability rules as guides. They render **committed** public-report JSON, not database-backed rows.
-- **Hub pages** `/guides` and `/examples` are **noindex, follow** and are **not** listed alone in `sitemap.xml` (same pattern as `/guides` before examples existed).
+- **`/examples/wf-complete`** and **`/examples/wf-missing`** — only paths listed in `indexableExamples[]`; same indexability rules as guides. They render **committed** public-report JSON, not database-backed rows. The former top-level hub path **`GET /examples`** (without a leaf segment) **308** redirects to **`/guides`** (see [`website/next.config.ts`](../website/next.config.ts)); fragments like `/guides#bundled-proof` are for same-origin authored links only.
 
 ## Private routes
 

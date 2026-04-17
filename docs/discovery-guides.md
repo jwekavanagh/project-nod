@@ -1,6 +1,6 @@
 # Discovery guides (SSOT)
 
-Single narrative for **indexable** `/guides/*` acquisition pages, the **noindex** `/guides` hub, sitemap policy, and how this differs from **`/r/*` share links**.
+Single narrative for **indexable** `/guides/*` acquisition pages, the **indexable** `/guides` Learn hub (lists guides plus bundled proof examples), sitemap policy, and how this differs from **`/r/*` share links**.
 
 ## Audiences
 
@@ -22,10 +22,10 @@ Single narrative for **indexable** `/guides/*` acquisition pages, the **noindex*
 
 ## Information architecture
 
-- **Indexable** URLs are **only** those listed in `indexableGuides[].path` (currently five). Each page exports `metadata.robots: { index: true, follow: true }` and a **page-level** `alternates.canonical` equal to `{productionCanonicalOrigin}{path}`.
-- **Hub** `/guides` is **navigational**: `metadata.robots: { index: false, follow: true }`. It lists **only** `indexableGuides` entries—no self-link row.
-- **`sitemap.xml`** includes each `indexableGuides[].path` and **does not** include `/guides` alone.
-- **`llms.txt`** appends `## Indexable guides` with one `- {origin}{path}` bullet per entry **in JSON array order** (before the terminal demo block).
+- **Indexable** guide URLs are **only** those listed in `indexableGuides[].path`. Each page exports `metadata.robots: { index: true, follow: true }` and a **page-level** `alternates.canonical` equal to `{productionCanonicalOrigin}{path}`.
+- **Hub** `/guides` (Learn): `metadata.robots: { index: true, follow: true }`; canonical `{productionCanonicalOrigin}/guides`. The hub lists all `indexableGuides` entries and, in **`#bundled-proof`**, all `indexableExamples` entries (`/examples/wf-complete`, `/examples/wf-missing`). Primary nav label **Learn** maps to this URL.
+- **`sitemap.xml`** includes each `indexableGuides[].path`, each `indexableExamples[].path`, **and** `/guides` (position: immediately after `/integrate`, before `/company`—see [`website/src/app/sitemap.ts`](../website/src/app/sitemap.ts)).
+- **`llms.txt`** `## Primary links` includes **Learn:** `{origin}/guides` (after First-run integration). It appends `## Indexable guides` with one `- {origin}{path}` bullet per guide **in JSON array order** (before indexable examples and the terminal demo block).
 
 ## Non-indexable routes under `/guides/*`
 
@@ -34,7 +34,7 @@ Routes may exist under `app/guides/` that are **not** in `indexableGuides`. They
 ## `/r/*` vs guides
 
 - **`GET /r/{id}`** is **noindex** and may contain sensitive tool parameters. Use it for **private** sharing (Slack, tickets), not organic discovery.
-- **Indexed** explanation and acquisition live on **`/guides/*`**, the acquisition slug, and `/integrate`.
+- **Indexed** explanation and acquisition live on **`/guides/*`**, the acquisition slug, `/guides` (hub), and `/integrate`.
 
 ## Redaction (`jq` + reference code)
 
@@ -65,7 +65,7 @@ Output must still validate against `schemas/public-verification-report-v1.schema
 ### Pinned Discussion (body)
 
 ```markdown
-When traces look green but Postgres or SQLite rows are wrong, see the acquisition page and guides:
+When traces look green but Postgres or SQLite rows are wrong, see the acquisition page and Learn hub:
 
 - https://agentskeptic.com/database-truth-vs-traces
 - https://agentskeptic.com/guides
