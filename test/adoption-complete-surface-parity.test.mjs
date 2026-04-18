@@ -15,6 +15,7 @@ const NEEDLES = [
   "AdoptionComplete_PatternComplete",
   "AC-TRUST-01",
   "AC-OPS-01",
+  "IntegrateSpineComplete",
 ];
 
 describe("adoption complete surface parity", () => {
@@ -26,8 +27,11 @@ describe("adoption complete surface parity", () => {
   it("integrate_activation_shell_template_contains_needles", () => {
     const t = readFileSync(join(root, "scripts", "templates", "integrate-activation-shell.bash"), "utf8");
     assert.ok(t.includes("PatternComplete"), "bash template must name PatternComplete");
+    assert.ok(t.includes("IntegrateSpineComplete"), "bash template must name IntegrateSpineComplete");
     assert.ok(t.includes("ADOPT_DB"), "bash template must use ADOPT_DB temp copy");
     assert.ok(t.includes('"$ADOPT_DB"'), "bash template must verify against ADOPT_DB");
+    assert.ok(t.includes("examples/integrate-your-db/bootstrap-input.json"), "bash template must run final spine input");
+    assert.ok(t.includes("wf_integrate_spine"), "bash template must verify wf_integrate_spine");
   });
 
   it("product_copy_integrate_activation_contains_needles", () => {

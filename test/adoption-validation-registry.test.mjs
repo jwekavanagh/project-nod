@@ -12,12 +12,17 @@ const root = join(__dirname, "..");
 
 const EXPECTED = `artifacts/adoption-complete-validation-verdict.json	add
 artifacts/adoption-validation-verdict.json	add
+artifacts/integrate-spine-validation-verdict.json	add
 docs/adoption-validation-spec.md	modify
 docs/agentskeptic.md	modify
+docs/commercial-ssot.md	modify
 docs/first-run-integration.md	modify
 docs/first-run-validation-log.md	modify
+docs/funnel-observability-ssot.md	modify
 docs/golden-path.md	modify
 docs/verification-product-ssot.md	modify
+examples/integrate-your-db/bootstrap-input.json	add
+examples/integrate-your-db/required-sqlite-state.sql	add
 package.json	modify
 README.md	modify
 scripts/demo.mjs	add
@@ -26,6 +31,7 @@ scripts/record-adoption-verdict.mjs	add
 scripts/regen-truth-goldens.mjs	modify
 scripts/templates/integrate-activation-shell.bash	modify
 scripts/validate-adoption-complete.mjs	add
+scripts/validate-integrate-spine.mjs	add
 scripts/verify-adoption-verdict.mjs	add
 src/loadEvents.ts	modify
 src/noStepsMessage.ts	add
@@ -43,6 +49,7 @@ test/cli.test.mjs	modify
 test/docs-golden-path-pointer-only.test.mjs	add
 test/docs-readme-no-registry-flag.test.mjs	add
 test/fixtures/adoption-validation/wrong-workflow-id.events.ndjson	add
+test/integrate-spine-contract.test.mjs	add
 test/npm-scripts-contract.test.mjs	modify
 test/pipeline.sqlite.test.mjs	modify
 test/validate-adoption-complete-failure.test.mjs	add

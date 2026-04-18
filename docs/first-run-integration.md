@@ -2,7 +2,7 @@
 
 **Prerequisite:** Read [**Buy vs build: why not only SQL checks**](../README.md#buy-vs-build-why-not-only-sql-checks) in the root [**README.md**](../README.md) so the recurring failure mode, why ad-hoc SQL checks fail as a long-term substitute, and the **Quick → Contract** path are clear before you integrate.
 
-This is the **authoritative first-run path** for running AgentSkeptic against **your own** database and workflow shape: **demo → `npm run first-run-verify` → bootstrap contract gradient (Step 3)** → **PatternComplete verify (temp DB + temp pack paths)** → **ProductionComplete: bootstrap on your inputs (Step 4)** → success criteria → pitfalls. Anything outside that sequence (LangGraph sample, production billing) is grouped **after** the spine—this file stays integrator prose, not an index of every entrypoint.
+This is the **authoritative first-run path** for running AgentSkeptic against **your own** database and workflow shape: **demo → `npm run first-run-verify` → bootstrap contract gradient (Step 3)** → **PatternComplete verify (temp DB + temp pack paths)** → **ProductionComplete: bootstrap on your inputs (Step 4)** → success criteria → pitfalls. The **`/integrate` activation shell** is a separate normative contract (**IntegrateSpineComplete**): see [Integrate spine (normative)](#integrate-spine-normative). Anything outside that sequence (LangGraph sample, production billing) is grouped **after** the spine—this file stays integrator prose, not an index of every entrypoint.
 
 **Optional (not part of the spine):** same-origin **registry draft** (model-assisted)—semantics, schema pins, and harness proof live in [registry-draft-ssot.md](registry-draft-ssot.md); it is **not** contract verification.
 
@@ -10,9 +10,36 @@ This is the **authoritative first-run path** for running AgentSkeptic against **
 
 **Why one doc:** One narrative reduces drift between the website, README, and ad-hoc integrator notes.
 
-Send this to someone who should **try it in one sitting**. The **same** ordered shell commands as **`https://agentskeptic.com/integrate`** (clone, install, build, demo, contract verify, then bootstrap + verify on the pinned fixture) live in the repo template consumed by that page. **All** extended shell commands (Postgres env var, manual `node dist/cli.js …`, LangGraph) live in **[partner-quickstart-commands.md](partner-quickstart-commands.md)** (generated; do not duplicate those blocks here). This file is **prose, semantics, and guarantees** for the spine.
+Send this to someone who should **try it in one sitting**. The **same** ordered shell commands as **`https://agentskeptic.com/integrate`** (clone, install, build, demo, PatternComplete-shaped verify, guard, then final bootstrap + verify on `AGENTSKEPTIC_VERIFY_DB`) live in [`scripts/templates/integrate-activation-shell.bash`](../scripts/templates/integrate-activation-shell.bash) (L0). **All** extended shell commands (Postgres env var, manual `node dist/cli.js …`, LangGraph) live in **[partner-quickstart-commands.md](partner-quickstart-commands.md)** (generated; do not duplicate those blocks here). This file is **prose, semantics, and guarantees** for the spine.
 
 **Throughput note (operator):** The site’s cross-surface metrics for integrate → CLI outcomes are defined in [growth-metrics-ssot.md](growth-metrics-ssot.md) (`CrossSurface_ConversionRate_IntegrateToVerifyOutcome_Rolling7dUtc` and the qualified variant `CrossSurface_ConversionRate_QualifiedIntegrateToVerifyOutcome_Rolling7dUtc`); qualification semantics (what `non_bundled` means) are in [funnel-observability-ssot.md](funnel-observability-ssot.md#qualification-proxy-operator). Activation POST semantics and failure modes are in [funnel-observability-ssot.md](funnel-observability-ssot.md). A **successful local verification** can still fail to appear in operator metrics when telemetry capture diverges—see [User outcome vs telemetry capture (operator)](funnel-observability-ssot.md#user-outcome-vs-telemetry-capture-operator). The trust boundary for Quick vs contract verification is unchanged—see [verification-product-ssot.md](verification-product-ssot.md).
+
+## Integrate spine (normative)
+
+**Authority stack**
+
+- **L0** — Exact shell bytes only: [`scripts/templates/integrate-activation-shell.bash`](../scripts/templates/integrate-activation-shell.bash) (mirrored into the site as `INTEGRATE_ACTIVATION_SHELL_BODY` after `npm run sync:public-product-anchors` / website prebuild).
+- **L0.5** — Fixed **BootstrapPackInput** plus required SQLite state: [`examples/integrate-your-db/bootstrap-input.json`](../examples/integrate-your-db/bootstrap-input.json) and [`examples/integrate-your-db/required-sqlite-state.sql`](../examples/integrate-your-db/required-sqlite-state.sql). The SQL file is the **machine contract** for tables and rows the final bootstrap must observe. For **`wf_integrate_spine`**, today’s quick-inferred export is **PK-identity only** (`id` = `c_integrate_spine`); a **missing** row fails `bootstrap`; keep the full L0.5 row (including `Alice` / `active`) as the normative integrator target even if field-only drift is not always rejected by quick.
+
+**IntegrateSpineComplete**
+
+- The full L0 script **exit code is 0** iff every step completes, including the **final** `node dist/cli.js bootstrap … --input examples/integrate-your-db/bootstrap-input.json` and the following **`verify`** on `"$AGENTSKEPTIC_VERIFY_DB"`.
+- If `AGENTSKEPTIC_VERIFY_DB` is unset, empty, not a file, or not readable, the script **exits non-zero immediately before that final bootstrap** (after the demo / PatternComplete-shaped segment). That is **not** IntegrateSpineComplete; it is a deliberate **non-terminal-success** outcome so demo-only runs never report success for the whole spine.
+
+**PatternComplete vs IntegrateSpineComplete**
+
+- Mid-script, L0 still runs the **PatternComplete-shaped** segment (temp pack paths and temp DB copy per [AdoptionComplete_PatternComplete](#adoptioncomplete_patterncomplete-normative)).
+- The **final** verify uses the integrator-supplied SQLite path and may **not** satisfy checklist **AC-OPS-03** (DB path under OS temp only). That is **by design** for this spine. [`scripts/validate-adoption-complete.mjs`](../scripts/validate-adoption-complete.mjs) remains the CI proof for **PatternComplete** alone.
+
+**Prepare `AGENTSKEPTIC_VERIFY_DB`**
+
+- Use an absolute or relative path to a disposable SQLite file. From the **cloned** repository root, apply L0.5 SQL, for example:  
+  `sqlite3 "$AGENTSKEPTIC_VERIFY_DB" < examples/integrate-your-db/required-sqlite-state.sql`  
+  (Any tool that executes the same statements is acceptable if you do not have the `sqlite3` CLI.)
+
+**`INTEGRATE_SPINE_GIT_URL`**
+
+- Optional. Defaults to the public GitHub clone URL in L0. CI may set `file://…/.git` for hermetic end-to-end proof; integrators normally omit it.
 
 ## AdoptionComplete_PatternComplete (normative)
 
@@ -99,7 +126,7 @@ This step is the **deterministic bridge** from the bundled quickstart to a **gen
 From the **repository root** (after Steps 1–2), run:
 
 ```bash
-OUT="$(mktemp -d)"
+OUT="$(mktemp -u "${TMPDIR:-/tmp}/agentskeptic-integrate-mid-XXXXXXXX")"
 ADOPT_DB="$(mktemp)"
 trap 'rm -rf "$OUT" "$ADOPT_DB"' EXIT
 node dist/cli.js bootstrap --input test/fixtures/bootstrap-pack/input.json --db examples/demo.db --out "$OUT"

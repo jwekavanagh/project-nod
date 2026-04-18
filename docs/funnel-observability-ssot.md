@@ -10,6 +10,14 @@ This document is the **SSOT** for **North Star funnel metrics**: measurable prog
 
 **Operator daily aggregate export (CSV pack):** Read-only `funnel_event` aggregates, verdict JSON, and scheduling contract are documented only in [`docs/telemetry-daily-pack-ssot.md`](telemetry-daily-pack-ssot.md).
 
+## Integrate spine (operator)
+
+When activation telemetry is captured, a successful **IntegrateSpineComplete** run (see [`first-run-integration.md`](first-run-integration.md#integrate-spine-normative)) is designed so its **final** contract `verify` is classified **`non_bundled`** under [`src/commercial/verifyWorkloadClassify.ts`](../src/commercial/verifyWorkloadClassify.ts): temp pack paths under `mktemp` plus an integrator-supplied SQLite path that does not match bundled example suffixes.
+
+**Classifier binding:** [`scripts/validate-integrate-spine.mjs`](../scripts/validate-integrate-spine.mjs) treats that classifier module as **normative** for this claim. If `classifyBatchVerifyWorkload` returns `bundled_examples` for the final paths emitted by the spine, CI must fail until the spine, classifier list, or docs are deliberately revised together.
+
+Cross-surface metric **SQL and definitions** remain only in [`growth-metrics-ssot.md`](growth-metrics-ssot.md); do not duplicate numerators or denominators here.
+
 ---
 
 ## Activation reachability (operator)

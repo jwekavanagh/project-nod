@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "workflowId": "wf_integrate_spine",
+  "openaiChatCompletion": {
+    "choices": [
+      {
+        "message": {
+          "role": "assistant",
+          "tool_calls": [
+            {
+              "id": "call_integrate_spine_1",
+              "type": "function",
+              "function": {
+                "name": "crm.upsert_contact",
+                "arguments": "{\"recordId\":\"c_integrate_spine\",\"fields\":{\"name\":\"Alice\",\"status\":\"active\"}}"
+              }
+            }
+          ]
+        }
+      }
+    ]
+  }
+}

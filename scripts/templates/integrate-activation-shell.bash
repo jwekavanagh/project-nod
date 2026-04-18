@@ -1,15 +1,24 @@
 # After copying from https://agentskeptic.com/integrate: export AGENTSKEPTIC_FUNNEL_ANON_ID and AGENTSKEPTIC_VERIFICATION_HYPOTHESIS in this shell when you want attributed telemetry.
 # PatternComplete: final verify uses temp DB path ($ADOPT_DB); see docs/first-run-integration.md §AdoptionComplete_PatternComplete.
+# IntegrateSpineComplete: final bootstrap+verify on integrator SQLite after the guard; see docs/first-run-integration.md (Integrate spine normative).
 set -euo pipefail
-git clone --depth 1 https://github.com/jwekavanagh/agentskeptic.git
+git -c core.autocrlf=false clone --depth 1 "${INTEGRATE_SPINE_GIT_URL:-https://github.com/jwekavanagh/agentskeptic.git}"
 cd agentskeptic
 npm install
 npm run build
 npm start
 npm run first-run-verify
-OUT="$(mktemp -d)"
+OUT="$(mktemp -u "${TMPDIR:-/tmp}/agentskeptic-integrate-mid-XXXXXXXX")"
 ADOPT_DB="$(mktemp)"
 trap 'rm -rf "$OUT" "$ADOPT_DB"' EXIT
 node dist/cli.js bootstrap --input test/fixtures/bootstrap-pack/input.json --db examples/demo.db --out "$OUT"
 cp examples/demo.db "$ADOPT_DB"
 node dist/cli.js --workflow-id wf_bootstrap_fixture --events "$OUT/events.ndjson" --registry "$OUT/tools.json" --db "$ADOPT_DB"
+if [ -z "${AGENTSKEPTIC_VERIFY_DB:-}" ] || [ ! -f "${AGENTSKEPTIC_VERIFY_DB}" ] || [ ! -r "${AGENTSKEPTIC_VERIFY_DB}" ]; then
+  echo "AgentSkeptic integrate spine: set AGENTSKEPTIC_VERIFY_DB to a readable SQLite file path (apply examples/integrate-your-db/required-sqlite-state.sql first). See docs/first-run-integration.md." >&2
+  exit 1
+fi
+OUT2="$(mktemp -u "${TMPDIR:-/tmp}/agentskeptic-integrate-final-XXXXXXXX")"
+trap 'rm -rf "$OUT" "$ADOPT_DB" "$OUT2"' EXIT
+node dist/cli.js bootstrap --input examples/integrate-your-db/bootstrap-input.json --db "$AGENTSKEPTIC_VERIFY_DB" --out "$OUT2"
+node dist/cli.js --workflow-id wf_integrate_spine --events "$OUT2/events.ndjson" --registry "$OUT2/tools.json" --db "$AGENTSKEPTIC_VERIFY_DB"

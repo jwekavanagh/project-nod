@@ -253,27 +253,27 @@ export const integrateActivation = {
   copyActivationBlockLabel: "Copy activation commands",
   runHeading: "Run this",
   runCaption:
-    "Enter your hypothesis, then copy the block below into a terminal. Wait through install, build, the bundled demo, first-run verify, bootstrap, then contract verify using a temp copy of demo.db (PatternComplete per first-run SSOT). A cold clone can take several minutes and may surface typical Node or network friction.",
+    "Enter your hypothesis, then copy the block into a terminal. The script clones this repo, installs, runs the bundled demo and PatternComplete-shaped verify on temp paths, then runs the same bootstrap plus contract verify shape on a SQLite file you supply via AGENTSKEPTIC_VERIFY_DB. Before the final step, apply examples/integrate-your-db/required-sqlite-state.sql to that file (see first-run SSOT). Exit code 0 means IntegrateSpineComplete: the full script finished, including the final verify on your file. A cold clone can take several minutes.",
   successHeading: "What success looks like",
   successIntro:
-    "When it works, you will see proof from both the human report and the machine-readable result.",
+    "Terminal success is only when the entire copied script exits 0, including the final verification on AGENTSKEPTIC_VERIFY_DB.",
   successBullets: [
-    "Stderr includes the human verification report, with wording that the run matched the database.",
-    'Stdout is one JSON object with "status":"complete" and at least one step marked verified. Treat that JSON as authoritative for pass/fail; you may also see a trailing line such as first-run-verify: ok (sqlite), which is a convenience transcript, not a second contract.',
-    "If stderr mentions an experimental SQLite feature in Node, you can ignore that line for pass/fail.",
+    "After the demo segment you will see PatternComplete-style output (human report on stderr, WorkflowResult JSON on stdout for the temp DB path).",
+    "After the final segment, stderr again shows the human report and stdout one WorkflowResult JSON with status complete for wf_integrate_spine when your DB matches examples/integrate-your-db/bootstrap-input.json and required-sqlite-state.sql.",
+    "If the script stops after the demo with a message about AGENTSKEPTIC_VERIFY_DB, set that variable to a readable SQLite file prepared per docs/first-run-integration.md (Integrate spine) and rerun from a fresh directory.",
   ],
-  provedHeading: "What you just proved",
+  provedHeading: "What you proved",
   proved:
-    "PatternComplete: bundled demo (npm start), first-run verify (npm run first-run-verify), then bootstrap plus contract verify against a temp DB file and temp pack paths (checklist IDs AC-TRUST-01 through AC-TRUST-04 and AC-OPS-01 through AC-OPS-03 in first-run SSOT)—read-only SQL, registry-backed expectations, terminal WorkflowResult JSON on stdout, human report on stderr.",
-  nextHeading: "Next: your system",
+    "IntegrateSpineComplete when exit code is 0: you ran the pedagogical demo and PatternComplete mid-script, then the final bootstrap plus contract verify on your AGENTSKEPTIC_VERIFY_DB using the fixed pack under examples/integrate-your-db (L0 shell is scripts/templates/integrate-activation-shell.bash). PatternComplete checklist IDs still describe the middle segment; the final verify on your file may not satisfy AC-OPS-03 temp-path rules by design—see first-run SSOT Integrate spine normative section.",
+  nextHeading: "Authoritative details",
   nextLead:
-    "PatternComplete is CI-provable; ProductionComplete is your Step 4 on your DB and tool_calls (same doc). Cross-surface funnel metrics: https://github.com/jwekavanagh/agentskeptic/blob/main/docs/growth-metrics-ssot.md — activation POST semantics: https://github.com/jwekavanagh/agentskeptic/blob/main/docs/funnel-observability-ssot.md#activation-reachability-operator — trust boundary: https://github.com/jwekavanagh/agentskeptic/blob/main/docs/verification-product-ssot.md",
+    "Command bytes (L0) and the fixed bootstrap plus SQL pair (L0.5) live in the repository; integrator prose is docs/first-run-integration.md. Funnel semantics: docs/funnel-observability-ssot.md — trust boundary: docs/verification-product-ssot.md",
   nextSteps: [
     {
-      title: "Continue: first-run integration (SSOT)",
-      body: "AdoptionComplete_PatternComplete normative section, then Step 4 for ProductionComplete—see the linked doc.",
-      href: "https://github.com/jwekavanagh/agentskeptic/blob/main/docs/first-run-integration.md#adoptioncomplete_patterncomplete-normative",
-      linkLabel: "Open first-run-integration.md (PatternComplete)",
+      title: "First-run integration (SSOT)",
+      body: "Integrate spine (normative), PatternComplete vs ProductionComplete, and how to apply required-sqlite-state.sql.",
+      href: "https://github.com/jwekavanagh/agentskeptic/blob/main/docs/first-run-integration.md#integrate-spine-normative",
+      linkLabel: "Open first-run-integration.md",
     },
   ],
 } as const;

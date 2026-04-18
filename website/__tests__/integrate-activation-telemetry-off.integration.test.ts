@@ -30,6 +30,9 @@ describe.skipIf(!isValidator && !hasBothDbs)("integrate activation telemetry off
     async () => {
     expect(INTEGRATE_ACTIVATION_SHELL_BODY).toContain("bootstrap");
     expect(INTEGRATE_ACTIVATION_SHELL_BODY).toContain("wf_bootstrap_fixture");
+    expect(INTEGRATE_ACTIVATION_SHELL_BODY).toContain("wf_integrate_spine");
+    expect(INTEGRATE_ACTIVATION_SHELL_BODY).toContain("examples/integrate-your-db/bootstrap-input.json");
+    expect(INTEGRATE_ACTIVATION_SHELL_BODY).toContain("INTEGRATE_SPINE_GIT_URL");
     const fetchMock = vi.fn();
     vi.stubGlobal("fetch", fetchMock);
 
