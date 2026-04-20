@@ -24,5 +24,7 @@ export async function maybeEmitOssClaimTicketUrlToStderr(input: {
     return;
   }
   const url = `${resolveOssClaimApiOrigin()}/claim#${claim_secret}`;
-  console.error(`[agentskeptic] Link this verification run to your account (same browser): ${url}`);
+  console.error(
+    `[agentskeptic] Link this verification run to your account: ${url} — open the link, then sign in with email when prompted.`,
+  );
 }

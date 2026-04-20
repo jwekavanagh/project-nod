@@ -4,6 +4,11 @@ import { auth } from "@/auth";
 import { db } from "@/db/client";
 import { ossClaimTickets } from "@/db/schema";
 import { logFunnelEvent } from "@/lib/funnelEvent";
+import {
+  buildClearCookiePendingHeader,
+  OSS_PENDING_CLAIM_COOKIE_NAME,
+  verifyPendingEnvelopeV1,
+} from "@/lib/ossClaimPendingCookie";
 import { hashOssClaimSecret } from "@/lib/ossClaimSecretHash";
 import { ossClaimRedeemRequestSchema } from "@/lib/ossClaimTicketPayload";
 import { reserveClaimRedeemUserSlot, withSerializableRetry } from "@/lib/ossClaimRateLimits";
@@ -31,6 +36,11 @@ function redeemJson(row: {
   };
 }
 
+function withClearPendingCookie(res: NextResponse): NextResponse {
+  res.headers.append("Set-Cookie", buildClearCookiePendingHeader());
+  return res;
+}
+
 export async function POST(req: NextRequest): Promise<NextResponse> {
   const session = await auth();
   if (!session?.user?.id) {
@@ -40,22 +50,36 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
   const rawCt = req.headers.get("content-type");
   const ct = rawCt?.toLowerCase() ?? "";
   if (!ct.startsWith("application/json")) {
-    return NextResponse.json({ code: "claim_failed" }, { status: 400 });
+    return withClearPendingCookie(NextResponse.json({ code: "claim_failed" }, { status: 400 }));
   }
 
   let jsonBody: unknown;
   try {
     jsonBody = await req.json();
   } catch {
-    return NextResponse.json({ code: "claim_failed" }, { status: 400 });
+    return withClearPendingCookie(NextResponse.json({ code: "claim_failed" }, { status: 400 }));
   }
 
   const parsed = ossClaimRedeemRequestSchema.safeParse(jsonBody);
   if (!parsed.success) {
-    return NextResponse.json({ code: "claim_failed" }, { status: 400 });
+    return withClearPendingCookie(NextResponse.json({ code: "claim_failed" }, { status: 400 }));
   }
 
-  const secretHash = hashOssClaimSecret(parsed.data.claim_secret);
+  const rawPending = req.cookies.get(OSS_PENDING_CLAIM_COOKIE_NAME)?.value ?? null;
+  let secretHash: string | null = null;
+  if (rawPending) {
+    const env = verifyPendingEnvelopeV1(rawPending);
+    if (env) {
+      secretHash = env.h;
+    }
+  }
+  if (!secretHash) {
+    if (!parsed.data.claim_secret) {
+      return withClearPendingCookie(NextResponse.json({ code: "claim_failed" }, { status: 400 }));
+    }
+    secretHash = hashOssClaimSecret(parsed.data.claim_secret);
+  }
+
   const userId = session.user.id;
 
   try {
@@ -65,34 +89,36 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
           const rows = await tx
             .select()
             .from(ossClaimTickets)
-            .where(eq(ossClaimTickets.secretHash, secretHash))
+            .where(eq(ossClaimTickets.secretHash, secretHash!))
             .for("update");
 
           if (rows.length === 0) {
-            return NextResponse.json({ code: "claim_failed" }, { status: 400 });
+            return withClearPendingCookie(NextResponse.json({ code: "claim_failed" }, { status: 400 }));
           }
 
           const row = rows[0]!;
           const now = new Date();
           if (row.expiresAt.getTime() < now.getTime()) {
-            return NextResponse.json({ code: "claim_failed" }, { status: 400 });
+            return withClearPendingCookie(NextResponse.json({ code: "claim_failed" }, { status: 400 }));
           }
 
           if (row.userId !== null && row.userId !== userId) {
-            return NextResponse.json({ code: "already_claimed" }, { status: 409 });
+            return withClearPendingCookie(NextResponse.json({ code: "already_claimed" }, { status: 409 }));
           }
 
           if (row.userId === userId && row.claimedAt !== null) {
-            return NextResponse.json(
-              redeemJson({
-                runId: row.runId,
-                terminalStatus: row.terminalStatus,
-                workloadClass: row.workloadClass,
-                subcommand: row.subcommand,
-                buildProfile: row.buildProfile,
-                claimedAt: row.claimedAt,
-              }),
-              { status: 200 },
+            return withClearPendingCookie(
+              NextResponse.json(
+                redeemJson({
+                  runId: row.runId,
+                  terminalStatus: row.terminalStatus,
+                  workloadClass: row.workloadClass,
+                  subcommand: row.subcommand,
+                  buildProfile: row.buildProfile,
+                  claimedAt: row.claimedAt,
+                }),
+                { status: 200 },
+              ),
             );
           }
 
@@ -105,7 +131,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
           await tx
             .update(ossClaimTickets)
             .set({ userId, claimedAt })
-            .where(and(eq(ossClaimTickets.secretHash, secretHash)));
+            .where(and(eq(ossClaimTickets.secretHash, secretHash!)));
 
           await logFunnelEvent(
             {
@@ -116,16 +142,18 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
             tx,
           );
 
-          return NextResponse.json(
-            redeemJson({
-              runId: row.runId,
-              terminalStatus: row.terminalStatus,
-              workloadClass: row.workloadClass,
-              subcommand: row.subcommand,
-              buildProfile: row.buildProfile,
-              claimedAt,
-            }),
-            { status: 200 },
+          return withClearPendingCookie(
+            NextResponse.json(
+              redeemJson({
+                runId: row.runId,
+                terminalStatus: row.terminalStatus,
+                workloadClass: row.workloadClass,
+                subcommand: row.subcommand,
+                buildProfile: row.buildProfile,
+                claimedAt,
+              }),
+              { status: 200 },
+            ),
           );
         },
         { isolationLevel: "serializable" },
@@ -133,12 +161,11 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     );
   } catch (e) {
     if (e instanceof RateLimitedClaimRedeemUser) {
-      return NextResponse.json(
-        { code: "rate_limited", scope: "claim_redeem_user" },
-        { status: 429 },
+      return withClearPendingCookie(
+        NextResponse.json({ code: "rate_limited", scope: "claim_redeem_user" }, { status: 429 }),
       );
     }
     console.error(e);
-    return new NextResponse(null, { status: 503 });
+    return withClearPendingCookie(new NextResponse(null, { status: 503 }));
   }
 }

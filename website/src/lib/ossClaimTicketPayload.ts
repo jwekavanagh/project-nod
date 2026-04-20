@@ -42,8 +42,11 @@ export const ossClaimTicketRequestSchema = z.union([
 
 export type OssClaimTicketRequest = z.infer<typeof ossClaimTicketRequestSchema>;
 
-export const ossClaimRedeemRequestSchema = z.object({
-  claim_secret: ossClaimSecretSchema,
-});
+/** Empty `{}` uses pending cookie on server; optional `claim_secret` for tests / non-browser callers. */
+export const ossClaimRedeemRequestSchema = z
+  .object({
+    claim_secret: ossClaimSecretSchema.optional(),
+  })
+  .strict();
 
 export type OssClaimRedeemRequest = z.infer<typeof ossClaimRedeemRequestSchema>;

@@ -1,3 +1,4 @@
+import { POST as postClaimPending } from "@/app/api/oss/claim-pending/route";
 import { POST as postClaimRedeem } from "@/app/api/oss/claim-redeem/route";
 import { POST as postClaimTicket } from "@/app/api/oss/claim-ticket/route";
 import { db } from "@/db/client";
@@ -7,7 +8,8 @@ import {
   PRODUCT_ACTIVATION_CLI_VERSION_HEADER,
 } from "@/lib/funnelProductActivationConstants";
 import { hashOssClaimSecret } from "@/lib/ossClaimSecretHash";
-import { OSS_CLAIM_REDEEM_USER_CAP } from "@/lib/ossClaimRateLimits";
+import { OSS_PENDING_CLAIM_COOKIE_NAME } from "@/lib/ossClaimPendingCookie";
+import { OSS_CLAIM_PENDING_IP_CAP, OSS_CLAIM_REDEEM_USER_CAP } from "@/lib/ossClaimRateLimits";
 import { OSS_CLAIM_TICKET_TTL_MS } from "@/lib/ossClaimTicketTtl";
 import { eq, sql } from "drizzle-orm";
 import { randomBytes } from "node:crypto";
@@ -44,12 +46,34 @@ function claimTicketReq(body: object, ip = "203.0.113.55"): NextRequest {
   });
 }
 
-function claimRedeemReq(body: object): NextRequest {
+function claimRedeemReq(body: object, cookieHeader?: string): NextRequest {
+  const h = new Headers({ "content-type": "application/json" });
+  if (cookieHeader) {
+    h.set("cookie", cookieHeader);
+  }
   return new NextRequest("http://127.0.0.1:3000/api/oss/claim-redeem", {
     method: "POST",
-    headers: { "content-type": "application/json" },
+    headers: h,
     body: JSON.stringify(body),
   });
+}
+
+function claimPendingReq(claim_secret: string, ip = "203.0.113.55"): NextRequest {
+  return new NextRequest("http://127.0.0.1:3000/api/oss/claim-pending", {
+    method: "POST",
+    headers: { "content-type": "application/json", "x-forwarded-for": ip },
+    body: JSON.stringify({ claim_secret }),
+  });
+}
+
+function pendingCookiePairFromClaimPending(res: Response): string | null {
+  const lines = res.headers.getSetCookie();
+  for (const line of lines) {
+    if (!line.startsWith(`${OSS_PENDING_CLAIM_COOKIE_NAME}=`)) continue;
+    if (/\bMax-Age=0\b/i.test(line)) continue;
+    return line.split(";")[0]?.trim() ?? null;
+  }
+  return null;
 }
 
 function newClaimSecret(): string {
@@ -313,4 +337,64 @@ describe.skipIf(!hasDatabaseUrl)("OSS claim ticket + redeem", () => {
     expect(over.status).toBe(429);
     expect(await over.json()).toEqual({ code: "rate_limited", scope: "claim_redeem_user" });
   });
+
+  it("claim-pending: unknown secrets flatten to 204 noop with clear-style cookie", async () => {
+    const ip = "198.51.100.44";
+    const ra = await postClaimPending(claimPendingReq(newClaimSecret(), ip));
+    const rb = await postClaimPending(claimPendingReq(newClaimSecret(), ip));
+    expect(ra.status).toBe(204);
+    expect(rb.status).toBe(204);
+    expect(await ra.text()).toBe("");
+    expect(await rb.text()).toBe("");
+    const sa = ra.headers.getSetCookie().join("\n");
+    const sb = rb.headers.getSetCookie().join("\n");
+    expect(sa).toMatch(/Max-Age=0/i);
+    expect(sb).toMatch(/Max-Age=0/i);
+  });
+
+  it("claim-pending returns 429 after OSS_CLAIM_PENDING_IP_CAP requests per IP", async () => {
+    const ip = "198.51.100.45";
+    for (let i = 0; i < OSS_CLAIM_PENDING_IP_CAP; i++) {
+      const res = await postClaimPending(claimPendingReq(newClaimSecret(), ip));
+      expect(res.status).toBe(204);
+    }
+    const over = await postClaimPending(claimPendingReq(newClaimSecret(), ip));
+    expect(over.status).toBe(429);
+    expect(await over.json()).toEqual({ code: "rate_limited", scope: "claim_pending_ip" });
+  });
+
+  it("redeem succeeds with pending cookie and empty JSON body", async () => {
+    const secret = newClaimSecret();
+    const body = {
+      claim_secret: secret,
+      run_id: "run-cookie-redeem",
+      issued_at: issuedNow(),
+      terminal_status: "complete" as const,
+      workload_class: "non_bundled" as const,
+      subcommand: "batch_verify" as const,
+      build_profile: "oss" as const,
+    };
+    expect((await postClaimTicket(claimTicketReq(body))).status).toBe(204);
+
+    const ip = "198.51.100.46";
+    const pr = await postClaimPending(claimPendingReq(secret, ip));
+    expect(pr.status).toBe(204);
+    const pair = pendingCookiePairFromClaimPending(pr);
+    expect(pair).toBeTruthy();
+
+    const [u] = await db
+      .insert(users)
+      .values({ email: "cookie-redeem@example.com", emailVerified: new Date() })
+      .returning();
+    authMock.mockResolvedValue({
+      user: { id: u!.id, email: "cookie-redeem@example.com", name: null },
+    });
+
+    const redeem = await postClaimRedeem(claimRedeemReq({}, pair!));
+    expect(redeem.status).toBe(200);
+    const j = (await redeem.json()) as { run_id: string };
+    expect(j.run_id).toBe("run-cookie-redeem");
+    expect(redeem.headers.getSetCookie().join("\n")).toMatch(/Max-Age=0/i);
+  });
+
 });

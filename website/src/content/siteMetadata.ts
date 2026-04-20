@@ -21,7 +21,7 @@ export const siteMetadata = {
   claim: {
     title: "Claim verification run — AgentSkeptic",
     description:
-      "Connect an open-source CLI verification run to your account after signing in with email (same browser session as the link from your terminal).",
+      "Connect an open-source CLI verification run to your account after opening the claim link from your terminal and signing in with email (magic link may open in a new tab on the same browser).",
   },
   openGraph: {
     title: "AgentSkeptic — check database state against what your workflow claimed",

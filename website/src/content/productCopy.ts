@@ -687,12 +687,14 @@ export const productCopy = {
   ossClaimPage: {
     title: "Claim this run",
     introUnauthenticated:
-      "Sign in with your email to connect this verification run to your account when you opened the claim link from the same browser right after running the CLI.",
+      "Sign in with your email to connect this verification run to your account. Open the claim link from your terminal first so the site can register the link; then sign in when prompted (your magic link may open in a new tab).",
     signInCta: "Continue with email",
     redeeming: "Linking this run to your account…",
-    sameBrowserRecovery:
-      "This claim link must be completed in the same browser profile where you opened it after your CLI run (for example, do not open the magic link on another device). Clear the address bar hash, run the CLI again, open the new claim link here, then request the magic link without leaving this browser—or paste the link in the same browser where you will complete sign-in.",
+    pendingHandoffMissing:
+      "We could not complete the account link automatically. Open the original claim link from your terminal again on this device, sign in when prompted, and stay on this site. If it has been more than 15 minutes, run your verification again to get a fresh link.",
     claimFailed: "This claim link could not be completed. Request a new link by running the CLI again.",
+    rateLimitedClaimPending:
+      "Too many claim link opens from this network. Wait up to an hour and try again, or use a different connection.",
     rateLimitedRedeem: "Too many claim attempts for this account. Wait up to an hour and try again.",
     alreadyClaimed: "This run was already linked to a different account.",
     redeemedLead: "This run is linked to your account.",

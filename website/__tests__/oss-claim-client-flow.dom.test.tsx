@@ -1,8 +1,6 @@
 /** @vitest-environment jsdom */
 
 import { OssClaimClient } from "@/components/OssClaimClient";
-import { productCopy } from "@/content/productCopy";
-import { OSS_CLAIM_STORAGE_KEY } from "@/lib/ossClaimSessionStorageKey";
 import { cleanup, render, waitFor } from "@testing-library/react";
 import type { ReactElement } from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
@@ -34,13 +32,12 @@ const secretHex = "ab".repeat(32);
 describe("OssClaimClient flow", () => {
   afterEach(() => {
     cleanup();
-    sessionStorage.clear();
     vi.restoreAllMocks();
     vi.unstubAllGlobals();
     mockUseSession.mockReset();
   });
 
-  it("copies hash secret to sessionStorage, strips hash, POSTs redeem once, clears storage on 200", async () => {
+  it("POSTs claim-pending before claim-redeem, strips hash via replaceState, redeem body is {}", async () => {
     const replaceState = vi.fn();
     vi.stubGlobal("history", { ...window.history, replaceState });
 
@@ -55,20 +52,23 @@ describe("OssClaimClient flow", () => {
       },
     });
 
-    const fetchMock = vi.fn().mockResolvedValue(
-      new Response(
-        JSON.stringify({
-          schema_version: 1,
-          run_id: "run-dom-1",
-          terminal_status: "complete",
-          workload_class: "non_bundled",
-          subcommand: "batch_verify",
-          build_profile: "oss",
-          claimed_at: new Date().toISOString(),
-        }),
-        { status: 200 },
-      ),
-    );
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce(new Response(null, { status: 204 }))
+      .mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({
+            schema_version: 1,
+            run_id: "run-dom-1",
+            terminal_status: "complete",
+            workload_class: "non_bundled",
+            subcommand: "batch_verify",
+            build_profile: "oss",
+            claimed_at: new Date().toISOString(),
+          }),
+          { status: 200 },
+        ),
+      );
     vi.stubGlobal("fetch", fetchMock);
 
     mockUseSession.mockReturnValue({
@@ -80,32 +80,53 @@ describe("OssClaimClient flow", () => {
     render(<OssClaimClient /> as ReactElement);
 
     await waitFor(() => {
-      expect(sessionStorage.getItem(OSS_CLAIM_STORAGE_KEY)).toBe(secretHex);
+      expect(fetchMock).toHaveBeenCalled();
     });
 
     expect(replaceState).toHaveBeenCalled();
 
     await waitFor(() => {
-      expect(fetchMock).toHaveBeenCalledTimes(1);
+      expect(fetchMock).toHaveBeenCalledTimes(2);
     });
 
-    const [url, init] = fetchMock.mock.calls[0] as [string, RequestInit];
-    expect(url).toBe("/api/oss/claim-redeem");
-    expect(JSON.parse(init.body as string)).toEqual({ claim_secret: secretHex });
+    const [url1, init1] = fetchMock.mock.calls[0] as [string, RequestInit];
+    expect(url1).toBe("/api/oss/claim-pending");
+    expect(JSON.parse(init1.body as string)).toEqual({ claim_secret: secretHex });
+    expect(init1.credentials).toBe("include");
+
+    const [url2, init2] = fetchMock.mock.calls[1] as [string, RequestInit];
+    expect(url2).toBe("/api/oss/claim-redeem");
+    expect(JSON.parse(init2.body as string)).toEqual({});
+    expect(init2.credentials).toBe("include");
 
     await waitFor(() => {
-      expect(sessionStorage.getItem(OSS_CLAIM_STORAGE_KEY)).toBeNull();
+      expect(replaceState).toHaveBeenCalledWith(null, "", "/claim");
     });
   });
 
-  it("shows same-browser recovery when authenticated but storage is empty", async () => {
+  it("does not reference sessionStorage for claim handoff", async () => {
+    const getItem = vi.spyOn(Storage.prototype, "getItem");
+    const setItem = vi.spyOn(Storage.prototype, "setItem");
+
     vi.stubGlobal("history", { ...window.history, replaceState: vi.fn() });
     Object.defineProperty(window, "location", {
       configurable: true,
       writable: true,
-      value: { hash: "", pathname: "/claim", search: "", href: "http://localhost/claim" },
+      value: {
+        hash: `#${secretHex}`,
+        pathname: "/claim",
+        search: "",
+        href: `http://localhost/claim#${secretHex}`,
+      },
     });
-    sessionStorage.clear();
+
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce(new Response(null, { status: 204 }))
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ code: "claim_failed" }), { status: 400 }),
+      );
+    vi.stubGlobal("fetch", fetchMock);
 
     mockUseSession.mockReturnValue({
       status: "authenticated",
@@ -113,15 +134,15 @@ describe("OssClaimClient flow", () => {
       update: vi.fn(),
     });
 
-    const fetchMock = vi.fn();
-    vi.stubGlobal("fetch", fetchMock);
-
     render(<OssClaimClient /> as ReactElement);
 
     await waitFor(() => {
-      expect(document.body.textContent).toContain(productCopy.ossClaimPage.sameBrowserRecovery.slice(0, 40));
+      expect(fetchMock).toHaveBeenCalledTimes(2);
     });
 
-    expect(fetchMock).not.toHaveBeenCalled();
+    expect(getItem).not.toHaveBeenCalled();
+    expect(setItem).not.toHaveBeenCalled();
+    getItem.mockRestore();
+    setItem.mockRestore();
   });
 });
