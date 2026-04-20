@@ -1,8 +1,14 @@
+import { randomBytes } from "node:crypto";
 import { eq } from "drizzle-orm";
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/db/client";
 import { ossClaimTickets } from "@/db/schema";
 import { extractClientIpKey } from "@/lib/magicLinkSendGate";
+import {
+  buildOssClaimHandoffUrlCanonical,
+  OSS_CLAIM_HANDOFF_RESPONSE_SCHEMA_VERSION,
+  type OssClaimTicketHandoffResponseBody,
+} from "@/lib/ossClaimHandoffUrl";
 import {
   PRODUCT_ACTIVATION_CLI_PRODUCT_HEADER,
   PRODUCT_ACTIVATION_CLI_PRODUCT_VALUE,
@@ -19,6 +25,18 @@ import { reserveClaimTicketIpSlot, withSerializableRetry } from "@/lib/ossClaimR
 export const runtime = "nodejs";
 
 class RateLimitedClaimTicketIp extends Error {}
+
+function newHandoffToken(): string {
+  return randomBytes(32).toString("base64url");
+}
+
+function jsonHandoff(handoffToken: string): NextResponse {
+  const body: OssClaimTicketHandoffResponseBody = {
+    schema_version: OSS_CLAIM_HANDOFF_RESPONSE_SCHEMA_VERSION,
+    handoff_url: buildOssClaimHandoffUrlCanonical(handoffToken),
+  };
+  return NextResponse.json(body, { status: 200 });
+}
 
 function assertProductActivationBodySize(rawUtf8: string): void {
   const bytes = Buffer.byteLength(rawUtf8, "utf8");
@@ -120,7 +138,32 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
             .for("update");
 
           if (existing.length > 0) {
-            return new NextResponse(null, { status: 204 });
+            const row = existing[0]!;
+            if (row.claimedAt !== null) {
+              return new NextResponse(null, { status: 204 });
+            }
+
+            if (row.handoffConsumedAt === null) {
+              let tok = row.handoffToken;
+              if (!tok) {
+                tok = newHandoffToken();
+                await tx
+                  .update(ossClaimTickets)
+                  .set({ handoffToken: tok, handoffConsumedAt: null })
+                  .where(eq(ossClaimTickets.secretHash, secretHash));
+              }
+              return jsonHandoff(tok);
+            }
+
+            const rotated = newHandoffToken();
+            await tx
+              .update(ossClaimTickets)
+              .set({
+                handoffToken: rotated,
+                handoffConsumedAt: null,
+              })
+              .where(eq(ossClaimTickets.secretHash, secretHash));
+            return jsonHandoff(rotated);
           }
 
           const ipKey = extractClientIpKey(req);
@@ -135,20 +178,34 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
               ? body.telemetry_source
               : "legacy_unattributed";
 
-          await tx.insert(ossClaimTickets).values({
-            secretHash,
-            runId: body.run_id,
-            terminalStatus: body.terminal_status,
-            workloadClass: body.workload_class,
-            subcommand: body.subcommand,
-            buildProfile: body.build_profile,
-            issuedAt: body.issued_at,
-            telemetrySource,
-            createdAt,
-            expiresAt: expiresAtFromCreated(createdAt),
-          });
-
-          return new NextResponse(null, { status: 204 });
+          let handoffToken = newHandoffToken();
+          for (let attempt = 0; attempt < 8; attempt++) {
+            try {
+              await tx.insert(ossClaimTickets).values({
+                secretHash,
+                runId: body.run_id,
+                terminalStatus: body.terminal_status,
+                workloadClass: body.workload_class,
+                subcommand: body.subcommand,
+                buildProfile: body.build_profile,
+                issuedAt: body.issued_at,
+                telemetrySource,
+                createdAt,
+                expiresAt: expiresAtFromCreated(createdAt),
+                handoffToken,
+                handoffConsumedAt: null,
+              });
+              return jsonHandoff(handoffToken);
+            } catch (e) {
+              const code = (e as { code?: string }).code;
+              if (code === "23505") {
+                handoffToken = newHandoffToken();
+                continue;
+              }
+              throw e;
+            }
+          }
+          throw new Error("oss_claim_ticket: exhausted handoff_token uniqueness retries");
         },
         { isolationLevel: "serializable" },
       ),

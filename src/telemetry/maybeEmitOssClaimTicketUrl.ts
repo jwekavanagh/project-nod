@@ -1,6 +1,5 @@
 import { randomBytes } from "node:crypto";
 import { LICENSE_PREFLIGHT_ENABLED } from "../generated/commercialBuildFlags.js";
-import { resolveOssClaimApiOrigin } from "./ossClaimOrigin.js";
 import { postOssClaimTicket } from "./postOssClaimTicket.js";
 
 export async function maybeEmitOssClaimTicketUrlToStderr(input: {
@@ -16,15 +15,20 @@ export async function maybeEmitOssClaimTicketUrlToStderr(input: {
 
   const claim_secret = randomBytes(32).toString("hex");
   const issued_at = new Date().toISOString();
-  const ok = await postOssClaimTicket({ claim_secret, issued_at, ...input });
-  if (!ok) {
+  const r = await postOssClaimTicket({ claim_secret, issued_at, ...input });
+  if (r.outcome === "ok") {
     console.error(
-      "[agentskeptic] Could not register a claim link (network). When you are online, run verify again to get a new link, or sign in at the product site without this shortcut.",
+      `[agentskeptic] Link this verification run to your account: ${r.handoff_url} — open the link, then sign in with email when prompted.`,
     );
     return;
   }
-  const url = `${resolveOssClaimApiOrigin()}/claim#${claim_secret}`;
+  if (r.outcome === "already_claimed") {
+    console.error(
+      "[agentskeptic] This verification run was already linked to an account. Open the product site and sign in to manage your account, or run verify again for a new run.",
+    );
+    return;
+  }
   console.error(
-    `[agentskeptic] Link this verification run to your account: ${url} — open the link, then sign in with email when prompted.`,
+    "[agentskeptic] Could not register a claim link (network). When you are online, run verify again to get a new link, or sign in at the product site without this shortcut.",
   );
 }

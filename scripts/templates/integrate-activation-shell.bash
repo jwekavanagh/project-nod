@@ -1,4 +1,4 @@
-# After copying from https://agentskeptic.com/integrate: run `agentskeptic funnel-anon set <uuid>` once for attributed telemetry (see docs/funnel-observability-ssot.md). Optional: export AGENTSKEPTIC_VERIFICATION_HYPOTHESIS for hypothesis tagging.
+# After copying from https://agentskeptic.com/integrate: for headless/CI machines run `agentskeptic funnel-anon pull` once (server-minted id; requires AGENTSKEPTIC_FUNNEL_ANON_ID unset). With a browser-issued uuid from /integrate or surface-impression, use `agentskeptic funnel-anon set <uuid>` instead (see docs/funnel-observability-ssot.md). Optional: export AGENTSKEPTIC_VERIFICATION_HYPOTHESIS for hypothesis tagging.
 # PatternComplete: final verify uses temp DB path ($ADOPT_DB); see docs/first-run-integration.md §AdoptionComplete_PatternComplete.
 # IntegrateSpineComplete: final bootstrap+crossing (pack-led) on integrator SQLite after the guard; see docs/first-run-integration.md (Integrate spine normative).
 set -euo pipefail

@@ -3,6 +3,7 @@
 import { productCopy } from "@/content/productCopy";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
+import { useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
 type RedeemOk = {
@@ -15,66 +16,35 @@ type RedeemOk = {
   claimed_at: string;
 };
 
-type Phase =
-  | "init"
-  | "stash_error"
-  | "ready"
-  | "redeeming"
-  | "redeemed"
-  | "error"
-  | "handoff_failed";
+type Phase = "ready" | "redeeming" | "redeemed" | "error" | "handoff_failed";
 
 export function OssClaimClient() {
   const { status } = useSession();
-  const [phase, setPhase] = useState<Phase>("init");
+  const searchParams = useSearchParams();
+  const [phase, setPhase] = useState<Phase>("ready");
   const [summary, setSummary] = useState<RedeemOk | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const stashStarted = useRef(false);
   const redeemStarted = useRef(false);
+  const urlErrorRead = useRef(false);
 
   useEffect(() => {
-    if (typeof window === "undefined" || stashStarted.current) return;
-    const hash = window.location.hash;
-    if (hash.length <= 1) {
-      setPhase("ready");
-      return;
+    if (urlErrorRead.current) return;
+    const err = searchParams.get("error");
+    if (err === "handoff_invalid") {
+      urlErrorRead.current = true;
+      setErrorMessage(productCopy.ossClaimPage.handoffInvalid);
+      setPhase("error");
+    } else if (err === "handoff_used") {
+      urlErrorRead.current = true;
+      setErrorMessage(productCopy.ossClaimPage.handoffUsed);
+      setPhase("error");
     }
-    const raw = hash.slice(1);
-    let secret: string;
-    try {
-      secret = decodeURIComponent(raw);
-    } catch {
-      secret = raw;
-    }
-    if (!/^[0-9a-f]{64}$/i.test(secret)) {
-      setPhase("ready");
-      return;
-    }
-    stashStarted.current = true;
-    void (async () => {
-      try {
-        const res = await fetch("/api/oss/claim-pending", {
-          method: "POST",
-          headers: { "content-type": "application/json" },
-          body: JSON.stringify({ claim_secret: secret.toLowerCase() }),
-          credentials: "include",
-        });
-        if (res.status === 429) {
-          setErrorMessage(productCopy.ossClaimPage.rateLimitedClaimPending);
-          setPhase("stash_error");
-          return;
-        }
-        window.history.replaceState(null, "", window.location.pathname + window.location.search);
-        setPhase("ready");
-      } catch {
-        setErrorMessage(productCopy.ossClaimPage.claimFailed);
-        setPhase("stash_error");
-      }
-    })();
-  }, []);
+  }, [searchParams]);
 
   useEffect(() => {
     if (phase !== "ready" || status !== "authenticated" || redeemStarted.current) return;
+    if (searchParams.get("error")) return;
+
     redeemStarted.current = true;
     setPhase("redeeming");
 
@@ -113,13 +83,9 @@ export function OssClaimClient() {
         setPhase("error");
       }
     })();
-  }, [phase, status]);
+  }, [phase, status, searchParams]);
 
-  if (phase === "init") {
-    return <p className="muted">{productCopy.ossClaimPage.redeeming}</p>;
-  }
-
-  if (phase === "stash_error" && errorMessage) {
+  if (phase === "error" && errorMessage) {
     return (
       <div className="card card-narrow-32">
         <h1>{productCopy.ossClaimPage.title}</h1>
@@ -169,18 +135,6 @@ export function OssClaimClient() {
         <h1>{productCopy.ossClaimPage.title}</h1>
         <p>{productCopy.ossClaimPage.redeemedLead}</p>
         <p className="muted">{productCopy.ossClaimPage.runSummary(summary)}</p>
-        <Link className="button-link" href="/account">
-          {productCopy.ossClaimPage.accountCta}
-        </Link>
-      </div>
-    );
-  }
-
-  if (phase === "error" && errorMessage) {
-    return (
-      <div className="card card-narrow-32">
-        <h1>{productCopy.ossClaimPage.title}</h1>
-        <p>{errorMessage}</p>
         <Link className="button-link" href="/account">
           {productCopy.ossClaimPage.accountCta}
         </Link>

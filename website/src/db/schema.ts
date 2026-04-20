@@ -176,6 +176,10 @@ export const ossClaimTickets = pgTable("oss_claim_ticket", {
   expiresAt: timestamp("expires_at", { withTimezone: true, mode: "date" }).notNull(),
   claimedAt: timestamp("claimed_at", { withTimezone: true, mode: "date" }),
   userId: text("user_id").references(() => users.id, { onDelete: "set null" }),
+  /** Opaque token for `GET /api/oss/claim-handoff?h=…`; unique when set (partial unique index in migration). */
+  handoffToken: text("handoff_token"),
+  /** First successful GET handoff mint time for the **current** `handoff_token`; null after rotation. */
+  handoffConsumedAt: timestamp("handoff_consumed_at", { withTimezone: true, mode: "date" }),
 }, (t) => ({
   pk: primaryKey({ columns: [t.secretHash] }),
 }));

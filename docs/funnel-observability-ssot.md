@@ -20,20 +20,29 @@ This document is the **SSOT** for **North Star funnel metrics**: measurable prog
 
 **Browser → localStorage:** Canonical site pages that are on the **audited acquisition allowlist** (or `/integrate` for integrate) run a layout-owned beacon ([`website/src/components/SiteFunnelAttribution.tsx`](../website/src/components/SiteFunnelAttribution.tsx)) that POSTs **`/api/funnel/surface-impression`** and persists **`agentskeptic_funnel_anon_id`** in `localStorage` (same wire as [`website/src/components/FunnelSurfaceBeacon.tsx`](../website/src/components/FunnelSurfaceBeacon.tsx)). Allowed pathnames are **explicitly listed** in [`website/src/lib/attributionRoutePolicy.ts`](../website/src/lib/attributionRoutePolicy.ts); routes not on the allowlist **do not** emit acquisition beacons (fail closed).
 
-**CLI default (disk):** Run **`agentskeptic funnel-anon set <uuid>`** once per machine, where **`<uuid>`** is the value from **`/integrate`** (read from `localStorage` into the copy block) or the JSON returned by the surface-impression handler. This merges **`funnel_anon_id`** into **`~/.agentskeptic/config.json`** next to **`install_id`** without clobbering the other field.
+**CLI default (disk, headless):** Run **`agentskeptic funnel-anon pull`** once per machine (with **`AGENTSKEPTIC_FUNNEL_ANON_ID` unset**). The CLI **`GET`s** **`/api/public/funnel-anon`** on the canonical origin with standard CLI product headers and persists the returned UUID into **`~/.agentskeptic/config.json`** next to **`install_id`**. This is the default path for CI and servers without a browser.
+
+**CLI default (browser-issued uuid):** When an operator already has a uuid from **`/integrate`** (copy block from `localStorage`) or from **`POST /api/funnel/surface-impression`**, run **`agentskeptic funnel-anon set <uuid>`** once. This merges **`funnel_anon_id`** into **`~/.agentskeptic/config.json`** without clobbering **`install_id`**.
 
 **Wire precedence (`postProductActivationEvent`):** When building the activation JSON body, the CLI sets **`funnel_anon_id`** from the first matching row below:
 
 | Order | Source | When used |
 |------:|--------|-------------|
-| 1 | Env **`AGENTSKEPTIC_FUNNEL_ANON_ID`** (trimmed, non-empty) | Override / debug / CI only |
-| 2 | Disk **`funnel_anon_id`** in **`~/.agentskeptic/config.json`** | Normal integrator path after `funnel-anon set` |
+| 1 | Env **`AGENTSKEPTIC_FUNNEL_ANON_ID`** (trimmed, non-empty) | Override / debug only — **incompatible** with proving the **`funnel-anon pull`** path (see below) |
+| 2 | Disk **`funnel_anon_id`** in **`~/.agentskeptic/config.json`** | Normal path after **`funnel-anon pull`** or **`funnel-anon set`** |
 
 If neither applies, the body **omits** `funnel_anon_id` (same as today).
 
 ### Override and debug (`AGENTSKEPTIC_FUNNEL_ANON_ID`)
 
-Operators may set a non-empty **`AGENTSKEPTIC_FUNNEL_ANON_ID`** to force the join key for a process **without** writing `config.json` (ephemeral runners, split permissions). This is **not** taught on **`/integrate`** as a co-primary path; normative integrator instructions use **`funnel-anon set`** only.
+Operators may set a non-empty **`AGENTSKEPTIC_FUNNEL_ANON_ID`** to force the join key for a process **without** writing `config.json` (ephemeral runners, split permissions). This is **not** taught on **`/integrate`** as a co-primary path.
+
+**`funnel-anon pull` vs env:** **`agentskeptic funnel-anon pull`** exits **non-zero** when **`AGENTSKEPTIC_FUNNEL_ANON_ID`** is set, so CI and proof runs must unset the variable to exercise the server-minted path. Production join-health SQL cannot distinguish rows that used the env override from rows that used disk; process proof is CI plus integrator docs stating production jobs that measure join rate should not set the override.
+
+### `GET /api/public/funnel-anon` (server mint)
+
+- **`200`** JSON **`{ "schema_version": 1, "funnel_anon_id": "<uuid>" }`** for allowed callers (origin guard aligned with surface impression spirit; see [`website/src/lib/publicFunnelAnonRequestAllowed.ts`](../website/src/lib/publicFunnelAnonRequestAllowed.ts)).
+- **Rate limit:** hourly IP cap per [`website/src/lib/publicFunnelAnonRateLimits.ts`](../website/src/lib/publicFunnelAnonRateLimits.ts).
 
 ## Integrate spine (operator)
 

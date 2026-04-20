@@ -5,14 +5,18 @@ import { utcHourStart } from "@/lib/magicLinkSendGate";
 
 export const OSS_CLAIM_TICKET_IP_CAP = 60;
 export const OSS_CLAIM_REDEEM_USER_CAP = 30;
-/** Hourly cap per IP for `POST /api/oss/claim-pending` (browser stash). */
+/** Legacy hourly cap name kept for stable counter rows; same numeric value as handoff GET cap. */
 export const OSS_CLAIM_PENDING_IP_CAP = 30;
+/** Hourly cap per IP for `GET /api/oss/claim-handoff` (matches legacy pending stash cap). */
+export const OSS_CLAIM_HANDOFF_IP_CAP = OSS_CLAIM_PENDING_IP_CAP;
 /** Hourly cap per IP for `POST /api/integrator/registry-draft` (each successful reservation may trigger OpenAI). */
 export const REGISTRY_DRAFT_IP_CAP = 5;
 
 export type OssClaimRateScope =
   | "claim_ticket_ip"
   | "claim_pending_ip"
+  | "claim_handoff_ip"
+  | "public_funnel_anon_ip"
   | "claim_redeem_user"
   | "registry_draft_ip";
 
@@ -112,6 +116,54 @@ export async function reserveClaimPendingIpSlot(
 
   const c = locked[0]!.count;
   if (c >= OSS_CLAIM_PENDING_IP_CAP) {
+    return { ok: false };
+  }
+
+  await tx
+    .update(ossClaimRateLimitCounters)
+    .set({ count: sql`${ossClaimRateLimitCounters.count} + 1` })
+    .where(
+      and(
+        eq(ossClaimRateLimitCounters.scope, scope),
+        eq(ossClaimRateLimitCounters.windowStart, H),
+        eq(ossClaimRateLimitCounters.scopeKey, ipKey),
+      ),
+    );
+
+  return { ok: true };
+}
+
+export async function reserveClaimHandoffIpSlot(
+  tx: WebsiteDbTransaction,
+  ipKey: string,
+): Promise<{ ok: true } | { ok: false }> {
+  const H = utcHourStart();
+  const scope: OssClaimRateScope = "claim_handoff_ip";
+
+  const locked = await tx
+    .select()
+    .from(ossClaimRateLimitCounters)
+    .where(
+      and(
+        eq(ossClaimRateLimitCounters.scope, scope),
+        eq(ossClaimRateLimitCounters.windowStart, H),
+        eq(ossClaimRateLimitCounters.scopeKey, ipKey),
+      ),
+    )
+    .for("update");
+
+  if (locked.length === 0) {
+    await tx.insert(ossClaimRateLimitCounters).values({
+      scope,
+      windowStart: H,
+      scopeKey: ipKey,
+      count: 1,
+    });
+    return { ok: true };
+  }
+
+  const c = locked[0]!.count;
+  if (c >= OSS_CLAIM_HANDOFF_IP_CAP) {
     return { ok: false };
   }
 

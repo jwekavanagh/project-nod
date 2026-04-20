@@ -6,7 +6,7 @@
 
 This document is the **normative semantics SSOT** for **operator growth metrics**: cross-surface correlation, conversion, retention, and related KPIs backed by `funnel_event` and `usage_counter` data.
 
-**Join completeness:** Cross-surface numerators that correlate on **`funnel_anon_id`** assume the integrator followed [Funnel attribution (normative)](funnel-observability-ssot.md#funnel-attribution-normative) (`agentskeptic funnel-anon set` or the documented env override).
+**Join completeness:** Cross-surface numerators that correlate on **`funnel_anon_id`** assume the integrator followed [Funnel attribution (normative)](funnel-observability-ssot.md#funnel-attribution-normative) (`agentskeptic funnel-anon pull`, **`funnel-anon set`**, or the documented env override).
 
 **Two databases:** KPIs that reference **telemetry-tier** funnel events (`acquisition_landed`, `integrate_landed`, `verify_started`, `verify_outcome`) execute against **`TELEMETRY_DATABASE_URL`** (same `funnel_event` table name on that server). Metrics that reference **core-tier** events (for example `reserve_allowed`) execute against **`DATABASE_URL`**. See [`docs/telemetry-storage-ssot.md`](telemetry-storage-ssot.md).
 

@@ -1,7 +1,8 @@
 import { POST as postSurface } from "@/app/api/funnel/surface-impression/route";
 import { truncateCommercialFixtureDbs } from "./helpers/truncateCommercialFixture";
 import { getCanonicalSiteOrigin } from "@/lib/canonicalSiteOrigin";
-import { mkdtempSync, rmSync } from "node:fs";
+import { randomUUID } from "node:crypto";
+import { mkdtempSync, readFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -134,6 +135,73 @@ describe.skipIf(!hasDatabaseUrl || !hasTelemetryDb)("funnel attribution join —
 
       expect(fetchBodies.length).toBe(1);
       expect((fetchBodies[0] as { funnel_anon_id?: string }).funnel_anon_id).toBeUndefined();
+    } finally {
+      rmSync(home, { recursive: true, force: true });
+    }
+  });
+
+  it("funnel-anon pull persists minted id then activation includes funnel_anon_id (mocked GET mint)", async () => {
+    const minted = randomUUID();
+    const home = mkdtempSync(join(tmpdir(), "as-funnel-pull-act-"));
+    try {
+      setSandboxHome(home);
+      const { resetCliInstallIdModuleStateForTests } = await import(distResetInstall);
+      resetCliInstallIdModuleStateForTests();
+      delete process.env.AGENTSKEPTIC_FUNNEL_ANON_ID;
+
+      const fetchBodies: unknown[] = [];
+      vi.stubGlobal(
+        "fetch",
+        vi.fn(async (url: unknown, init?: { body?: string }) => {
+          const s =
+            typeof url === "string" ? url : url instanceof URL ? url.href : (url as Request).url;
+          if (s.includes("/api/public/funnel-anon")) {
+            return new Response(JSON.stringify({ schema_version: 1, funnel_anon_id: minted }), {
+              status: 200,
+              headers: { "content-type": "application/json" },
+            });
+          }
+          if (init?.body) fetchBodies.push(JSON.parse(init.body));
+          return { ok: true, status: 204 };
+        }),
+      );
+
+      const { runFunnelAnonPullFromArgvForTests } = await import(distRunFunnelAnon);
+      expect((await runFunnelAnonPullFromArgvForTests(["pull"])).status).toBe("ok");
+
+      const cfg = JSON.parse(readFileSync(join(home, ".agentskeptic", "config.json"), "utf8")) as {
+        funnel_anon_id?: string;
+      };
+      expect(cfg.funnel_anon_id).toBe(minted);
+
+      const { postProductActivationEvent } = await import(distPostProductActivation);
+      const issued = new Date().toISOString();
+      await postProductActivationEvent({
+        phase: "verify_started",
+        run_id: "run-pull-then-act",
+        issued_at: issued,
+        workload_class: "non_bundled",
+        workflow_lineage: "integrator_scoped",
+        subcommand: "batch_verify",
+        build_profile: "oss",
+      });
+
+      expect(fetchBodies.length).toBe(1);
+      expect((fetchBodies[0] as { funnel_anon_id?: string }).funnel_anon_id).toBe(minted);
+    } finally {
+      rmSync(home, { recursive: true, force: true });
+    }
+  });
+
+  it("funnel-anon pull returns env_conflict when AGENTSKEPTIC_FUNNEL_ANON_ID is set", async () => {
+    const home = mkdtempSync(join(tmpdir(), "as-funnel-pull-env-"));
+    try {
+      setSandboxHome(home);
+      const { resetCliInstallIdModuleStateForTests } = await import(distResetInstall);
+      resetCliInstallIdModuleStateForTests();
+      vi.stubEnv("AGENTSKEPTIC_FUNNEL_ANON_ID", "f47ac10b-58cc-4372-a567-0e02b2c3d479");
+      const { runFunnelAnonPullFromArgvForTests } = await import(distRunFunnelAnon);
+      expect((await runFunnelAnonPullFromArgvForTests(["pull"])).status).toBe("env_conflict");
     } finally {
       rmSync(home, { recursive: true, force: true });
     }

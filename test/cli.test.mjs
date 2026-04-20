@@ -186,6 +186,7 @@ describe("CLI agentskeptic", () => {
     });
     assert.equal(r.status, 0);
     assert.ok(r.stdout.includes("funnel-anon set"));
+    assert.ok(r.stdout.includes("funnel-anon pull"));
     assert.equal(r.stderr.trim(), "");
   });
 
@@ -213,6 +214,35 @@ describe("CLI agentskeptic", () => {
         if (prevUserProfile === undefined) delete process.env.USERPROFILE;
         else process.env.USERPROFILE = prevUserProfile;
       }
+    }
+  });
+
+  it("funnel-anon pull with AGENTSKEPTIC_FUNNEL_ANON_ID set exits 2", () => {
+    const prevHome = process.env.HOME;
+    const prevUserProfile = process.env.USERPROFILE;
+    const prevFunnel = process.env.AGENTSKEPTIC_FUNNEL_ANON_ID;
+    const home = mkdtempSync(join(tmpdir(), "cli-fa-pull-env-"));
+    try {
+      process.env.HOME = home;
+      if (process.platform === "win32") process.env.USERPROFILE = home;
+      process.env.AGENTSKEPTIC_FUNNEL_ANON_ID = "f47ac10b-58cc-4372-a567-0e02b2c3d479";
+      const r = spawnSync(process.execPath, ["--no-warnings", cliJs, "funnel-anon", "pull"], {
+        encoding: "utf8",
+        cwd: root,
+      });
+      assert.equal(r.status, 2, r.stderr);
+      const err = JSON.parse(r.stderr.trim());
+      assert.equal(err.code, CLI_OPERATIONAL_CODES.CLI_USAGE);
+    } finally {
+      rmSync(home, { recursive: true, force: true });
+      if (prevHome === undefined) delete process.env.HOME;
+      else process.env.HOME = prevHome;
+      if (process.platform === "win32") {
+        if (prevUserProfile === undefined) delete process.env.USERPROFILE;
+        else process.env.USERPROFILE = prevUserProfile;
+      }
+      if (prevFunnel === undefined) delete process.env.AGENTSKEPTIC_FUNNEL_ANON_ID;
+      else process.env.AGENTSKEPTIC_FUNNEL_ANON_ID = prevFunnel;
     }
   });
 

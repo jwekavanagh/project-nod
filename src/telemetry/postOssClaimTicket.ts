@@ -10,6 +10,12 @@ import { resolveTelemetrySource } from "./resolveTelemetrySource.js";
 
 const OSS_CLAIM_TICKET_FETCH_TIMEOUT_MS = 400;
 
+const RETRY_MS = [250, 750, 2250] as const;
+
+function sleep(ms: number): Promise<void> {
+  return new Promise((r) => setTimeout(r, ms));
+}
+
 export type PostOssClaimTicketInput = {
   claim_secret: string;
   run_id: string;
@@ -20,11 +26,13 @@ export type PostOssClaimTicketInput = {
   build_profile: "oss" | "commercial";
 };
 
-/**
- * Best-effort POST /api/oss/claim-ticket to canonical origin. Returns whether server accepted (204).
- */
-export async function postOssClaimTicket(input: PostOssClaimTicketInput): Promise<boolean> {
-  if (process.env.AGENTSKEPTIC_TELEMETRY?.trim() === "0") return false;
+export type PostOssClaimTicketResult =
+  | { outcome: "ok"; handoff_url: string }
+  | { outcome: "already_claimed" }
+  | { outcome: "failed" };
+
+async function postOssClaimTicketOnce(input: PostOssClaimTicketInput): Promise<PostOssClaimTicketResult> {
+  if (process.env.AGENTSKEPTIC_TELEMETRY?.trim() === "0") return { outcome: "failed" };
 
   const base = resolveOssClaimApiOrigin();
   const url = `${base}/api/oss/claim-ticket`;
@@ -53,8 +61,38 @@ export async function postOssClaimTicket(input: PostOssClaimTicketInput): Promis
       },
       OSS_CLAIM_TICKET_FETCH_TIMEOUT_MS,
     );
-    return res.ok && res.status === 204;
+
+    if (res.status === 200) {
+      const j = (await res.json().catch(() => null)) as Record<string, unknown> | null;
+      if (
+        j &&
+        j.schema_version === 2 &&
+        typeof j.handoff_url === "string" &&
+        j.handoff_url.length > 0
+      ) {
+        return { outcome: "ok", handoff_url: j.handoff_url };
+      }
+      return { outcome: "failed" };
+    }
+    if (res.status === 204) {
+      return { outcome: "already_claimed" };
+    }
+    return { outcome: "failed" };
   } catch {
-    return false;
+    return { outcome: "failed" };
   }
+}
+
+/**
+ * POST /api/oss/claim-ticket to canonical origin with bounded retries (same `claim_secret` each attempt).
+ */
+export async function postOssClaimTicket(input: PostOssClaimTicketInput): Promise<PostOssClaimTicketResult> {
+  for (let attempt = 0; attempt <= RETRY_MS.length; attempt++) {
+    const r = await postOssClaimTicketOnce(input);
+    if (r.outcome === "ok" || r.outcome === "already_claimed") return r;
+    if (attempt < RETRY_MS.length) {
+      await sleep(RETRY_MS[attempt]!);
+    }
+  }
+  return { outcome: "failed" };
 }

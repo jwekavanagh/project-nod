@@ -1,4 +1,4 @@
-import { POST as postClaimPending } from "@/app/api/oss/claim-pending/route";
+import { GET as getClaimHandoff } from "@/app/api/oss/claim-handoff/route";
 import { POST as postClaimRedeem } from "@/app/api/oss/claim-redeem/route";
 import { POST as postClaimTicket } from "@/app/api/oss/claim-ticket/route";
 import { db } from "@/db/client";
@@ -7,9 +7,14 @@ import {
   PRODUCT_ACTIVATION_CLI_PRODUCT_HEADER,
   PRODUCT_ACTIVATION_CLI_VERSION_HEADER,
 } from "@/lib/funnelProductActivationConstants";
+import { claimHandoffErrorRedirect, claimHandoffSigninRedirect } from "@/lib/ossClaimHandoffUrl";
 import { hashOssClaimSecret } from "@/lib/ossClaimSecretHash";
 import { OSS_PENDING_CLAIM_COOKIE_NAME } from "@/lib/ossClaimPendingCookie";
-import { OSS_CLAIM_PENDING_IP_CAP, OSS_CLAIM_REDEEM_USER_CAP } from "@/lib/ossClaimRateLimits";
+import {
+  OSS_CLAIM_HANDOFF_IP_CAP,
+  OSS_CLAIM_REDEEM_USER_CAP,
+  OSS_CLAIM_TICKET_IP_CAP,
+} from "@/lib/ossClaimRateLimits";
 import { OSS_CLAIM_TICKET_TTL_MS } from "@/lib/ossClaimTicketTtl";
 import { eq, sql } from "drizzle-orm";
 import { randomBytes } from "node:crypto";
@@ -58,15 +63,20 @@ function claimRedeemReq(body: object, cookieHeader?: string): NextRequest {
   });
 }
 
-function claimPendingReq(claim_secret: string, ip = "203.0.113.55"): NextRequest {
-  return new NextRequest("http://127.0.0.1:3000/api/oss/claim-pending", {
-    method: "POST",
-    headers: { "content-type": "application/json", "x-forwarded-for": ip },
-    body: JSON.stringify({ claim_secret }),
+function claimHandoffReq(h: string, ip = "203.0.113.56"): NextRequest {
+  return new NextRequest(`http://127.0.0.1:3000/api/oss/claim-handoff?h=${encodeURIComponent(h)}`, {
+    method: "GET",
+    headers: { "x-forwarded-for": ip },
   });
 }
 
-function pendingCookiePairFromClaimPending(res: Response): string | null {
+function hFromHandoffUrl(handoffUrl: string): string {
+  const v = new URL(handoffUrl).searchParams.get("h");
+  if (!v) throw new Error("missing h");
+  return v;
+}
+
+function pendingCookiePairFromResponse(res: Response): string | null {
   const lines = res.headers.getSetCookie();
   for (const line of lines) {
     if (!line.startsWith(`${OSS_PENDING_CLAIM_COOKIE_NAME}=`)) continue;
@@ -76,12 +86,22 @@ function pendingCookiePairFromClaimPending(res: Response): string | null {
   return null;
 }
 
+async function expectTicket200(body: object): Promise<{ handoff_url: string }> {
+  const res = await postClaimTicket(claimTicketReq(body));
+  expect(res.status).toBe(200);
+  const j = (await res.json()) as { schema_version?: number; handoff_url?: string };
+  expect(j.schema_version).toBe(2);
+  expect(typeof j.handoff_url).toBe("string");
+  return { handoff_url: j.handoff_url! };
+}
+
 function newClaimSecret(): string {
   return randomBytes(32).toString("hex");
 }
 
-describe.skipIf(!hasDatabaseUrl)("OSS claim ticket + redeem", () => {
+describe.skipIf(!hasDatabaseUrl)("OSS claim ticket + handoff + redeem", () => {
   beforeEach(async () => {
+    vi.stubEnv("NEXT_PUBLIC_APP_URL", "http://127.0.0.1:3000");
     assertPostgresUrlsSafeForTruncate("oss-claim.integration");
     await db.execute(sql`
       TRUNCATE oss_claim_ticket, oss_claim_rate_limit_counter, verify_outcome_beacon, funnel_event, stripe_event, usage_reservation, usage_counter, api_key, session, account, "verificationToken", "user" RESTART IDENTITY CASCADE
@@ -95,7 +115,7 @@ describe.skipIf(!hasDatabaseUrl)("OSS claim ticket + redeem", () => {
 
   const issuedNow = () => new Date().toISOString();
 
-  it("returns 204 and inserts ticket; duplicate secret returns 204 without extra row", async () => {
+  it("returns 200 JSON on insert; duplicate same body returns same handoff_url while handoff not consumed", async () => {
     const secret = newClaimSecret();
     const body = {
       claim_secret: secret,
@@ -106,16 +126,20 @@ describe.skipIf(!hasDatabaseUrl)("OSS claim ticket + redeem", () => {
       subcommand: "batch_verify" as const,
       build_profile: "oss" as const,
     };
-    expect((await postClaimTicket(claimTicketReq(body))).status).toBe(204);
+    const u1 = await expectTicket200(body);
     const rows = await db.select().from(ossClaimTickets);
     expect(rows).toHaveLength(1);
     expect(rows[0]!.telemetrySource).toBe("legacy_unattributed");
-    expect((await postClaimTicket(claimTicketReq(body))).status).toBe(204);
+    expect(rows[0]!.handoffToken).toBeTruthy();
+    expect(rows[0]!.handoffConsumedAt).toBeNull();
+
+    const u2 = await expectTicket200(body);
+    expect(u2.handoff_url).toBe(u1.handoff_url);
     const rows2 = await db.select().from(ossClaimTickets);
     expect(rows2).toHaveLength(1);
   });
 
-  it("returns 204 for v2 body and persists telemetry_source", async () => {
+  it("returns 200 for v2 body and persists telemetry_source", async () => {
     const secret = newClaimSecret();
     const body = {
       schema_version: 2 as const,
@@ -128,7 +152,7 @@ describe.skipIf(!hasDatabaseUrl)("OSS claim ticket + redeem", () => {
       subcommand: "batch_verify" as const,
       build_profile: "oss" as const,
     };
-    expect((await postClaimTicket(claimTicketReq(body))).status).toBe(204);
+    await expectTicket200(body);
     const rows = await db.select().from(ossClaimTickets);
     expect(rows[0]!.telemetrySource).toBe("unknown");
   });
@@ -167,7 +191,7 @@ describe.skipIf(!hasDatabaseUrl)("OSS claim ticket + redeem", () => {
 
   it("returns 429 after OSS_CLAIM_TICKET_IP_CAP distinct tickets from same IP", async () => {
     const ip = "203.0.113.99";
-    for (let i = 0; i < 60; i++) {
+    for (let i = 0; i < OSS_CLAIM_TICKET_IP_CAP; i++) {
       const res = await postClaimTicket(
         claimTicketReq(
           {
@@ -182,7 +206,7 @@ describe.skipIf(!hasDatabaseUrl)("OSS claim ticket + redeem", () => {
           ip,
         ),
       );
-      expect(res.status).toBe(204);
+      expect(res.status).toBe(200);
     }
     const over = await postClaimTicket(
       claimTicketReq(
@@ -213,7 +237,7 @@ describe.skipIf(!hasDatabaseUrl)("OSS claim ticket + redeem", () => {
       subcommand: "quick_verify" as const,
       build_profile: "oss" as const,
     };
-    expect((await postClaimTicket(claimTicketReq(body))).status).toBe(204);
+    await expectTicket200(body);
 
     const [u1] = await db
       .insert(users)
@@ -252,17 +276,15 @@ describe.skipIf(!hasDatabaseUrl)("OSS claim ticket + redeem", () => {
     const bogusJson = JSON.stringify(await bogus.json());
 
     const secretExpired = newClaimSecret();
-    await postClaimTicket(
-      claimTicketReq({
-        claim_secret: secretExpired,
-        run_id: "run-exp",
-        issued_at: issuedNow(),
-        terminal_status: "complete",
-        workload_class: "non_bundled",
-        subcommand: "batch_verify",
-        build_profile: "oss",
-      }),
-    );
+    await expectTicket200({
+      claim_secret: secretExpired,
+      run_id: "run-exp",
+      issued_at: issuedNow(),
+      terminal_status: "complete",
+      workload_class: "non_bundled",
+      subcommand: "batch_verify",
+      build_profile: "oss",
+    });
     const past = new Date(Date.now() - OSS_CLAIM_TICKET_TTL_MS - 60_000);
     await db
       .update(ossClaimTickets)
@@ -311,7 +333,7 @@ describe.skipIf(!hasDatabaseUrl)("OSS claim ticket + redeem", () => {
             }),
           )
         ).status,
-      ).toBe(204);
+      ).toBe(200);
       const r = await postClaimRedeem(claimRedeemReq({ claim_secret: secret }));
       expect(r.status).toBe(200);
     }
@@ -331,39 +353,114 @@ describe.skipIf(!hasDatabaseUrl)("OSS claim ticket + redeem", () => {
           }),
         )
       ).status,
-    ).toBe(204);
+    ).toBe(200);
 
     const over = await postClaimRedeem(claimRedeemReq({ claim_secret: extraSecret }));
     expect(over.status).toBe(429);
     expect(await over.json()).toEqual({ code: "rate_limited", scope: "claim_redeem_user" });
   });
 
-  it("claim-pending: unknown secrets flatten to 204 noop with clear-style cookie", async () => {
-    const ip = "198.51.100.44";
-    const ra = await postClaimPending(claimPendingReq(newClaimSecret(), ip));
-    const rb = await postClaimPending(claimPendingReq(newClaimSecret(), ip));
-    expect(ra.status).toBe(204);
-    expect(rb.status).toBe(204);
-    expect(await ra.text()).toBe("");
-    expect(await rb.text()).toBe("");
-    const sa = ra.headers.getSetCookie().join("\n");
-    const sb = rb.headers.getSetCookie().join("\n");
-    expect(sa).toMatch(/Max-Age=0/i);
-    expect(sb).toMatch(/Max-Age=0/i);
+  it("duplicate POST after claimed returns 204", async () => {
+    const secret = newClaimSecret();
+    const body = {
+      claim_secret: secret,
+      run_id: "run-claimed-dup",
+      issued_at: issuedNow(),
+      terminal_status: "complete" as const,
+      workload_class: "non_bundled" as const,
+      subcommand: "batch_verify" as const,
+      build_profile: "oss" as const,
+    };
+    await expectTicket200(body);
+    const [u] = await db
+      .insert(users)
+      .values({ email: "dup-204@example.com", emailVerified: new Date() })
+      .returning();
+    authMock.mockResolvedValue({
+      user: { id: u!.id, email: "dup-204@example.com", name: null },
+    });
+    await postClaimRedeem(claimRedeemReq({ claim_secret: secret }));
+    const dup = await postClaimTicket(claimTicketReq(body));
+    expect(dup.status).toBe(204);
+    expect((await dup.text()).trim()).toBe("");
   });
 
-  it("claim-pending returns 429 after OSS_CLAIM_PENDING_IP_CAP requests per IP", async () => {
-    const ip = "198.51.100.45";
-    for (let i = 0; i < OSS_CLAIM_PENDING_IP_CAP; i++) {
-      const res = await postClaimPending(claimPendingReq(newClaimSecret(), ip));
-      expect(res.status).toBe(204);
+  it("GET handoff: mint cookie + consumed; second GET same h is handoff_used; unknown h is handoff_invalid", async () => {
+    const secret = newClaimSecret();
+    const body = {
+      claim_secret: secret,
+      run_id: "run-handoff-1",
+      issued_at: issuedNow(),
+      terminal_status: "complete" as const,
+      workload_class: "non_bundled" as const,
+      subcommand: "batch_verify" as const,
+      build_profile: "oss" as const,
+    };
+    const { handoff_url } = await expectTicket200(body);
+    const h = hFromHandoffUrl(handoff_url);
+
+    const g1 = await getClaimHandoff(claimHandoffReq(h));
+    expect(g1.status).toBe(302);
+    expect(g1.headers.get("location")).toBe(claimHandoffSigninRedirect());
+    const pair = pendingCookiePairFromResponse(g1);
+    expect(pair).toBeTruthy();
+
+    const row1 = await db.select().from(ossClaimTickets).where(eq(ossClaimTickets.secretHash, hashOssClaimSecret(secret)));
+    expect(row1[0]!.handoffConsumedAt).not.toBeNull();
+
+    const g2 = await getClaimHandoff(claimHandoffReq(h));
+    expect(g2.status).toBe(302);
+    expect(g2.headers.get("location")).toContain("error=handoff_used");
+
+    const gUnknown = await getClaimHandoff(claimHandoffReq("not-a-real-token-at-all-xxxxxxxxxxxx"));
+    expect(gUnknown.status).toBe(302);
+    expect(gUnknown.headers.get("location")).toBe(claimHandoffErrorRedirect("handoff_invalid"));
+  });
+
+  it("after handoff consumed, duplicate POST rotates token; GET old h is invalid; GET new h mints once", async () => {
+    const secret = newClaimSecret();
+    const body = {
+      claim_secret: secret,
+      run_id: "run-rotate-1",
+      issued_at: issuedNow(),
+      terminal_status: "complete" as const,
+      workload_class: "non_bundled" as const,
+      subcommand: "batch_verify" as const,
+      build_profile: "oss" as const,
+    };
+    const { handoff_url: u1 } = await expectTicket200(body);
+    const h1 = hFromHandoffUrl(u1);
+    await getClaimHandoff(claimHandoffReq(h1));
+
+    const { handoff_url: u3 } = await expectTicket200(body);
+    expect(u3).not.toBe(u1);
+    const h3 = hFromHandoffUrl(u3);
+
+    const stale = await getClaimHandoff(claimHandoffReq(h1));
+    expect(stale.headers.get("location")).toBe(claimHandoffErrorRedirect("handoff_invalid"));
+
+    const fresh1 = await getClaimHandoff(claimHandoffReq(h3));
+    expect(fresh1.status).toBe(302);
+    expect(fresh1.headers.get("location")).toBe(claimHandoffSigninRedirect());
+
+    const fresh2 = await getClaimHandoff(claimHandoffReq(h3));
+    expect(fresh2.headers.get("location")).toContain("error=handoff_used");
+  });
+
+  it("claim-handoff returns 429 after OSS_CLAIM_HANDOFF_IP_CAP GETs from same IP", async () => {
+    const ip = "198.51.100.77";
+    for (let i = 0; i < OSS_CLAIM_HANDOFF_IP_CAP; i++) {
+      const res = await getClaimHandoff(
+        claimHandoffReq(`invalid-token-${i}-${randomBytes(8).toString("hex")}`, ip),
+      );
+      expect(res.status).toBe(302);
     }
-    const over = await postClaimPending(claimPendingReq(newClaimSecret(), ip));
+    const over = await getClaimHandoff(claimHandoffReq("one-more-invalid", ip));
     expect(over.status).toBe(429);
-    expect(await over.json()).toEqual({ code: "rate_limited", scope: "claim_pending_ip" });
+    expect(await over.json()).toEqual({ code: "rate_limited", scope: "claim_handoff_ip" });
   });
 
-  it("redeem succeeds with pending cookie and empty JSON body", async () => {
+  it("redeem succeeds with pending cookie from GET claim-handoff", async () => {
     const secret = newClaimSecret();
     const body = {
       claim_secret: secret,
@@ -374,12 +471,10 @@ describe.skipIf(!hasDatabaseUrl)("OSS claim ticket + redeem", () => {
       subcommand: "batch_verify" as const,
       build_profile: "oss" as const,
     };
-    expect((await postClaimTicket(claimTicketReq(body))).status).toBe(204);
-
-    const ip = "198.51.100.46";
-    const pr = await postClaimPending(claimPendingReq(secret, ip));
-    expect(pr.status).toBe(204);
-    const pair = pendingCookiePairFromClaimPending(pr);
+    const { handoff_url } = await expectTicket200(body);
+    const pr = await getClaimHandoff(claimHandoffReq(hFromHandoffUrl(handoff_url)));
+    expect(pr.status).toBe(302);
+    const pair = pendingCookiePairFromResponse(pr);
     expect(pair).toBeTruthy();
 
     const [u] = await db
@@ -396,5 +491,4 @@ describe.skipIf(!hasDatabaseUrl)("OSS claim ticket + redeem", () => {
     expect(j.run_id).toBe("run-cookie-redeem");
     expect(redeem.headers.getSetCookie().join("\n")).toMatch(/Max-Age=0/i);
   });
-
 });
