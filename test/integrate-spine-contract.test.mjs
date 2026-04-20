@@ -12,9 +12,9 @@ const root = join(__dirname, "..");
 const templatePath = join(root, "scripts", "templates", "integrate-activation-shell.bash");
 const bootstrapJsonPath = join(root, "examples", "integrate-your-db", "bootstrap-input.json");
 
-/** L0 terminal line (O1): integrator-owned gate on spine workload. */
+/** L0 terminal line (O1): integrator-owned gate on spine workload (crossing pack-led). */
 const L0_SPINE_TERMINAL_VERIFY =
-  'node dist/cli.js verify-integrator-owned --workflow-id wf_integrate_spine --events "$OUT2/events.ndjson" --registry "$OUT2/tools.json" --db "$AGENTSKEPTIC_VERIFY_DB"';
+  'node dist/cli.js crossing --workflow-id wf_integrate_spine --events "$OUT2/events.ndjson" --registry "$OUT2/tools.json" --db "$AGENTSKEPTIC_VERIFY_DB"';
 
 describe("integrate spine L0 contract", () => {
   it("has no AGENTSKEPTIC_VERIFY_DB guard before git clone", () => {
@@ -62,11 +62,11 @@ describe("integrate spine L0 contract", () => {
     assert.equal(j.workflowId, "wf_integrate_spine");
   });
 
-  it("L0 spine terminal uses verify-integrator-owned with exact O1 line", () => {
+  it("L0 spine terminal uses crossing with exact O1 line", () => {
     const t = readFileSync(templatePath, "utf8");
     assert.ok(
       t.includes(L0_SPINE_TERMINAL_VERIFY),
-      "template must contain exact verify-integrator-owned spine terminal line",
+      "template must contain exact crossing spine terminal line",
     );
   });
 
@@ -76,8 +76,8 @@ describe("integrate spine L0 contract", () => {
     for (const line of t.split(/\r?\n/)) {
       if (!line.includes("wf_integrate_spine") || !line.includes("node dist/cli.js")) continue;
       assert.ok(
-        line.includes("verify-integrator-owned"),
-        `spine wf_integrate_spine line must use verify-integrator-owned, got: ${line}`,
+        line.includes("crossing"),
+        `spine wf_integrate_spine line must use crossing, got: ${line}`,
       );
       assert.ok(!bad.test(line.trim()), "must not be bare batch verify for wf_integrate_spine");
     }

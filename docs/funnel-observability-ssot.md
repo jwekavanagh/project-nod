@@ -20,6 +20,8 @@ When activation telemetry is captured, a successful **IntegrateSpineComplete** r
 
 **Classifier binding:** [`scripts/validate-integrate-spine.mjs`](../scripts/validate-integrate-spine.mjs) treats that classifier module as **normative** for this claim. If `classifyBatchVerifyWorkload` returns `bundled_examples` for the final paths emitted by the spine, CI must fail until the spine, classifier list, or docs are deliberately revised together.
 
+**`agentskeptic crossing`:** The integrator-owned **final** phase inside **`crossing`** (bootstrap-led or pack-led) posts product-activation telemetry with the same **`verify_integrator_owned`** subcommand discriminator as standalone **`verify-integrator-owned`**—see [`crossing-normative.md`](crossing-normative.md).
+
 Cross-surface metric **SQL and definitions** remain only in [`growth-metrics-ssot.md`](growth-metrics-ssot.md); do not duplicate numerators or denominators here.
 
 ---

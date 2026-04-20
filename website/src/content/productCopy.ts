@@ -235,53 +235,70 @@ export const securityQuickFacts = {
 /** Static copy for `/integrate` activation (no embedded docs on this route). */
 export const integrateActivation = {
   decisionReadyProductionCompleteAdoptionBlobUrl: DECISION_READY_PRODUCTION_COMPLETE_ADOPTION_BLOB_URL,
+  crossingPrimaryHeading: "Cross the boundary (canonical path)",
+  crossingPrimaryLead:
+    "Install the published CLI, then run exactly one agentskeptic crossing command (bootstrap-led or pack-led). Full I/O contract and semantics: docs/crossing-normative.md.",
+  crossingBootstrapLedLabel: "Bootstrap-led (BootstrapPackInput JSON + read-only SQLite or Postgres URL):",
+  crossingBootstrapLedBlock: `npx agentskeptic crossing --bootstrap-input ./path/to/bootstrap-input.json --pack-out ./path/to/pack-dir --db ./path/to/readable.sqlite
+
+# Postgres: use --postgres-url instead of --db.`,
+  crossingPackLedLabel: "Pack-led (NDJSON events + registry JSON you already own):",
+  crossingPackLedBlock: `npx agentskeptic crossing --workflow-id YOUR_WORKFLOW_ID --events ./path/to/events.ndjson --registry ./path/to/tools.json --db ./path/to/readable.sqlite`,
   whyHeading: "Why this matters",
   whyParagraphs: [
     "Traces can look successful while the database is wrong—missing rows, wrong values, or writes that never landed.",
     "AgentSkeptic runs read-only SQL at verification time and compares what actually exists with what your tools reported they did, so you get database truth instead of narrative or trace color alone.",
   ],
   icp: "If you build workflows, agents, or systems that write to a database, this shows end to end how verification compares declared tool activity to the database state that actually exists.",
-  requirementsHeading: "You need",
-  requirements: ["Node.js 22.13 or newer", "Git", "npm"],
-  productPrerequisitesHeading: "Product prerequisites",
-  productPrerequisites: [
+  integrateRequirementsHeading: "Requirements",
+  integrateRequirements: [
+    "Node.js 22.13 or newer (or Docker if you only use the optional clone spine below).",
+    "Git and npm when using the optional full-repo spine.",
     "Structured tool activity you can export or emit as NDJSON (not arbitrary log search—see verification-product SSOT).",
     "A SQLite or Postgres database you can query read-only for verification.",
     "Alignment with what verification proves: observed SQL state vs expectations from that activity—not proof a specific HTTP call ran.",
+    "PatternComplete checklist pointers include AC-TRUST-01 and AC-OPS-01 (see first-run-integration.md).",
   ],
+  optionalSpineSummary:
+    "Optional: full repo clone spine (IntegrateSpineComplete — not crossing success)",
+  optionalSpineLead:
+    "Crossing success is exit 0 from `agentskeptic crossing` in bootstrap-led or pack-led mode. Bootstrap exit 0 alone, IntegrateSpineComplete alone, and PatternComplete alone are not crossing success and are not substitutes for it.",
   hypothesisLabel: "Verification hypothesis (one line)",
   hypothesisHelper:
     "State the database mismatch you are checking for. Allowed: ASCII printable except single or double quotes; length 1–240 after trim. Required before Copy.",
   hypothesisInvalid: "Enter 1–240 allowed characters (ASCII printable; no quotes).",
   copyActivationBlockLabel: "Copy activation commands",
-  runHeading: "Run this",
-  runCaption:
-    "Real integrator output is Step 4 on your database with integrator-owned events and registry—use agentskeptic verify-integrator-owned after npm run build (see first-run SSOT and agentskeptic.md Integrator-owned gate). The block below is mechanical preflight only: enter your hypothesis, then copy into a terminal. The script clones this repo, installs, runs the bundled demo and PatternComplete-shaped verify on temp paths, then runs the fixed bootstrap pack and the final verify on a SQLite file you supply via AGENTSKEPTIC_VERIFY_DB. That final verify is agentskeptic verify-integrator-owned (integrator-owned gate), not a bare batch verify. Before the final bootstrap, apply examples/integrate-your-db/required-sqlite-state.sql to that file. PatternComplete checklist hooks include AC-TRUST-01 and AC-OPS-01 under AdoptionComplete_PatternComplete in the first-run doc. Exit code 0 on the full script means IntegrateSpineComplete (pedagogy and gate path only), not Decision-ready ProductionComplete. A cold clone can take several minutes.",
   spineCheckpointHeading: "Mechanical spine checkpoint (not product completion)",
   spineCheckpointIntro:
-    "When the copied script exits 0 after the guard, you have reached IntegrateSpineComplete: pedagogical demo, PatternComplete-shaped mid segment, then bootstrap plus verify-integrator-owned on your prepared AGENTSKEPTIC_VERIFY_DB using the fixed pack under examples/integrate-your-db. That is still not ProductionComplete on your own emitters.",
+    "When the copied script exits 0 after the guard, you have reached IntegrateSpineComplete: pedagogical demo, AdoptionComplete_PatternComplete-shaped mid segment, then bootstrap plus crossing (pack-led) on your prepared AGENTSKEPTIC_VERIFY_DB using the fixed pack under examples/integrate-your-db. That is still not ProductionComplete on your own emitters.",
   spineCheckpointBullets: [
     "After the demo segment you see PatternComplete-style contract verify on temp paths (human report on stderr, WorkflowResult JSON on stdout for the temp DB path).",
-    "The final line in the script is verify-integrator-owned for wf_integrate_spine on the generated pack under $OUT2 and your AGENTSKEPTIC_VERIFY_DB so telemetry records the integrator-owned subcommand and bundled example triples stay rejected.",
+    "The final line in the script is crossing pack-led for wf_integrate_spine on the generated pack under $OUT2 and your AGENTSKEPTIC_VERIFY_DB; final-phase telemetry matches verify_integrator_owned and bundled example triples stay rejected.",
     "When your DB matches examples/integrate-your-db/bootstrap-input.json and required-sqlite-state.sql, stderr shows the human report and stdout one WorkflowResult JSON with status complete for wf_integrate_spine.",
     "If the script stops after the demo with a message about AGENTSKEPTIC_VERIFY_DB, set that variable to a readable SQLite file prepared per docs/first-run-integration.md (Integrate spine) and rerun from a fresh directory.",
   ],
   productCompletionHeading: "Product completion: Step 4 on your emitters",
   productCompletionIntro:
-    "ProductionComplete requires contract verification on integrator-owned NDJSON and registry (or bootstrap from your tool_calls) on your authoritative database—not the curriculum pack alone. Use Decision-ready artifacts when a human decision depends on the run (first-run SSOT).",
+    "Use Decision-ready artifacts when a human decision depends on the run (adoption SSOT). The normative crossing command is the default integrator path; the optional spine below is mechanical proof only.",
   productCompletionBullets: [
-    "After npm run build, run agentskeptic verify-integrator-owned with your workflow id, your events path, your registry path, and one of --db or --postgres-url so shipped example triples fail closed (stderr INTEGRATOR_OWNED_GATE).",
-    "Follow docs/first-run-integration.md Step 4 and Grounded integrator-owned output; IntegrateSpineComplete does not substitute for that path.",
+    "Canonical crossing contract: https://github.com/jwekavanagh/agentskeptic/blob/main/docs/crossing-normative.md",
+    "Decision-ready ProductionComplete checklist: https://github.com/jwekavanagh/agentskeptic/blob/main/docs/adoption-epistemics-ssot.md#decision-ready-productioncomplete-normative",
   ],
   provedHeading: "What you proved",
   proved: EPISTEMIC_CONTRACT_INTEGRATOR_SNIPPET,
   nextHeading: "Authoritative details",
   nextLead:
-    "Command bytes (L0) and the fixed bootstrap plus SQL pair (L0.5) live in the repository; integrator prose is docs/first-run-integration.md. Funnel semantics: docs/funnel-observability-ssot.md — trust boundary: docs/verification-product-ssot.md",
+    "Crossing SSOT first; deeper runbook, L0/L0.5 bytes, funnel semantics, and trust boundary live in the linked docs.",
   nextSteps: [
     {
+      title: "Crossing (SSOT)",
+      body: "Normative stdout/stderr, exit codes, bootstrap-led vs pack-led, and anti-substitution rules for IntegrateSpineComplete vs crossing success.",
+      href: "https://github.com/jwekavanagh/agentskeptic/blob/main/docs/crossing-normative.md",
+      linkLabel: "Open crossing-normative.md",
+    },
+    {
       title: "First-run integration (SSOT)",
-      body: "Grounded integrator-owned path (Step 4, verify-integrator-owned), then mechanical preflight, Integrate spine, and PatternComplete vs ProductionComplete.",
+      body: "Optional clone spine (L0), PatternComplete tables, common mistakes, and deep links after crossing.",
       href: "https://github.com/jwekavanagh/agentskeptic/blob/main/docs/first-run-integration.md#grounded-integrator-owned-output-primary-path",
       linkLabel: "Open first-run-integration.md",
     },

@@ -12,7 +12,7 @@ import {
 
 registerMarketingSiteTeardown();
 
-const { productPrerequisites } = integrateActivation;
+const { integrateRequirements } = integrateActivation;
 
 const buildIdPath = join(getRepoRoot(), "website", ".next", "BUILD_ID");
 if (existsSync(buildIdPath)) {
@@ -27,11 +27,11 @@ describe(
     await ensureMarketingSiteRunning();
   });
 
-  it("main.integrate-main includes every productPrerequisites line from productCopy", async () => {
+  it("main.integrate-main includes every integrateRequirements line from productCopy", async () => {
     const html = await getSiteHtml("/integrate");
     const $ = cheerio.load(html);
     const mainText = $("main.integrate-main").text();
-    for (const line of productPrerequisites) {
+    for (const line of integrateRequirements) {
       expect(mainText).toContain(line);
     }
   });

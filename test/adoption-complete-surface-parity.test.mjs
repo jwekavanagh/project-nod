@@ -34,9 +34,9 @@ describe("adoption complete surface parity", () => {
     assert.ok(t.includes("wf_integrate_spine"), "bash template must verify wf_integrate_spine");
     assert.ok(
       t.includes(
-        'node dist/cli.js verify-integrator-owned --workflow-id wf_integrate_spine --events "$OUT2/events.ndjson" --registry "$OUT2/tools.json" --db "$AGENTSKEPTIC_VERIFY_DB"',
+        'node dist/cli.js crossing --workflow-id wf_integrate_spine --events "$OUT2/events.ndjson" --registry "$OUT2/tools.json" --db "$AGENTSKEPTIC_VERIFY_DB"',
       ),
-      "bash template must end spine with verify-integrator-owned O1 line",
+      "bash template must end spine with crossing O1 line",
     );
   });
 
@@ -45,7 +45,7 @@ describe("adoption complete surface parity", () => {
     const g = readFileSync(genPath, "utf8");
     assert.ok(
       g.includes(
-        'node dist/cli.js verify-integrator-owned --workflow-id wf_integrate_spine --events "$OUT2/events.ndjson" --registry "$OUT2/tools.json" --db "$AGENTSKEPTIC_VERIFY_DB"',
+        'node dist/cli.js crossing --workflow-id wf_integrate_spine --events "$OUT2/events.ndjson" --registry "$OUT2/tools.json" --db "$AGENTSKEPTIC_VERIFY_DB"',
       ),
       "generated INTEGRATE_ACTIVATION_SHELL_BODY must include O1 terminal line",
     );

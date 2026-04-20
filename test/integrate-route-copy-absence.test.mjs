@@ -11,7 +11,7 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const root = join(__dirname, "..");
 
 const O1 =
-  'node dist/cli.js verify-integrator-owned --workflow-id wf_integrate_spine --events "$OUT2/events.ndjson" --registry "$OUT2/tools.json" --db "$AGENTSKEPTIC_VERIFY_DB"';
+  'node dist/cli.js crossing --workflow-id wf_integrate_spine --events "$OUT2/events.ndjson" --registry "$OUT2/tools.json" --db "$AGENTSKEPTIC_VERIFY_DB"';
 
 const matrix = [
   {
@@ -41,12 +41,12 @@ const matrix = [
 ];
 
 function assertNoBatchOnlySpineLine(content, label) {
-  assert.ok(content.includes(O1), `${label} must contain O1 verify-integrator-owned spine terminal line`);
+  assert.ok(content.includes(O1), `${label} must contain O1 crossing spine terminal line`);
   for (const line of content.split(/\r?\n/)) {
     if (!line.includes("wf_integrate_spine") || !line.includes("node dist/cli.js")) continue;
     assert.ok(
-      line.includes("verify-integrator-owned"),
-      `${label}: wf_integrate_spine line must use verify-integrator-owned: ${line}`,
+      line.includes("crossing"),
+      `${label}: wf_integrate_spine line must use crossing: ${line}`,
     );
   }
 }

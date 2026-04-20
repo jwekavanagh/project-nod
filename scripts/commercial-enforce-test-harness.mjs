@@ -103,6 +103,7 @@ try {
     exitCode = b.status ?? 1;
   } else {
     const steps = [
+      () => nodeTest("test/crossing-commercial-smoke.test.mjs"),
       () => nodeTest("test/enforce-cli.test.mjs"),
       () => nodeTest("test/commercial-license-reserve-intent.test.mjs"),
       () => nodeTest("test/assurance-cli-enforce.test.mjs"),

@@ -4,7 +4,7 @@ import { describe, expect, it } from "vitest";
 import { integrateActivation, integrateRegistryDraft } from "@/content/productCopy";
 
 describe("/integrate activation wiring", () => {
-  it("page wires integrateActivation plus IntegrateActivationBlock (no inline command key)", () => {
+  it("page wires integrateActivation plus IntegrateCrossingCommands and IntegrateActivationBlock (no inline command key)", () => {
     const pageSrc = readFileSync(
       path.join(__dirname, "..", "src", "app", "integrate", "page.tsx"),
       "utf8",
@@ -13,6 +13,7 @@ describe("/integrate activation wiring", () => {
     expect(pageSrc).toContain("spineCheckpointHeading");
     expect(pageSrc).toContain("productCompletionHeading");
     expect(pageSrc).not.toContain("successHeading");
+    expect(pageSrc).toContain("IntegrateCrossingCommands");
     expect(pageSrc).toContain("IntegrateActivationBlock");
     expect(pageSrc).not.toContain("FirstRunActivationGuide");
     expect(pageSrc).not.toContain("embeddedFirstRunIntegrationMd");

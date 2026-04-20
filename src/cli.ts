@@ -21,7 +21,6 @@ import {
   CLI_EXITED_AFTER_ERROR,
   emitVerifyWorkflowCliJsonAndExitByStatus,
   runStandardVerifyWorkflowCliFlow,
-  runStandardVerifyWorkflowCliToTerminalResult,
 } from "./standardVerifyWorkflowCli.js";
 import {
   formatRegistryValidationHumanReport,
@@ -64,15 +63,14 @@ import { runAssuranceFromManifest } from "./assurance/runAssurance.js";
 import { runLicensePreflightIfNeeded } from "./commercial/licensePreflight.js";
 import { postVerifyOutcomeBeacon } from "./commercial/postVerifyOutcomeBeacon.js";
 import { quickVerifyVerdictToTerminalStatus } from "./commercial/quickVerifyFunnelTerminalStatus.js";
-import {
-  classifyBatchVerifyWorkload,
-  classifyQuickVerifyWorkload,
-} from "./commercial/verifyWorkloadClassify.js";
+import { classifyQuickVerifyWorkload } from "./commercial/verifyWorkloadClassify.js";
 import { LICENSE_PREFLIGHT_ENABLED } from "./generated/commercialBuildFlags.js";
 import { orchestrateVerifyBatchLockRun, orchestrateVerifyQuickLockRun } from "./cli/lockOrchestration.js";
 import { formatDistributionFooter } from "./distributionFooter.js";
 import { postPublicVerificationReport } from "./shareReport/postPublicVerificationReport.js";
 import { runBootstrapSubcommand } from "./bootstrap/runBootstrapSubcommand.js";
+import { runBatchVerifyWithTelemetrySubcommand } from "./verify/batchVerifyTelemetrySubcommand.js";
+import { runCrossingSubcommand } from "./crossing/runCrossingSubcommand.js";
 import { maybeEmitOssClaimTicketUrlToStderr } from "./telemetry/maybeEmitOssClaimTicketUrl.js";
 import { classifyWorkflowLineage } from "./funnel/workflowLineageClassify.js";
 import { postProductActivationEvent } from "./telemetry/postProductActivationEvent.js";
@@ -105,6 +103,10 @@ function usageVerify(): string {
 
   agentskeptic bootstrap --input <path> (--db <sqlitePath> | --postgres-url <url>) --out <path>
     (BootstrapPackInput v1 JSON → contract pack + in-process verify; see docs/bootstrap-pack-normative.md)
+
+  agentskeptic crossing --bootstrap-input <path> --pack-out <path> (--db <sqlitePath> | --postgres-url <url>) [--no-truth-report]
+  agentskeptic crossing --workflow-id <id> --events <path> --registry <path> (--db <sqlitePath> | --postgres-url <url>) [--no-truth-report]
+    (canonical integrator crossing: bootstrap-led or pack-led; see docs/crossing-normative.md)
 
   agentskeptic verify-integrator-owned --workflow-id <id> --events <path> --registry <path> (--db <sqlitePath> | --postgres-url <url>)
     (same flags as batch verify below; rejects bundled example fixture paths with exit 2 — see docs/agentskeptic.md Integrator-owned gate)
@@ -1064,142 +1066,6 @@ function runPlanTransitionSubcommand(args: string[]): void {
   process.exit(2);
 }
 
-async function runBatchVerifyWithTelemetrySubcommand(
-  batchArgs: string[],
-  opts: {
-    telemetrySubcommand: "batch_verify" | "verify_integrator_owned";
-    rejectBundled: boolean;
-  },
-): Promise<void> {
-  let parsedBatch;
-  try {
-    parsedBatch = parseBatchVerifyCliArgs(batchArgs);
-  } catch (e) {
-    if (e instanceof TruthLayerError) {
-      writeCliError(e.code, e.message);
-      process.exit(3);
-    }
-    throw e;
-  }
-
-  const batchActivationRunId =
-    process.env.AGENTSKEPTIC_RUN_ID?.trim() ||
-    process.env.WORKFLOW_VERIFIER_RUN_ID?.trim() ||
-    randomUUID();
-  let batchPreflight: { runId: string | null };
-  try {
-    batchPreflight = await runLicensePreflightIfNeeded("verify", { runId: batchActivationRunId });
-  } catch (e) {
-    if (e instanceof TruthLayerError) {
-      writeCliError(e.code, e.message);
-      process.exit(3);
-    }
-    throw e;
-  }
-
-  const suppressTruthToStderr = parsedBatch.noTruthReport || parsedBatch.shareReportOrigin !== undefined;
-  const batchBuildProfile = LICENSE_PREFLIGHT_ENABLED ? ("commercial" as const) : ("oss" as const);
-  const batchWorkloadClass = classifyBatchVerifyWorkload({
-    eventsPath: parsedBatch.eventsPath,
-    registryPath: parsedBatch.registryPath,
-    database: parsedBatch.database,
-  });
-  if (opts.rejectBundled && batchWorkloadClass === "bundled_examples") {
-    process.stderr.write(
-      "INTEGRATOR_OWNED_GATE: integrator-owned contract verify rejects workload_class=bundled_examples (shipped example paths).\n" +
-        "bundled_examples: use standard batch verify for demos, or pass integrator-owned --events, --registry, and --db paths. See docs/first-run-integration.md.\n",
-    );
-    process.exit(2);
-  }
-
-  const batchLineage = classifyWorkflowLineage({
-    subcommand: opts.telemetrySubcommand,
-    workloadClass: batchWorkloadClass,
-    workflowId: parsedBatch.workflowId,
-  });
-  await postProductActivationEvent({
-    phase: "verify_started",
-    run_id: batchActivationRunId,
-    issued_at: new Date().toISOString(),
-    workload_class: batchWorkloadClass,
-    workflow_lineage: batchLineage,
-    subcommand: opts.telemetrySubcommand,
-    build_profile: batchBuildProfile,
-  });
-  const batchIo = {
-    consoleLog: (line: string) => {
-      console.log(line);
-    },
-    stderrLine: (line: string) => {
-      console.error(line);
-    },
-    exit: (code: number) => {
-      process.exit(code);
-    },
-  };
-  try {
-    const result = await runStandardVerifyWorkflowCliToTerminalResult({
-      shareReportOrigin: parsedBatch.shareReportOrigin,
-      runVerify: () =>
-        verifyWorkflow({
-          workflowId: parsedBatch.workflowId,
-          eventsPath: parsedBatch.eventsPath,
-          registryPath: parsedBatch.registryPath,
-          database: parsedBatch.database,
-          verificationPolicy: parsedBatch.verificationPolicy,
-          ...(suppressTruthToStderr ?
-            { truthReport: () => {} }
-          : {
-              truthReport: (report: string) => {
-                process.stderr.write(`${report}\n`);
-                process.stderr.write(formatDistributionFooter());
-              },
-            }),
-        }),
-      maybeWriteBundle:
-        parsedBatch.writeRunBundleDir === undefined
-          ? undefined
-          : (wfResult: WorkflowResult) =>
-              writeRunBundleCli(
-                parsedBatch.writeRunBundleDir!,
-                readFileSync(path.resolve(parsedBatch.eventsPath)),
-                wfResult,
-                parsedBatch.signPrivateKeyPath,
-              ),
-      io: batchIo,
-    });
-    await postProductActivationEvent({
-      phase: "verify_outcome",
-      run_id: batchActivationRunId,
-      issued_at: new Date().toISOString(),
-      workload_class: batchWorkloadClass,
-      workflow_lineage: batchLineage,
-      subcommand: opts.telemetrySubcommand,
-      build_profile: batchBuildProfile,
-      terminal_status: result.status,
-    });
-    if (!parsedBatch.noTruthReport) {
-      await maybeEmitOssClaimTicketUrlToStderr({
-        run_id: batchActivationRunId,
-        terminal_status: result.status,
-        workload_class: batchWorkloadClass,
-        subcommand: opts.telemetrySubcommand,
-        build_profile: batchBuildProfile,
-      });
-    }
-    await postVerifyOutcomeBeacon({
-      runId: batchPreflight.runId,
-      terminal_status: result.status,
-      workload_class: batchWorkloadClass,
-      subcommand: opts.telemetrySubcommand,
-    });
-    emitVerifyWorkflowCliJsonAndExitByStatus(result, batchIo);
-  } catch (e) {
-    if (e instanceof Error && e.message === CLI_EXITED_AFTER_ERROR) return;
-    throw e;
-  }
-}
-
 async function main(): Promise<void> {
   const args = process.argv.slice(2);
   if (args[0] === "assurance") {
@@ -1208,6 +1074,10 @@ async function main(): Promise<void> {
   }
   if (args[0] === "quick") {
     await runQuickSubcommand(args.slice(1));
+    return;
+  }
+  if (args[0] === "crossing") {
+    await runCrossingSubcommand(args.slice(1));
     return;
   }
   if (args[0] === "bootstrap") {

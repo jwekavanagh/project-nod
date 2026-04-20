@@ -387,6 +387,8 @@ node dist/cli.js --workflow-id <id> --events <path> --registry <path> --postgres
 
 ### Integrator-owned gate (`verify-integrator-owned`)
 
+**Default integrator path:** **`agentskeptic crossing`** (bootstrap-led or pack-led) runs bootstrap when needed, then the **same** integrator-owned final phase as this subcommand—full stdout/stderr/exit contract: [`crossing-normative.md`](crossing-normative.md).
+
 **Command:** `agentskeptic verify-integrator-owned` with the **same** contract flags as batch replay (`--workflow-id`, `--events`, `--registry`, exactly one of `--db` / `--postgres-url`, optional **`--no-truth-report`**, **`--share-report-origin`**, **`--write-run-bundle`**, verification policy flags, etc.).
 
 **Gate (SQLite only):** After the same license preflight as batch verify, the CLI classifies paths with **`classifyBatchVerifyWorkload`** (`src/commercial/verifyWorkloadClassify.ts`). If the result is **`bundled_examples`**, the CLI writes a short **stderr** message containing **`INTEGRATOR_OWNED_GATE`** and **`bundled_examples`**, then exits **2** **without** running **`verifyWorkflow`** and **without** posting **`verify_started`** / **`verify_outcome`** product-activation beacons. Use standard batch verify for demos on shipped `examples/*` triples; use **`verify-integrator-owned`** when asserting integrator-owned paths (see [`docs/first-run-integration.md`](first-run-integration.md)). Postgres invocations are always **`non_bundled`** for this classifier and are never blocked by the gate.

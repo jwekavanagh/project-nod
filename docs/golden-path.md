@@ -9,7 +9,7 @@
 **Epistemic framing (pointer only):** [`epistemic-contract.md`](epistemic-contract.md) — then follow adoption and product SSOT below.
 <!-- /epistemic-contract:consumer:golden-path -->
 
-**Integrator:** [First-run integration (SSOT)](first-run-integration.md) — grounded integrator-owned path, mechanical preflight, **`/integrate`**; [Decision-ready ProductionComplete (normative)](adoption-epistemics-ssot.md#decision-ready-productioncomplete-normative) — artifact bar A1–A5.
+**Integrator:** [Crossing (SSOT)](crossing-normative.md) — canonical **`agentskeptic crossing`** contract; [First-run integration (SSOT)](first-run-integration.md) — L0 spine bytes, PatternComplete, common mistakes; [Decision-ready ProductionComplete (normative)](adoption-epistemics-ssot.md#decision-ready-productioncomplete-normative) — artifact bar A1–A5.
 
 **Engineer:** [README](../README.md); [Examples in AgentSkeptic SSOT](agentskeptic.md#examples).
 

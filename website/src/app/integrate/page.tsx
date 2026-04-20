@@ -1,5 +1,6 @@
 import { FunnelSurfaceBeacon } from "@/components/FunnelSurfaceBeacon";
 import { IntegrateActivationBlock } from "@/components/IntegrateActivationBlock";
+import { IntegrateCrossingCommands } from "@/components/IntegrateCrossingCommands";
 import { integrateActivation } from "@/content/productCopy";
 import { siteMetadata } from "@/content/siteMetadata";
 import type { Metadata } from "next";
@@ -18,6 +19,10 @@ export default function IntegratePage() {
       <h1>{siteMetadata.integrate.title}</h1>
       <p className="muted">{siteMetadata.integrate.description}</p>
 
+      <h2>{a.crossingPrimaryHeading}</h2>
+      <p className="muted">{a.crossingPrimaryLead}</p>
+      <IntegrateCrossingCommands />
+
       <h2>{a.whyHeading}</h2>
       {a.whyParagraphs.map((p, i) => (
         <p key={i} className="muted">
@@ -27,33 +32,27 @@ export default function IntegratePage() {
 
       <p className="muted">{a.icp}</p>
 
-      <h2>{a.requirementsHeading}</h2>
+      <h2>{a.integrateRequirementsHeading}</h2>
       <ul className="muted">
-        {a.requirements.map((item) => (
+        {a.integrateRequirements.map((item) => (
           <li key={item}>{item}</li>
         ))}
       </ul>
 
-      <h2>{a.productPrerequisitesHeading}</h2>
-      <ul className="muted">
-        {a.productPrerequisites.map((item) => (
-          <li key={item}>{item}</li>
-        ))}
-      </ul>
-
-      <h2>{a.runHeading}</h2>
-      <p className="muted">{a.runCaption}</p>
-      <div data-testid="integrator-activation-commands">
-        <IntegrateActivationBlock />
-      </div>
-
-      <h2>{a.spineCheckpointHeading}</h2>
-      <p className="muted">{a.spineCheckpointIntro}</p>
-      <ol className="muted">
-        {a.spineCheckpointBullets.map((b, i) => (
-          <li key={i}>{b}</li>
-        ))}
-      </ol>
+      <details className="integrate-optional-spine">
+        <summary>{a.optionalSpineSummary}</summary>
+        <p className="muted">{a.optionalSpineLead}</p>
+        <div data-testid="integrator-activation-commands">
+          <IntegrateActivationBlock />
+        </div>
+        <h3>{a.spineCheckpointHeading}</h3>
+        <p className="muted">{a.spineCheckpointIntro}</p>
+        <ol className="muted">
+          {a.spineCheckpointBullets.map((b, i) => (
+            <li key={i}>{b}</li>
+          ))}
+        </ol>
+      </details>
 
       <h2>{a.productCompletionHeading}</h2>
       <p className="muted">{a.productCompletionIntro}</p>

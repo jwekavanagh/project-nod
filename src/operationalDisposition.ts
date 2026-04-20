@@ -568,4 +568,12 @@ export const OPERATIONAL_DISPOSITION = {
     recommendedAction: "manual_review",
     automationSafe: false,
   },
+  [CLI_OPERATIONAL_CODES.CROSSING_USAGE]: {
+    origin: "inputs",
+    summary: "Invalid or incomplete CLI arguments for agentskeptic crossing.",
+    actionableCategory: "bad_input",
+    actionableSeverity: "low",
+    recommendedAction: "fix_cli_usage",
+    automationSafe: false,
+  },
 } as const satisfies Record<OperationalCode, OperationalDispositionRow>;

@@ -1,5 +1,5 @@
 /**
- * Pinned SSOT fragments for IntegrateSpineComplete + verify-integrator-owned terminal.
+ * Pinned SSOT fragments for IntegrateSpineComplete + crossing pack-led terminal.
  */
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";

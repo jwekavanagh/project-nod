@@ -20,27 +20,33 @@ Copy-paste shell commands (Postgres, LangGraph, manual `node dist/cli.js …`) l
 
 ## Grounded integrator-owned output (primary path)
 
-### Integrator-owned CLI gate
+> **Crossing success is exit 0 from `agentskeptic crossing` in bootstrap-led or pack-led mode. Bootstrap exit 0 alone, IntegrateSpineComplete alone, and PatternComplete alone are not crossing success and are not substitutes for it.**
 
-After **`npm run build`**, prefer **`agentskeptic verify-integrator-owned`** (same flags as contract batch verify) so **shipped example fixture triples** are **rejected** with exit **2** and stderr markers **`INTEGRATOR_OWNED_GATE`** / **`bundled_examples`**. Full contract: [`docs/agentskeptic.md`](agentskeptic.md) — **Integrator-owned gate** (`verify-integrator-owned`). Standard **`agentskeptic --workflow-id …`** without the subcommand remains valid for **demos and CI** on bundled paths.
+Normative CLI contract (stdout/stderr, exits, degraded mode, telemetry parity): **[`crossing-normative.md`](crossing-normative.md)**.
 
-### Bootstrap and verify on your sources
+### Integrator-owned gate (semantics)
 
-If you already have **OpenAI-style `tool_calls`** JSON and a read-only **SQLite** or **Postgres** URL, you can generate **`events.ndjson`**, **`tools.json`**, **`quick-report.json`**, and **`README.bootstrap.md`** in one step—normative contract, flags, and trust rules are only in [`bootstrap-pack-normative.md`](bootstrap-pack-normative.md). Example:
+The integrator-owned **bundled path** gate (**`INTEGRATOR_OWNED_GATE`**) applies to the **final** verification phase inside **`crossing`** the same way it applies to standalone **`agentskeptic verify-integrator-owned`**. Flag-level SSOT for that subcommand remains **[`agentskeptic.md`](agentskeptic.md)** — **Integrator-owned gate**. Standard **`agentskeptic --workflow-id …`** (batch verify without the subcommand) remains valid for **demos and CI** on bundled paths.
 
-```bash
-agentskeptic bootstrap --input path/to/bootstrap-input.json --db path/to/your.db --out path/to/new-pack-dir
-```
+### Crossing (bootstrap-led)
 
-Use the generated artifacts as your starting contract for production NDJSON emission, or skip this entirely if you already emit NDJSON another way. Then run contract verification on **your** paths, for example:
+When you have **OpenAI-style `tool_calls`** JSON and a read-only **SQLite** or **Postgres** URL, use one **`crossing`** invocation (phase 1 bootstrap + phase 2 integrator-owned verify). Pack layout and bootstrap trust rules: [`bootstrap-pack-normative.md`](bootstrap-pack-normative.md).
 
 ```bash
-agentskeptic verify-integrator-owned --workflow-id <id> --events path/to/events.ndjson --registry path/to/tools.json --db path/to/your.db
+agentskeptic crossing --bootstrap-input path/to/bootstrap-input.json --pack-out path/to/new-pack-dir --db path/to/your.db
 ```
 
-(**Postgres:** use **`--postgres-url`** instead of **`--db`**; exactly one.)
+**`--pack-out`** must **not** exist beforehand (same as **`bootstrap --out`**). (**Postgres:** **`--postgres-url`** instead of **`--db`**; exactly one.)
 
-**ProductionComplete** means bootstrap and/or contract verify against **your** sources and **your** database—ongoing registry ownership. This repository **cannot** automate proof without your credentials and data. For human or compliance decisions, meet **Decision-ready ProductionComplete** (artifacts A1–A5) in [`adoption-epistemics-ssot.md#decision-ready-productioncomplete-normative`](adoption-epistemics-ssot.md#decision-ready-productioncomplete-normative).
+### Crossing (pack-led)
+
+When you already own NDJSON and a registry:
+
+```bash
+agentskeptic crossing --workflow-id <id> --events path/to/events.ndjson --registry path/to/tools.json --db path/to/your.db
+```
+
+**ProductionComplete** means contract verification against **your** sources and **your** database—ongoing registry ownership. This repository **cannot** automate proof without your credentials and data. For human or compliance decisions, meet **Decision-ready ProductionComplete** (artifacts A1–A5) in [`adoption-epistemics-ssot.md#decision-ready-productioncomplete-normative`](adoption-epistemics-ssot.md#decision-ready-productioncomplete-normative).
 
 ### What success looks like (integrator-owned)
 
@@ -70,7 +76,7 @@ The human report on stderr will state that the workflow **matched the database**
 
 Use this section to **believe the product** and to satisfy **CI-shaped** checks. It does **not** replace Step 4 on **your** inputs.
 
-Send this bundle to someone who should **see green vs ROW_ABSENT in one sitting** before they touch production data. The **same** ordered shell commands as **`https://agentskeptic.com/integrate`** (clone, install, build, demo, PatternComplete-shaped verify, guard, then final bootstrap plus **`verify-integrator-owned`** on `AGENTSKEPTIC_VERIFY_DB`) live in [`scripts/templates/integrate-activation-shell.bash`](../scripts/templates/integrate-activation-shell.bash) (L0).
+Send this bundle to someone who should **see green vs ROW_ABSENT in one sitting** before they touch production data. The **same** ordered shell commands as **`https://agentskeptic.com/integrate`** (clone, install, build, demo, PatternComplete-shaped verify, guard, then final bootstrap plus **`crossing`** pack-led on `AGENTSKEPTIC_VERIFY_DB`) live in [`scripts/templates/integrate-activation-shell.bash`](../scripts/templates/integrate-activation-shell.bash) (L0).
 
 ### What this does
 
@@ -135,7 +141,7 @@ You should see **`wf_bootstrap_fixture`** end **`complete`** / **`verified`** wi
 
 ## Step 4: Bootstrap when you have your own tool_calls and a DB URL
 
-Complete ProductionComplete-shaped work on **your** `tool_calls`, database, and registry—the integrator-owned CLI gate, bootstrap flags, example **`verify-integrator-owned`** commands, stdout/stderr success criteria, and **Decision-ready ProductionComplete**—under **[Bootstrap and verify on your sources](#bootstrap-and-verify-on-your-sources)** in [Grounded integrator-owned output](#grounded-integrator-owned-output-primary-path) above.
+Complete ProductionComplete-shaped work on **your** `tool_calls`, database, and registry—**[`crossing-normative.md`](crossing-normative.md)** for the default command, **[`bootstrap-pack-normative.md`](bootstrap-pack-normative.md)** for pack shape, **[`agentskeptic.md`](agentskeptic.md)** for the integrator-owned gate, stdout/stderr success criteria under **[What success looks like (integrator-owned)](#what-success-looks-like-integrator-owned)**, and **Decision-ready ProductionComplete** in [Grounded integrator-owned output](#grounded-integrator-owned-output-primary-path) above.
 
 ## Integrate spine (normative)
 
@@ -146,7 +152,7 @@ Complete ProductionComplete-shaped work on **your** `tool_calls`, database, and 
 
 **IntegrateSpineComplete**
 
-- The full L0 script **exit code is 0** iff every step completes, including the **final** `node dist/cli.js bootstrap … --input examples/integrate-your-db/bootstrap-input.json` and the following **`verify-integrator-owned`** on `"$AGENTSKEPTIC_VERIFY_DB"` (same event/registry/db flags as contract batch verify; integrator-owned gate per [`agentskeptic.md`](agentskeptic.md) Integrator-owned gate).
+- The full L0 script **exit code is 0** iff every step completes, including the **final** `node dist/cli.js bootstrap … --input examples/integrate-your-db/bootstrap-input.json` and the following **`crossing`** pack-led on `"$AGENTSKEPTIC_VERIFY_DB"` (same event/registry/db flags as contract batch verify; integrator-owned gate per [`agentskeptic.md`](agentskeptic.md) Integrator-owned gate; final-phase telemetry matches **`verify_integrator_owned`** per [`crossing-normative.md`](crossing-normative.md)).
 - If `AGENTSKEPTIC_VERIFY_DB` is unset, empty, not a file, or not readable, the script **exits non-zero immediately before that final bootstrap** (after the demo / PatternComplete-shaped segment). That is **not** IntegrateSpineComplete; it is a deliberate **non-terminal-success** outcome so demo-only runs never report success for the whole spine.
 
 **PatternComplete vs IntegrateSpineComplete**
