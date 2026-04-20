@@ -115,6 +115,8 @@ export function AccountClient({
   const searchParams = useSearchParams();
   const checkout = searchParams.get("checkout");
   const expectedPlanRaw = searchParams.get("expectedPlan");
+  const fromOssClaim = searchParams.get("fromOssClaim") === "1";
+  const ossClaimRunId = searchParams.get("run_id")?.trim() ?? "";
 
   const [key, setKey] = useState<string | null>(null);
   const [hasActiveKey, setHasActiveKey] = useState(hasKey);
@@ -295,6 +297,29 @@ export function AccountClient({
       <p className="u-mt-0 u-mb-1">
         <SignOutButton variant="account" />
       </p>
+
+      {fromOssClaim ? (
+        <div className="card u-mb-1" data-testid="oss-claim-account-checklist">
+          <h2 className="u-mt-0">{productCopy.account.ossClaimChecklistTitle}</h2>
+          <ul className="u-mt-05">
+            {productCopy.account.ossClaimChecklistItems.map((t) => (
+              <li key={t}>{t}</li>
+            ))}
+          </ul>
+          {ossClaimRunId ? (
+            <p className="muted u-mt-05" data-testid="oss-claim-run-hint">
+              {productCopy.account.ossClaimRunHint(ossClaimRunId)}
+            </p>
+          ) : null}
+          {commercial.plan === "starter" ? (
+            <p className="u-mt-1">
+              <Link className="button-link" href="/pricing" data-testid="starter-cta-pricing">
+                {productCopy.account.ossClaimStarterCta}
+              </Link>
+            </p>
+          ) : null}
+        </div>
+      ) : null}
 
       <section data-testid="account-verification-region">
         <h2 className="u-mt-0">Verification</h2>

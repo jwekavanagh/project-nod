@@ -13,7 +13,8 @@ Normative contract for converting **anonymous OSS CLI verification** into an **i
 | Surface | Method | Path | Auth |
 |---------|--------|------|------|
 | Register claim ticket | `POST` | `/api/oss/claim-ticket` | None (CLI headers + JSON body) |
-| Browser handoff (mint pending cookie) | `GET` | `/api/oss/claim-handoff` | None (opaque query token `h` only) |
+| Browser handoff (mint pending cookie) | `GET` | `/verify/link` | None (opaque query token `h` only) |
+| CLI spawn ack (interactive human only) | `POST` | `/api/oss/claim-continuation` | None (CLI headers + JSON `claim_secret`) |
 | Redeem ticket | `POST` | `/api/oss/claim-redeem` | Session (NextAuth) |
 | Claim UI | `GET` | `/claim` | None (static shell + client behavior) |
 
@@ -23,7 +24,7 @@ Normative contract for converting **anonymous OSS CLI verification** into an **i
 
 `[agentskeptic] Link this verification run to your account: <handoff_url> — open the link, then sign in with email when prompted.`
 
-- **`handoff_url`** is **`GET`** `…/api/oss/claim-handoff?h=<opaque>` on the canonical origin. The **`h`** value is **not** derivable from `run_id` and is **not** the wire `claim_secret`.
+- **`handoff_url`** is **`GET`** `…/verify/link?h=<opaque>` on the canonical origin. The **`h`** value is **not** derivable from `run_id` and is **not** the wire `claim_secret`.
 - **stdout** must remain machine JSON only for batch/quick; claim text is **stderr only**.
 - **`AGENTSKEPTIC_TELEMETRY=0`:** no stderr line from this helper and **no** claim-ticket `fetch` (silent), matching the product-activation opt-out in [`docs/funnel-observability-ssot.md`](funnel-observability-ssot.md).
 
@@ -38,8 +39,8 @@ Normative contract for converting **anonymous OSS CLI verification** into an **i
 - **Headers:** Same as [`POST /api/funnel/product-activation`](../website/src/app/api/funnel/product-activation/route.ts): `X-AgentSkeptic-Product: cli`, `X-AgentSkeptic-Cli-Version` semver, `Content-Type: application/json`.
 - **Body (JSON):** discriminated by **`schema_version`** (see [`website/src/lib/ossClaimTicketPayload.ts`](../website/src/lib/ossClaimTicketPayload.ts)):
   - **v1 (legacy):** `{ claim_secret, run_id, issued_at, terminal_status, workload_class, subcommand, build_profile }` — enums align with product-activation outcome payload; **no** `schema_version` key on the wire.
-  - **v2:** v1 fields plus **`"schema_version": 2`** and required **`telemetry_source`**: `"local_dev"` \| `"unknown"`. Reject **`legacy_unattributed`** on the wire (**`400`**).
-- **Persistence:** on first insert, nullable column **`telemetry_source`** is set from the v2 body or to **`legacy_unattributed`** for v1 rows. Each row has **`handoff_token`** (opaque) and nullable **`handoff_consumed_at`** for the **current** token lifecycle.
+  - **v2:** v1 fields plus **`"schema_version": 2`** and required **`telemetry_source`**: `"local_dev"` \| `"unknown"`. Reject **`legacy_unattributed`** on the wire (**`400`**). Optional **`interactive_human`**: when **`true`**, the row is in the mint-time interactive-human cohort (`interactive_human_claim`); see [`docs/eval-to-revenue-journey-ssot.md`](eval-to-revenue-journey-ssot.md).
+- **Persistence:** on first insert, nullable column **`telemetry_source`** is set from the v2 body or to **`legacy_unattributed`** for v1 rows. Each row has **`handoff_token`** (opaque) and nullable **`handoff_consumed_at`** for the **current** token lifecycle; **`interactive_human_claim`** (boolean, default false) from optional body **`interactive_human`**; nullable **`browser_open_invoked_at`** set once by **`POST /api/oss/claim-continuation`** for interactive rows.
 - **`issued_at` skew:** ±300s vs server time (same constant as product-activation).
 - **Responses (Contract B):**
   - **`200`** `application/json` **`{ "schema_version": 2, "handoff_url": "<canonical GET URL>" }`** when a row exists with **`claimed_at` null** — including **first insert** and **duplicate POST** with the same `claim_secret` (**same `secret_hash`**):
@@ -50,7 +51,7 @@ Normative contract for converting **anonymous OSS CLI verification** into an **i
 
 **CLI bounded retry:** `postOssClaimTicket` retries transient failures reusing the **same** `claim_secret` so a flap after the server persisted the row still yields **`200`** with a redeemable URL when appropriate.
 
-#### `GET /api/oss/claim-handoff`
+#### `GET /verify/link`
 
 - **Query:** **`h` only** (trimmed, bounded length). No `claim_secret` in the query string.
 - **Lookup:** At most one row with **`handoff_token = :h`**. No secondary lookup for retired tokens.
@@ -59,6 +60,18 @@ Normative contract for converting **anonymous OSS CLI verification** into an **i
   - Row valid but **`handoff_consumed_at` set:** **`/claim?error=handoff_used`**, clear pending cookie.
   - Row valid and **`handoff_consumed_at` null:** **`302`** to sign-in URL above, **`Set-Cookie`** minted pending envelope, **`handoff_consumed_at = now()`** in the same **serializable** transaction (after IP rate-limit reservation).
 - **Rate limit:** **`429`** JSON `{ "code": "rate_limited", "scope": "claim_handoff_ip" }` — same numeric cap per UTC hour as the legacy browser stash cap (constant in [`website/src/lib/ossClaimRateLimits.ts`](../website/src/lib/ossClaimRateLimits.ts)).
+
+#### `GET /api/oss/claim-handoff` (legacy compatibility)
+
+- **Normative behavior:** **`308`** **`Location`** to **`/verify/link?h=<same h>`** — **no** DB access on this path. Bookmarks continue to work; steady-state URLs use **`/verify/link`** only.
+
+#### `POST /api/oss/claim-continuation`
+
+- **Headers:** Same CLI product headers as **`POST /api/oss/claim-ticket`**.
+- **Body:** **`{ "claim_secret": "<64 lowercase hex>" }`** (strict JSON).
+- **When `interactive_human_claim` is false:** **`403`** JSON `{ "code": "continuation_not_applicable" }`.
+- **When valid and `browser_open_invoked_at` is null:** set **`browser_open_invoked_at = now()`** once; respond **`204`**.
+- **Idempotent repeat:** **`204`** if already set.
 
 #### `POST /api/oss/claim-redeem`
 
@@ -76,7 +89,7 @@ Normative contract for converting **anonymous OSS CLI verification** into an **i
 
 **DB tables**
 
-- **`oss_claim_ticket`:** `secret_hash` PK (SHA-256 hex of UTF-8 `claim_secret`), outcome columns, `issued_at` text, `created_at`, `expires_at`, nullable `claimed_at` / `user_id`, nullable **`telemetry_source`**, nullable **`handoff_token`** (unique when present), nullable **`handoff_consumed_at`**.
+- **`oss_claim_ticket`:** `secret_hash` PK (SHA-256 hex of UTF-8 `claim_secret`), outcome columns, `issued_at` text, `created_at`, `expires_at`, nullable `claimed_at` / `user_id`, nullable **`telemetry_source`**, nullable **`handoff_token`** (unique when present), nullable **`handoff_consumed_at`**, **`interactive_human_claim`** (boolean), nullable **`browser_open_invoked_at`**.
 - **`oss_claim_rate_limit_counter`:** PK `(scope, window_start, scope_key)`; `scope` includes `claim_ticket_ip` \| `claim_handoff_ip` \| `claim_redeem_user` \| `registry_draft_ip` \| `public_funnel_anon_ip`; `window_start` = UTC hour start (same convention as magic-link counters).
 
 **Rate caps (fixed constants in [`website/src/lib/ossClaimRateLimits.ts`](../website/src/lib/ossClaimRateLimits.ts)):**

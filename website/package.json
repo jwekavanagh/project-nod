@@ -14,6 +14,10 @@
     "db:generate:telemetry": "node ./scripts/drizzle-kit-guarded.mjs generate --config drizzle.telemetry.config.ts",
     "db:migrate": "node ./scripts/db-migrate.mjs",
     "db:migrate:telemetry": "node ./scripts/db-migrate-telemetry.mjs",
+    "check:docs-claim-urls": "node ../scripts/check-docs-claim-urls.mjs",
+    "sql:eval-to-account-staging-gates": "node ./scripts/sql-eval-to-account-staging-gates.mjs",
+    "verify:eval-to-account-gate:mechanical": "npm run check:docs-claim-urls && npm run sql:eval-to-account-staging-gates -- --gate-set=rr",
+    "verify:eval-to-account-gate": "npx vitest run __tests__/oss-claim.integration.test.ts && npm run verify:eval-to-account-gate:mechanical",
     "test:vitest": "node ../scripts/sync-integrator-docs-embedded.mjs && node ../scripts/sync-epistemic-contract-website.mjs && vitest run"
   },
   "dependencies": {

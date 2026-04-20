@@ -1,4 +1,5 @@
 import {
+  boolean,
   integer,
   jsonb,
   pgTable,
@@ -55,6 +56,8 @@ export const sessions = pgTable("session", {
     .notNull()
     .references(() => users.id, { onDelete: "cascade" }),
   expires: timestamp("expires", { mode: "date" }).notNull(),
+  /** Mint time for SP-R1b episode join; backfilled in migration for legacy rows. */
+  createdAt: timestamp("created_at", { withTimezone: true, mode: "date" }).notNull().defaultNow(),
 });
 
 export const verificationTokens = pgTable(
@@ -176,10 +179,14 @@ export const ossClaimTickets = pgTable("oss_claim_ticket", {
   expiresAt: timestamp("expires_at", { withTimezone: true, mode: "date" }).notNull(),
   claimedAt: timestamp("claimed_at", { withTimezone: true, mode: "date" }),
   userId: text("user_id").references(() => users.id, { onDelete: "set null" }),
-  /** Opaque token for `GET /api/oss/claim-handoff?h=…`; unique when set (partial unique index in migration). */
+  /** Opaque token for `GET /verify/link?h=…` (legacy `claim-handoff` 308s here); unique when set (partial unique index in migration). */
   handoffToken: text("handoff_token"),
   /** First successful GET handoff mint time for the **current** `handoff_token`; null after rotation. */
   handoffConsumedAt: timestamp("handoff_consumed_at", { withTimezone: true, mode: "date" }),
+  /** Client-asserted at mint: TTY interactive CLI (see docs/eval-to-revenue-journey-ssot.md). */
+  interactiveHumanClaim: boolean("interactive_human_claim").notNull().default(false),
+  /** Set once when CLI POSTs `claim-continuation` after successful browser spawn. */
+  browserOpenInvokedAt: timestamp("browser_open_invoked_at", { withTimezone: true, mode: "date" }),
 }, (t) => ({
   pk: primaryKey({ columns: [t.secretHash] }),
 }));

@@ -1,6 +1,8 @@
-import { GET as getClaimHandoff } from "@/app/api/oss/claim-handoff/route";
+import { GET as getClaimHandoffLegacy } from "@/app/api/oss/claim-handoff/route";
+import { POST as postClaimContinuation } from "@/app/api/oss/claim-continuation/route";
 import { POST as postClaimRedeem } from "@/app/api/oss/claim-redeem/route";
 import { POST as postClaimTicket } from "@/app/api/oss/claim-ticket/route";
+import { GET as getVerifyLink } from "@/app/verify/link/route";
 import { db } from "@/db/client";
 import { funnelEvents, ossClaimTickets, users } from "@/db/schema";
 import {
@@ -63,7 +65,14 @@ function claimRedeemReq(body: object, cookieHeader?: string): NextRequest {
   });
 }
 
-function claimHandoffReq(h: string, ip = "203.0.113.56"): NextRequest {
+function claimVerifyLinkReq(h: string, ip = "203.0.113.56"): NextRequest {
+  return new NextRequest(`http://127.0.0.1:3000/verify/link?h=${encodeURIComponent(h)}`, {
+    method: "GET",
+    headers: { "x-forwarded-for": ip },
+  });
+}
+
+function claimHandoffLegacyReq(h: string, ip = "203.0.113.56"): NextRequest {
   return new NextRequest(`http://127.0.0.1:3000/api/oss/claim-handoff?h=${encodeURIComponent(h)}`, {
     method: "GET",
     headers: { "x-forwarded-for": ip },
@@ -92,7 +101,19 @@ async function expectTicket200(body: object): Promise<{ handoff_url: string }> {
   const j = (await res.json()) as { schema_version?: number; handoff_url?: string };
   expect(j.schema_version).toBe(2);
   expect(typeof j.handoff_url).toBe("string");
+  expect(j.handoff_url).toContain("/verify/link?");
   return { handoff_url: j.handoff_url! };
+}
+
+function claimContinuationReq(body: object): NextRequest {
+  const h = new Headers({ "content-type": "application/json" });
+  h.set(PRODUCT_ACTIVATION_CLI_PRODUCT_HEADER, "cli");
+  h.set(PRODUCT_ACTIVATION_CLI_VERSION_HEADER, cliSemver);
+  return new NextRequest("http://127.0.0.1:3000/api/oss/claim-continuation", {
+    method: "POST",
+    headers: h,
+    body: JSON.stringify(body),
+  });
 }
 
 function newClaimSecret(): string {
@@ -170,6 +191,69 @@ describe.skipIf(!hasDatabaseUrl)("OSS claim ticket + handoff + redeem", () => {
       build_profile: "oss",
     };
     expect((await postClaimTicket(claimTicketReq(body))).status).toBe(400);
+  });
+
+  it("legacy GET /api/oss/claim-handoff returns 308 to /verify/link with same h", async () => {
+    const secret = newClaimSecret();
+    const body = {
+      claim_secret: secret,
+      run_id: "run-legacy-308",
+      issued_at: issuedNow(),
+      terminal_status: "complete" as const,
+      workload_class: "non_bundled" as const,
+      subcommand: "batch_verify" as const,
+      build_profile: "oss" as const,
+    };
+    const { handoff_url } = await expectTicket200(body);
+    const h = hFromHandoffUrl(handoff_url);
+    const leg = await getClaimHandoffLegacy(claimHandoffLegacyReq(h));
+    expect(leg.status).toBe(308);
+    const loc = leg.headers.get("location");
+    expect(loc).toBeTruthy();
+    expect(loc!).toContain("/verify/link?");
+    expect(new URL(loc!).searchParams.get("h")).toBe(h);
+  });
+
+  it("claim-continuation sets browser_open_invoked_at once for interactive_human ticket", async () => {
+    const secret = newClaimSecret();
+    const body = {
+      schema_version: 2 as const,
+      telemetry_source: "unknown" as const,
+      interactive_human: true,
+      claim_secret: secret,
+      run_id: "run-continuation-1",
+      issued_at: issuedNow(),
+      terminal_status: "complete" as const,
+      workload_class: "non_bundled" as const,
+      subcommand: "batch_verify" as const,
+      build_profile: "oss" as const,
+    };
+    await expectTicket200(body);
+    const c1 = await postClaimContinuation(claimContinuationReq({ claim_secret: secret }));
+    expect(c1.status).toBe(204);
+    const c2 = await postClaimContinuation(claimContinuationReq({ claim_secret: secret }));
+    expect(c2.status).toBe(204);
+    const rows = await db.select().from(ossClaimTickets).where(eq(ossClaimTickets.runId, "run-continuation-1"));
+    expect(rows[0]!.browserOpenInvokedAt).not.toBeNull();
+    expect(rows[0]!.interactiveHumanClaim).toBe(true);
+  });
+
+  it("claim-continuation returns 403 when interactive_human is false", async () => {
+    const secret = newClaimSecret();
+    const body = {
+      schema_version: 2 as const,
+      telemetry_source: "unknown" as const,
+      claim_secret: secret,
+      run_id: "run-no-continuation",
+      issued_at: issuedNow(),
+      terminal_status: "complete" as const,
+      workload_class: "non_bundled" as const,
+      subcommand: "batch_verify" as const,
+      build_profile: "oss" as const,
+    };
+    await expectTicket200(body);
+    const c = await postClaimContinuation(claimContinuationReq({ claim_secret: secret }));
+    expect(c.status).toBe(403);
   });
 
   it("returns 403 without CLI headers", async () => {
@@ -399,7 +483,7 @@ describe.skipIf(!hasDatabaseUrl)("OSS claim ticket + handoff + redeem", () => {
     const { handoff_url } = await expectTicket200(body);
     const h = hFromHandoffUrl(handoff_url);
 
-    const g1 = await getClaimHandoff(claimHandoffReq(h));
+    const g1 = await getVerifyLink(claimVerifyLinkReq(h));
     expect(g1.status).toBe(302);
     expect(g1.headers.get("location")).toBe(claimHandoffSigninRedirect());
     const pair = pendingCookiePairFromResponse(g1);
@@ -408,11 +492,13 @@ describe.skipIf(!hasDatabaseUrl)("OSS claim ticket + handoff + redeem", () => {
     const row1 = await db.select().from(ossClaimTickets).where(eq(ossClaimTickets.secretHash, hashOssClaimSecret(secret)));
     expect(row1[0]!.handoffConsumedAt).not.toBeNull();
 
-    const g2 = await getClaimHandoff(claimHandoffReq(h));
+    const g2 = await getVerifyLink(claimVerifyLinkReq(h));
     expect(g2.status).toBe(302);
     expect(g2.headers.get("location")).toContain("error=handoff_used");
 
-    const gUnknown = await getClaimHandoff(claimHandoffReq("not-a-real-token-at-all-xxxxxxxxxxxx"));
+    const gUnknown = await getVerifyLink(
+      claimVerifyLinkReq("not-a-real-token-at-all-xxxxxxxxxxxx"),
+    );
     expect(gUnknown.status).toBe(302);
     expect(gUnknown.headers.get("location")).toBe(claimHandoffErrorRedirect("handoff_invalid"));
   });
@@ -430,37 +516,37 @@ describe.skipIf(!hasDatabaseUrl)("OSS claim ticket + handoff + redeem", () => {
     };
     const { handoff_url: u1 } = await expectTicket200(body);
     const h1 = hFromHandoffUrl(u1);
-    await getClaimHandoff(claimHandoffReq(h1));
+    await getVerifyLink(claimVerifyLinkReq(h1));
 
     const { handoff_url: u3 } = await expectTicket200(body);
     expect(u3).not.toBe(u1);
     const h3 = hFromHandoffUrl(u3);
 
-    const stale = await getClaimHandoff(claimHandoffReq(h1));
+    const stale = await getVerifyLink(claimVerifyLinkReq(h1));
     expect(stale.headers.get("location")).toBe(claimHandoffErrorRedirect("handoff_invalid"));
 
-    const fresh1 = await getClaimHandoff(claimHandoffReq(h3));
+    const fresh1 = await getVerifyLink(claimVerifyLinkReq(h3));
     expect(fresh1.status).toBe(302);
     expect(fresh1.headers.get("location")).toBe(claimHandoffSigninRedirect());
 
-    const fresh2 = await getClaimHandoff(claimHandoffReq(h3));
+    const fresh2 = await getVerifyLink(claimVerifyLinkReq(h3));
     expect(fresh2.headers.get("location")).toContain("error=handoff_used");
   });
 
   it("claim-handoff returns 429 after OSS_CLAIM_HANDOFF_IP_CAP GETs from same IP", async () => {
     const ip = "198.51.100.77";
     for (let i = 0; i < OSS_CLAIM_HANDOFF_IP_CAP; i++) {
-      const res = await getClaimHandoff(
-        claimHandoffReq(`invalid-token-${i}-${randomBytes(8).toString("hex")}`, ip),
+      const res = await getVerifyLink(
+        claimVerifyLinkReq(`invalid-token-${i}-${randomBytes(8).toString("hex")}`, ip),
       );
       expect(res.status).toBe(302);
     }
-    const over = await getClaimHandoff(claimHandoffReq("one-more-invalid", ip));
+    const over = await getVerifyLink(claimVerifyLinkReq("one-more-invalid", ip));
     expect(over.status).toBe(429);
     expect(await over.json()).toEqual({ code: "rate_limited", scope: "claim_handoff_ip" });
   });
 
-  it("redeem succeeds with pending cookie from GET claim-handoff", async () => {
+  it("redeem succeeds with pending cookie from GET /verify/link", async () => {
     const secret = newClaimSecret();
     const body = {
       claim_secret: secret,
@@ -472,7 +558,7 @@ describe.skipIf(!hasDatabaseUrl)("OSS claim ticket + handoff + redeem", () => {
       build_profile: "oss" as const,
     };
     const { handoff_url } = await expectTicket200(body);
-    const pr = await getClaimHandoff(claimHandoffReq(hFromHandoffUrl(handoff_url)));
+    const pr = await getVerifyLink(claimVerifyLinkReq(hFromHandoffUrl(handoff_url)));
     expect(pr.status).toBe(302);
     const pair = pendingCookiePairFromResponse(pr);
     expect(pair).toBeTruthy();

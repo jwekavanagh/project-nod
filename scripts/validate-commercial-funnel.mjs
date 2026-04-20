@@ -228,6 +228,11 @@ if (!run("npx", ["vitest", "run"], { cwd: websiteDir, shell: true, env: websiteT
   process.exit(1);
 }
 
+if (!run("npm", ["run", "verify:eval-to-account-gate:mechanical"], { cwd: websiteDir, shell: true, env: websiteTestEnv })) {
+  writeVerdict("not_solved", layers);
+  process.exit(1);
+}
+
 if (!run(process.execPath, ["scripts/check-web-demo-prereqs.mjs"])) {
   writeVerdict("not_solved", layers);
   process.exit(1);

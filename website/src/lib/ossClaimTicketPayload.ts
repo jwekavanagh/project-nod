@@ -19,6 +19,8 @@ const ossClaimTicketCoreSchema = z.object({
   workload_class: workloadClassSchema,
   subcommand: subcommandSchema,
   build_profile: buildProfileSchema,
+  /** When true, ticket is in the interactive-human mint cohort (`D_ihm`); client-asserted (see journey SSOT). */
+  interactive_human: z.boolean().optional(),
 });
 
 /**

@@ -644,6 +644,14 @@ export const productCopy = {
     /** When the user has no key yet; verification CTA stays visible but sets expectations. */
     primaryVerificationCtaFirstRunNeedsKey: "Run your first verification (create a key below first)",
     primaryVerificationCtaAgain: "Run another verification",
+    ossClaimChecklistTitle: "After linking a CLI verification",
+    ossClaimChecklistItems: [
+      "Your run id and outcome are attached to this account for verification history.",
+      "Create an API key below if you need licensed npm verification or reserve quota.",
+      "Use Integrate for copy-paste commands tied to your environment.",
+    ] as const,
+    ossClaimRunHint: (runId: string) => `Linked run id: ${runId.slice(0, 12)}…`,
+    ossClaimStarterCta: "Compare paid plans for licensed verification and monthly allowance",
   },
 
   signInA11y: {

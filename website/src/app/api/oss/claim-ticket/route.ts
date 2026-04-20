@@ -177,6 +177,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
             "schema_version" in body && body.schema_version === 2
               ? body.telemetry_source
               : "legacy_unattributed";
+          const interactiveHumanClaim = body.interactive_human === true;
 
           let handoffToken = newHandoffToken();
           for (let attempt = 0; attempt < 8; attempt++) {
@@ -194,6 +195,8 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
                 expiresAt: expiresAtFromCreated(createdAt),
                 handoffToken,
                 handoffConsumedAt: null,
+                interactiveHumanClaim,
+                browserOpenInvokedAt: null,
               });
               return jsonHandoff(handoffToken);
             } catch (e) {

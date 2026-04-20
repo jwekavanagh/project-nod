@@ -135,7 +135,10 @@ export function OssClaimClient() {
         <h1>{productCopy.ossClaimPage.title}</h1>
         <p>{productCopy.ossClaimPage.redeemedLead}</p>
         <p className="muted">{productCopy.ossClaimPage.runSummary(summary)}</p>
-        <Link className="button-link" href="/account">
+        <Link
+          className="button-link"
+          href={`/account?fromOssClaim=1&run_id=${encodeURIComponent(summary.run_id)}`}
+        >
           {productCopy.ossClaimPage.accountCta}
         </Link>
       </div>

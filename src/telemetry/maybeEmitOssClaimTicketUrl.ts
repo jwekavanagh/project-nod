@@ -1,5 +1,7 @@
 import { randomBytes } from "node:crypto";
 import { LICENSE_PREFLIGHT_ENABLED } from "../generated/commercialBuildFlags.js";
+import { openHandoffUrlInOsBrowser } from "./openHandoffUrlInOsBrowser.js";
+import { postOssClaimContinuation } from "./postOssClaimContinuation.js";
 import { postOssClaimTicket } from "./postOssClaimTicket.js";
 
 export async function maybeEmitOssClaimTicketUrlToStderr(input: {
@@ -15,8 +17,24 @@ export async function maybeEmitOssClaimTicketUrlToStderr(input: {
 
   const claim_secret = randomBytes(32).toString("hex");
   const issued_at = new Date().toISOString();
-  const r = await postOssClaimTicket({ claim_secret, issued_at, ...input });
+  const interactiveHuman =
+    Boolean(process.stdout.isTTY) &&
+    Boolean(process.stderr.isTTY) &&
+    String(process.env.CI).toLowerCase() !== "true";
+
+  const r = await postOssClaimTicket({
+    claim_secret,
+    issued_at,
+    ...input,
+    interactive_human: interactiveHuman ? true : undefined,
+  });
   if (r.outcome === "ok") {
+    if (interactiveHuman) {
+      const { ok } = await openHandoffUrlInOsBrowser(r.handoff_url);
+      if (ok) {
+        await postOssClaimContinuation(claim_secret);
+      }
+    }
     console.error(
       `[agentskeptic] Link this verification run to your account: ${r.handoff_url} — open the link, then sign in with email when prompted.`,
     );

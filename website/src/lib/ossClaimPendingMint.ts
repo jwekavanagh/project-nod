@@ -8,7 +8,7 @@ export type OssClaimTicketPendingMintRow = {
 
 /**
  * Build `Set-Cookie` for the pending OSS claim envelope when the ticket is unclaimed and unexpired.
- * Shared by `GET /api/oss/claim-handoff` (and any future server mint paths).
+ * Shared by `GET /verify/link` (OSS claim handoff; legacy `/api/oss/claim-handoff` 308s here).
  */
 export function mintOssClaimPendingSetCookieHeader(row: OssClaimTicketPendingMintRow): string | null {
   const now = new Date();

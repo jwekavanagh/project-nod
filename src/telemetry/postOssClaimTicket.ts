@@ -24,6 +24,8 @@ export type PostOssClaimTicketInput = {
   workload_class: "bundled_examples" | "non_bundled";
   subcommand: "batch_verify" | "quick_verify" | "verify_integrator_owned";
   build_profile: "oss" | "commercial";
+  /** Mint-time interactive human cohort (`D_ihm`); must match CLI TTY rule in journey SSOT. */
+  interactive_human?: boolean;
 };
 
 export type PostOssClaimTicketResult =
@@ -57,6 +59,7 @@ async function postOssClaimTicketOnce(input: PostOssClaimTicketInput): Promise<P
           workload_class: input.workload_class,
           subcommand: input.subcommand,
           build_profile: input.build_profile,
+          ...(input.interactive_human === true ? { interactive_human: true as const } : {}),
         }),
       },
       OSS_CLAIM_TICKET_FETCH_TIMEOUT_MS,

@@ -9,7 +9,7 @@ export type OssClaimTicketHandoffResponseBody = {
 
 export function buildOssClaimHandoffUrl(origin: string, handoffToken: string): string {
   const base = origin.replace(/\/$/, "");
-  return `${base}/api/oss/claim-handoff?h=${encodeURIComponent(handoffToken)}`;
+  return `${base}/verify/link?h=${encodeURIComponent(handoffToken)}`;
 }
 
 export function buildOssClaimHandoffUrlCanonical(handoffToken: string): string {

@@ -7,7 +7,7 @@ export const OSS_CLAIM_TICKET_IP_CAP = 60;
 export const OSS_CLAIM_REDEEM_USER_CAP = 30;
 /** Legacy hourly cap name kept for stable counter rows; same numeric value as handoff GET cap. */
 export const OSS_CLAIM_PENDING_IP_CAP = 30;
-/** Hourly cap per IP for `GET /api/oss/claim-handoff` (matches legacy pending stash cap). */
+/** Hourly cap per IP for OSS claim handoff GET (`/verify/link`; legacy path 308s here). */
 export const OSS_CLAIM_HANDOFF_IP_CAP = OSS_CLAIM_PENDING_IP_CAP;
 /** Hourly cap per IP for `POST /api/integrator/registry-draft` (each successful reservation may trigger OpenAI). */
 export const REGISTRY_DRAFT_IP_CAP = 5;
