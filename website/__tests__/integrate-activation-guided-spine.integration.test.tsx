@@ -52,7 +52,7 @@ describe.skipIf(!isValidator && !hasBothDbs)("integrate activation guided spine"
       render(<IntegrateActivationBlock />);
       await waitFor(() => {
         const block = screen.getByTestId("integrate-activation-block");
-        expect(block.textContent).toContain(`export AGENTSKEPTIC_FUNNEL_ANON_ID=${F}`);
+        expect(block.textContent).toContain(`agentskeptic funnel-anon set ${F}`);
         expect(block.textContent).toContain(
           "export AGENTSKEPTIC_VERIFICATION_HYPOTHESIS='Expect_ROW_ABSENT_when_missing_write'",
         );

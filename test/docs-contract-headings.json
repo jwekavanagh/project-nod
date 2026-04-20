@@ -13,6 +13,7 @@
     "## Event line schema",
     "## End-to-end execution visibility (normative)",
     "## Tool registry",
+    "## Funnel attribution CLI (`funnel-anon`) — normative",
     "## Registry validation (`validate-registry`) — normative",
     "## Workflow result: multi-effect shape",
     "## SQL connector contract",

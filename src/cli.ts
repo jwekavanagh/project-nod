@@ -74,6 +74,7 @@ import { runCrossingSubcommand } from "./crossing/runCrossingSubcommand.js";
 import { maybeEmitOssClaimTicketUrlToStderr } from "./telemetry/maybeEmitOssClaimTicketUrl.js";
 import { classifyWorkflowLineage } from "./funnel/workflowLineageClassify.js";
 import { postProductActivationEvent } from "./telemetry/postProductActivationEvent.js";
+import { runFunnelAnonCliAndExit } from "./cli/runFunnelAnonSet.js";
 
 function usageQuick(): string {
   return `Usage:
@@ -1068,6 +1069,10 @@ function runPlanTransitionSubcommand(args: string[]): void {
 
 async function main(): Promise<void> {
   const args = process.argv.slice(2);
+  if (args[0] === "funnel-anon") {
+    runFunnelAnonCliAndExit(args.slice(1));
+    return;
+  }
   if (args[0] === "assurance") {
     runAssuranceSubcommand(args.slice(1));
     return;

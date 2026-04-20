@@ -179,6 +179,68 @@ describe("CLI agentskeptic", () => {
     assert.equal(r.stderr.trim(), "");
   });
 
+  it("funnel-anon --help exits 0", () => {
+    const r = spawnSync(process.execPath, ["--no-warnings", cliJs, "funnel-anon", "--help"], {
+      encoding: "utf8",
+      cwd: root,
+    });
+    assert.equal(r.status, 0);
+    assert.ok(r.stdout.includes("funnel-anon set"));
+    assert.equal(r.stderr.trim(), "");
+  });
+
+  it("funnel-anon set writes funnel_anon_id to config.json (exit 0)", () => {
+    const prevHome = process.env.HOME;
+    const prevUserProfile = process.env.USERPROFILE;
+    const home = mkdtempSync(join(tmpdir(), "cli-fa-"));
+    try {
+      process.env.HOME = home;
+      if (process.platform === "win32") process.env.USERPROFILE = home;
+      const u = "f47ac10b-58cc-4372-a567-0e02b2c3d479";
+      const r = spawnSync(process.execPath, ["--no-warnings", cliJs, "funnel-anon", "set", u], {
+        encoding: "utf8",
+        cwd: root,
+      });
+      assert.equal(r.status, 0, r.stderr);
+      assert.equal(r.stdout.trim(), u);
+      const cfg = JSON.parse(readFileSync(join(home, ".agentskeptic", "config.json"), "utf8"));
+      assert.equal(cfg.funnel_anon_id, u);
+    } finally {
+      rmSync(home, { recursive: true, force: true });
+      if (prevHome === undefined) delete process.env.HOME;
+      else process.env.HOME = prevHome;
+      if (process.platform === "win32") {
+        if (prevUserProfile === undefined) delete process.env.USERPROFILE;
+        else process.env.USERPROFILE = prevUserProfile;
+      }
+    }
+  });
+
+  it("funnel-anon set invalid uuid exits 2 with JSON envelope", () => {
+    const prevHome = process.env.HOME;
+    const prevUserProfile = process.env.USERPROFILE;
+    const home = mkdtempSync(join(tmpdir(), "cli-fa-bad-"));
+    try {
+      process.env.HOME = home;
+      if (process.platform === "win32") process.env.USERPROFILE = home;
+      const r = spawnSync(process.execPath, ["--no-warnings", cliJs, "funnel-anon", "set", "not-a-uuid"], {
+        encoding: "utf8",
+        cwd: root,
+      });
+      assert.equal(r.status, 2);
+      const err = JSON.parse(r.stderr.trim());
+      assert.equal(err.code, CLI_OPERATIONAL_CODES.CLI_USAGE);
+    } finally {
+      rmSync(home, { recursive: true, force: true });
+      if (prevHome === undefined) delete process.env.HOME;
+      else process.env.HOME = prevHome;
+      if (process.platform === "win32") {
+        if (prevUserProfile === undefined) delete process.env.USERPROFILE;
+        else process.env.USERPROFILE = prevUserProfile;
+      }
+    }
+  });
+
   it("verify-integrator-owned --help exits 0", () => {
     const r = spawnSync(process.execPath, ["--no-warnings", cliJs, "verify-integrator-owned", "--help"], {
       encoding: "utf8",

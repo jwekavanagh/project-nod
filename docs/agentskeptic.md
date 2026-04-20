@@ -320,7 +320,7 @@ Exit codes match batch verify (**0** / **1** / **2** / **3**). Operational codes
 | `verificationPolicy.ts` | `VerificationPolicy` normalization/validation; `executeVerificationWithPolicySync` / `executeVerificationWithPolicyAsync` (strong vs eventual polling; `sql_row` / `sql_effects` / `sql_row_absent` / `sql_relational`); `PolicyReconcileContext.reconcileRowAbsent`; `createSqlitePolicyContext` |
 | `executionTrace.ts` | `assertValidRunEventParentGraph`, `buildExecutionTraceView`, `formatExecutionTraceText`; `traceStepKind` derivation and `backwardPaths` |
 | `pipeline.ts` | Orchestration: `runLogicalStepsVerification` (internal), async `verifyWorkflow`, sync `verifyToolObservedStep`, `withWorkflowVerification` (SQLite `dbPath` only); default `truthReport` / `logStep` |
-| `cli.ts` | CLI entry: verify (**optional **`--write-run-bundle <dir>`** / **`--sign-ed25519-private-key`**), **`verify-bundle-signature`**, `compare`, `execution-trace`, `validate-registry`, **`debug`**, **`plan-transition`** |
+| `cli.ts` | CLI entry: verify (**optional **`--write-run-bundle <dir>`** / **`--sign-ed25519-private-key`**), **`verify-bundle-signature`**, `compare`, `execution-trace`, `validate-registry`, **`funnel-anon`**, **`debug`**, **`plan-transition`** |
 | `debugCorpus.ts` | Debug Console corpus layout: enumerate `<corpusRoot>/<runId>/`, load outcomes (**`ok`** / **`error`**), path safety, mandatory **`agent-run.json`** manifest with SHA-256 bindings |
 | `debugFocus.ts` | Pure **`buildFocusTargets`**: maps **`workflowTruthReport.failureAnalysis.evidence`** to trace navigation targets (tested golden vectors) |
 | `debugPatterns.ts` | **`buildCorpusPatterns`**: histograms + **`recurrenceSignature`** aggregation; optional pairwise recurrence when **`workflowId`** filter set (cap **50** runs) |
@@ -848,6 +848,28 @@ Each entry:
 Resolver messages for `sql_effects` prefix per-effect failures with `effects[<id>].` (e.g. `effects[primary].requiredFields …`).
 
 **Authoring templates:** Copy-paste starting points live under [`examples/templates/`](../examples/templates/) (`sql_row` and `sql_effects` examples); they must validate against `tools-registry.schema.json`.
+
+## Funnel attribution CLI (`funnel-anon`) — normative
+
+**Purpose:** Persist the browser-issued anonymous funnel id for **`POST /api/funnel/product-activation`** join keys. Full browser → CLI contract: [`funnel-observability-ssot.md`](funnel-observability-ssot.md#funnel-attribution-normative).
+
+### CLI
+
+```text
+agentskeptic funnel-anon set <uuid>
+agentskeptic funnel-anon --help
+```
+
+- **`set`**: merges **`funnel_anon_id`** into **`~/.agentskeptic/config.json`** (UUID validation; preserves **`install_id`**).
+- **`--help` / `-h`**: usage on **stdout**, exit **0** (only when **`funnel-anon`** is the first argument).
+
+### Exit codes
+
+| Exit | stdout | stderr |
+|------|--------|--------|
+| **0** | The persisted UUID (trimmed) | **Empty** |
+| **2** | **Empty** | Usage text, or JSON **`CLI_USAGE`** envelope for invalid UUID |
+| **3** | **Empty** | JSON operational envelope (**`INTERNAL_ERROR`**) when the config file cannot be written |
 
 ## Registry validation (`validate-registry`) — normative
 

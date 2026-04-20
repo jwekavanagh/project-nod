@@ -1,4 +1,3 @@
-import { FunnelSurfaceBeacon } from "@/components/FunnelSurfaceBeacon";
 import { productCopy } from "@/content/productCopy";
 import discoveryAcquisition from "@/lib/discoveryAcquisition";
 import type { Metadata } from "next";
@@ -14,7 +13,6 @@ export default function DatabaseTruthVsTracesPage() {
 
   return (
     <main className="integrate-main">
-      <FunnelSurfaceBeacon surface="acquisition" />
       <h1 data-testid="acquisition-hero-title">{discoveryAcquisition.heroTitle}</h1>
       <div data-testid="visitor-problem-answer">
         {visitorParagraphs.map((p) => (

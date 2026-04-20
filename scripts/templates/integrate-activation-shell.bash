@@ -1,4 +1,4 @@
-# After copying from https://agentskeptic.com/integrate: export AGENTSKEPTIC_FUNNEL_ANON_ID and AGENTSKEPTIC_VERIFICATION_HYPOTHESIS in this shell when you want attributed telemetry.
+# After copying from https://agentskeptic.com/integrate: run `agentskeptic funnel-anon set <uuid>` once for attributed telemetry (see docs/funnel-observability-ssot.md). Optional: export AGENTSKEPTIC_VERIFICATION_HYPOTHESIS for hypothesis tagging.
 # PatternComplete: final verify uses temp DB path ($ADOPT_DB); see docs/first-run-integration.md §AdoptionComplete_PatternComplete.
 # IntegrateSpineComplete: final bootstrap+crossing (pack-led) on integrator SQLite after the guard; see docs/first-run-integration.md (Integrate spine normative).
 set -euo pipefail

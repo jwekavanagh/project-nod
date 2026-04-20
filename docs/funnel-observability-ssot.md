@@ -14,6 +14,27 @@ This document is the **SSOT** for **North Star funnel metrics**: measurable prog
 
 **Operator daily aggregate export (CSV pack):** Read-only `funnel_event` aggregates, verdict JSON, and scheduling contract are documented only in [`docs/telemetry-daily-pack-ssot.md`](telemetry-daily-pack-ssot.md).
 
+## Funnel attribution (normative)
+
+**Purpose:** One integrator-facing contract for joining **browser-issued** `funnel_anon_id` to **CLI** `POST /api/funnel/product-activation` bodies, without treating shell `export` as the default persistence path.
+
+**Browser → localStorage:** Canonical site pages that are on the **audited acquisition allowlist** (or `/integrate` for integrate) run a layout-owned beacon ([`website/src/components/SiteFunnelAttribution.tsx`](../website/src/components/SiteFunnelAttribution.tsx)) that POSTs **`/api/funnel/surface-impression`** and persists **`agentskeptic_funnel_anon_id`** in `localStorage` (same wire as [`website/src/components/FunnelSurfaceBeacon.tsx`](../website/src/components/FunnelSurfaceBeacon.tsx)). Allowed pathnames are **explicitly listed** in [`website/src/lib/attributionRoutePolicy.ts`](../website/src/lib/attributionRoutePolicy.ts); routes not on the allowlist **do not** emit acquisition beacons (fail closed).
+
+**CLI default (disk):** Run **`agentskeptic funnel-anon set <uuid>`** once per machine, where **`<uuid>`** is the value from **`/integrate`** (read from `localStorage` into the copy block) or the JSON returned by the surface-impression handler. This merges **`funnel_anon_id`** into **`~/.agentskeptic/config.json`** next to **`install_id`** without clobbering the other field.
+
+**Wire precedence (`postProductActivationEvent`):** When building the activation JSON body, the CLI sets **`funnel_anon_id`** from the first matching row below:
+
+| Order | Source | When used |
+|------:|--------|-------------|
+| 1 | Env **`AGENTSKEPTIC_FUNNEL_ANON_ID`** (trimmed, non-empty) | Override / debug / CI only |
+| 2 | Disk **`funnel_anon_id`** in **`~/.agentskeptic/config.json`** | Normal integrator path after `funnel-anon set` |
+
+If neither applies, the body **omits** `funnel_anon_id` (same as today).
+
+### Override and debug (`AGENTSKEPTIC_FUNNEL_ANON_ID`)
+
+Operators may set a non-empty **`AGENTSKEPTIC_FUNNEL_ANON_ID`** to force the join key for a process **without** writing `config.json` (ephemeral runners, split permissions). This is **not** taught on **`/integrate`** as a co-primary path; normative integrator instructions use **`funnel-anon set`** only.
+
 ## Integrate spine (operator)
 
 When activation telemetry is captured, a successful **IntegrateSpineComplete** run (see [`first-run-integration.md`](first-run-integration.md#integrate-spine-normative)) is designed so its **final** contract `verify` is classified **`non_bundled`** under [`src/commercial/verifyWorkloadClassify.ts`](../src/commercial/verifyWorkloadClassify.ts): temp pack paths under `mktemp` plus an integrator-supplied SQLite path that does not match bundled example suffixes.
@@ -51,7 +72,7 @@ Factors where the integrator may never reach a terminal verification object, or 
 
 - Environment or repo setup not finished (prerequisites in [`first-run-integration.md`](first-run-integration.md)).
 - Verification engine or config error before a terminal **`WorkflowResult`** / Quick report exists (see **partial activation** in [CLI lock telemetry sequencing](#cli-lock-telemetry-sequencing)).
-- Operator or integrator chose not to export **`AGENTSKEPTIC_FUNNEL_ANON_ID`**, so cross-surface KPI numerators that join on **`funnel_anon_id`** may not move even when verification ran—see **Missing join key on activation** in [`growth-metrics-ssot.md`](growth-metrics-ssot.md) (*Explicit prohibitions* / operator interpretation contract).
+- Operator or integrator did not persist the browser **`funnel_anon_id`** (no **`agentskeptic funnel-anon set`** and no non-empty **`AGENTSKEPTIC_FUNNEL_ANON_ID`** override), so cross-surface KPI numerators that join on **`funnel_anon_id`** may not move even when verification ran—see **Missing join key on activation** in [`growth-metrics-ssot.md`](growth-metrics-ssot.md) (*Explicit prohibitions* / operator interpretation contract).
 
 ### Telemetry capture-side
 
@@ -117,7 +138,7 @@ The signed-in **`/account`** page lists recent **licensed verify outcomes** per 
   - **`schema_version`: 2 — `verify_started`:** v1 `verify_started` fields plus required **`telemetry_source`**: `"local_dev"` \| `"unknown"`. Reject **`legacy_unattributed`** on the wire for v2 (**`400`**). Optional **`verification_hypothesis`**: when present, must be non-empty after trim and satisfy the single canonical rules module [`src/telemetry/verificationHypothesisContract.ts`](../src/telemetry/verificationHypothesisContract.ts) (no duplicate charset table in this doc); invalid or empty-after-trim values → **`400`**. Omitted key remains valid for backward compatibility. Populated from integrator env **`AGENTSKEPTIC_VERIFICATION_HYPOTHESIS`** on the CLI when valid.
   - **`schema_version`: 2 — `verify_outcome`:** v1 `verify_outcome` fields plus required **`telemetry_source`**: `"local_dev"` \| `"unknown"`. Reject **`legacy_unattributed`** on the wire for v2 (**`400`**). Optional **`verification_hypothesis`**: same rules and failure behavior as v2 **`verify_started`**.
   - **`schema_version`: 3 — `verify_started` / `verify_outcome`:** same fields as **v2** for the same `event`, plus required **`workflow_lineage`**: `"catalog_shipped"` \| `"integrate_spine"` \| `"integrator_scoped"` \| `"unknown"` (machine meaning: [`src/funnel/workflowLineageClassify.ts`](../src/funnel/workflowLineageClassify.ts); SQL and operator prohibitions: [`growth-metrics-ssot.md`](growth-metrics-ssot.md)).
-  - When **`funnel_anon_id`** or **`install_id`** is present, invalid UUID → **`400`**. Optional env **`AGENTSKEPTIC_FUNNEL_ANON_ID`** on the CLI populates **`funnel_anon_id`** on commercial/OSS telemetry posts. **`install_id`** is populated by the CLI by default from a pseudonymous id persisted under **`~/.agentskeptic/config.json`** (see below); omitting **`install_id`** remains valid for older clients and stores **`funnel_event.install_id` = NULL**.
+  - When **`funnel_anon_id`** or **`install_id`** is present, invalid UUID → **`400`**. The CLI populates optional request **`funnel_anon_id`** using the precedence in [Funnel attribution (normative)](#funnel-attribution-normative) (disk via **`agentskeptic funnel-anon set`**, or env override **`AGENTSKEPTIC_FUNNEL_ANON_ID`**). **`install_id`** is populated by the CLI by default from a pseudonymous id persisted under **`~/.agentskeptic/config.json`** (see below); omitting **`install_id`** remains valid for older clients and stores **`funnel_event.install_id` = NULL**.
 - **Persistence (server):** On first successful insert for a phase, `funnel_event` rows include nullable column **`install_id`** (canonical; not duplicated inside `metadata` JSON). Value is taken from the request body when valid; otherwise SQL `NULL`. **`metadata.telemetry_source`:** v2 and v3 echo the wire enum; v1 inserts are stored as **`legacy_unattributed`**. **`unknown` is not “external-only.”** It labels non–`local_dev` client-declared activation posts. When a valid v2 or v3 **`verification_hypothesis`** is present on the wire, the trimmed value is copied to **`metadata.verification_hypothesis`** for operator context only (not entitlement, billing, or verification semantics). **v3** rows additionally persist **`metadata.workflow_lineage`** exactly as on the wire.
 - **Skew:** `issued_at` must be within **±300 seconds** of server time (same budget as `issued_at` on `POST /api/v1/usage/reserve`).
 - **Body size:** UTF-8 body must be **≤ 4096 bytes**; `Content-Length` larger than the cap yields **`413`** without reading beyond the limit when the header is present.
@@ -201,7 +222,7 @@ Commercial vs OSS lock flags are normative in [`commercial-enforce-gate-normativ
 | **`verify_outcome`** | Anonymous **activation** telemetry (`POST /api/funnel/product-activation`). | “Did a run reach a terminal verdict?” (OSS + commercial builds that POST successfully.) |
 | **`licensed_verify_outcome`** | **Licensed completion** (`POST /api/v1/funnel/verify-outcome`; requires reservation + API key). | Monetization / entitlement-adjacent reporting: “Did a keyed customer complete on the license server?” |
 
-**Identity roles (do not conflate):** **`funnel_anon_id`** in request/`metadata` is an optional **browser–CLI** join when the operator sets **`AGENTSKEPTIC_FUNNEL_ANON_ID`** from the site beacon. **`install_id`** on **`funnel_event`** is the default **CLI machine cohort** (not a human); operator SQL for distinct installs on **`verify_started`** is in [`growth-metrics-ssot.md`](growth-metrics-ssot.md) (`ActiveInstalls_DistinctInstallId_VerifyStarted_Rolling7dUtc`).
+**Identity roles (do not conflate):** **`funnel_anon_id`** in request/`metadata` is an optional **browser–CLI** join after the integrator runs **`agentskeptic funnel-anon set`** (or sets the override env for debug). **`install_id`** on **`funnel_event`** is the default **CLI machine cohort** (not a human); operator SQL for distinct installs on **`verify_started`** is in [`growth-metrics-ssot.md`](growth-metrics-ssot.md) (`ActiveInstalls_DistinctInstallId_VerifyStarted_Rolling7dUtc`).
 
 **`build_profile` in activation metadata (`oss` \| `commercial`):** reflects the **CLI build** (`LICENSE_PREFLIGHT_ENABLED` at compile time), **not** a live subscription check. Do not treat **`commercial`** as proof of an active paid plan.
 

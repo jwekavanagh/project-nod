@@ -310,4 +310,42 @@ describe("postProductActivationEvent install_id", () => {
       rmSync(home, { recursive: true, force: true });
     }
   });
+
+  it("AGENTSKEPTIC_FUNNEL_ANON_ID override wins over disk funnel_anon_id", async () => {
+    const home = mkdtempSync(join(tmpdir(), "as-funnel-override-"));
+    try {
+      setSandboxHome(home);
+      delete process.env.AGENTSKEPTIC_TELEMETRY;
+      mkdirSync(join(home, ".agentskeptic"), { recursive: true });
+      const diskFunnel = "f47ac10b-58cc-4372-a567-0e02b2c3d479";
+      const envFunnel = "11111111-1111-4111-8111-111111111111";
+      writeFileSync(
+        join(home, ".agentskeptic", "config.json"),
+        JSON.stringify({ funnel_anon_id: diskFunnel }),
+        "utf8",
+      );
+      const { resetCliInstallIdModuleStateForTests } = await import(
+        "../dist/telemetry/cliInstallId.js"
+      );
+      resetCliInstallIdModuleStateForTests();
+      process.env.AGENTSKEPTIC_FUNNEL_ANON_ID = envFunnel;
+      const { postProductActivationEvent } = await import(
+        "../dist/telemetry/postProductActivationEvent.js"
+      );
+      const issued = new Date().toISOString();
+      await postProductActivationEvent({
+        phase: "verify_started",
+        run_id: "run-funnel-ov-1",
+        issued_at: issued,
+        workload_class: "non_bundled",
+        workflow_lineage: "integrator_scoped",
+        subcommand: "batch_verify",
+        build_profile: "oss",
+      });
+      assert.equal(fetchCalls.at(-1).body.funnel_anon_id, envFunnel);
+    } finally {
+      delete process.env.AGENTSKEPTIC_FUNNEL_ANON_ID;
+      rmSync(home, { recursive: true, force: true });
+    }
+  });
 });

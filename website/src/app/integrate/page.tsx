@@ -1,4 +1,3 @@
-import { FunnelSurfaceBeacon } from "@/components/FunnelSurfaceBeacon";
 import { IntegrateActivationBlock } from "@/components/IntegrateActivationBlock";
 import { IntegrateCrossingCommands } from "@/components/IntegrateCrossingCommands";
 import { integrateActivation } from "@/content/productCopy";
@@ -15,7 +14,6 @@ export default function IntegratePage() {
   const a = integrateActivation;
   return (
     <main className="integrate-main integrate-prose">
-      <FunnelSurfaceBeacon surface="integrate" />
       <h1>{siteMetadata.integrate.title}</h1>
       <p className="muted">{siteMetadata.integrate.description}</p>
 

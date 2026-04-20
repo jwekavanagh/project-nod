@@ -12,6 +12,8 @@ This document is the **integrator SSOT**. **Grounded product output**—contract
 
 **Optional (not part of the primary path):** same-origin **registry draft** (model-assisted)—semantics, schema pins, and harness proof live in [registry-draft-ssot.md](registry-draft-ssot.md); it is **not** contract verification.
 
+**Funnel attribution (optional telemetry join):** after the site mints **`funnel_anon_id`**, run **`agentskeptic funnel-anon set <uuid>`** once per machine so activation posts carry the join key (normative: [`funnel-observability-ssot.md`](funnel-observability-ssot.md#funnel-attribution-normative)).
+
 **Verification hypothesis (optional telemetry context):** when you set **`AGENTSKEPTIC_VERIFICATION_HYPOTHESIS`** in the shell (for example from the copy block on **`/integrate`**), the CLI may include it on **`POST /api/funnel/product-activation`** so operators can see what mismatch you intended to check. Allowed characters and length are defined **only** in [`src/telemetry/verificationHypothesisContract.ts`](../src/telemetry/verificationHypothesisContract.ts); wire and metadata semantics: [`funnel-observability-ssot.md`](funnel-observability-ssot.md).
 
 **Why one doc:** One narrative reduces drift between the website, README, and ad-hoc integrator notes.

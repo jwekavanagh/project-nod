@@ -12,7 +12,7 @@ const STORAGE_FUNNEL = "agentskeptic_funnel_anon_id";
 const STORAGE_HYP = "agentskeptic_verification_hypothesis";
 
 /**
- * Hypothesis field + Copy (disabled until valid) + `<pre>` with funnel export, optional hypothesis export, then locked shell body.
+ * Hypothesis field + Copy (disabled until valid) + `<pre>` with `funnel-anon set`, optional hypothesis export, then locked shell body.
  */
 export function IntegrateActivationBlock() {
   const a = integrateActivation;
@@ -52,7 +52,7 @@ export function IntegrateActivationBlock() {
   const preText = useMemo(() => {
     const lines: string[] = [];
     if (funnelId) {
-      lines.push(`export AGENTSKEPTIC_FUNNEL_ANON_ID=${funnelId}`);
+      lines.push(`agentskeptic funnel-anon set ${funnelId}`);
     }
     if (hypothesisOk) {
       lines.push(`export AGENTSKEPTIC_VERIFICATION_HYPOTHESIS='${normalizedHyp}'`);

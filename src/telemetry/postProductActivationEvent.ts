@@ -6,7 +6,7 @@ import {
   AGENTSKEPTIC_CLI_SEMVER,
   PUBLIC_CANONICAL_SITE_ORIGIN,
 } from "../publicDistribution.generated.js";
-import { getOrCreateInstallId } from "./cliInstallId.js";
+import { getOrCreateInstallId, getPersistedFunnelAnonIdForTelemetry } from "./cliInstallId.js";
 import { fetchWithTimeout } from "./fetchWithTimeout.js";
 import { resolveTelemetrySource } from "./resolveTelemetrySource.js";
 import {
@@ -62,7 +62,11 @@ export type PostProductActivationEventInput =
 export async function postProductActivationEvent(input: PostProductActivationEventInput): Promise<void> {
   if (process.env.AGENTSKEPTIC_TELEMETRY?.trim() === "0") return;
 
-  const funnelAnonId = process.env.AGENTSKEPTIC_FUNNEL_ANON_ID?.trim();
+  const overrideFunnelAnon = process.env.AGENTSKEPTIC_FUNNEL_ANON_ID?.trim();
+  const funnelAnonId =
+    overrideFunnelAnon && overrideFunnelAnon.length > 0
+      ? overrideFunnelAnon
+      : getPersistedFunnelAnonIdForTelemetry();
   const funnelAnonPayload =
     funnelAnonId && funnelAnonId.length > 0 ? { funnel_anon_id: funnelAnonId } : {};
 
