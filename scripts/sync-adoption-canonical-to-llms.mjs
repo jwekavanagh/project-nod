@@ -1,6 +1,6 @@
 "use strict";
 
-import { readFileSync, writeFileSync } from "node:fs";
+import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -76,6 +76,12 @@ const readme = readFileSync(README_PATH, "utf8");
 const excerpt = extractReadmeAdoption(readme);
 
 for (const dest of [LLMS_ROOT, LLMS_PUBLIC]) {
+  // `website/public/llms.txt` is gitignored; CI only has repo-root `llms.txt` until
+  // `npm run sync:public-product-anchors` / website prebuild materializes the copy.
+  if (!existsSync(dest)) {
+    if (dest === LLMS_PUBLIC) continue;
+    throw new Error(`sync-adoption-canonical-to-llms: missing required file ${dest}`);
+  }
   let llms = readFileSync(dest, "utf8");
   llms = ensureLlmsMarkers(llms);
   if (check) {
