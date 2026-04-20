@@ -8,6 +8,7 @@ export {
 export type { CiLockV1, CiLockBatchV1, CiLockQuickV1 } from "./ciLock.js";
 export { runBatchVerifyToValidatedResult } from "./standardVerifyWorkflowCli.js";
 export { verifyWorkflow, loadToolsRegistry, withWorkflowVerification } from "./pipeline.js";
+export { verifyAgentskeptic } from "./verifyAgentskeptic.js";
 export { loadSchemaValidator } from "./schemaLoad.js";
 export type { SchemaValidatorName } from "./schemaLoad.js";
 export {

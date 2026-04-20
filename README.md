@@ -55,6 +55,66 @@ steps:
 [Product brief](https://agentskeptic.com/database-truth-vs-traces)
 <!-- discovery-acquisition-fold:end -->
 
+<!-- adoption-canonical:start -->
+## Default path: verify from your app
+
+### Lifecycle
+
+1. After each persisted tool observation, append **one JSON line + newline** to **`agentskeptic/events.ndjson`** (wire shape: [`docs/agentskeptic.md`](docs/agentskeptic.md#event-line-schema)).
+2. Keep **`agentskeptic/tools.json`** in version control; update when `toolId` → SQL mapping changes.
+3. Call **`verifyAgentskeptic`** after the run (or CI replay) before treating outcomes as safe.
+
+### Install
+
+```bash
+npm install agentskeptic
+```
+
+### Code
+
+```ts
+import { appendFileSync, writeFileSync, mkdirSync } from "node:fs";
+import { join } from "node:path";
+import { verifyAgentskeptic } from "agentskeptic";
+
+const projectRoot = process.cwd();
+const d = join(projectRoot, "agentskeptic");
+mkdirSync(d, { recursive: true });
+writeFileSync(
+  join(d, "tools.json"),
+  JSON.stringify([
+    {
+      toolId: "crm.upsert_contact",
+      effectDescriptionTemplate: "Upsert contact {/recordId} with fields {/fields}",
+      verification: {
+        kind: "sql_row",
+        table: { const: "contacts" },
+        identityEq: [{ column: { const: "id" }, value: { pointer: "/recordId" } }],
+        requiredFields: { pointer: "/fields" },
+      },
+    },
+  ]) + "\n",
+);
+appendFileSync(
+  join(d, "events.ndjson"),
+  JSON.stringify({
+    schemaVersion: 1,
+    workflowId: "wf_demo",
+    seq: 0,
+    type: "tool_observed",
+    toolId: "crm.upsert_contact",
+    params: { recordId: "c_ok", fields: { name: "Alice", status: "active" } },
+  }) + "\n",
+);
+
+const { ok, result } = await verifyAgentskeptic({
+  workflowId: "wf_demo",
+  databaseUrl: join(projectRoot, "app.db"),
+});
+if (!ok) throw new Error(`Verification failed: ${result.status}`);
+```
+<!-- adoption-canonical:end -->
+
 ## Buy vs build: why not only SQL checks
 
 **The scar (one pattern, over and over):** the trace says the tool succeeded—here **`crm.upsert_contact`** / **`contacts`**—but the row is missing or wrong. The repo demo names it **`wf_missing`** / **`ROW_ABSENT`**; **the same failure shape** applies whenever your registry maps tool activity to SQL state (ledgers, orders, tickets—not only CRM). That is not a logging problem—it is a **money and risk** problem the moment you ship, bill, close, or treat the run as audit evidence.
@@ -83,6 +143,10 @@ State verification engine: read-only SQL checks that database state matches expe
 - **llms.txt (repo, blob):** https://github.com/jwekavanagh/agentskeptic/blob/main/llms.txt
 
 <!-- public-product-anchors:end -->
+
+## Advanced
+
+**Canonical runnable (same API as README `### Code`):** after `npm run build`, run `node examples/verify-agentskeptic-canonical.mjs`.
 
 ## Try it (about one minute)
 

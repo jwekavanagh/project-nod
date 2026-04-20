@@ -27,6 +27,21 @@ const MAX_SUMMARY_UTF8_BYTES = 65536;
 const MAX_PR_BODY_UTF8_BYTES = 10240;
 const STDERR_TAIL_LINES = 20;
 
+const REPO_ROOT = join(__dirname, "..");
+const README_ADOPTION_START = "<!-- adoption-canonical:start -->";
+const README_ADOPTION_END = "<!-- adoption-canonical:end -->";
+
+function extractReadmeAdoptionExcerptForLlms() {
+  const readme = readFileSync(join(REPO_ROOT, "README.md"), "utf8");
+  const i = readme.indexOf(README_ADOPTION_START);
+  const j = readme.indexOf(README_ADOPTION_END);
+  if (i < 0 || j < 0 || j <= i) return "";
+  return readme
+    .slice(i + README_ADOPTION_START.length, j)
+    .replace(/^\r?\n/, "")
+    .replace(/\r?\n$/, "");
+}
+
 /**
  * @param {string} gitRepositoryUrl
  * @returns {{ owner: string, repo: string }}
@@ -180,11 +195,22 @@ function renderLlmsTextFromPayload(payload) {
   const integrateUrl = links.integrate;
   const learnHubUrl = links.learnHub;
   const openapiSelfCanonical = links.openapiCanonical;
+  const adoptionExcerpt = extractReadmeAdoptionExcerptForLlms();
+  const adoptionLlmsBlock =
+    adoptionExcerpt.length > 0
+      ? [
+          "<!-- adoption-canonical-llms:start -->",
+          adoptionExcerpt,
+          "<!-- adoption-canonical-llms:end -->",
+          String(payload.identityOneLiner),
+        ].join("\n")
+      : String(payload.identityOneLiner);
   const lines = [
     "# AgentSkeptic",
     "",
     "## Summary",
-    String(payload.identityOneLiner),
+    "",
+    adoptionLlmsBlock,
     "",
     "## Primary links",
     `- Canonical site: ${links.site}`,

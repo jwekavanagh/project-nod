@@ -1,6 +1,9 @@
 {
   "description": "README adoption funnel: sections must appear in this order (product requirement). Ends before differentiation so funnelSlice includes sample output.",
   "headings": [
+    "## Default path: verify from your app",
+    "## Buy vs build: why not only SQL checks",
+    "## Advanced",
     "## Try it (about one minute)",
     "### Docker quickstart (optional)",
     "## Minimal model (event → registry → result)",

@@ -1,6 +1,66 @@
 # AgentSkeptic
 
 ## Summary
+
+<!-- adoption-canonical-llms:start -->
+## Default path: verify from your app
+
+### Lifecycle
+
+1. After each persisted tool observation, append **one JSON line + newline** to **`agentskeptic/events.ndjson`** (wire shape: [`docs/agentskeptic.md`](docs/agentskeptic.md#event-line-schema)).
+2. Keep **`agentskeptic/tools.json`** in version control; update when `toolId` → SQL mapping changes.
+3. Call **`verifyAgentskeptic`** after the run (or CI replay) before treating outcomes as safe.
+
+### Install
+
+```bash
+npm install agentskeptic
+```
+
+### Code
+
+```ts
+import { appendFileSync, writeFileSync, mkdirSync } from "node:fs";
+import { join } from "node:path";
+import { verifyAgentskeptic } from "agentskeptic";
+
+const projectRoot = process.cwd();
+const d = join(projectRoot, "agentskeptic");
+mkdirSync(d, { recursive: true });
+writeFileSync(
+  join(d, "tools.json"),
+  JSON.stringify([
+    {
+      toolId: "crm.upsert_contact",
+      effectDescriptionTemplate: "Upsert contact {/recordId} with fields {/fields}",
+      verification: {
+        kind: "sql_row",
+        table: { const: "contacts" },
+        identityEq: [{ column: { const: "id" }, value: { pointer: "/recordId" } }],
+        requiredFields: { pointer: "/fields" },
+      },
+    },
+  ]) + "\n",
+);
+appendFileSync(
+  join(d, "events.ndjson"),
+  JSON.stringify({
+    schemaVersion: 1,
+    workflowId: "wf_demo",
+    seq: 0,
+    type: "tool_observed",
+    toolId: "crm.upsert_contact",
+    params: { recordId: "c_ok", fields: { name: "Alice", status: "active" } },
+  }) + "\n",
+);
+
+const { ok, result } = await verifyAgentskeptic({
+  workflowId: "wf_demo",
+  databaseUrl: join(projectRoot, "app.db"),
+});
+if (!ok) throw new Error(`Verification failed: ${result.status}`);
+```
+<!-- adoption-canonical-llms:end -->
 State verification engine: read-only SQL checks that database state matches expectations from structured tool activity (not arbitrary logs)—not proof of execution
 
 ## Primary links

@@ -6,6 +6,8 @@
 **Throughput (operator, pointer only):** Metric SQL and ids: [`growth-metrics-ssot.md`](growth-metrics-ssot.md). Interpretation and proxies: [`epistemic-contract.md`](epistemic-contract.md). User outcome vs telemetry capture: [`funnel-observability-ssot.md`](funnel-observability-ssot.md). **Decision-ready ProductionComplete:** [`adoption-epistemics-ssot.md#decision-ready-productioncomplete-normative`](adoption-epistemics-ssot.md#decision-ready-productioncomplete-normative).
 <!-- /epistemic-contract:consumer:first-run-integration -->
 
+**Start here:** Default library onboarding lives in the root [**README.md**](../README.md) section [**Default path: verify from your app**](../README.md#default-path-verify-from-your-app). Clone-first demo, **`npm start`**, and Docker live under [**README — Advanced**](../README.md#advanced).
+
 **Prerequisite:** Read [**Buy vs build: why not only SQL checks**](../README.md#buy-vs-build-why-not-only-sql-checks) in the root [**README.md**](../README.md) so the recurring failure mode, why ad-hoc SQL checks fail as a long-term substitute, and the **Quick → Contract** path are clear before you integrate.
 
 This document is the **integrator SSOT**. **Grounded product output**—contract verification you can treat as evidence against **your** authoritative SQLite or Postgres—starts only when you run verification on **integrator-owned** events/registry (or bootstrap output from **your** `tool_calls`) and retain the Decision-ready artifact bar when a human decision depends on the run. Everything under [**Mechanical preflight**](#mechanical-preflight) below (demo, bundled quickstart, PatternComplete-shaped runs, **`/integrate`**) is **pedagogy and mechanics**: it proves the engine and wiring, **not** by itself ProductionComplete.

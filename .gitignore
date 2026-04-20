@@ -22,3 +22,5 @@ website/.env.local
 # Cursor / agent workspace (open-source tree stays product-facing)
 .cursor/
 .agents/
+
+examples/.canonical-verify-run/

@@ -1,7 +1,6 @@
 /**
- * Product requirement: buy-vs-build narrative is inevitable on primary doc paths—README first
- * after discovery, anti-script framing present, first-run and golden-path point to README wedge
- * before demo / as canonical entry.
+ * Product requirement: README adoption block precedes wedge and anchors; no clone-first
+ * commands above ## Advanced; golden-path and first-run point at README correctly.
  */
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
@@ -15,27 +14,28 @@ const root = join(__dirname, "..");
 export const WEDGE_HEADING_LINE = "## Buy vs build: why not only SQL checks";
 export const WEDGE_FRAGMENT = "buy-vs-build-why-not-only-sql-checks";
 export const README_WEDGE_LINK = `../README.md#${WEDGE_FRAGMENT}`;
+export const README_DEFAULT_PATH_LINK = "../README.md#default-path-verify-from-your-app";
 
 /** Minimum concepts: drift, ownership, shared contract/registry, CI or audit gates */
 const ANTI_SCRIPT_TOKENS = [/drift/i, /ownership/i, /registry/i, /\bCI\b|audit/i];
 
-describe("readme wedge inevitability", () => {
-  it("O1 README: wedge heading before core mechanism, public anchors, and Try it", () => {
+describe("readme adoption + wedge", () => {
+  it("O1 README: adoption block before wedge, anchors, and Advanced", () => {
     const readme = readFileSync(join(root, "README.md"), "utf8");
+    const iAdopt = readme.indexOf("<!-- adoption-canonical:start -->");
     const iWedge = readme.indexOf(WEDGE_HEADING_LINE);
-    const iOne = readme.indexOf("**Core mechanism:**");
     const iAnchors = readme.indexOf("<!-- public-product-anchors:start -->");
-    const iTry = readme.indexOf("## Try it (about one minute)");
+    const iAdv = readme.indexOf("## Advanced");
+    assert.ok(iAdopt >= 0, "adoption markers missing");
     assert.ok(iWedge >= 0, "wedge heading missing");
-    assert.ok(iOne >= 0, "core mechanism line missing");
     assert.ok(iAnchors >= 0, "public-product-anchors missing");
-    assert.ok(iTry >= 0, "## Try it missing");
-    assert.ok(iWedge < iOne, "wedge must precede one-sentence value");
-    assert.ok(iOne < iAnchors, "core mechanism must precede public anchors");
-    assert.ok(iAnchors < iTry, "public anchors must precede Try it");
+    assert.ok(iAdv >= 0, "## Advanced missing");
+    assert.ok(iAdopt < iWedge, "adoption must precede wedge");
+    assert.ok(iWedge < iAnchors, "wedge must precede public anchors");
+    assert.ok(iAnchors < iAdv, "public anchors must precede Advanced");
   });
 
-  it("O2 README: anti-script concept bundle (drift, ownership, registry/contract, CI or audit)", () => {
+  it("O2 README: anti-script concept bundle in wedge body", () => {
     const readme = readFileSync(join(root, "README.md"), "utf8");
     const start = readme.indexOf(WEDGE_HEADING_LINE);
     assert.ok(start >= 0, "wedge section missing");
@@ -47,7 +47,24 @@ describe("readme wedge inevitability", () => {
     }
   });
 
-  it("O3 first-run-integration: README wedge link before first bash block containing npm start", () => {
+  it("O3 README: adoption region contains verifyAgentskeptic import", () => {
+    const readme = readFileSync(join(root, "README.md"), "utf8");
+    const a0 = readme.indexOf("<!-- adoption-canonical:start -->");
+    const a1 = readme.indexOf("<!-- adoption-canonical:end -->");
+    assert.ok(a0 >= 0 && a1 > a0, "adoption markers missing");
+    const region = readme.slice(a0, a1);
+    assert.match(region, /import \{ verifyAgentskeptic \} from "agentskeptic"/);
+  });
+
+  it("O4 README: no npm start above ## Advanced", () => {
+    const readme = readFileSync(join(root, "README.md"), "utf8");
+    const iAdv = readme.indexOf("## Advanced");
+    assert.ok(iAdv >= 0, "## Advanced missing");
+    const before = readme.slice(0, iAdv);
+    assert.equal(before.includes("npm start"), false);
+  });
+
+  it("O5 first-run-integration: README wedge link before first bash block containing npm start", () => {
     const p = join(root, "docs", "first-run-integration.md");
     const s = readFileSync(p, "utf8");
     const iLink = s.indexOf(`README.md#${WEDGE_FRAGMENT}`);
@@ -57,14 +74,14 @@ describe("readme wedge inevitability", () => {
     assert.ok(iLink < iNpmStartBlock, "prerequisite link must precede npm start demo block");
   });
 
-  it("O4 golden-path: first markdown link is README buy-vs-build fragment", () => {
+  it("O6 golden-path: first markdown link is README default path fragment", () => {
     const s = readFileSync(join(root, "docs", "golden-path.md"), "utf8");
     const m = s.match(/\[([^\]]*)\]\(([^)]+)\)/);
     assert.ok(m, "no markdown link found");
-    assert.equal(m[2], README_WEDGE_LINK, "first link must be README wedge anchor");
+    assert.equal(m[2], README_DEFAULT_PATH_LINK, "first link must be README default path anchor");
   });
 
-  it("O5 first-run: commercial anchors after first npm start instruction", () => {
+  it("O7 first-run: commercial anchors after first npm start instruction", () => {
     const s = readFileSync(join(root, "docs", "first-run-integration.md"), "utf8");
     const iDemo = s.indexOf("npm start");
     assert.ok(iDemo >= 0, "npm start missing");
