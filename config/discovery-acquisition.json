@@ -43,16 +43,52 @@
       ]
     }
   ],
-  "demandMoments": [
-    "Green LangGraph or agent trace but wrong or missing Postgres row",
-    "OpenAI-style tool loop reported success; CRM or SQLite state does not match",
-    "CI passed on workflow logs; database side effect never showed up",
-    "Need a gate before production: read-only verification, not more log volume",
-    "Green dashboards still happen when an AI agent writes wrong CRM data and you need read-only SQL before you trust the row.",
-    "When automation reports success while database records disagree with declared tool parameters until read-only verification, treat trace color as non-authoritative.",
-    "Debugging Postgres after a LangGraph run requires row-level truth at verification time beyond trace completion flags alone for customer-facing data.",
-    "When a Stripe webhook returns OK you still need the ledger database row to match before finance treats settlement as final and read-only SQL verifies persisted state.",
-    "CI can stay green on workflow logs while the database side effect is missing until a read-only gate surfaces ROW_ABSENT before production."
+  "problemIndex": [
+    {
+      "moment": "Green LangGraph or agent trace but wrong or missing Postgres row",
+      "primaryRoute": "/guides/trace-green-postgres-row-missing",
+      "relatedRoutes": ["/integrate", "/database-truth-vs-traces"]
+    },
+    {
+      "moment": "OpenAI-style tool loop reported success; CRM or SQLite state does not match",
+      "primaryRoute": "/guides/tool-loop-success-crm-state-wrong",
+      "relatedRoutes": ["/integrate", "/pricing"]
+    },
+    {
+      "moment": "CI passed on workflow logs; database side effect never showed up",
+      "primaryRoute": "/guides/ci-green-logs-row-absent",
+      "relatedRoutes": ["/guides/ci-green-missing-database-side-effect", "/integrate"]
+    },
+    {
+      "moment": "Need a gate before production: read-only verification, not more log volume",
+      "primaryRoute": "/guides/pre-production-read-only-sql-gate",
+      "relatedRoutes": ["/integrate", "/pricing"]
+    },
+    {
+      "moment": "Green dashboards still happen when an AI agent writes wrong CRM data and you need read-only SQL before you trust the row.",
+      "primaryRoute": "/guides/ai-agent-wrong-crm-data",
+      "relatedRoutes": ["/database-truth-vs-traces"]
+    },
+    {
+      "moment": "When automation reports success while database records disagree with declared tool parameters until read-only verification, treat trace color as non-authoritative.",
+      "primaryRoute": "/guides/automation-success-database-mismatch",
+      "relatedRoutes": ["/integrate"]
+    },
+    {
+      "moment": "Debugging Postgres after a LangGraph run requires row-level truth at verification time beyond trace completion flags alone for customer-facing data.",
+      "primaryRoute": "/guides/debug-postgres-after-langgraph",
+      "relatedRoutes": ["/guides/verify-langgraph-workflows", "/integrate"]
+    },
+    {
+      "moment": "When a Stripe webhook returns OK you still need the ledger database row to match before finance treats settlement as final and read-only SQL verifies persisted state.",
+      "primaryRoute": "/guides/stripe-webhook-database-alignment",
+      "relatedRoutes": ["/pricing"]
+    },
+    {
+      "moment": "CI can stay green on workflow logs while the database side effect is missing until a read-only gate surfaces ROW_ABSENT before production.",
+      "primaryRoute": "/guides/scenario-ci-green-side-effect-missing",
+      "relatedRoutes": ["/guides/ci-green-missing-database-side-effect", "/integrate"]
+    }
   ],
   "cliFollowupLines": [
     "More context (green trace vs database): {{ACQUISITION_URL}}",

@@ -44,7 +44,7 @@ describe("indexed guides", () => {
     const examples = surfaces.filter((s) => s.route.startsWith("/examples/"));
     const { container } = render(<GuidesHubPage />);
     const links = container.querySelectorAll("a[href]");
-    const expectedCount = guides.length + scenarios.length + examples.length + 1;
+    const expectedCount = guides.length + scenarios.length + examples.length + 2;
     expect(links.length).toBe(expectedCount);
     for (const s of [...guides, ...scenarios]) {
       expect(container.querySelector(`a[href="${s.route}"]`)).toBeTruthy();
@@ -53,6 +53,7 @@ describe("indexed guides", () => {
       expect(container.querySelector(`a[href="${e.route}"]`)).toBeTruthy();
     }
     expect(container.querySelector('a[href="/integrate"]')).toBeTruthy();
+    expect(container.querySelector('a[href="/compare"]')).toBeTruthy();
   });
 
   it("each guide surfaceKind guide meets shell contract", () => {

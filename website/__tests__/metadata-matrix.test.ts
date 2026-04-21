@@ -2,7 +2,7 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import type { Metadata } from "next";
 import { describe, expect, it } from "vitest";
-import { metadata as claimMetadata } from "@/app/claim/page";
+import { metadata as problemsMetadata } from "@/app/problems/page";
 import { metadata as compareHubMetadata } from "@/app/compare/page";
 import { generateMetadata as generateCompareSlugMetadata } from "@/app/compare/[slug]/page";
 import { metadata as acquisitionMetadata } from "@/app/database-truth-vs-traces/page";
@@ -61,7 +61,7 @@ describe("metadata matrix (merge gate)", () => {
     add("/compare", compareHubMetadata);
     add("/security", securityMetadata);
     add("/support", supportMetadata);
-    add("/claim", claimMetadata);
+    add("/problems", problemsMetadata);
 
     for (const s of listAllSurfaces()) {
       let m: Metadata;

@@ -6,7 +6,7 @@
     "node": "22.x"
   },
   "scripts": {
-    "prebuild": "node ../scripts/generate-integrate-activation-shell.mjs && npm --prefix .. run sync:public-product-anchors && node ../scripts/sync-integrator-docs-embedded.mjs && node ../scripts/sync-epistemic-contract-website.mjs",
+    "prebuild": "node ../scripts/generate-integrate-activation-shell.mjs && npm --prefix .. run sync:public-product-anchors && node ../scripts/sync-integrator-docs-embedded.mjs && node ../scripts/sync-epistemic-contract-website.mjs && node ../scripts/sync-buyer-authority-surfaces.mjs",
     "dev": "next dev --webpack",
     "build": "next build --webpack",
     "start": "next start",
@@ -18,7 +18,7 @@
     "sql:eval-to-account-staging-gates": "node ./scripts/sql-eval-to-account-staging-gates.mjs",
     "verify:eval-to-account-gate:mechanical": "npm run check:docs-claim-urls && npm run sql:eval-to-account-staging-gates -- --gate-set=rr",
     "verify:eval-to-account-gate": "npx vitest run __tests__/oss-claim.integration.test.ts && npm run verify:eval-to-account-gate:mechanical",
-    "test:vitest": "node ../scripts/sync-integrator-docs-embedded.mjs && node ../scripts/sync-epistemic-contract-website.mjs && vitest run"
+    "test:vitest": "node ../scripts/sync-integrator-docs-embedded.mjs && node ../scripts/sync-epistemic-contract-website.mjs && node ../scripts/sync-buyer-authority-surfaces.mjs && vitest run"
   },
   "dependencies": {
     "@auth/core": "0.41.1",

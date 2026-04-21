@@ -43,6 +43,7 @@ export function buildSiteHeaderPrimaryLinks(args: {
     { key: "integrate", href: "/integrate", label: "Get started", external: false },
     { key: "try", href: "/#try-it", label: "Try", external: false },
     { key: "guides", href: "/guides", label: "Learn", external: false },
+    { key: "problems", href: "/problems", label: "Problems", external: false },
     { key: "compare", href: "/compare", label: "Compare", external: false },
     { key: "pricing", href: "/pricing", label: "Pricing", external: false },
     {

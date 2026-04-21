@@ -1,13 +1,10 @@
-import discoveryAcquisition from "@/lib/discoveryAcquisition";
 import { supportPageMetadata } from "@/content/productCopy";
 
 export const siteMetadata = {
-  title: "AgentSkeptic — check database state against what your workflow claimed",
-  description: discoveryAcquisition.pageMetadata.description,
   integrate: {
     title: "Get started",
     description:
-      "Install Node.js 22.13+, Git, and npm. Paste one command block to clone this repo, install dependencies, build, run the bundled demo (npm start), then run first-run verify (npm run first-run-verify) with read-only SQL contract checks. A full run ends with agentskeptic crossing (pack-led) on the integrate spine pack and your prepared SQLite file—that is a mechanical checkpoint on this page, not ProductionComplete on your own emitters. Expect several minutes on a cold clone; install and build can fail for ordinary environment reasons.",
+      "Install Node.js 22.13+, Git, and npm. Follow the command block to clone, install, build, run the bundled demo, then first-run verify with read-only SQL. Crossing on your SQLite is a mechanical checkpoint—not ProductionComplete on your emitters. Cold clones may take several minutes.",
   },
   security: {
     title: "Security & Trust — AgentSkeptic",
@@ -22,10 +19,6 @@ export const siteMetadata = {
     title: "Claim verification run — AgentSkeptic",
     description:
       "Connect an open-source CLI verification run to your account after opening the claim link from your terminal and signing in with email (magic link may open in a new tab on the same browser).",
-  },
-  openGraph: {
-    title: "AgentSkeptic — check database state against what your workflow claimed",
-    description: discoveryAcquisition.pageMetadata.description,
   },
   /** Relative to `metadataBase` (canonical production origin). */
   openGraphImage: {

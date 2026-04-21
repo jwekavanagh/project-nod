@@ -22,6 +22,10 @@ export default function GuidesHubPage() {
       <h1>Learn</h1>
       <p className="lede">{productCopy.learnHubPrimaryLede}</p>
       <p className="lede">{productCopy.guidesHubSupportingSentence}</p>
+      <p className="muted">
+        {productCopy.guidesHubCompareLead}{" "}
+        <Link href="/compare">{productCopy.commercialSurface.compareApproachesLabel}</Link>
+      </p>
       <section aria-labelledby="guides-hub-guides-heading">
         <h2 id="guides-hub-guides-heading">Guides</h2>
         <ul className="mechanism-list guide-hub-list">

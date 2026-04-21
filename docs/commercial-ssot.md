@@ -8,6 +8,20 @@ This document is the **narrative SSOT** for the thin commercial layer (website, 
 
 **Related (integrator, not duplicated here):** [first-run-integration.md](first-run-integration.md) — run verification against your own SQL database; rendered on the site as **`/integrate`**.
 
+<!-- buyer-surface-commercial-boundary:begin -->
+
+## Commercial boundary
+
+The **published npm CLI** path for licensed contract **`verify`**, **`quick`** with lock flags, and **`enforce`** requires an **active** Individual, Team, Business, or Enterprise subscription (Stripe **trialing** counts), a valid API key, and a successful **`POST /api/v1/usage/reserve`**. The default **OSS** build from this repository runs contract **`verify`** / **`quick`** without a license server and can emit **`--output-lock`** fixtures; **`--expect-lock`** and **`agentskeptic enforce`** on the published npm package remain **commercial-gated**. **Starter** has **no** included paid verification quota (`includedMonthly` is **0**): it is for evaluation until you subscribe. Full matrix: *Free vs paid boundary (normative v1)* later in this document.
+
+In-process **`createDecisionGate`** in your application evaluates read-only SQL and **does not** call the reserve API; metering applies to the **CLI entry points** that perform license preflight.
+
+## Evaluation path
+
+Run the mechanical first-run path on the canonical site at **`/integrate`** (clone, build, bundled demo, then crossing on your prepared SQLite or Postgres). When you need Stripe-backed metering, API keys, and plan caps, use **`/pricing`** on the same site and keep this repository’s **commercial SSOT** (`docs/commercial-ssot.md`) as the normative contract for entitlements.
+
+<!-- buyer-surface-commercial-boundary:end -->
+
 **Operator funnel metrics (North Star):** [funnel-observability-ssot.md](funnel-observability-ssot.md) — acquisition and integrate impressions, anonymous CLI activation (`verify_started` / `verify_outcome` via `product_activation_*_beacon` on **telemetry** Postgres), and licensed CLI completion beacons on core (`funnel_event` / `verify_outcome_beacon`). Storage split: [telemetry-storage-ssot.md](telemetry-storage-ssot.md). Stage-separated rolling conversion metric ids live only in [growth-metrics-ssot.md](growth-metrics-ssot.md): `CrossSurface_ConversionRate_AcquisitionToIntegrate_Rolling7dUtc`, `CrossSurface_ConversionRate_IntegrateToVerifyOutcome_Rolling7dUtc`, `CrossSurface_ConversionRate_QualifiedIntegrateToVerifyOutcome_Rolling7dUtc` (integrate→outcome with **`workload_class` = `non_bundled`** numerator—see [Qualification proxy (operator)](funnel-observability-ssot.md#qualification-proxy-operator)), `CrossSurface_ConversionRate_QualifiedIntegrateToIntegratorScopedVerifyOutcome_Rolling7dUtc` (same denominator; numerator also requires **`workflow_lineage` = `integrator_scoped`** on schema v3 activation rows—see [growth-metrics-ssot.md](growth-metrics-ssot.md) §**CrossSurface_ConversionRate_QualifiedIntegrateToIntegratorScopedVerifyOutcome_Rolling7dUtc**), and the existing compressed `CrossSurface_ConversionRate_AcquisitionToVerifyOutcome_Rolling7dUtc`. **Interpretation (user vs telemetry capture)** is normative under [User outcome vs telemetry capture (operator)](funnel-observability-ssot.md#user-outcome-vs-telemetry-capture-operator). **CLI activation POST reachability** (403/400/204 behaviors and split-origin guidance) is normative only under **Activation reachability (operator)** in [funnel-observability-ssot.md](funnel-observability-ssot.md#activation-reachability-operator)—not duplicated here.
 
 ## Approved product scope (v1)

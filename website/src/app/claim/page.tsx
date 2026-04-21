@@ -8,7 +8,7 @@ export const metadata: Metadata = {
   title: siteMetadata.claim.title,
   description: siteMetadata.claim.description,
   alternates: { canonical: indexableGuideCanonical("/claim") },
-  robots: { index: true, follow: true },
+  robots: { index: false, follow: false },
 };
 
 export default function ClaimPage() {

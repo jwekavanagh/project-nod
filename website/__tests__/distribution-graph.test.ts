@@ -254,6 +254,7 @@ describe(
       const navSlice = homeAgain.slice(navPrimary, navPrimary + 4000);
       expect(navSlice).toContain(`href="${disc.slug}"`);
       expect(navSlice).toContain('href="/guides"');
+      expect(navSlice).toContain('href="/problems"');
       expect(navSlice).not.toContain('href="/security"');
       expect(htmlForTextNeedleMatch(navSlice)).toContain(disc.homepageAcquisitionCtaLabel);
       expect(homeAgain).toContain('href="/security"');
@@ -265,6 +266,7 @@ describe(
       expect(sitemapXml).toContain(`${canonicalOrigin}/llms.txt`);
       expect(sitemapXml).toContain(`${canonicalOrigin}/integrate`);
       expect(sitemapXml).toContain(`${canonicalOrigin}/guides`);
+      expect(sitemapXml).toContain(`${canonicalOrigin}/problems`);
       expect(sitemapXml).toContain(`${canonicalOrigin}/support`);
       expect(sitemapXml).toContain(`${canonicalOrigin}/openapi-commercial-v1.yaml`);
       expect(sitemapXml).toContain(`${canonicalOrigin}/security`);
@@ -272,6 +274,7 @@ describe(
       expect(sitemapXml).toContain(`${canonicalOrigin}/examples/wf-complete`);
       expect(sitemapXml).toContain(`${canonicalOrigin}/examples/wf-missing`);
       expect(sitemapXml).not.toMatch(/\/r\//);
+      expect(sitemapXml).not.toContain(`${canonicalOrigin}/auth/signin`);
 
       const robotsTxt = await getSiteHtml("/robots.txt");
       expect(robotsTxt).toContain(`${canonicalOrigin}/sitemap.xml`);

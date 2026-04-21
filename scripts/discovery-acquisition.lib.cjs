@@ -157,9 +157,15 @@ function appendDiscoveryLlmsAppendix(baseLlms, discovery, canonicalOrigin) {
   out += bullets(llms.notFor) + "\n";
   out += "\n## Related queries\n";
   out += bullets(llms.relatedQueries) + "\n";
-  const moments = /** @type {string[]} */ (discovery.demandMoments);
+  const rows = /** @type {{ moment: string; primaryRoute: string; relatedRoutes?: string[] }[]} */ (
+    discovery.problemIndex
+  );
   out += "\n## When this hurts (search-shaped)\n";
-  out += bullets(moments) + "\n";
+  for (const row of rows) {
+    const paths = [row.primaryRoute, ...(Array.isArray(row.relatedRoutes) ? row.relatedRoutes : [])];
+    const links = paths.map((p) => `${origin}${String(p).startsWith("/") ? String(p) : `/${String(p)}`}`);
+    out += `- ${row.moment} — ${links.join(" · ")}\n`;
+  }
   out += "\n## Problem framing (shareable)\n";
   out += `- Full page: ${origin}${slug}\n`;
   out += "\n## Visitor problem (canonical answer)\n\n";

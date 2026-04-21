@@ -17,6 +17,23 @@ export default function SecurityPage() {
     <main className="integrate-main">
       <h1>{st.title}</h1>
       <p className="lede">{st.intro}</p>
+      <ul className="mechanism-list" data-testid="security-buyer-authority-nav">
+        <li>
+          <Link href="/guides/buyer-commercial-boundary">{productCopy.pricingBuyerCommercialBoundaryLinkLabel}</Link>
+        </li>
+        <li>
+          <Link href="/guides/buyer-ci-enforcement-metering">Buyer: CI enforcement and metering</Link>
+        </li>
+        <li>
+          <Link href="/guides/buyer-trust-production-implications">Buyer: trust and production implications</Link>
+        </li>
+        <li>
+          <Link href="/problems">Problems</Link>
+        </li>
+        <li>
+          <Link href="/compare">{productCopy.commercialSurface.compareApproachesLabel}</Link>
+        </li>
+      </ul>
       <section data-testid="security-quick-facts" aria-labelledby="security-quick-facts-title">
         <h2 id="security-quick-facts-title">{productCopy.securityQuickFacts.title}</h2>
         <ul>

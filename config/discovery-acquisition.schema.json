@@ -18,7 +18,7 @@
     "readmeTitle",
     "homepageHero",
     "homepageDecisionFraming",
-    "demandMoments",
+    "problemIndex",
     "cliFollowupLines",
     "shareableTerminalDemo"
   ],
@@ -67,11 +67,30 @@
         { "pattern": "[Vv]erification\\s+time|[Aa]t\\s+verification|[Bb]efore\\s+you" }
       ]
     },
-    "demandMoments": {
+    "problemIndex": {
       "type": "array",
       "minItems": 3,
       "maxItems": 12,
-      "items": { "type": "string", "minLength": 12 }
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["moment", "primaryRoute"],
+        "properties": {
+          "moment": { "type": "string", "minLength": 12 },
+          "primaryRoute": {
+            "type": "string",
+            "pattern": "^/(guides|examples|compare)/[a-z0-9-]+$"
+          },
+          "relatedRoutes": {
+            "type": "array",
+            "maxItems": 6,
+            "items": {
+              "type": "string",
+              "pattern": "^/(guides|examples|compare)/[a-z0-9-]+$|^/(integrate|pricing|database-truth-vs-traces)$"
+            }
+          }
+        }
+      }
     },
     "cliFollowupLines": {
       "type": "array",

@@ -154,7 +154,9 @@ function buildDiscoveryPayload(root) {
       intentPhrases: llms.intentPhrases.map(String),
       notFor: llms.notFor.map(String),
       relatedQueries: llms.relatedQueries.map(String),
-      demandMoments: /** @type {string[]} */ (discovery.demandMoments).map(String),
+      problemIndex: /** @type {unknown} */ (
+        Array.isArray(discovery.problemIndex) ? JSON.parse(JSON.stringify(discovery.problemIndex)) : []
+      ),
       indexableGuides: /** @type {unknown} */ (indexableGuidesFromMd),
       indexableExamples: /** @type {unknown} */ (indexableExamplesFromMd),
       shareableTerminalDemo: {
@@ -169,13 +171,13 @@ function buildDiscoveryPayload(root) {
  * @param {Record<string, unknown>} payload
  */
 function discoveryObjectFromAppendix(payload) {
-  const ap = /** @type {{ slug: string; visitorProblemAnswer: string; intentPhrases: string[]; notFor: string[]; relatedQueries: string[]; demandMoments: string[]; indexableGuides?: { path: string; navLabel: string; problemAnchor: string }[]; indexableExamples?: { path: string; navLabel: string; problemAnchor: string; embedKey: string }[]; shareableTerminalDemo?: { title: string; transcript: string } }} */ (
+  const ap = /** @type {{ slug: string; visitorProblemAnswer: string; intentPhrases: string[]; notFor: string[]; relatedQueries: string[]; problemIndex: { moment: string; primaryRoute: string; relatedRoutes?: string[] }[]; indexableGuides?: { path: string; navLabel: string; problemAnchor: string }[]; indexableExamples?: { path: string; navLabel: string; problemAnchor: string; embedKey: string }[]; shareableTerminalDemo?: { title: string; transcript: string } }} */ (
     payload.appendix
   );
   const out = {
     slug: ap.slug,
     visitorProblemAnswer: ap.visitorProblemAnswer,
-    demandMoments: ap.demandMoments,
+    problemIndex: ap.problemIndex,
     llms: {
       intentPhrases: ap.intentPhrases,
       notFor: ap.notFor,

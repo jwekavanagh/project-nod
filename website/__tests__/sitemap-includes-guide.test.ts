@@ -20,12 +20,15 @@ describe("sitemap", () => {
     const idx = (suffix: string) => urls.findIndex((u) => u === `${base}${suffix}`);
     const iIntegrate = idx("/integrate");
     const iGuides = idx("/guides");
+    const iProblems = idx("/problems");
     const iSupport = idx("/support");
     expect(iIntegrate).toBeGreaterThanOrEqual(0);
     expect(iGuides).toBeGreaterThanOrEqual(0);
+    expect(iProblems).toBeGreaterThanOrEqual(0);
     expect(iSupport).toBeGreaterThanOrEqual(0);
     expect(iGuides).toBeGreaterThan(iIntegrate);
-    expect(iSupport).toBeGreaterThan(iGuides);
+    expect(iProblems).toBeGreaterThan(iGuides);
+    expect(iSupport).toBeGreaterThan(iProblems);
   });
 
   it("includes acquisition slug from discovery SSOT", async () => {

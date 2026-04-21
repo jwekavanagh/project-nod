@@ -2,6 +2,7 @@ import { HeroTerminalHighlighted } from "@/components/HeroTerminalHighlighted";
 import { productCopy } from "@/content/productCopy";
 import { siteMetadata } from "@/content/siteMetadata";
 import discoveryAcquisition from "@/lib/discoveryAcquisition";
+import { visitorProblemFirstSentence } from "@/lib/visitorProblemFirstSentence";
 import { indexableGuideCanonical } from "@/lib/indexableGuides";
 import { publicProductAnchors } from "@/lib/publicProductAnchors";
 import type { Metadata } from "next";
@@ -14,14 +15,13 @@ import { TryItSection } from "./home/TryItSection";
 import { HOME_SECTION_ORDER, type HomeSectionId } from "./page.sections";
 
 export const metadata: Metadata = {
-  title: siteMetadata.title,
-  description: siteMetadata.description,
+  title: discoveryAcquisition.heroTitle,
+  description: discoveryAcquisition.heroSubtitle,
   alternates: { canonical: indexableGuideCanonical("/") },
   openGraph: {
-    title: siteMetadata.openGraph.title,
-    description: siteMetadata.openGraph.description,
+    title: discoveryAcquisition.heroTitle,
+    description: discoveryAcquisition.heroSubtitle,
     type: "website",
-    url: "/",
     images: [
       {
         url: siteMetadata.openGraphImage.path,
@@ -70,6 +70,9 @@ export default function HomePage() {
         <div className="home-hero-grid">
           <div className="home-hero-copy">
             <h1 id="hero-heading">{productCopy.hero.title}</h1>
+            <p className="lede" data-testid="home-visitor-problem-first-sentence">
+              {visitorProblemFirstSentence()}
+            </p>
             <p className="lede">{productCopy.homepageDecisionFraming}</p>
             <p className="lede">{productCopy.homeHeroShortTagline}</p>
             <p className="home-cta-row" data-testid="home-hero-cta-row">
@@ -161,6 +164,8 @@ export default function HomePage() {
           <Link href={discoveryAcquisition.slug}>{productCopy.howItWorks.acquisitionDepthLinkLabel}</Link>
           {" · "}
           <Link href="/security">Security & Trust</Link>
+          {" · "}
+          <Link href="/compare">{productCopy.howItWorks.compareApproachesLabel}</Link>
         </p>
       </section>
     ),
@@ -238,6 +243,8 @@ export default function HomePage() {
           <Link href="/pricing">Pricing</Link>
           {" · "}
           <Link href="/account">Account</Link>
+          {" · "}
+          <Link href="/compare">{productCopy.commercialSurface.compareApproachesLabel}</Link>
           {" · "}
           <a href={productCopy.links.openapiCommercial}>OpenAPI</a>
         </p>

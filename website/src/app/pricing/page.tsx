@@ -43,11 +43,19 @@ export default function PricingPage() {
     <main className="pricing-page">
       <h1 className="pricing-hero-title">{hero.title}</h1>
       <p className="pricing-positioning">{hero.positioning}</p>
+      <p className="muted">
+        <Link href="/guides/buyer-commercial-boundary">{productCopy.pricingBuyerCommercialBoundaryLinkLabel}</Link>
+      </p>
       <section className="pricing-hero-block" data-testid="pricing-hero-recap" aria-label="Pricing summary">
         <p className="pricing-hero-subtitle" data-testid="pricing-plan-choice-guide">
           {hero.subtitle}
         </p>
       </section>
+
+      <p className="muted" data-testid="pricing-compare-lead">
+        {productCopy.pricingCompareLead}{" "}
+        <Link href="/compare">{productCopy.commercialSurface.compareApproachesLabel}</Link>
+      </p>
 
       <section className="pricing-example" data-testid="pricing-example" aria-labelledby="pricing-example-title">
         <h2 id="pricing-example-title" className="pricing-example-heading">

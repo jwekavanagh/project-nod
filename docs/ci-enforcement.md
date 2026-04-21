@@ -10,6 +10,14 @@ On the **commercial** build, **licensed** contract **`verify`**, **`quick`**, **
 
 Full free-vs-paid matrix (same facts in one place): [`commercial-ssot.md`](commercial-ssot.md) — *Free vs paid boundary (normative v1)*.
 
+<!-- buyer-surface-ci-enforcement-metering:begin -->
+
+## CI enforcement and metering
+
+**`agentskeptic enforce`** and **`--expect-lock`** on batch or quick verification require the **commercial** npm build, a valid **`AGENTSKEPTIC_API_KEY`**, and a successful **`POST /api/v1/usage/reserve`** with an active paid plan (Individual, Team, Business, or Enterprise—including **trialing**). Generate lock fixtures with **`--output-lock`** on **`verify`** or **`quick`** (OSS or commercial), then pin CI by re-running with **`--expect-lock`** or by invoking **`enforce`** against the committed **`ci-lock-v1`** file. Each allowed run consumes (or idempotently reuses) quota per **`run_id`** on the license API. OSS builds **cannot** enforce or expect-lock on the published npm path—see **`docs/commercial-enforce-gate-normative.md`**.
+
+<!-- buyer-surface-ci-enforcement-metering:end -->
+
 ## What the lock pins (semantics)
 
 The **`ci-lock-v1`** object is a deterministic projection of the verification result:

@@ -1,3 +1,4 @@
+import { DiscoveryArticleJsonLd } from "@/components/discovery/DiscoveryArticleJsonLd";
 import { productCopy } from "@/content/productCopy";
 import discoveryAcquisition from "@/lib/discoveryAcquisition";
 import { indexableGuideCanonical } from "@/lib/indexableGuides";
@@ -16,6 +17,11 @@ export default function DatabaseTruthVsTracesPage() {
 
   return (
     <main className="integrate-main">
+      <DiscoveryArticleJsonLd
+        headline={discoveryAcquisition.heroTitle}
+        description={discoveryAcquisition.pageMetadata.description}
+        path={discoveryAcquisition.slug}
+      />
       <h1 data-testid="acquisition-hero-title">{discoveryAcquisition.heroTitle}</h1>
       <div data-testid="visitor-problem-answer">
         {visitorParagraphs.map((p) => (

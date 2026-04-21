@@ -144,7 +144,8 @@ export const pricingTrustBandBeforeGrid = {
 export const pricingHero = {
   title: "Pricing for database truth verification",
   positioning: "Stop shipping workflows that look successful but write incorrect data.",
-  subtitle: "Start free. Pay when you need CI enforcement and production-scale verification.",
+  subtitle:
+    "Plans and quotas are below. Read the buyer guide for the commercial boundary before checkout.",
 } as const;
 
 export const pricingHeroExample = {
@@ -156,8 +157,7 @@ export const pricingHeroExample = {
   ],
 } as const;
 
-export const pricingRiskReassurance =
-  "Cancel anytime. Local verification stays free.";
+export const pricingRiskReassurance = "Cancel anytime; local verification stays free without a subscription.";
 
 /** `/pricing` Starter card: `includedMonthly` is 0 (evaluation; no paid CLI allowance). */
 export const pricingCardStarterPaidQuotaCaption =
@@ -184,7 +184,7 @@ export const securityQuickFacts = {
     "CLI and verification engine run in your infrastructure against databases you configure; the homepage demo runs bundled fixtures on this server for evaluation only.",
     "Structured tool activity is compared to database query results at verification time; that check does not prove a specific network call caused a row.",
     SECURITY_QUICK_VS_CONTRACT_BULLET,
-    "Accounts on this site use email magic links; paid plans use Stripe; see Privacy and Terms for site-side data handling. Treat the repository SSOT documents linked on Security & Trust as authoritative for semantics and commercial limits.",
+    "For the on-site buyer trust summary, use the trust buyer guide on this site; full normative verification semantics stay in verification-product-ssot.md on GitHub.",
   ],
 } as const satisfies SecurityQuickFacts;
 
@@ -318,6 +318,15 @@ export const productCopy = {
   guidesHubSupportingSentence:
     "Each guide ties a symptom to read-only SQL you can use as a gate, then sends you to Get started on your own data.",
 
+  /** Muted line after Learn hub supporting lede — pairs with `/compare`. */
+  guidesHubCompareLead: "When you want bundles versus single checks in one view, use",
+
+  /** After pricing hero recap — pairs with `/compare`. */
+  pricingCompareLead: "Compare plans to bundled proof paths when you are choosing an approach:",
+
+  /** Under pricing hero positioning — buyer commercial guide (fence-synced). */
+  pricingBuyerCommercialBoundaryLinkLabel: "Buyer: commercial boundary and evaluation path",
+
   /** Indexable guide shell embed (UI-only). */
   indexedGuideEmbedTitle:
     "Example: activity that looked successful in logs or traces, missing row (ROW_ABSENT)",
@@ -343,7 +352,21 @@ export const productCopy = {
     sectionTitle: "How it works",
     acquisitionDepthLinkLabel: "Product brief: traces vs database",
     exampleWfMissingLabel: "Bundled ROW_ABSENT example",
+    compareApproachesLabel: "Compare approaches",
   },
+
+  /** `/problems` metadata (UI-only; list body comes from discovery-acquisition `problemIndex`). */
+  problemsPageMetadata: {
+    title: "Problems the product routes to — AgentSkeptic",
+    description:
+      "Buyer moments from discovery-acquisition.json in publication order—each with a primary guide and related paths for first-run, pricing, or the product brief.",
+  },
+
+  /** Visible text around the `/compare` link on `/problems`. */
+  problemsHubIntroLead:
+    "These buyer moments are published in discovery order; each row links to a primary guide and related paths on this site. When you want bundles versus single checks in one place, use",
+
+  problemsHubIntroTrail: ".",
 
   homeWhatCatches: {
     sectionTitle: "What this catches",
@@ -384,31 +407,18 @@ export const productCopy = {
   /** Security & Trust page — factual only; link out to normative docs for guarantees. */
   securityTrust: {
     title: "Security & Trust",
-    intro:
-      "This page summarizes how the product and website handle data at a high level. Verification semantics, limits, and commercial rules are in the linked documentation.",
+    intro: "Buyer-oriented answers live on this site first; GitHub remains the full normative source.",
     sections: [
       {
-        heading: "Verification and read-only SQL",
+        heading: "Buyer answers on this site",
         paragraphs: [
-          "The engine compares declared tool activity to read-only `SELECT` results at verification time. It does not prove that a specific call caused a row; see the verification product SSOT for the trust boundary and vocabulary.",
+          "Use the buyer guides, Problems index, and Compare hub linked above for evaluation, metering, and trust boundaries in site-native prose before you widen database access.",
         ],
       },
       {
-        heading: "What runs in your environment",
+        heading: "GitHub as authoritative documentation",
         paragraphs: [
-          "The open-source CLI and engine run in your infrastructure against databases you configure. The homepage demo runs bundled fixtures on the server for evaluation only.",
-        ],
-      },
-      {
-        heading: "Commercial surface",
-        paragraphs: [
-          "Licensed npm verification, quota, API keys, and billing are described in the commercial SSOT. Do not infer SLAs or certifications that are not explicitly published here.",
-        ],
-      },
-      {
-        heading: "Website, auth, and privacy",
-        paragraphs: [
-          "Account sign-in uses email magic links. See the Privacy Policy and Terms for data handling on this site.",
+          "Verification vocabulary, commercial limits, and incident-class semantics remain normative in the repository SSOT documents linked below—this page does not restate those contracts.",
         ],
       },
     ],
@@ -568,6 +578,7 @@ export const productCopy = {
   commercialSurface: {
     title: "What paid plans unlock",
     lead: METERING_CLARIFIER,
+    compareApproachesLabel: "Compare approaches",
   },
 
   /** Homepage section CTAs that only scroll to `#try-it` (distinct from hero demo CTA). */
@@ -639,6 +650,9 @@ export const productCopy = {
     "/guides/stripe-webhook-database-alignment": "Webhook returned OK; ledger rows still need to match.",
     "/guides/ci-green-missing-database-side-effect": "Green CI while the side-effect row is still missing.",
     "/guides/first-run-verification": "Clone to crossing: run first-run verify on your own database.",
+    "/guides/buyer-commercial-boundary": "Paid versus OSS boundaries and the evaluation path on this site.",
+    "/guides/buyer-ci-enforcement-metering": "Locks, enforce, and reserve metering for CI pipelines.",
+    "/guides/buyer-trust-production-implications": "What a green verdict means before you rely on it in production.",
   } as const satisfies Readonly<Record<string, string>>,
 
   /**

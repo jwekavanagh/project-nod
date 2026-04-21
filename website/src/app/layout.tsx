@@ -30,13 +30,13 @@ const productJsonLd = {
 export const metadata: Metadata = {
   metadataBase: new URL(publicProductAnchors.productionCanonicalOrigin),
   title: {
-    default: siteMetadata.title,
+    default: discoveryAcquisition.pageMetadata.title,
     template: "%s — AgentSkeptic",
   },
-  description: siteMetadata.description,
+  description: discoveryAcquisition.pageMetadata.description,
   openGraph: {
-    title: siteMetadata.openGraph.title,
-    description: siteMetadata.openGraph.description,
+    title: discoveryAcquisition.pageMetadata.title,
+    description: discoveryAcquisition.pageMetadata.description,
     type: "website",
     images: [
       {
@@ -49,8 +49,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: siteMetadata.openGraph.title,
-    description: siteMetadata.openGraph.description,
+    title: discoveryAcquisition.pageMetadata.title,
+    description: discoveryAcquisition.pageMetadata.description,
     images: [siteMetadata.openGraphImage.path],
   },
 };

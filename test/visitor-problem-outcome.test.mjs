@@ -114,10 +114,19 @@ test("invalid pageMetadata.description fails schema (negative)", () => {
       { heading: "c", paragraphs: ["p"] },
       { heading: "d", paragraphs: ["p"] },
     ],
-    demandMoments: [
-      "Green LangGraph trace but wrong Postgres row",
-      "Tool loop reported success; CRM state does not match",
-      "CI passed on logs; database side effect never showed up",
+    problemIndex: [
+      {
+        moment: "Green LangGraph trace but wrong Postgres row",
+        primaryRoute: "/guides/trace-green-postgres-row-missing",
+      },
+      {
+        moment: "Tool loop reported success; CRM state does not match",
+        primaryRoute: "/guides/tool-loop-success-crm-state-wrong",
+      },
+      {
+        moment: "CI passed on logs; database side effect never showed up",
+        primaryRoute: "/guides/ci-green-logs-row-absent",
+      },
     ],
     cliFollowupLines: ["More context: {{ACQUISITION_URL}}"],
     llms: {

@@ -141,12 +141,12 @@ test("rendered llms includes pasteable terminal demo before Intent phrases", () 
   assert.ok(rendered.includes(payload.appendix.shareableTerminalDemo.transcript.slice(0, 80)));
 });
 
-test("rendered llms includes When this hurts demand section", () => {
+test("rendered llms includes When this hurts problemIndex section", () => {
   const payload = dp.buildDiscoveryPayload(root);
   const rendered = dp.renderLlmsTextFromPayload(payload);
   assert.ok(rendered.includes("## When this hurts (search-shaped)"));
-  for (const line of payload.appendix.demandMoments) {
-    assert.ok(rendered.includes(line), line);
+  for (const row of payload.appendix.problemIndex) {
+    assert.ok(rendered.includes(row.moment), row.moment);
   }
 });
 
