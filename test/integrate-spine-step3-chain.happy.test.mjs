@@ -82,7 +82,12 @@ describe("integrate spine step3 chain (happy)", () => {
       const lastLine = lines[lines.length - 1];
       assert.ok(lastLine, "verify stdout must include JSON");
       const parsed = JSON.parse(lastLine);
-      assert.equal(parsed.status, "complete");
+      if (parsed.schemaVersion === 1 && parsed.stateRelation !== undefined) {
+        assert.equal(parsed.stateRelation, "matches_expectations");
+        assert.equal(parsed.workflowId, "wf_bootstrap_fixture");
+      } else {
+        assert.equal(parsed.status, "complete");
+      }
     } finally {
       rmSync(outDir, { recursive: true, force: true });
     }

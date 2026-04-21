@@ -192,8 +192,32 @@ function main() {
   }
 
   const outLine = (verify.stdout || "").trim().split(/\r?\n/).filter(Boolean).pop();
-  if (!outLine || !outLine.includes('"status":"complete"')) {
-    fail("VERIFY_STDOUT", "expected terminal WorkflowResult with status complete on stdout", checklistBase);
+  /** Batch verify stdout: Outcome Certificate v1 (current) or legacy one-line WorkflowResult. */
+  let verifyStdoutOk = false;
+  if (outLine?.includes('"status":"complete"')) {
+    verifyStdoutOk = true;
+  } else if (outLine) {
+    try {
+      const o = JSON.parse(outLine);
+      if (
+        o &&
+        typeof o === "object" &&
+        o.schemaVersion === 1 &&
+        o.stateRelation === "matches_expectations" &&
+        o.workflowId === workflowId
+      ) {
+        verifyStdoutOk = true;
+      }
+    } catch {
+      /* */
+    }
+  }
+  if (!verifyStdoutOk) {
+    fail(
+      "VERIFY_STDOUT",
+      "expected terminal Outcome Certificate v1 (schemaVersion 1, stateRelation matches_expectations, matching workflowId) or legacy WorkflowResult with status complete on stdout",
+      checklistBase,
+    );
   }
 
   if (verify.stdout) process.stdout.write(verify.stdout);
