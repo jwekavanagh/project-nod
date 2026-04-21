@@ -8,13 +8,13 @@ import {
 } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { buildAgentRunRecordForBundle } from "./agentRunRecord.js";
 import {
   AGENT_RUN_FILENAME,
   EVENTS_FILENAME,
   WORKFLOW_RESULT_FILENAME,
   WORKFLOW_RESULT_SIG_FILENAME,
-} from "./debugCorpus.js";
+  buildAgentRunRecordForBundle,
+} from "./agentRunRecord.js";
 import type { WorkflowResult } from "./types.js";
 import { buildWorkflowResultSigSidecarBytes } from "./workflowResultSignature.js";
 

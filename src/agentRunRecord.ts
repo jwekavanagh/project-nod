@@ -4,6 +4,12 @@ export const WORKFLOW_RESULT_RELATIVE = "workflow-result.json";
 export const EVENTS_RELATIVE = "events.ndjson";
 export const WORKFLOW_RESULT_SIGNATURE_RELATIVE = "workflow-result.sig.json";
 
+/** On-disk corpus / run-bundle filenames (same strings as manifest `relativePath` fields). */
+export const AGENT_RUN_FILENAME = "agent-run.json";
+export const EVENTS_FILENAME = EVENTS_RELATIVE;
+export const WORKFLOW_RESULT_FILENAME = WORKFLOW_RESULT_RELATIVE;
+export const WORKFLOW_RESULT_SIG_FILENAME = WORKFLOW_RESULT_SIGNATURE_RELATIVE;
+
 export type ArtifactSpec = {
   relativePath: string;
   sha256: string;

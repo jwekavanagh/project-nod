@@ -13,14 +13,15 @@ import {
   BUNDLE_SIGNATURE_UNSIGNED_MANIFEST,
   type BundleSignatureCode,
 } from "./bundleSignatureCodes.js";
-import { sha256Hex, type AgentRunRecordV2 } from "./agentRunRecord.js";
-import { loadSchemaValidator } from "./schemaLoad.js";
 import {
+  sha256Hex,
   AGENT_RUN_FILENAME,
   EVENTS_FILENAME,
   WORKFLOW_RESULT_FILENAME,
   WORKFLOW_RESULT_SIG_FILENAME,
-} from "./debugCorpus.js";
+  type AgentRunRecordV2,
+} from "./agentRunRecord.js";
+import { loadSchemaValidator } from "./schemaLoad.js";
 import { normalizeSpkiPemForSidecar } from "./workflowResultSignature.js";
 
 export type RunBundleSignatureResult =

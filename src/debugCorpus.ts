@@ -9,14 +9,23 @@ import { WORKFLOW_RESULT_RUN_LEVEL_CODES_MISMATCH_MESSAGE } from "./runLevelDrif
 import { isV9RunLevelCodesInconsistent } from "./workflowRunLevelConsistency.js";
 import type { WorkflowResult } from "./types.js";
 import { normalizeToEmittedWorkflowResult } from "./workflowResultNormalize.js";
-import { sha256Hex, type AgentRunRecord } from "./agentRunRecord.js";
+import {
+  sha256Hex,
+  AGENT_RUN_FILENAME,
+  EVENTS_FILENAME,
+  WORKFLOW_RESULT_FILENAME,
+  WORKFLOW_RESULT_SIG_FILENAME,
+  type AgentRunRecord,
+} from "./agentRunRecord.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-export const WORKFLOW_RESULT_FILENAME = "workflow-result.json";
-export const EVENTS_FILENAME = "events.ndjson";
-export const WORKFLOW_RESULT_SIG_FILENAME = "workflow-result.sig.json";
-export const AGENT_RUN_FILENAME = "agent-run.json";
+export {
+  AGENT_RUN_FILENAME,
+  EVENTS_FILENAME,
+  WORKFLOW_RESULT_FILENAME,
+  WORKFLOW_RESULT_SIG_FILENAME,
+};
 
 export const DEBUG_CORPUS_CODES = {
   PATH_ESCAPE: "PATH_ESCAPE",
