@@ -777,7 +777,7 @@ export type LoadEventsResult = {
   eventFileAggregateCounts: EventFileAggregateCounts;
 };
 
-/** Batch / CLI verification target (`verifyWorkflow`). In-process hook remains SQLite `dbPath` only. */
+/** Batch / CLI verification target (`verifyWorkflow`) and `createDecisionGate` (`databaseUrl`). */
 export type VerificationDatabase =
   | { kind: "sqlite"; path: string }
   | { kind: "postgres"; connectionString: string };

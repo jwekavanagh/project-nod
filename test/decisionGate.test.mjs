@@ -1,5 +1,5 @@
 /**
- * Wrapper integration tests — AJV via dist/schemaLoad.js (same path as plan).
+ * DecisionGate integration tests — dist bundle.
  */
 import { describe, it, before, after } from "node:test";
 import assert from "node:assert/strict";
@@ -10,9 +10,8 @@ import { fileURLToPath } from "node:url";
 import { dirname } from "node:path";
 import { DatabaseSync } from "node:sqlite";
 import * as api from "../dist/index.js";
-import { CLI_OPERATIONAL_CODES } from "../dist/failureCatalog.js";
-import { verifyWorkflow, withWorkflowVerification } from "../dist/pipeline.js";
-import { TruthLayerError } from "../dist/truthLayerError.js";
+import { verifyWorkflow } from "../dist/pipeline.js";
+import { createDecisionGate } from "../dist/decisionGate.js";
 import { loadSchemaValidator } from "../dist/schemaLoad.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -30,12 +29,12 @@ function eventsForWorkflow(eventsPath, workflowId) {
   return out;
 }
 
-describe("withWorkflowVerification", () => {
+describe("DecisionGate", () => {
   let dir;
   let dbPath;
 
   before(() => {
-    dir = mkdtempSync(join(tmpdir(), "etl-wfv-"));
+    dir = mkdtempSync(join(tmpdir(), "etl-dg-"));
     dbPath = join(dir, "test.db");
     const sql = readFileSync(join(root, "examples", "seed.sql"), "utf8");
     const db = new DatabaseSync(dbPath);
@@ -52,39 +51,46 @@ describe("withWorkflowVerification", () => {
   const noopLog = () => {};
 
   it("public export surface", () => {
-    assert.equal(Object.hasOwn(api, "withWorkflowVerification"), true);
-    assert.equal(typeof api.withWorkflowVerification, "function");
+    assert.equal(Object.hasOwn(api, "createDecisionGate"), true);
+    assert.equal(typeof api.createDecisionGate, "function");
     assert.equal(Object.hasOwn(api, "formatWorkflowTruthReport"), true);
     assert.equal(typeof api.formatWorkflowTruthReport, "function");
     assert.equal(Object.hasOwn(api, "STEP_STATUS_TRUTH_LABELS"), true);
     assert.equal(api.STEP_STATUS_TRUTH_LABELS.verified, "VERIFIED");
     assert.equal(Object.hasOwn(api, "HUMAN_REPORT_RESULT_PHRASE"), true);
     assert.equal(api.HUMAN_REPORT_RESULT_PHRASE.VERIFIED, "Matched the database.");
-    assert.equal(Object.hasOwn(api, "createWorkflowVerificationSession"), false);
-    assert.equal(Object.hasOwn(api, "finish"), false);
+    assert.equal(Object.hasOwn(api, "withWorkflowVerification"), false);
   });
 
-  it("eventual verificationPolicy rejects before run", async () => {
-    await assert.rejects(
-      withWorkflowVerification(
-        {
-          workflowId: "wf_complete",
-          registryPath,
-          dbPath,
-          logStep: noopLog,
-          truthReport: () => {},
-          verificationPolicy: {
-            consistencyMode: "eventual",
-            verificationWindowMs: 100,
-            pollIntervalMs: 50,
-          },
-        },
-        async () => {},
-      ),
-      (e) =>
-        e instanceof TruthLayerError &&
-        e.code === CLI_OPERATIONAL_CODES.EVENTUAL_MODE_NOT_SUPPORTED_IN_PROCESS_HOOK,
-    );
+  it("eventual verificationPolicy on gate matches verifyWorkflow", async () => {
+    const policy = {
+      consistencyMode: "eventual",
+      verificationWindowMs: 100,
+      pollIntervalMs: 50,
+    };
+    const batchResult = await verifyWorkflow({
+      workflowId: "wf_complete",
+      eventsPath,
+      registryPath,
+      database: { kind: "sqlite", path: dbPath },
+      logStep: noopLog,
+      truthReport: () => {},
+      verificationPolicy: policy,
+    });
+    const gate = createDecisionGate({
+      workflowId: "wf_complete",
+      registryPath,
+      databaseUrl: dbPath,
+      projectRoot: root,
+      logStep: noopLog,
+      truthReport: () => {},
+      verificationPolicy: policy,
+    });
+    for (const ev of eventsForWorkflow(eventsPath, "wf_complete")) {
+      gate.appendRunEvent(ev);
+    }
+    const gateResult = await gate.evaluate();
+    assert.deepStrictEqual(gateResult, batchResult);
   });
 
   it("parity wf_complete wf_missing wf_dup_seq wf_divergent_retry vs verifyWorkflow", async () => {
@@ -98,19 +104,23 @@ describe("withWorkflowVerification", () => {
         logStep: noopLog,
         truthReport: () => {},
       });
-      const wrapperResult = await withWorkflowVerification(
-        { workflowId: wf, registryPath, dbPath, logStep: noopLog, truthReport: () => {} },
-        async (observeStep) => {
-          for (const ev of events) {
-            observeStep(ev);
-          }
-        },
-      );
-      assert.deepStrictEqual(wrapperResult, batchResult);
+      const gate = createDecisionGate({
+        workflowId: wf,
+        registryPath,
+        databaseUrl: dbPath,
+        projectRoot: root,
+        logStep: noopLog,
+        truthReport: () => {},
+      });
+      for (const ev of events) {
+        gate.appendRunEvent(ev);
+      }
+      const gateResult = await gate.evaluate();
+      assert.deepStrictEqual(gateResult, batchResult);
     }
   });
 
-  it("out-of-order observeStep matches verifyWorkflow on same capture-ordered NDJSON", async () => {
+  it("out-of-order appendRunEvent matches verifyWorkflow on same capture-ordered NDJSON", async () => {
     const evLate = {
       schemaVersion: 1,
       workflowId: "wf_wrap_order",
@@ -137,36 +147,48 @@ describe("withWorkflowVerification", () => {
       logStep: noopLog,
       truthReport: () => {},
     });
-    const wrapperResult = await withWorkflowVerification(
-      { workflowId: "wf_wrap_order", registryPath, dbPath, logStep: noopLog, truthReport: () => {} },
-      async (observeStep) => {
-        observeStep(evLate);
-        observeStep(evFirst);
-      },
-    );
-    assert.deepStrictEqual(wrapperResult, batchResult);
-    assert.equal(wrapperResult.eventSequenceIntegrity.kind, "irregular");
+    const gate = createDecisionGate({
+      workflowId: "wf_wrap_order",
+      registryPath,
+      databaseUrl: dbPath,
+      projectRoot: root,
+      logStep: noopLog,
+      truthReport: () => {},
+    });
+    gate.appendRunEvent(evLate);
+    gate.appendRunEvent(evFirst);
+    const gateResult = await gate.evaluate();
+    assert.deepStrictEqual(gateResult, batchResult);
+    assert.equal(gateResult.eventSequenceIntegrity.kind, "irregular");
   });
 
-  it("non-object observeStep → MALFORMED_EVENT_LINE, incomplete, no steps", async () => {
-    const result = await withWorkflowVerification(
-      { workflowId: "wf_complete", registryPath, dbPath, logStep: noopLog, truthReport: () => {} },
-      async (observeStep) => {
-        observeStep("not-json-line");
-      },
-    );
+  it("non-object appendRunEvent → MALFORMED_EVENT_LINE, incomplete, no steps", async () => {
+    const gate = createDecisionGate({
+      workflowId: "wf_complete",
+      registryPath,
+      databaseUrl: dbPath,
+      projectRoot: root,
+      logStep: noopLog,
+      truthReport: () => {},
+    });
+    gate.appendRunEvent("not-json-line");
+    const result = await gate.evaluate();
     assert.equal(result.status, "incomplete");
     assert.ok(result.runLevelReasons.map((x) => x.code).includes("MALFORMED_EVENT_LINE"));
     assert.equal(result.steps.length, 0);
   });
 
-  it("invalid object observeStep → MALFORMED_EVENT_LINE", async () => {
-    const result = await withWorkflowVerification(
-      { workflowId: "wf_complete", registryPath, dbPath, logStep: noopLog, truthReport: () => {} },
-      async (observeStep) => {
-        observeStep({});
-      },
-    );
+  it("invalid object appendRunEvent → MALFORMED_EVENT_LINE", async () => {
+    const gate = createDecisionGate({
+      workflowId: "wf_complete",
+      registryPath,
+      databaseUrl: dbPath,
+      projectRoot: root,
+      logStep: noopLog,
+      truthReport: () => {},
+    });
+    gate.appendRunEvent({});
+    const result = await gate.evaluate();
     assert.equal(result.status, "incomplete");
     assert.ok(result.runLevelReasons.map((x) => x.code).includes("MALFORMED_EVENT_LINE"));
     assert.equal(result.steps.length, 0);
@@ -175,13 +197,17 @@ describe("withWorkflowVerification", () => {
   it("wrong workflowId on event is skipped", async () => {
     const good = eventsForWorkflow(eventsPath, "wf_complete")[0];
     const other = eventsForWorkflow(eventsPath, "wf_missing")[0];
-    const result = await withWorkflowVerification(
-      { workflowId: "wf_complete", registryPath, dbPath, logStep: noopLog, truthReport: () => {} },
-      async (observeStep) => {
-        observeStep(other);
-        observeStep(good);
-      },
-    );
+    const gate = createDecisionGate({
+      workflowId: "wf_complete",
+      registryPath,
+      databaseUrl: dbPath,
+      projectRoot: root,
+      logStep: noopLog,
+      truthReport: () => {},
+    });
+    gate.appendRunEvent(other);
+    gate.appendRunEvent(good);
+    const result = await gate.evaluate();
     const batchResult = await verifyWorkflow({
       workflowId: "wf_complete",
       eventsPath,
@@ -204,63 +230,34 @@ describe("withWorkflowVerification", () => {
       logStep: noopLog,
       truthReport: () => {},
     });
-    const result = await withWorkflowVerification(
-      { workflowId: "wf_dup_seq", registryPath, dbPath, logStep: noopLog, truthReport: () => {} },
-      async (observeStep) => {
-        assert.equal(observeStep(events[0]), undefined);
-        assert.equal(observeStep(events[1]), undefined);
-      },
-    );
+    const gate = createDecisionGate({
+      workflowId: "wf_dup_seq",
+      registryPath,
+      databaseUrl: dbPath,
+      projectRoot: root,
+      logStep: noopLog,
+      truthReport: () => {},
+    });
+    assert.equal(gate.appendRunEvent(events[0]), undefined);
+    assert.equal(gate.appendRunEvent(events[1]), undefined);
+    const result = await gate.evaluate();
     assert.deepStrictEqual(result, batchResult);
     assert.equal(result.status, "complete");
     assert.equal(result.steps.length, 1);
   });
 
-  it("run throws: same error reference and DB reopen SELECT 1 succeeds", async () => {
-    const err = new Error("intentional-run-fail");
-    const ev = eventsForWorkflow(eventsPath, "wf_complete")[0];
-    await assert.rejects(
-      withWorkflowVerification(
-        { workflowId: "wf_complete", registryPath, dbPath, logStep: noopLog, truthReport: () => {} },
-        async (observeStep) => {
-          observeStep(ev);
-          throw err;
-        },
-      ),
-      (e) => e === err,
-    );
-    const db2 = new DatabaseSync(dbPath, { readOnly: true });
-    const row = db2.prepare("SELECT 1 AS ok").get();
-    assert.ok(row);
-    db2.close();
-  });
-
-  it("observeStep after run completes throws fixed message", async () => {
-    let stash;
-    const ev = eventsForWorkflow(eventsPath, "wf_complete")[0];
-    await withWorkflowVerification(
-      { workflowId: "wf_complete", registryPath, dbPath, logStep: noopLog, truthReport: () => {} },
-      async (observeStep) => {
-        stash = observeStep;
-        observeStep(ev);
-      },
-    );
-    assert.throws(
-      () => stash(ev),
-      (e) =>
-        e instanceof Error &&
-        e.message === "Workflow verification observeStep invoked after workflow run completed",
-    );
-  });
-
   it("success path WorkflowResult validates workflow-result schema", async () => {
     const ev = eventsForWorkflow(eventsPath, "wf_complete")[0];
-    const result = await withWorkflowVerification(
-      { workflowId: "wf_complete", registryPath, dbPath, logStep: noopLog, truthReport: () => {} },
-      async (observeStep) => {
-        observeStep(ev);
-      },
-    );
+    const gate = createDecisionGate({
+      workflowId: "wf_complete",
+      registryPath,
+      databaseUrl: dbPath,
+      projectRoot: root,
+      logStep: noopLog,
+      truthReport: () => {},
+    });
+    gate.appendRunEvent(ev);
+    const result = await gate.evaluate();
     const validateResult = loadSchemaValidator("workflow-result");
     assert.equal(validateResult(result), true);
   });

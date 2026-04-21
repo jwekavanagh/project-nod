@@ -1,13 +1,13 @@
 /**
- * Runnable mirror of README adoption `### Code` block (same lifecycle, same public API).
- * Run from repo root after `npm run build`: `node examples/verify-agentskeptic-canonical.mjs`
+ * Canonical DecisionGate demo (registry + buffered events + SQLite).
+ * Run from repo root after `npm run build`: `node examples/decision-gate-canonical.mjs`
  */
 import { appendFileSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { DatabaseSync } from "node:sqlite";
-import { verifyAgentskeptic } from "../dist/index.js";
+import { createDecisionGate } from "../dist/decisionGate.js";
 
 const runRoot = join(fileURLToPath(new URL(".", import.meta.url)), ".canonical-verify-run");
 mkdirSync(runRoot, { recursive: true });
@@ -31,17 +31,6 @@ try {
       },
     ]) + "\n",
   );
-  appendFileSync(
-    join(d, "events.ndjson"),
-    JSON.stringify({
-      schemaVersion: 1,
-      workflowId: "wf_demo",
-      seq: 0,
-      type: "tool_observed",
-      toolId: "crm.upsert_contact",
-      params: { recordId: "c_ok", fields: { name: "Alice", status: "active" } },
-    }) + "\n",
-  );
 
   const dbPath = join(projectRoot, "app.db");
   const db = new DatabaseSync(dbPath);
@@ -50,11 +39,26 @@ try {
   );
   db.close();
 
-  const { ok } = await verifyAgentskeptic({
+  const gate = createDecisionGate({
     workflowId: "wf_demo",
+    registryPath: join("agentskeptic", "tools.json"),
     databaseUrl: "app.db",
     projectRoot,
+    logStep: () => {},
+    truthReport: () => {},
   });
+  gate.appendRunEvent({
+    schemaVersion: 1,
+    workflowId: "wf_demo",
+    seq: 0,
+    type: "tool_observed",
+    toolId: "crm.upsert_contact",
+    params: { recordId: "c_ok", fields: { name: "Alice", status: "active" } },
+  });
+
+  const certificate = await gate.evaluateCertificate();
+  const ok =
+    certificate.stateRelation === "matches_expectations" && certificate.highStakesReliance === "permitted";
   process.exit(ok ? 0 : 1);
 } finally {
   rmSync(projectRoot, { recursive: true, force: true });

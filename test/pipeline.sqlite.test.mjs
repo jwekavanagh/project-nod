@@ -6,7 +6,8 @@ import { tmpdir } from "node:os";
 import { fileURLToPath } from "node:url";
 import { dirname } from "node:path";
 import { DatabaseSync } from "node:sqlite";
-import { verifyWorkflow, withWorkflowVerification } from "../dist/pipeline.js";
+import { verifyWorkflow } from "../dist/pipeline.js";
+import { createDecisionGate } from "../dist/decisionGate.js";
 import { formatWorkflowTruthReport } from "../dist/workflowTruthReport.js";
 import { loadSchemaValidator } from "../dist/schemaLoad.js";
 import { loadEventsForWorkflow } from "../dist/loadEvents.js";
@@ -406,7 +407,7 @@ describe("verifyWorkflow integration", () => {
     assert.equal(received[0], formatWorkflowTruthReport(r));
   });
 
-  it("truthReport receives formatWorkflowTruthReport(result) once (withWorkflowVerification)", async () => {
+  it("truthReport receives formatWorkflowTruthReport(result) once (DecisionGate)", async () => {
     let ev;
     for (const line of readFileSync(eventsPath, "utf8").split(/\r?\n/).filter((l) => l.trim().length > 0)) {
       const o = JSON.parse(line);
@@ -417,18 +418,16 @@ describe("verifyWorkflow integration", () => {
     }
     assert.ok(ev);
     const received = [];
-    const r = await withWorkflowVerification(
-      {
-        workflowId: "wf_complete",
-        registryPath,
-        dbPath,
-        logStep: noopLog,
-        truthReport: (s) => received.push(s),
-      },
-      async (observeStep) => {
-        observeStep(ev);
-      },
-    );
+    const gate = createDecisionGate({
+      workflowId: "wf_complete",
+      registryPath,
+      databaseUrl: dbPath,
+      projectRoot: root,
+      logStep: noopLog,
+      truthReport: (s) => received.push(s),
+    });
+    gate.appendRunEvent(ev);
+    const r = await gate.evaluate();
     assert.equal(received.length, 1);
     assert.equal(received[0], formatWorkflowTruthReport(r));
   });

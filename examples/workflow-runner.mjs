@@ -1,14 +1,13 @@
 #!/usr/bin/env node
 /**
- * Low-friction integration demo: one `withWorkflowVerification` at the execution root,
- * `observeStep` only inside the run callback (no public finish).
+ * Low-friction integration demo: `createDecisionGate`, append events, then `evaluate`.
  */
 import { readFileSync, mkdtempSync, rmSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { tmpdir } from "node:os";
 import { fileURLToPath } from "node:url";
 import { DatabaseSync } from "node:sqlite";
-import { withWorkflowVerification } from "../dist/pipeline.js";
+import { createDecisionGate } from "../dist/decisionGate.js";
 import { loadSchemaValidator } from "../dist/schemaLoad.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -29,18 +28,16 @@ try {
   const firstLine = readFileSync(eventsPath, "utf8").split(/\r?\n/).filter((l) => l.trim().length > 0)[0];
   const ev = JSON.parse(firstLine);
 
-  const result = await withWorkflowVerification(
-    {
-      workflowId: "wf_complete",
-      registryPath,
-      dbPath,
-      logStep: () => {},
-      truthReport: () => {},
-    },
-    async (observeStep) => {
-      observeStep(ev);
-    },
-  );
+  const gate = createDecisionGate({
+    workflowId: "wf_complete",
+    registryPath,
+    databaseUrl: dbPath,
+    projectRoot: root,
+    logStep: () => {},
+    truthReport: () => {},
+  });
+  gate.appendRunEvent(ev);
+  const result = await gate.evaluate();
 
   const validateResult = loadSchemaValidator("workflow-result");
   if (!validateResult(result)) {

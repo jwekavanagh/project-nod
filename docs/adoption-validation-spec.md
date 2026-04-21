@@ -40,11 +40,12 @@ docs/first-run-integration.md	modify
 docs/first-run-validation-log.md	modify
 docs/funnel-observability-ssot.md	modify
 docs/golden-path.md	modify
+docs/decision-gate-ssot.md	add
 docs/growth-metrics-ssot.md	modify
 docs/verification-product-ssot.md	modify
 examples/integrate-your-db/bootstrap-input.json	add
 examples/integrate-your-db/required-sqlite-state.sql	add
-examples/verify-agentskeptic-canonical.mjs	add
+examples/decision-gate-canonical.mjs	add
 package.json	modify
 README.md	modify
 scripts/demo.mjs	add

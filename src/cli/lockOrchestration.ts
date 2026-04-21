@@ -28,7 +28,8 @@ import {
   parseQuickLockXorAndParsed,
   type ParsedBatchLockRoute,
 } from "../ciLockWorkflow.js";
-import { buildOutcomeCertificateFromQuickReport } from "../outcomeCertificate.js";
+import { buildOutcomeCertificateFromQuickReport, buildOutcomeCertificateFromWorkflowResult } from "../outcomeCertificate.js";
+import type { OutcomeCertificateV1 } from "../outcomeCertificate.js";
 import { emitVerifyWorkflowCliJsonAndExitByStatus } from "../standardVerifyWorkflowCli.js";
 import { formatDistributionFooter } from "../distributionFooter.js";
 import { maybeEmitOssClaimTicketUrlToStderr } from "../telemetry/maybeEmitOssClaimTicketUrl.js";
@@ -172,8 +173,10 @@ async function maybePostVerifyOutcomeAndBeaconBatch(input: {
     });
   }
   if (LICENSE_PREFLIGHT_ENABLED && input.runId !== null) {
+    const certificate = buildOutcomeCertificateFromWorkflowResult(input.result, "contract_sql");
     await postVerifyOutcomeBeacon({
       runId: input.runId,
+      certificate,
       terminal_status: ts,
       workload_class: input.workloadClass,
       subcommand: "batch_verify",
@@ -184,6 +187,7 @@ async function maybePostVerifyOutcomeAndBeaconBatch(input: {
 async function maybePostVerifyOutcomeAndBeaconQuick(input: {
   shouldEmit: boolean;
   runId: string | null;
+  certificate: OutcomeCertificateV1;
   verdict: QuickVerifyReport["verdict"];
   workloadClass: "bundled_examples" | "non_bundled";
   activationRunId: string;
@@ -218,6 +222,7 @@ async function maybePostVerifyOutcomeAndBeaconQuick(input: {
   if (LICENSE_PREFLIGHT_ENABLED && input.runId !== null) {
     await postVerifyOutcomeBeacon({
       runId: input.runId,
+      certificate: input.certificate,
       terminal_status: ts,
       workload_class: input.workloadClass,
       subcommand: "quick_verify",
@@ -539,9 +544,14 @@ export async function orchestrateVerifyQuickLockRun(restArgs: string[]): Promise
   if (voBeaconEligible) {
     const verdict =
       terminal.tag === "operational" ? terminal.verifiedOutcome!.report.verdict : terminal.report.verdict;
+    const qCertBeacon =
+      terminal.tag === "operational"
+        ? quickOutcomeCertificate(terminal.verifiedOutcome!.report, route.pq)
+        : quickOutcomeCertificate(terminal.report, terminal.pq);
     await maybePostVerifyOutcomeAndBeaconQuick({
       shouldEmit: true,
       runId: preflight.runId,
+      certificate: qCertBeacon,
       verdict,
       workloadClass,
       activationRunId,
@@ -650,9 +660,14 @@ export async function orchestrateEnforceQuickLockRun(restArgs: string[]): Promis
   if (voBeaconEligible) {
     const verdict =
       terminal.tag === "operational" ? terminal.verifiedOutcome!.report.verdict : terminal.report.verdict;
+    const qCertBeacon =
+      terminal.tag === "operational"
+        ? quickOutcomeCertificate(terminal.verifiedOutcome!.report, route.pq)
+        : quickOutcomeCertificate(terminal.report, terminal.pq);
     await maybePostVerifyOutcomeAndBeaconQuick({
       shouldEmit: true,
       runId: preflight.runId,
+      certificate: qCertBeacon,
       verdict,
       workloadClass,
       activationRunId,

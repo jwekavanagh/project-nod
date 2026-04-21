@@ -160,6 +160,7 @@ export async function runBatchVerifyWithTelemetrySubcommand(
     }
     await postVerifyOutcomeBeacon({
       runId: batchPreflight.runId,
+      certificate,
       terminal_status: terminalStatus,
       workload_class: batchWorkloadClass,
       subcommand: opts.telemetrySubcommand,

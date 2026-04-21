@@ -8,6 +8,8 @@ import { apiKeys } from "@/db/schema";
 import { and, eq, isNull } from "drizzle-orm";
 import { assembleCommercialAccountState } from "@/lib/commercialAccountState";
 import { loadAccountPageVerificationActivity } from "@/lib/funnelObservabilityQueries";
+import { loadReliabilitySignalsForUser } from "@/lib/reliabilitySignals";
+import { ReliabilitySignalsView } from "./ReliabilitySignalsView";
 
 export const dynamic = "force-dynamic";
 
@@ -33,11 +35,14 @@ export default async function AccountPage() {
     initialCommercial.monthlyQuota.yearMonth,
   );
 
+  const reliability = await loadReliabilitySignalsForUser(session.user.id);
+
   const masked = keys[0] ? `wf_sk_live_****… (created)` : null;
 
   return (
     <main>
       <h1>Account</h1>
+      <ReliabilitySignalsView data={reliability} />
       <div className="card u-mt-1">
         <AccountServerAboveFold
           email={session.user.email ?? ""}

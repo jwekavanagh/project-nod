@@ -7,17 +7,18 @@ import { DatabaseSync } from "node:sqlite";
 import { describe, expect, it, beforeAll, afterAll } from "vitest";
 import { normalizeSpkiPemForSidecar } from "./workflowResultSignature.js";
 import { loadCorpusRun, resolveCorpusRootReal } from "./debugCorpus.js";
-import { withWorkflowVerification } from "./pipeline.js";
+import { createDecisionGate } from "./decisionGate.js";
+import { writeRunBundleFromDecisionGate } from "./agentRunBundle.js";
 import { verifyRunBundleSignature } from "./verifyRunBundleSignature.js";
 
 const root = join(fileURLToPath(import.meta.url), "..", "..");
 
-describe("withWorkflowVerification persistBundle", () => {
+describe("DecisionGate run bundle write", () => {
   let workDir: string;
   let dbPath: string;
 
   beforeAll(() => {
-    workDir = mkdtempSync(join(tmpdir(), "etl-wfv-persist-"));
+    workDir = mkdtempSync(join(tmpdir(), "etl-dg-persist-"));
     dbPath = join(workDir, "demo.db");
     const sql = readFileSync(join(root, "examples", "seed.sql"), "utf8");
     const db = new DatabaseSync(dbPath);
@@ -40,22 +41,25 @@ describe("withWorkflowVerification persistBundle", () => {
     const runId = "hook_run";
     const outDir = join(bundleParent, runId);
     try {
-      const result = await withWorkflowVerification(
-        {
-          workflowId: wfId,
-          registryPath,
-          dbPath,
-          truthReport: () => {},
-          persistBundle: { outDir },
-        },
-        (observeStep) => {
-          for (const ev of events) {
-            observeStep(ev);
-          }
-        },
-      );
+      const gate = createDecisionGate({
+        workflowId: wfId,
+        registryPath,
+        databaseUrl: dbPath,
+        projectRoot: root,
+        truthReport: () => {},
+      });
+      for (const ev of events) {
+        gate.appendRunEvent(ev);
+      }
+      const result = await gate.evaluate();
       expect(result.steps.length).toBe(1);
       expect(result.steps[0]!.status).toBe("verified");
+
+      writeRunBundleFromDecisionGate({
+        outDir,
+        eventsNdjson: gate.toNdjsonUtf8(),
+        workflowResult: result,
+      });
 
       const loaded = loadCorpusRun(resolveCorpusRootReal(bundleParent), runId);
       expect(loaded.loadStatus).toBe("ok");
@@ -68,7 +72,7 @@ describe("withWorkflowVerification persistBundle", () => {
     }
   });
 
-  it("persistBundle with ed25519PrivateKeyPemPath writes v2 bundle verifiable by verifyRunBundleSignature", async () => {
+  it("ed25519PrivateKeyPemPath writes v2 bundle verifiable by verifyRunBundleSignature", async () => {
     const eventsPath = join(root, "examples", "events.ndjson");
     const registryPath = join(root, "examples", "tools.json");
     const wfId = "wf_complete";
@@ -86,20 +90,23 @@ describe("withWorkflowVerification persistBundle", () => {
     writeFileSync(keyPath, privatePem, "utf8");
     writeFileSync(pubPath, normalizeSpkiPemForSidecar(publicPem), "utf8");
     try {
-      await withWorkflowVerification(
-        {
-          workflowId: wfId,
-          registryPath,
-          dbPath,
-          truthReport: () => {},
-          persistBundle: { outDir, ed25519PrivateKeyPemPath: keyPath },
-        },
-        (observeStep) => {
-          for (const ev of events) {
-            observeStep(ev);
-          }
-        },
-      );
+      const gate = createDecisionGate({
+        workflowId: wfId,
+        registryPath,
+        databaseUrl: dbPath,
+        projectRoot: root,
+        truthReport: () => {},
+      });
+      for (const ev of events) {
+        gate.appendRunEvent(ev);
+      }
+      const result = await gate.evaluate();
+      writeRunBundleFromDecisionGate({
+        outDir,
+        eventsNdjson: gate.toNdjsonUtf8(),
+        workflowResult: result,
+        ed25519PrivateKeyPemPath: keyPath,
+      });
 
       const loaded = loadCorpusRun(resolveCorpusRootReal(bundleParent), runId);
       expect(loaded.loadStatus).toBe("ok");

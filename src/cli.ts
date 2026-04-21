@@ -652,6 +652,7 @@ async function runQuickSubcommand(args: string[]): Promise<void> {
   });
   await postVerifyOutcomeBeacon({
     runId: quickPreflight.runId,
+    certificate,
     terminal_status: quickVerifyVerdictToTerminalStatus(report.verdict),
     workload_class: quickWorkloadClass,
     subcommand: "quick_verify",

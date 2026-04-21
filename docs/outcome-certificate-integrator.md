@@ -1,20 +1,6 @@
-# Outcome Certificate — integrator usage
+# Outcome Certificate — CLI and share
 
-## Library (`verifyAgentskeptic`)
-
-```ts
-import { verifyAgentskeptic } from "agentskeptic";
-
-const certificate = await verifyAgentskeptic({
-  workflowId: "wf_demo",
-  databaseUrl: "app.db", // or postgres://...
-});
-```
-
-Returns **`Promise<OutcomeCertificateV1>`** (see [`outcome-certificate-normative.md`](outcome-certificate-normative.md)). Gate CI on:
-
-- `certificate.stateRelation === "matches_expectations"` for a green build, and
-- `certificate.highStakesReliance === "permitted"` when the artifact must be **decision-grade** (never true for `runKind: "quick_preview"`).
+Library integration (`createDecisionGate`, NDJSON replay): **[`docs/decision-gate-ssot.md`](decision-gate-ssot.md)**.
 
 ## CLI (batch contract verify)
 

@@ -1,6 +1,6 @@
 # Adoption pointers
 
-- [README — Default path: verify from your app](../README.md#default-path-verify-from-your-app)
+- [README — Default path: DecisionGate before you act](../README.md#default-path-decisiongate-before-you-act)
 - [docs/agentskeptic.md](agentskeptic.md)
 - [docs/epistemic-contract.md](epistemic-contract.md)
 

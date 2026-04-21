@@ -82,6 +82,19 @@ describe.skipIf(!hasDatabaseUrl)("funnel north star — verify-outcome", () => {
     vi.mocked(getStripe).mockReset();
   });
 
+  function beaconBody(runId: string) {
+    return {
+      schema_version: 2 as const,
+      run_id: runId,
+      workflow_id: "wf_north_star",
+      trust_decision: "safe" as const,
+      reason_codes: [] as string[],
+      terminal_status: "complete" as const,
+      workload_class: "non_bundled" as const,
+      subcommand: "batch_verify" as const,
+    };
+  }
+
   it(
     "first POST returns 204 with one licensed_verify_outcome; duplicate returns 204 with one row",
     { timeout: 30_000 },
@@ -120,12 +133,7 @@ describe.skipIf(!hasDatabaseUrl)("funnel north star — verify-outcome", () => {
       ).status,
     ).toBe(200);
 
-    const body = {
-      run_id: runId,
-      terminal_status: "complete" as const,
-      workload_class: "non_bundled" as const,
-      subcommand: "batch_verify" as const,
-    };
+    const body = beaconBody(runId);
     const headers = {
       authorization: `Bearer ${keyBody.apiKey}`,
       "content-type": "application/json",
@@ -160,7 +168,7 @@ describe.skipIf(!hasDatabaseUrl)("funnel north star — verify-outcome", () => {
     },
   );
 
-  it("returns 401 for invalid bearer token", async () => {
+  it("returns 400 for schema_version 1 body", async () => {
     const res = await postVerifyOutcome(
       new NextRequest("http://localhost/api/v1/funnel/verify-outcome", {
         method: "POST",
@@ -174,6 +182,20 @@ describe.skipIf(!hasDatabaseUrl)("funnel north star — verify-outcome", () => {
           workload_class: "non_bundled",
           subcommand: "batch_verify",
         }),
+      }),
+    );
+    expect(res.status).toBe(400);
+  });
+
+  it("returns 401 for invalid bearer token", async () => {
+    const res = await postVerifyOutcome(
+      new NextRequest("http://localhost/api/v1/funnel/verify-outcome", {
+        method: "POST",
+        headers: {
+          authorization: "Bearer wf_not_a_real_key",
+          "content-type": "application/json",
+        },
+        body: JSON.stringify(beaconBody(crypto.randomUUID())),
       }),
     );
     expect(res.status).toBe(401);
@@ -200,12 +222,7 @@ describe.skipIf(!hasDatabaseUrl)("funnel north star — verify-outcome", () => {
           authorization: `Bearer ${keyBody.apiKey}`,
           "content-type": "application/json",
         },
-        body: JSON.stringify({
-          run_id: crypto.randomUUID(),
-          terminal_status: "complete",
-          workload_class: "non_bundled",
-          subcommand: "batch_verify",
-        }),
+        body: JSON.stringify(beaconBody(crypto.randomUUID())),
       }),
     );
     expect(res.status).toBe(404);
@@ -255,12 +272,7 @@ describe.skipIf(!hasDatabaseUrl)("funnel north star — verify-outcome", () => {
           authorization: `Bearer ${keyBody.apiKey}`,
           "content-type": "application/json",
         },
-        body: JSON.stringify({
-          run_id: runId,
-          terminal_status: "complete",
-          workload_class: "non_bundled",
-          subcommand: "batch_verify",
-        }),
+        body: JSON.stringify(beaconBody(runId)),
       }),
     );
     expect(res.status).toBe(410);

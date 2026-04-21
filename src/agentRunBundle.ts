@@ -141,3 +141,8 @@ export function writeAgentRunBundle(options: WriteAgentRunBundleOptions): void {
     throw e;
   }
 }
+
+/** Canonical bundle write after `createDecisionGate` evaluation (`eventsNdjson` from `gate.toNdjsonUtf8()`). */
+export function writeRunBundleFromDecisionGate(options: WriteAgentRunBundleOptions): void {
+  writeAgentRunBundle(options);
+}

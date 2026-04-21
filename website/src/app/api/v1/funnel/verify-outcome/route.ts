@@ -29,7 +29,15 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     return new NextResponse(null, { status: 400 });
   }
 
-  const { run_id: runId, terminal_status, workload_class, subcommand } = parsed.data;
+  const {
+    run_id: runId,
+    workflow_id,
+    trust_decision,
+    reason_codes,
+    terminal_status,
+    workload_class,
+    subcommand,
+  } = parsed.data;
 
   const lookup = sha256HexApiKeyLookupFingerprint(rawKey);
   const keyRows = await db
@@ -92,6 +100,9 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
             terminal_status,
             workload_class,
             subcommand,
+            workflow_id,
+            trust_decision,
+            reason_codes,
           }),
         },
         tx,

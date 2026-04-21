@@ -14,7 +14,7 @@ const root = join(__dirname, "..");
 export const WEDGE_HEADING_LINE = "## Buy vs build: why not only SQL checks";
 export const WEDGE_FRAGMENT = "buy-vs-build-why-not-only-sql-checks";
 export const README_WEDGE_LINK = `../README.md#${WEDGE_FRAGMENT}`;
-export const README_DEFAULT_PATH_LINK = "../README.md#default-path-verify-from-your-app";
+export const README_DEFAULT_PATH_LINK = "../README.md#default-path-decisiongate-before-you-act";
 
 /** Minimum concepts: drift, ownership, shared contract/registry, CI or audit gates */
 const ANTI_SCRIPT_TOKENS = [/drift/i, /ownership/i, /registry/i, /\bCI\b|audit/i];
@@ -47,13 +47,13 @@ describe("readme adoption + wedge", () => {
     }
   });
 
-  it("O3 README: adoption region contains verifyAgentskeptic import", () => {
+  it("O3 README: adoption region contains createDecisionGate import", () => {
     const readme = readFileSync(join(root, "README.md"), "utf8");
     const a0 = readme.indexOf("<!-- adoption-canonical:start -->");
     const a1 = readme.indexOf("<!-- adoption-canonical:end -->");
     assert.ok(a0 >= 0 && a1 > a0, "adoption markers missing");
     const region = readme.slice(a0, a1);
-    assert.match(region, /import \{ verifyAgentskeptic \} from "agentskeptic"/);
+    assert.match(region, /import \{ createDecisionGate \} from "agentskeptic"/);
   });
 
   it("O4 README: no npm start above ## Advanced", () => {

@@ -68,20 +68,20 @@ This subsection maps **workflow-level verdict** and **auditable run records** ac
 
 - **`agentRunBundle.ts`**: **`writeAgentRunBundle`** writes each final file via a temp name in the run directory then **rename** into place. Order: **`events.ndjson`** → **`workflow-result.json`** → (when signing) **`workflow-result.sig.json`** → **`agent-run.json`** (manifest last). **Unsigned** path: three finals only (**`schemaVersion` `1`**). **Signed** path: on thrown error after some renames, the implementation **best-effort unlinks** completed finals in **reverse order** (sig → workflow-result → events) for that invocation only, then rethrows—see [Cryptographic signing](#cryptographic-signing-of-workflow-result-normative). On failure mid-write, temp files for the current attempt are removed; **process crash** can still leave an inconsistent directory—only **successful return** guarantees consistency for the signed path.
 - **`workflowTruthReport.ts`**: **`buildWorkflowVerdictSurface(WorkflowResult)`** for API/UI only.
-- **`pipeline.ts`**: **`withWorkflowVerification`** optional **`persistBundle: { outDir, ed25519PrivateKeyPemPath? }`**. After a successful run, **`captureNdjsonUtf8()`** serializes **`bufferedRunEvents`** in strict **`observeStep` enqueue order** (`JSON.stringify(event) + "\n"` per line), then **`writeAgentRunBundle`** is called with the **final** **`WorkflowResult`** (stdout **`schemaVersion` 15** + truth report). When **`ed25519PrivateKeyPemPath`** is set, the bundle is written as **v2** with a signature sidecar. No bundle is written if **`run`** throws or **`buildWorkflowResult`** fails.
+- **`decisionGate.ts`**: **`createDecisionGate`** buffers [event lines](#event-line-schema), then **`evaluate()`** / **`evaluateCertificate()`** / **`assertSafeForIrreversibleAction()`** against the same kernel as **`verifyWorkflow`**. **`toNdjsonUtf8()`** returns capture-ordered NDJSON bytes for **`writeRunBundleFromDecisionGate`** / **`writeAgentRunBundle`** (see [`decision-gate-ssot.md`](decision-gate-ssot.md)).
 
 ### Workflow verdict — Integrator
 
 - **Preserve:** **`writeAgentRunBundle({ outDir, eventsNdjson, workflowResult, ed25519PrivateKeyPemPath? })`** or CLI **`--write-run-bundle <dir>`** with optional **`--sign-ed25519-private-key <path>`** (`runId` = basename of resolved `outDir`).
 - **Retrieve:** **`loadCorpusRun(resolveCorpusRootReal(corpusRoot), runId)`**; treat **`ok`** as the normative “this directory is a consistent bundle.”
-- **In-process audit:** pass **`persistBundle`** on **`withWorkflowVerification`**, or build **`eventsNdjson`** yourself and call **`writeAgentRunBundle`** after **`finalizeEmittedWorkflowResult`** (or use the fulfilled **`WorkflowResult`** from the hook).
+- **In-process audit:** after **`await gate.evaluate()`**, call **`writeRunBundleFromDecisionGate({ outDir, eventsNdjson: gate.toNdjsonUtf8(), workflowResult, ed25519PrivateKeyPemPath? })`**.
 
 ### Workflow verdict — Operator
 
 - Debug Console run detail shows **workflow status**, **trust summary**, and **non-zero step outcome counts** from **`workflowVerdictSurface`** before raw JSON.
 - Do not treat a folder as trusted until **`loadCorpusRun`** returns **`ok`** (or the Debug list shows **`loadStatus` ok**). Tampering yields **`ARTIFACT_INTEGRITY_MISMATCH`** / **`ARTIFACT_LENGTH_MISMATCH`** / **`WORKFLOW_RESULT_*`** as documented under corpus load outcomes.
 
-**Proof in repo:** `src/agentRunBundle.test.ts` (round-trip, empty events, integrity negative, signed round-trip), `src/agentRunBundle.rollback.test.ts` (signed rollback), `src/verifyRunBundleSignature.test.ts`, `src/workflowVerdictSurface.test.ts`, `src/withWorkflowVerification.persistBundle.test.ts`, `src/debugServer.test.ts` (**`workflowVerdictSurface`** on run detail), `test/bundle-signature-*.test.mjs` (fixture, doc codes, CLI signed write).
+**Proof in repo:** `src/agentRunBundle.test.ts` (round-trip, empty events, integrity negative, signed round-trip), `src/agentRunBundle.rollback.test.ts` (signed rollback), `src/verifyRunBundleSignature.test.ts`, `src/workflowVerdictSurface.test.ts`, `src/decisionGate.persistBundle.test.ts`, `src/debugServer.test.ts` (**`workflowVerdictSurface`** on run detail), `test/bundle-signature-*.test.mjs` (fixture, doc codes, CLI signed write).
 
 ## Compare runs and independent verification
 
@@ -314,14 +314,14 @@ Exit codes match batch verify (**0** / **1** / **2** / **3**). Operational codes
 | `aggregate.ts` | Workflow status precedence |
 | `actionableFailure.ts` | Actionable failure **`category`** / **`severity`** (workflow + operational), compare **`categoryHistogram`** / **`actionableCategoryRecurrence`**, P-CAT-1–4 and workflow S-1–S4; **`productionStepReasonCodeToActionableCategory`** + operational severity table |
 | `verificationDiagnostics.ts` | Pinned step `failureDiagnostic`; `formatVerificationTargetSummary`; run/event-sequence `category:` helpers for human report (internal; not re-exported from package entry) |
-| `agentRunBundle.ts` | `writeAgentRunBundle` — canonical run directory (three files, or four when signing) with per-file temp+rename; CLI `--write-run-bundle` / `--sign-ed25519-private-key`; optional `withWorkflowVerification` `persistBundle` |
+| `agentRunBundle.ts` | `writeAgentRunBundle`, **`writeRunBundleFromDecisionGate`** — canonical run directory (three files, or four when signing) with per-file temp+rename; CLI `--write-run-bundle` / `--sign-ed25519-private-key` |
 | `workflowTruthReport.ts` | `buildWorkflowTruthReport`, `buildWorkflowVerdictSurface`, `finalizeEmittedWorkflowResult`, `formatWorkflowTruthReportStruct`, `formatWorkflowTruthReport`, `HUMAN_REPORT_RESULT_PHRASE`, `HUMAN_REPORT_PLAN_TRANSITION_PHRASE`, `STEP_STATUS_TRUTH_LABELS`, `TRUST_LINE_EVENT_SEQUENCE_IRREGULAR_SUFFIX`; human report text is rendering of structured truth with per-step **`declared:`** / **`expected:`** / **`observed_database:`** / **`verification_verdict:`** (prefixes from **`reconciliationPresentation.ts`**) plus **`detail:`** lines; plan-transition phrasing when **`workflowId === wf_plan_transition`** |
 | `executionPathFindings.ts` | `buildExecutionPathFindings`, `buildExecutionPathSummary`, `ACTION_INPUT_REASON_CODES`, `RECONCILER_STEP_REASON_CODES` — execution-path layer orthogonal to SQL reconciliation (internal; not re-exported from package entry) |
 | `workflowResultNormalize.ts` | `normalizeToEmittedWorkflowResult`, `workflowEngineResultFromEmitted` (compare ingress: engine **v8** / frozen **v9** / stdout **v15**; strip legacy **`runLevelCodes`**; inject empty **`verificationRunContext`** where needed) |
 | `runComparison.ts` | `buildRunComparisonReport`, `formatRunComparisonReport`, `logicalStepKeyFromStep`, `recurrenceSignature`; cross-run comparison |
 | `verificationPolicy.ts` | `VerificationPolicy` normalization/validation; `executeVerificationWithPolicySync` / `executeVerificationWithPolicyAsync` (strong vs eventual polling; `sql_row` / `sql_effects` / `sql_row_absent` / `sql_relational`); `PolicyReconcileContext.reconcileRowAbsent`; `createSqlitePolicyContext` |
 | `executionTrace.ts` | `assertValidRunEventParentGraph`, `buildExecutionTraceView`, `formatExecutionTraceText`; `traceStepKind` derivation and `backwardPaths` |
-| `pipeline.ts` | Orchestration: `runLogicalStepsVerification` (internal), async `verifyWorkflow`, sync `verifyToolObservedStep`, `withWorkflowVerification` (SQLite `dbPath` only); default `truthReport` / `logStep` |
+| `pipeline.ts` | Orchestration: `runLogicalStepsVerification` (internal), **`verifyRunStateFromEvents`**, async `verifyWorkflow`, sync `verifyToolObservedStep`; default `truthReport` / `logStep` |
 | `cli.ts` | CLI entry: verify (**optional **`--write-run-bundle <dir>`** / **`--sign-ed25519-private-key`**), **`verify-bundle-signature`**, `compare`, `execution-trace`, `validate-registry`, **`funnel-anon`**, **`debug`**, **`plan-transition`** |
 | `debugCorpus.ts` | Debug Console corpus layout: enumerate `<corpusRoot>/<runId>/`, load outcomes (**`ok`** / **`error`**), path safety, mandatory **`agent-run.json`** manifest with SHA-256 bindings |
 | `debugFocus.ts` | Pure **`buildFocusTargets`**: maps **`workflowTruthReport.failureAnalysis.evidence`** to trace navigation targets (tested golden vectors) |
@@ -342,25 +342,23 @@ Relational check authoring and the mapping from product vocabulary to registry c
 
 ### Engineer note: shared step core
 
-`reconcileFromRows` in `reconciler.ts` is the single rule table. `planLogicalSteps` collapses multiple observations per `seq`; `verifyToolObservedStep` (SQLite, sync) reconciles the **last** observation per logical step when observations are non-divergent. `verifyWorkflow` and `withWorkflowVerification` both call the same internal `runLogicalStepsVerification` once per run (SQLite sync / Postgres async). **Why:** One classification table; one logical step per `seq`; SQLite stays synchronous at the integrator boundary; Postgres stays on the batch path only.
+`reconcileFromRows` in `reconciler.ts` is the single rule table. `planLogicalSteps` collapses multiple observations per `seq`; `verifyToolObservedStep` (SQLite, sync) reconciles the **last** observation per logical step when observations are non-divergent. **`verifyWorkflow`**, **`createDecisionGate` → `evaluate()`**, and **`verifyRunStateFromEvents`** share one kernel (`verifyRunStateFromEvents` in `pipeline.ts`). **Why:** One classification table; one logical step per `seq`; SQLite sync vs Postgres async is selected by `database.kind` and `verificationPolicy.consistencyMode`.
 
-### Low-friction integration (in-process)
+### Low-friction integration (runtime)
 
-Primary integration for running workflows in code: **`await withWorkflowVerification(options, run)`** from `pipeline.ts` (re-exported in the package entry). The `run` callback receives **`observeStep`**; call it after each tool with one [event line](#event-line-schema) object. There is **no** public `finish` — after `run` completes successfully, the library builds the **`WorkflowResult`** (including SQL verification) **before** closing the read-only SQLite handle in **`finally`**.
+Primary integration: **`createDecisionGate`** from **`decisionGate.ts`** (package export). Call **`appendRunEvent`** after each tool with one [event line](#event-line-schema). Before irreversible work, call **`await assertSafeForIrreversibleAction()`** (throws **`DecisionUnsafeError`** with a six-line human blocker). **`evaluate()`** returns **`WorkflowResult`**; **`evaluateCertificate()`** returns **`OutcomeCertificateV1`**.
 
-**`withWorkflowVerification` is SQLite-only** (option `dbPath` → read-only file) and supports **`consistencyMode: "strong"` only**. Eventual consistency polling requires the batch/async path: use **`await verifyWorkflow`** (or CLI) with `verificationPolicy.consistencyMode: "eventual"`. Passing eventual policy to `withWorkflowVerification` fails before the user `run` with operational code **`EVENTUAL_MODE_NOT_SUPPORTED_IN_PROCESS_HOOK`**. For Postgres ground truth, replay NDJSON and call **`await verifyWorkflow`** with `database: { kind: "postgres", connectionString }` or use the CLI (`--postgres-url`). **Why:** Keeps `observeStep` synchronous and a single stable hook; async `pg` and polling are isolated to batch verification.
-
-One root boundary; library owns DB close in finally; avoids silent leaks when integrators omit a terminal call.
+**Postgres and SQLite:** pass `databaseUrl` as either a filesystem path (SQLite) or a `postgres://` / `postgresql://` URL. **`consistencyMode: "eventual"`** is supported the same as batch verify.
 
 Normative contracts:
 
-- **`observeStep` input:** Only a JavaScript **non-null object** is schema-validated against the event schema; **strings and primitives are not parsed as NDJSON**—non-objects yield **`MALFORMED_EVENT_LINE`** (same run-level meaning as a bad NDJSON line in batch mode).
-- **`observeStep` return:** Always **`undefined`**. The authoritative step list and statuses are **only** on the fulfilled **`WorkflowResult`** from **`withWorkflowVerification`**.
-- **`withWorkflowVerification` return:** **`Promise<WorkflowResult>`** fulfilled on success; **rejected** on invalid registry/DB setup (before `run`) or if **`run`** throws or rejects — the DB is closed in **`finally`** after the result is built (or after throw).
-- **Post-close `observeStep`:** If a caller keeps the injected function and uses it after the run, it throws **`Error`** with message **`Workflow verification observeStep invoked after workflow run completed`**.
-- **Parity:** Feeding the same event objects in file order as an NDJSON workflow must match **`await verifyWorkflow`** on that file for the same `workflowId`, `registryPath`, and SQLite `database: { kind: "sqlite", path }` (same file path as `dbPath` for the hook).
+- **`appendRunEvent` input:** Only a JavaScript **non-null object** is schema-validated against the event schema; **strings and primitives are not parsed as NDJSON**—non-objects yield **`MALFORMED_EVENT_LINE`** (same run-level meaning as a bad NDJSON line in batch mode).
+- **`appendRunEvent` return:** Always **`undefined`**.
+- **Parity:** The same events appended in capture order must match **`await verifyWorkflow`** on an NDJSON file containing only those lines for the same `workflowId`, `registryPath`, and `database`.
 
-**Defaults (`truthReport` / `logStep`):** **`withWorkflowVerification`** uses the same defaults as **`verifyWorkflow`**: **`truthReport`** writes the canonical human report (see [Human truth report](#human-truth-report)) to **stderr** once when the `WorkflowResult` is ready; **`logStep`** default is a **no-op** (no per-step stderr JSON). Override with `truthReport: () => {}` in tests. **Migration:** if you depended on previous default per-step JSON on stderr, pass an explicit `logStep`, e.g. `(obj) => console.error(JSON.stringify(obj))`. For custom UIs while keeping canonical copy: `import { formatWorkflowTruthReport } from '<package>'`. **Migration:** `verifyWorkflow` is **async** and takes **`database`** instead of `dbPath`; use `database: { kind: "sqlite", path }` for file-backed batch verification.
+**Defaults (`truthReport` / `logStep`):** match **`verifyWorkflow`**: override with `truthReport: () => {}` in tests; pass explicit `logStep` if you need per-step stderr JSON.
+
+Full integrator SSOT: [`decision-gate-ssot.md`](decision-gate-ssot.md).
 
 ### Postgres verification (batch and CLI)
 
@@ -508,7 +506,7 @@ This section is **normative**: literals and line shape match `formatWorkflowTrut
 
 **Why this shape**
 
-- **Structured SSOT, one human rendering:** The canonical machine shape is **`workflowTruthReport`** on emitted **`WorkflowResult`** (see [Structured workflow truth report](#structured-workflow-truth-report-normative)). CLI, `verifyWorkflow`, and `withWorkflowVerification` write the human report via optional **`truthReport?: (report: string) => void`**; the default appends one newline after the string to **stderr** (`process.stderr.write`). Same text surfaces—no parallel logic.
+- **Structured SSOT, one human rendering:** The canonical machine shape is **`workflowTruthReport`** on emitted **`WorkflowResult`** (see [Structured workflow truth report](#structured-workflow-truth-report-normative)). CLI, **`verifyWorkflow`**, and **`createDecisionGate` → `evaluate()`** write the human report via optional **`truthReport?: (report: string) => void`**; the default appends one newline after the string to **stderr** (`process.stderr.write`). Same text surfaces—no parallel logic.
 - **stderr human / stdout JSON:** Automation keeps a single JSON record on stdout (`jq`, pipes); operators read the verdict on stderr. The CLI flag **`--no-human-report`** yields empty stderr on verdict exits **0–2** so logs and parsers need not skip the human report (see [Batch and CLI (replay)](#batch-and-cli-replay)).
 - **Default `truthReport` to stderr:** Gives a clear truth signal without extra configuration; silent tests pass `truthReport: () => {}`.
 - **Default `logStep` no-op:** Removes the old default of one JSON object per step on stderr, which duplicated `WorkflowResult` and conflicted with the human report.
@@ -538,7 +536,7 @@ This section is **normative**: literals and line shape match `formatWorkflowTrut
 - **SSOT for JSON shape:** [`schemas/workflow-truth-report.schema.json`](../schemas/workflow-truth-report.schema.json) (`$id` in file). Integrators and tools should treat that schema as the authoritative contract for **`workflowTruthReport`**; this document describes purpose and integration only (no duplicate field tables here).
 <!-- ci:workflow-result-normative-prose:start -->
 - **Embedding:** On stdout / public API, **`workflowTruthReport`** is required on **`WorkflowResult`** with outer **`schemaVersion` 15** ([`schemas/workflow-result.schema.json`](../schemas/workflow-result.schema.json)); inner **`workflowTruthReport.schemaVersion`** is **9**.
-- **Construction:** `buildWorkflowTruthReport(engine)` derives the object from **`WorkflowEngineResult`** (`schemaVersion` 8, [`schemas/workflow-engine-result.schema.json`](../schemas/workflow-engine-result.schema.json)) produced by `aggregateWorkflow` plus **`verificationRunContext`** merged in `verifyWorkflow` / `withWorkflowVerification`. `finalizeEmittedWorkflowResult` attaches the truth report and sets **`WorkflowResult.schemaVersion` 15**.
+- **Construction:** `buildWorkflowTruthReport(engine)` derives the object from **`WorkflowEngineResult`** (`schemaVersion` 8, [`schemas/workflow-engine-result.schema.json`](../schemas/workflow-engine-result.schema.json)) produced by `aggregateWorkflow` plus **`verificationRunContext`** merged in **`verifyWorkflow`** / **`verifyRunStateFromEvents`** (including the **`createDecisionGate`** path). `finalizeEmittedWorkflowResult` attaches the truth report and sets **`WorkflowResult.schemaVersion` 15**.
 - **Evolution:** Additive changes to the truth report require bumping **`workflowTruthReport.schemaVersion`** inside the truth schema; breaking engine/stdout shape bumps **`WorkflowResult.schemaVersion`**; document changes in this file’s compatibility section.
 <!-- ci:workflow-result-normative-prose:end -->
 
@@ -780,7 +778,7 @@ Two observations **match** iff `toolId` is `===` and `canonicalJsonForParams(par
 
 **CLI:** `agentskeptic execution-trace --workflow-id <id> --events <path> [--workflow-result <path>] [--format json|text]`. Success: stdout = `ExecutionTraceView` JSON or `formatExecutionTraceText` output; stderr empty; exit **0**. Operational failure (usage, graph validation, read/parse errors): stderr = one-line `cliErrorEnvelope`; stdout empty; exit **3**.
 
-**In-process:** `observeStep` accepts the same union; **`withWorkflowVerification`** buffers all valid events in capture order and feeds only `tool_observed` into verification (same as batch).
+**In-process:** **`appendRunEvent`** accepts the same union; **`createDecisionGate`** buffers all valid events in capture order and feeds only `tool_observed` into verification (same as batch).
 
 **Module binding:** `executionTrace.ts`, `loadEvents.ts`, `execution-trace-view.schema.json`, `event.schema.json`.
 
@@ -1289,7 +1287,7 @@ Divergence: no steps to verify against the database under policy [<P>]
    | `BUNDLE_SIGNATURE_CRYPTO_INVALID` |
    | `BUNDLE_SIGNATURE_PRIVATE_KEY_INVALID` |
 
-9. **CLI.** Subcommand **`verify-bundle-signature --run-dir <dir> --public-key <path>`** calls **`verifyRunBundleSignature`** only (no duplicate verify logic). Exit **0** iff **`{ ok: true }`**. All verification failures use exit **3** with a **single-line** stderr JSON object matching [`schemas/cli-error-envelope.schema.json`](../schemas/cli-error-envelope.schema.json) and **`code`** set to the exact **`BUNDLE_SIGNATURE_*`** string. **Do not** use exit **2** for signature failure (exit **2** remains **incomplete** workflow verdict on **`agentskeptic`**). **`agentskeptic`** accepts **`--sign-ed25519-private-key <path>`** only together with **`--write-run-bundle`**. **`persistBundle.ed25519PrivateKeyPemPath`** (library) threads the same option to **`writeAgentRunBundle`**. **Required tests:** `test/bundle-signature-cli-write.test.mjs` (CLI signed write + verify), `src/withWorkflowVerification.persistBundle.test.ts` (pipeline signed write + **`verifyRunBundleSignature`**).
+9. **CLI.** Subcommand **`verify-bundle-signature --run-dir <dir> --public-key <path>`** calls **`verifyRunBundleSignature`** only (no duplicate verify logic). Exit **0** iff **`{ ok: true }`**. All verification failures use exit **3** with a **single-line** stderr JSON object matching [`schemas/cli-error-envelope.schema.json`](../schemas/cli-error-envelope.schema.json) and **`code`** set to the exact **`BUNDLE_SIGNATURE_*`** string. **Do not** use exit **2** for signature failure (exit **2** remains **incomplete** workflow verdict on **`agentskeptic`**). **`agentskeptic`** accepts **`--sign-ed25519-private-key <path>`** only together with **`--write-run-bundle`**. **`persistBundle.ed25519PrivateKeyPemPath`** (library) threads the same option to **`writeAgentRunBundle`**. **Required tests:** `test/bundle-signature-cli-write.test.mjs` (CLI signed write + verify), `src/decisionGate.persistBundle.test.ts` (DecisionGate signed write + **`verifyRunBundleSignature`**).
 
 10. **Fixture regeneration:** `node scripts/generate-signed-bundle-fixture.mjs` (writes **`test/fixtures/signed-bundle-v2/`**; no private keys committed).
 
@@ -1517,7 +1515,7 @@ Run **`assurance run --write-report <artifactPath>`** on your cadence, publish *
 
 Bundled files under [`examples/`](../examples/): `seed.sql`, `tools.json`, `events.ndjson`. The assurance manifest uses [`examples/minimal-ci-enforcement/ci-check.sqlite`](../examples/minimal-ci-enforcement/ci-check.sqlite) (database created from that folder’s `seed.sql`, same data as the temp DB in [`examples/minimal-ci-enforcement/run.mjs`](../examples/minimal-ci-enforcement/run.mjs)).
 
-- **Onboarding:** **`npm start`** runs **`npm run build`** then [`scripts/demo.mjs`](../scripts/demo.mjs) (batch CLI demo with bundled `examples/`). For the narrated first-run walkthrough, run **`npm run build && node scripts/first-run.mjs`** (also executed as part of **`npm test`**); that driver is [`scripts/first-run.mjs`](../scripts/first-run.mjs). It seeds `examples/demo.db`, prints plain-language framing plus **human verification reports on stdout** (via a custom **`truthReport`** callback), then verifies workflows `wf_complete` (expect `complete` / `verified`) and `wf_missing` (expect `inconsistent` / `missing` / `ROW_ABSENT`). **`example:workflow-hook`:** run **`npm run example:workflow-hook`** for a minimal **`withWorkflowVerification`** + **`observeStep`** demo (SQLite temp DB, one event from **`examples/events.ndjson`**).
+- **Onboarding:** **`npm start`** runs **`npm run build`** then [`scripts/demo.mjs`](../scripts/demo.mjs) (batch CLI demo with bundled `examples/`). For the narrated first-run walkthrough, run **`npm run build && node scripts/first-run.mjs`** (also executed as part of **`npm test`**); that driver is [`scripts/first-run.mjs`](../scripts/first-run.mjs). It seeds `examples/demo.db`, prints plain-language framing plus **human verification reports on stdout** (via a custom **`truthReport`** callback), then verifies workflows `wf_complete` (expect `complete` / `verified`) and `wf_missing` (expect `inconsistent` / `missing` / `ROW_ABSENT`). **`example:workflow-hook`:** run **`npm run example:workflow-hook`** for a minimal **`createDecisionGate`** demo (SQLite temp DB, one event from **`examples/events.ndjson`**).
 - **CLI log streams:** For the CLI, a **human-readable verification report** is written to **stderr** and the machine-readable **workflow result JSON** to **stdout** on verdict exits **0–2** (default **`truthReport`**); full format is **[Human truth report](#human-truth-report)**. Repository README links use **`docs/agentskeptic.md#human-truth-report`** for that section.
 
 (Node may print an experimental warning for `node:sqlite` depending on version.)

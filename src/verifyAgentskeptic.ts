@@ -1,27 +1,15 @@
 import { existsSync } from "node:fs";
 import path from "node:path";
-import { CLI_OPERATIONAL_CODES } from "./failureCatalog.js";
-import { buildOutcomeCertificateFromWorkflowResult, type OutcomeCertificateV1 } from "./outcomeCertificate.js";
-import { verifyWorkflow } from "./pipeline.js";
-import { loadSchemaValidator } from "./schemaLoad.js";
+import { createDecisionGate } from "./decisionGate.js";
+import { loadEventsForWorkflow } from "./loadEvents.js";
 import { TruthLayerError } from "./truthLayerError.js";
-import type { VerificationDatabase } from "./types.js";
-
-const POSTGRES_URL_RE = /^postgres(ql)?:\/\//i;
+import type { OutcomeCertificateV1 } from "./outcomeCertificate.js";
 
 const PROJECT_LAYOUT_MISSING = "PROJECT_VERIFICATION_LAYOUT_MISSING" as const;
 
-function verificationDatabaseFromUrl(databaseUrl: string, projectRoot: string): VerificationDatabase {
-  if (POSTGRES_URL_RE.test(databaseUrl)) {
-    return { kind: "postgres", connectionString: databaseUrl };
-  }
-  return { kind: "sqlite", path: path.resolve(projectRoot, databaseUrl) };
-}
-
 /**
- * Default adoption path: reads `agentskeptic/events.ndjson` and `agentskeptic/tools.json`
- * under `projectRoot`, verifies `workflowId` against `databaseUrl` (SQLite path or postgres URL).
- * Returns the public Outcome Certificate v1 (contract_sql). For arbitrary paths use `verifyWorkflow`.
+ * Thin file-replay alias: reads `agentskeptic/events.ndjson` into a DecisionGate buffer and returns the same Outcome Certificate as batch verify.
+ * Prefer `createDecisionGate` for runtime integration.
  */
 export async function verifyAgentskeptic(options: {
   workflowId: string;
@@ -32,32 +20,26 @@ export async function verifyAgentskeptic(options: {
   const resolvedRoot = path.resolve(projectRoot);
   const agentskepticDir = path.join(resolvedRoot, "agentskeptic");
   const eventsPath = path.join(agentskepticDir, "events.ndjson");
-  const registryPath = path.join(agentskepticDir, "tools.json");
+  const registryPathRel = path.join("agentskeptic", "tools.json");
 
-  if (!existsSync(eventsPath) || !existsSync(registryPath)) {
+  if (!existsSync(eventsPath) || !existsSync(path.join(resolvedRoot, registryPathRel))) {
     throw new TruthLayerError(
       PROJECT_LAYOUT_MISSING,
-      `${eventsPath}, ${registryPath}`,
+      `${eventsPath}, ${path.join(resolvedRoot, registryPathRel)}`,
     );
   }
 
-  const database = verificationDatabaseFromUrl(options.databaseUrl, resolvedRoot);
-  const result = await verifyWorkflow({
+  const load = loadEventsForWorkflow(eventsPath, options.workflowId);
+  const gate = createDecisionGate({
     workflowId: options.workflowId,
-    eventsPath,
-    registryPath,
-    database,
+    registryPath: registryPathRel,
+    databaseUrl: options.databaseUrl,
+    projectRoot: resolvedRoot,
     logStep: () => {},
     truthReport: () => {},
   });
-
-  const certificate = buildOutcomeCertificateFromWorkflowResult(result, "contract_sql");
-  const validate = loadSchemaValidator("outcome-certificate-v1");
-  if (!validate(certificate)) {
-    throw new TruthLayerError(
-      CLI_OPERATIONAL_CODES.WORKFLOW_RESULT_SCHEMA_INVALID,
-      JSON.stringify(validate.errors ?? []),
-    );
+  for (const ev of load.runEvents) {
+    gate.appendRunEvent(ev);
   }
-  return certificate;
+  return gate.evaluateCertificate();
 }

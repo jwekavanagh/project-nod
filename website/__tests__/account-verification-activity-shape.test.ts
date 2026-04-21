@@ -10,6 +10,9 @@ describe("shapeAccountPageActivityRows", () => {
         terminal_status: "complete",
         workload_class: "bundled_examples",
         subcommand: "batch_verify",
+        workflow_id: "wf_test",
+        trust_decision: "safe",
+        reason_codes: [],
       }),
     }) as const;
 

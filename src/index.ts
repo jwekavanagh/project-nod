@@ -28,7 +28,14 @@ export type {
   OutcomeCertificateExplanationDetail,
   BuildQuickOutcomeCertificateOptions,
 } from "./outcomeCertificate.js";
-export { verifyWorkflow, loadToolsRegistry, withWorkflowVerification } from "./pipeline.js";
+export { verifyWorkflow, loadToolsRegistry, verifyRunStateFromEvents } from "./pipeline.js";
+export type { VerifyRunStateFromEventsInput } from "./pipeline.js";
+export { createDecisionGate } from "./decisionGate.js";
+export type { CreateDecisionGateOptions, DecisionGate } from "./decisionGate.js";
+export { trustDecisionFromCertificate } from "./trustDecision.js";
+export type { TrustDecision } from "./trustDecision.js";
+export { formatDecisionBlockerForHumans } from "./decisionBlocker.js";
+export { DecisionUnsafeError } from "./decisionUnsafeError.js";
 export { verifyAgentskeptic } from "./verifyAgentskeptic.js";
 export { loadSchemaValidator } from "./schemaLoad.js";
 export type { SchemaValidatorName } from "./schemaLoad.js";
@@ -146,7 +153,7 @@ export {
 export { extractMarkdownBodyAfterFrontMatter } from "./planTransitionPathHarvest.js";
 export type { PlanDiffRow, PlanDiffRowKind, TransitionRulesProvenance } from "./planTransition.js";
 export { PLAN_TRANSITION_WORKFLOW_ID } from "./planTransitionConstants.js";
-export { writeAgentRunBundle } from "./agentRunBundle.js";
+export { writeAgentRunBundle, writeRunBundleFromDecisionGate } from "./agentRunBundle.js";
 export type { WriteAgentRunBundleOptions } from "./agentRunBundle.js";
 export { workflowEngineResultFromEmitted, normalizeToEmittedWorkflowResult } from "./workflowResultNormalize.js";
 export {

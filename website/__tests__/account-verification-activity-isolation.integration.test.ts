@@ -33,6 +33,9 @@ describe.skipIf(!hasDatabaseUrl)("loadAccountPageVerificationActivity (integrati
       terminal_status: "complete",
       workload_class: "bundled_examples",
       subcommand: "batch_verify",
+      workflow_id: "wf_iso",
+      trust_decision: "safe",
+      reason_codes: [],
     });
     const tA1 = new Date(Date.UTC(2026, 3, 5, 10, 0, 0));
     const tA2 = new Date(Date.UTC(2026, 3, 8, 10, 0, 0));

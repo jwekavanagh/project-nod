@@ -1,7 +1,7 @@
 {
   "description": "README adoption funnel: sections must appear in this order (product requirement). Ends before differentiation so funnelSlice includes sample output.",
   "headings": [
-    "## Default path: verify from your app",
+    "## Default path: DecisionGate before you act",
     "## Buy vs build: why not only SQL checks",
     "## Advanced",
     "## Try it (about one minute)",

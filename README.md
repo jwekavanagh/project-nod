@@ -56,13 +56,13 @@ steps:
 <!-- discovery-acquisition-fold:end -->
 
 <!-- adoption-canonical:start -->
-## Default path: verify from your app
+## Default path: DecisionGate before you act
 
 ### Lifecycle
 
-1. After each persisted tool observation, append **one JSON line + newline** to **`agentskeptic/events.ndjson`** (wire shape: [`docs/agentskeptic.md`](docs/agentskeptic.md#event-line-schema)).
-2. Keep **`agentskeptic/tools.json`** in version control; update when `toolId` → SQL mapping changes.
-3. Call **`verifyAgentskeptic`** after the run (or CI replay) before treating outcomes as safe.
+1. Keep **`agentskeptic/tools.json`** in version control; update when `toolId` → SQL mapping changes.
+2. After each persisted tool observation, call **`gate.appendRunEvent(...)`** with one [event line](docs/agentskeptic.md#event-line-schema). Optionally mirror the same JSON line to **`agentskeptic/events.ndjson`** for CI replay.
+3. Immediately **before** any irreversible side effect (ship, bill, ticket close), call **`await gate.assertSafeForIrreversibleAction()`** so unsafe or unknown trust never reaches customers.
 
 ### Install
 
@@ -75,7 +75,7 @@ npm install agentskeptic
 ```ts
 import { appendFileSync, writeFileSync, mkdirSync } from "node:fs";
 import { join } from "node:path";
-import { verifyAgentskeptic } from "agentskeptic";
+import { createDecisionGate } from "agentskeptic";
 
 const projectRoot = process.cwd();
 const d = join(projectRoot, "agentskeptic");
@@ -95,28 +95,24 @@ writeFileSync(
     },
   ]) + "\n",
 );
-appendFileSync(
-  join(d, "events.ndjson"),
-  JSON.stringify({
-    schemaVersion: 1,
-    workflowId: "wf_demo",
-    seq: 0,
-    type: "tool_observed",
-    toolId: "crm.upsert_contact",
-    params: { recordId: "c_ok", fields: { name: "Alice", status: "active" } },
-  }) + "\n",
-);
-
-const certificate = await verifyAgentskeptic({
+const ev = {
+  schemaVersion: 1,
   workflowId: "wf_demo",
+  seq: 0,
+  type: "tool_observed",
+  toolId: "crm.upsert_contact",
+  params: { recordId: "c_ok", fields: { name: "Alice", status: "active" } },
+};
+appendFileSync(join(d, "events.ndjson"), JSON.stringify(ev) + "\n");
+
+const gate = createDecisionGate({
+  workflowId: "wf_demo",
+  registryPath: join("agentskeptic", "tools.json"),
   databaseUrl: join(projectRoot, "app.db"),
+  projectRoot,
 });
-if (certificate.stateRelation !== "matches_expectations") {
-  throw new Error(`Verification failed: ${certificate.stateRelation}`);
-}
-if (certificate.highStakesReliance !== "permitted") {
-  throw new Error(`Not decision-grade: ${certificate.relianceRationale}`);
-}
+gate.appendRunEvent(ev);
+await gate.assertSafeForIrreversibleAction();
 ```
 <!-- adoption-canonical:end -->
 
@@ -151,7 +147,7 @@ State verification engine: read-only SQL checks that database state matches expe
 
 ## Advanced
 
-**Canonical runnable (same API as README `### Code`):** after `npm run build`, run `node examples/verify-agentskeptic-canonical.mjs`.
+**Canonical runnable (same API as README `### Code`):** after `npm run build`, run `node examples/decision-gate-canonical.mjs`.
 
 ## Try it (about one minute)
 
@@ -161,7 +157,7 @@ This is the fastest way to see **`ROW_ABSENT`** versus **verified** on the same 
 
 **Fast first run on your own DB (bundled quickstart example):** after `npm install` and `npm run build`, run **`npm run partner-quickstart`** from the repo root (SQLite temp DB). Commands reference: **[`docs/partner-quickstart-commands.md`](docs/partner-quickstart-commands.md)**; narrative: **[`docs/first-run-integration.md`](docs/first-run-integration.md)** and **`/integrate`** on the site.
 
-**Integrator-owned output:** The demo above is pedagogy. Default path: **`agentskeptic crossing`** — see **`docs/crossing-normative.md`**. For verification on **your** NDJSON, registry, and authoritative SQLite or Postgres, follow **[Grounded integrator-owned output](docs/first-run-integration.md#grounded-integrator-owned-output-primary-path)** in **`docs/first-run-integration.md`** after **`npm run build`**. Standalone **`agentskeptic verify-integrator-owned`** remains for explicit pack-led parity and CI (same flags as contract batch verify; rejects shipped example fixture triples with exit **2** and stderr **`INTEGRATOR_OWNED_GATE`**—see **`docs/agentskeptic.md`** Integrator-owned gate).
+**Integrator-owned output:** The demo above is pedagogy. Default path: **`agentskeptic crossing`** — see **`docs/crossing-normative.md`**. For verification on **your** NDJSON, registry, and authoritative SQLite or Postgres, follow **[`docs/decision-gate-ssot.md`](docs/decision-gate-ssot.md)** after **`npm run build`**. Standalone **`agentskeptic verify-integrator-owned`** remains for explicit pack-led parity and CI (same flags as contract batch verify; rejects shipped example fixture triples with exit **2** and stderr **`INTEGRATOR_OWNED_GATE`**—see **`docs/agentskeptic.md`** Integrator-owned gate).
 
 ```bash
 npm install
