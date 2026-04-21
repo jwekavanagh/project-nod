@@ -2,7 +2,11 @@
 
 Checklist anchors: **PatternComplete**, **AdoptionComplete_PatternComplete**, **AC-TRUST-01**, **AC-OPS-01**, **IntegrateSpineComplete**.
 
-Epistemic framing: [`docs/epistemic-contract.md`](epistemic-contract.md). Adoption verdict norms: [`docs/adoption-epistemics-ssot.md`](adoption-epistemics-ssot.md), including [Decision-ready ProductionComplete (normative)](adoption-epistemics-ssot.md#decision-ready-productioncomplete-normative).
+<!-- epistemic-contract:consumer:first-run-integration -->
+**Epistemic framing (pointer only):** Normative epistemic definitions live only in [`epistemic-contract.md`](epistemic-contract.md). Operational four-way model, Decision-ready ProductionComplete, and commercial verdict semantics: [`adoption-epistemics-ssot.md`](adoption-epistemics-ssot.md).
+
+**Throughput (operator, pointer only):** Metric SQL and ids: [`growth-metrics-ssot.md`](growth-metrics-ssot.md). Interpretation and proxies: [`epistemic-contract.md`](epistemic-contract.md). User outcome vs telemetry capture: [`funnel-observability-ssot.md`](funnel-observability-ssot.md). **Decision-ready ProductionComplete:** [`adoption-epistemics-ssot.md#decision-ready-productioncomplete-normative`](adoption-epistemics-ssot.md#decision-ready-productioncomplete-normative).
+<!-- /epistemic-contract:consumer:first-run-integration -->
 
 Prerequisite framing: [README wedge](../README.md#buy-vs-build-why-not-only-sql-checks).
 
