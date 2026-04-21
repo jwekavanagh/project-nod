@@ -32,6 +32,8 @@ Runs the repo’s scripted first-run checks after the demo.
 npm run first-run-verify
 ```
 
+**Partner quickstart (commands SSOT):** Copy-paste **`npm run partner-quickstart`**, optional Postgres wiring, and the LangGraph reference block are maintained only in [partner-quickstart-commands.md](partner-quickstart-commands.md). Boundaries for LangGraph-shaped emitters vs repository truth are normative in [`langgraph-reference-boundaries-ssot.md`](langgraph-reference-boundaries-ssot.md#langgraph-reference-documentation-boundaries).
+
 ## Step 3: Bootstrap pack and verify `wf_bootstrap_fixture`
 
 Mid-spine: materialize the bootstrap pack, then contract-verify against a **temp copy** of the demo DB (`$ADOPT_DB` in the shell; see [`integrate-activation-shell.bash`](../scripts/templates/integrate-activation-shell.bash)). Uses **`node dist/cli.js bootstrap`** with **`test/fixtures/bootstrap-pack/input.json`**, then **`wf_bootstrap_fixture`** with the emitted **`events.ndjson`** / **`tools.json`**.
