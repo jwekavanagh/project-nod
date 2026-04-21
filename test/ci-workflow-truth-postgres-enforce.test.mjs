@@ -21,6 +21,17 @@ const lockMissing = join(root, "test", "fixtures", "ci-enforcement", "wf_missing
 
 const cliSpawnMs = 120_000;
 
+/** stdout is Outcome Certificate v1 (not legacy WorkflowResult schemaVersion 15). */
+function isOutcomeCertificateV1(obj) {
+  return (
+    obj !== null &&
+    typeof obj === "object" &&
+    obj.schemaVersion === 1 &&
+    typeof obj.stateRelation === "string" &&
+    Object.prototype.hasOwnProperty.call(obj, "humanReport")
+  );
+}
+
 describe("CI workflow truth contract (Postgres CLI) enforce", () => {
   const verifyUrl = process.env.POSTGRES_VERIFICATION_URL;
 
@@ -58,7 +69,11 @@ describe("CI workflow truth contract (Postgres CLI) enforce", () => {
     assert.ok(r.stderr.includes(LOCK_SUCCESS_MONETIZED_BOUNDARY_LINE_B), r.stderr);
     const parsed = JSON.parse(r.stdout.trim());
     assert.equal(parsed.workflowId, "wf_complete");
-    assert.equal(parsed.status, "complete");
+    if (isOutcomeCertificateV1(parsed)) {
+      assert.equal(parsed.stateRelation, "matches_expectations");
+    } else {
+      assert.equal(parsed.status, "complete");
+    }
   });
 
   it("case 6: enforce batch wf_missing expect-lock exit 1", () => {
@@ -88,6 +103,10 @@ describe("CI workflow truth contract (Postgres CLI) enforce", () => {
     assert.equal(r.stderr, "");
     const parsed = JSON.parse(r.stdout.trim());
     assert.equal(parsed.workflowId, "wf_missing");
-    assert.equal(parsed.status, "inconsistent");
+    if (isOutcomeCertificateV1(parsed)) {
+      assert.equal(parsed.stateRelation, "does_not_match");
+    } else {
+      assert.equal(parsed.status, "inconsistent");
+    }
   });
 });
