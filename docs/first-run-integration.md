@@ -1,17 +1,49 @@
-# First-run integration
+# First-run integration (SSOT)
 
 Checklist anchors: **PatternComplete**, **AdoptionComplete_PatternComplete**, **AC-TRUST-01**, **AC-OPS-01**, **IntegrateSpineComplete**.
 
 Epistemic framing: [`docs/epistemic-contract.md`](epistemic-contract.md). Adoption verdict norms: [`docs/adoption-epistemics-ssot.md`](adoption-epistemics-ssot.md), including [Decision-ready ProductionComplete (normative)](adoption-epistemics-ssot.md#decision-ready-productioncomplete-normative).
-
-The full L0 script **exit code is 0** iff every step completes, including the **final** `node dist/cli.js bootstrap … --input examples/integrate-your-db/bootstrap-input.json` and the following **`crossing`** pack-led on `"$AGENTSKEPTIC_VERIFY_DB"` (same event/registry/db flags as contract batch verify; integrator-owned gate per [`agentskeptic.md`](agentskeptic.md) Integrator-owned gate; final-phase telemetry matches **`verify_integrator_owned`** per [`crossing-normative.md`](crossing-normative.md)).
-
-**Authority:** integrator lifecycle, trust gating, telemetry, and CI replay live in **[`docs/decision-gate-ssot.md`](decision-gate-ssot.md)**.
 
 Prerequisite framing: [README wedge](../README.md#buy-vs-build-why-not-only-sql-checks).
 
 ```bash
 npm start
 ```
+
+## Step 1: Install, build, and run the bundled demo
+
+Aligns with the activation shell through **`npm start`** (contrast **`wf_complete`** vs **`wf_missing`** / **`ROW_ABSENT`** on the seeded demo DB).
+
+```bash
+npm install
+npm run build
+npm start
+```
+
+## Step 2: Run first-run-verify (AdoptionComplete_PatternComplete)
+
+Runs the repo’s scripted first-run checks after the demo.
+
+```bash
+npm run first-run-verify
+```
+
+## Step 3: Bootstrap pack and verify `wf_bootstrap_fixture`
+
+Mid-spine: materialize the bootstrap pack, then contract-verify against a **temp copy** of the demo DB (`$ADOPT_DB` in the shell; see [`integrate-activation-shell.bash`](../scripts/templates/integrate-activation-shell.bash)). Uses **`node dist/cli.js bootstrap`** with **`test/fixtures/bootstrap-pack/input.json`**, then **`wf_bootstrap_fixture`** with the emitted **`events.ndjson`** / **`tools.json`**.
+
+```bash
+OUT="$(mktemp -u "${TMPDIR:-/tmp}/agentskeptic-integrate-mid-XXXXXXXX")"
+ADOPT_DB="$(mktemp)"
+node dist/cli.js bootstrap --input test/fixtures/bootstrap-pack/input.json --db examples/demo.db --out "$OUT"
+cp examples/demo.db "$ADOPT_DB"
+node dist/cli.js --workflow-id wf_bootstrap_fixture --events "$OUT/events.ndjson" --registry "$OUT/tools.json" --db "$ADOPT_DB"
+```
+
+## Step 4: Integrator DB guard and crossing (IntegrateSpineComplete)
+
+The full L0 script **exit code is 0** iff every step completes, including the **final** `node dist/cli.js bootstrap … --input examples/integrate-your-db/bootstrap-input.json` and the following **`crossing`** pack-led on `"$AGENTSKEPTIC_VERIFY_DB"` (same event/registry/db flags as contract batch verify; integrator-owned gate per [`agentskeptic.md`](agentskeptic.md) Integrator-owned gate; final-phase telemetry matches **`verify_integrator_owned`** per [`crossing-normative.md`](crossing-normative.md)).
+
+**Authority:** integrator lifecycle, trust gating, telemetry, and CI replay live in **[`docs/decision-gate-ssot.md`](decision-gate-ssot.md)**.
 
 Commercial follow-ups: Stripe billing, `AGENTSKEPTIC_API_KEY`, `POST /api/v1/usage/reserve`.
