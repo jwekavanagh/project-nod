@@ -68,7 +68,6 @@ function loadAnchors() {
     "npmPackageUrl",
     "bugsUrl",
     "keywords",
-    "distributionConsumerRepository",
   ];
   for (const k of required) {
     if (anchors[k] === undefined || anchors[k] === null) {
@@ -77,14 +76,6 @@ function loadAnchors() {
   }
   if (!Array.isArray(anchors.keywords) || anchors.keywords.length === 0) {
     throw new Error("public-product-anchors: keywords must be a non-empty array");
-  }
-  if (
-    typeof anchors.distributionConsumerRepository !== "string" ||
-    !anchors.distributionConsumerRepository.includes("/")
-  ) {
-    throw new Error(
-      "public-product-anchors: distributionConsumerRepository must be owner/name (GitHub repo full name)",
-    );
   }
   return anchors;
 }
@@ -214,7 +205,7 @@ function writeAgentsMd(anchors, discovery) {
   const openapiRaw = `https://raw.githubusercontent.com/${owner}/${repo}/refs/heads/${branch}/schemas/openapi-commercial-v1.yaml`;
   const body = `# AGENTS
 
-Normative **public distribution**, anchor sync, and consumer pipeline contracts: [\`docs/public-distribution-ssot.md\`](docs/public-distribution-ssot.md) (same content as ${url}).
+Normative **public distribution** and anchor sync: [\`docs/public-distribution-ssot.md\`](docs/public-distribution-ssot.md) (same content as ${url}).
 
 ## Machine-readable product entrypoints
 

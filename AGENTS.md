@@ -1,6 +1,6 @@
 # AGENTS
 
-Normative **public distribution**, anchor sync, and consumer pipeline contracts: [`docs/public-distribution-ssot.md`](docs/public-distribution-ssot.md) (same content as https://github.com/jwekavanagh/agentskeptic/blob/main/docs/public-distribution-ssot.md).
+Normative **public distribution** and anchor sync: [`docs/public-distribution-ssot.md`](docs/public-distribution-ssot.md) (same content as https://github.com/jwekavanagh/agentskeptic/blob/main/docs/public-distribution-ssot.md).
 
 ## Machine-readable product entrypoints
 

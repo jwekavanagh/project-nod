@@ -65,11 +65,6 @@ This section is the **normative** single source of truth for CI and release work
 |---------|-------------------|----------------------|------------------|
 | `push` / `pull_request` to **`refs/heads/main`** | `ci-${{ github.workflow }}-${{ github.ref }}` | **false** | Two rapid `main` pushes may yield **two concurrent** workflow runs; both may run to completion; neither is canceled by a sibling `main` run. Branch protection treats the conclusion of the run(s) the protection rule evaluates as authoritative (standard GitHub behavior). |
 | `push` / `pull_request` to **any other ref** | same group formula | **true** | A newer push on the **same ref** **cancels** the older in-progress run. The canceled run ends **`cancelled`**. Required checks re-target the **newest** run for that PR or branch; superseded runs must not be interpreted as the final gate. |
-| **`distribution-consumer`** job | Same workflow run as `test` / `commercial` | N/A | If the **parent** workflow run is canceled before `distribution-consumer` starts, that job does not run for that run id. The **replacement** run re-executes `needs: [test, commercial]` from scratch. |
-
-### Distribution consumer token
-
-- On `main` only, when `DISTRIBUTION_GITHUB_TOKEN` is set, **CI** runs **`scripts/distribution-consumer-pipeline.mjs`** with that secret plus the default `GITHUB_TOKEN` as documented in the workflow. This is unchanged by the least-privilege and concurrency policies above.
 
 ### Failure modes (summary)
 
@@ -84,7 +79,7 @@ This section is the **normative** single source of truth for CI and release work
 These steps are required for a commercial release that ships the workflow and version together:
 
 1. **Prepare one PR** into `main` that contains: (a) all workflow edits, (b) CONTRIBUTING edits under this section as needed, (c) **the next semver bump** in [`package.json`](package.json) and matching root entries in [`package-lock.json`](package-lock.json) (patch bump over current `latest` on npm—for example if npm `latest` is `0.1.3`, set `0.1.4`). One PR avoids an extra merge cycle.
-2. **Open the PR and wait for `CI` green** (`test` + `commercial`; `distribution-consumer` runs only when the workflow’s existing conditions are met, including `refs/heads/main` and a configured token—on a PR branch the consumer job may still skip; that is unchanged).
+2. **Open the PR and wait for `CI` green** (`test` + `commercial`).
 3. **Merge the PR to `main`** using the repository’s normal merge policy (squash or merge commit). Record the merge SHA if you need an audit trail.
 4. **On `main` after merge**, a maintainer runs **Actions → Commercial npm publish → Run workflow** with the production `commercial_license_api_base_url` input. Do not reconfigure Trusted Publisher or mutate repository secrets as a validation technique.
 5. **On `main` after merge**, a maintainer runs **Actions → Assurance scheduled → Run workflow**.
