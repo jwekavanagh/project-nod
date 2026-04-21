@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { loadSchemaValidator } from "agentskeptic";
+import { loadSchemaValidator } from "agentskeptic/schemaLoad";
 import { DEMO_SCENARIO_IDS, type DemoScenarioId } from "./demoScenarioIds";
 
 export { DEMO_SCENARIO_IDS, type DemoScenarioId };

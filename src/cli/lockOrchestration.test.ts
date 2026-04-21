@@ -13,6 +13,14 @@ vi.mock("../ciLockWorkflow.js", async (importOriginal) => {
   };
 });
 
+vi.mock("../standardVerifyWorkflowCli.js", () => ({
+  emitVerifyWorkflowCliJsonAndExitByStatus: vi.fn(
+    (_result: unknown, io: { exit: (code: number) => void }) => {
+      io.exit(0);
+    },
+  ),
+}));
+
 import * as wf from "../ciLockWorkflow.js";
 import * as activation from "../telemetry/postProductActivationEvent.js";
 import * as beacon from "../commercial/postVerifyOutcomeBeacon.js";

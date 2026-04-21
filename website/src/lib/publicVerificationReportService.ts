@@ -1,7 +1,7 @@
 import { db } from "@/db/client";
 import { sharedVerificationReports } from "@/db/schema";
 import { eq } from "drizzle-orm";
-import { loadSchemaValidator } from "agentskeptic";
+import { loadSchemaValidator } from "agentskeptic/schemaLoad";
 
 const MAX_BODY_BYTES = 393216;
 

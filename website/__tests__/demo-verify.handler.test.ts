@@ -4,7 +4,7 @@ import {
   DEMO_SCENARIO_IDS,
 } from "@/lib/demoVerify.contract";
 import { runDemoVerifyScenario } from "@/lib/demoVerify";
-import { loadSchemaValidator } from "agentskeptic";
+import { loadSchemaValidator } from "agentskeptic/schemaLoad";
 import { NextRequest } from "next/server";
 import { describe, expect, it } from "vitest";
 

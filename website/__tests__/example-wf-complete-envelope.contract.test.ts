@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
-import { loadSchemaValidator } from "agentskeptic";
+import { loadSchemaValidator } from "agentskeptic/schemaLoad";
 import { getRepoRoot } from "./helpers/distributionGraphHelpers";
 
 describe("example-wf-complete.v1 embed", () => {
