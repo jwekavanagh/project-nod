@@ -49,6 +49,10 @@ Single matrix for what the **default OSS artifact** vs **published commercial np
 
 **Outcome Certificate vs billing:** The public **Outcome Certificate** JSON never contains Stripe, plan, or quota fields. Subscription and reserve gate **whether verification is allowed to run**; see [`outcome-certificate-normative.md`](outcome-certificate-normative.md) and [`outcome-certificate-integrator.md`](outcome-certificate-integrator.md).
 
+### Programmatic verification vs licensed CLI
+
+In-process **`createDecisionGate`** (library embed in your application) evaluates read-only SQL against buffered structured events and **does not** call **`POST /api/v1/usage/reserve`**. **Licensed** metering applies to the **published npm CLI** entry points that perform license preflight before contract **`verify`**, **`quick`** with lock flags, and **`enforce`**.
+
 ## Packaging and CLI build profiles
 
 | Artifact              | `WF_BUILD_PROFILE` | Behavior |

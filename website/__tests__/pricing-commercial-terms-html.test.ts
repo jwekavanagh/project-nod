@@ -1,5 +1,6 @@
 import * as cheerio from "cheerio";
 import { describe, expect, beforeAll, it } from "vitest";
+import { PRICING_COMMERCIAL_TERMS_BULLETS } from "@/content/marketingContracts";
 import { productCopy } from "@/content/productCopy";
 import {
   ensureMarketingSiteRunning,
@@ -20,10 +21,10 @@ describe("pricing commercial terms HTML", { timeout: 180_000 }, () => {
     const $ul = $("main ul[aria-label='Commercial terms']");
     expect($ul.length).toBe(1);
     const $lis = $ul.find("> li");
-    expect($lis.length).toBe(productCopy.pricingCommercialTermsBullets.length);
+    expect($lis.length).toBe(PRICING_COMMERCIAL_TERMS_BULLETS.length);
     for (let i = 0; i < $lis.length; i++) {
       const $li = $lis.eq(i);
-      const row = productCopy.pricingCommercialTermsBullets[i]!;
+      const row = PRICING_COMMERCIAL_TERMS_BULLETS[i]!;
       const $strongs = $li.find("strong");
       expect($strongs.length).toBe(1);
       const first = $li.contents().first();
@@ -42,7 +43,7 @@ describe("pricing commercial terms HTML", { timeout: 180_000 }, () => {
     expect(html).toContain(productCopy.pricingRecommendedPill);
     expect(html).toContain('data-testid="pricing-team-footnote"');
     expect(html).toContain(productCopy.pricingTeamFootnote);
-    for (const row of productCopy.pricingCommercialTermsBullets) {
+    for (const row of PRICING_COMMERCIAL_TERMS_BULLETS) {
       expect(html).toContain(row.body);
     }
   });

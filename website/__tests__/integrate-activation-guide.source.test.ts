@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
-import { integrateActivation, integrateRegistryDraft } from "@/content/productCopy";
+import { integrateActivation } from "@/content/productCopy";
 
 describe("/integrate activation wiring", () => {
   it("page wires integrateActivation plus IntegrateCrossingCommands and IntegrateActivationBlock (no inline command key)", () => {
@@ -31,10 +31,4 @@ describe("/integrate activation wiring", () => {
     expect(blob).not.toContain("partner_");
   });
 
-  it("integrateRegistryDraft copy has no banned integrator terms", () => {
-    const blob = JSON.stringify(integrateRegistryDraft).toLowerCase();
-    expect(blob).not.toContain("partner");
-    expect(blob).not.toContain("repository root");
-    expect(blob).not.toContain("partner_");
-  });
 });

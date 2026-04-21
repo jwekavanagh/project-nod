@@ -3,6 +3,10 @@
 import discoveryAcquisition from "@/lib/discoveryAcquisition";
 import { EPISTEMIC_CONTRACT_INTEGRATOR_SNIPPET } from "@/generated/epistemicContractIntegrator";
 import { DECISION_READY_PRODUCTION_COMPLETE_ADOPTION_BLOB_URL } from "@/lib/githubHeadingSlug";
+import {
+  METERING_CLARIFIER,
+  SECURITY_QUICK_VS_CONTRACT_BULLET,
+} from "@/content/marketingContracts";
 import { publicProductAnchors } from "@/lib/publicProductAnchors";
 
 export type InternalHref = "/security" | "/support" | "/pricing" | "/privacy" | "/terms" | "/integrate";
@@ -159,54 +163,6 @@ export const pricingRiskReassurance =
 export const pricingCardStarterPaidQuotaCaption =
   "No paid CLI quota—subscribe on Individual, Team, or Business for included monthly verifications.";
 
-export const pricingFeatureComparison = {
-  title: "Compare plans in detail",
-  columnLabels: ["Capability", "Starter", "Individual", "Team", "Business", "Enterprise"] as const,
-  rows: [
-    {
-      feature: "Verify locally (no paid subscription)",
-      starter: "Yes",
-      individual: "Yes",
-      team: "Yes",
-      business: "Yes",
-      enterprise: "Yes",
-    },
-    {
-      feature: "Fail build on mismatch",
-      starter: "No",
-      individual: "Yes",
-      team: "Yes",
-      business: "Yes",
-      enterprise: "Yes",
-    },
-    {
-      feature: "Run verification from CI with API access",
-      starter: "No",
-      individual: "Yes",
-      team: "Yes",
-      business: "Yes",
-      enterprise: "Yes",
-    },
-    {
-      feature: "Included verifications per month (paid CLI)",
-      starter: "None (subscribe for quota)",
-      individual: "2,000",
-      team: "10,000",
-      business: "50,000",
-      enterprise: "Custom",
-    },
-    {
-      feature:
-        "OSS CLI: generate `--output-lock` fixtures without a subscription (lock generation only; compare / enforce need commercial)",
-      starter: "Yes",
-      individual: "Yes",
-      team: "Yes",
-      business: "Yes",
-      enterprise: "Yes",
-    },
-  ],
-} as const;
-
 /** Truthful guidance without implying existing customer mix. */
 export const pricingRecommendedPill = "For production CI";
 
@@ -227,8 +183,8 @@ export const securityQuickFacts = {
   bullets: [
     "CLI and verification engine run in your infrastructure against databases you configure; the homepage demo runs bundled fixtures on this server for evaluation only.",
     "Structured tool activity is compared to database query results at verification time; that check does not prove a specific network call caused a row.",
-    "Accounts on this site use email magic links; paid plans use Stripe; see Privacy and Terms for site-side data handling.",
-    "Treat the repository SSOT documents linked on Security & Trust as authoritative for semantics and commercial limits.",
+    SECURITY_QUICK_VS_CONTRACT_BULLET,
+    "Accounts on this site use email magic links; paid plans use Stripe; see Privacy and Terms for site-side data handling. Treat the repository SSOT documents linked on Security & Trust as authoritative for semantics and commercial limits.",
   ],
 } as const satisfies SecurityQuickFacts;
 
@@ -305,49 +261,6 @@ export const integrateActivation = {
   ],
 } as const;
 
-const integrateRegistryDraftExampleBody = {
-  inputKind: "openai_tool_calls_v1" as const,
-  schemaVersion: 1 as const,
-  workflowId: "wf_bootstrap_fixture",
-  tool_calls: [
-    {
-      id: "call_fixture_1",
-      type: "function" as const,
-      function: {
-        name: "crm.upsert_contact",
-        arguments: '{"recordId":"c_ok","fields":{"name":"Alice","status":"active"}}',
-      },
-    },
-  ],
-};
-
-/** Optional same-origin registry draft on `/integrate` (see docs/registry-draft-ssot.md). */
-export const integrateRegistryDraft = {
-  /** Shown as the `<summary>` when this panel is collapsed under the activation spine on `/integrate`. */
-  optionalSectionSummary: "Optional: registry draft (model-assisted, same-origin)",
-  sectionHeading: "Registry draft helper (optional)",
-  paragraphs: [
-    "If you have OpenAI-style tool_calls, you can POST JSON here for a copy-only draft registry—autocomplete for wiring, not a verification run. Full contract: docs/registry-draft-ssot.md.",
-  ],
-  bullets: ["You edit, review, and keep the registry locally; nothing auto-applies to your systems."],
-  technicalSummary: "Request contract, limits, and server flow",
-  technicalFlowBullets: [
-    "POST JSON is validated against the published request contract; a hosted model returns validated draft tool entries for you to copy. Requests are not stored after the response.",
-  ],
-  technicalBullets: [
-    "Same-origin only (Origin or Referer must be this site). Body is bootstrap-shaped JSON or a minimal tool_calls array; optional ddlHint is plain text without ://; feature off returns HTTP 404.",
-  ],
-  requestLabel: "Request body (JSON)",
-  submitLabel: "Request draft",
-  /** Shown above the draft JSON when the API returns validated JSON. */
-  resultSuccessLead:
-    "The server returned a validated draft registry. Review it before use—this is a draft, not a verification result—then copy the JSON into your repo.",
-  copyDraftJsonLabel: "Copy draft JSON",
-  copiedDraftJsonFeedback: "Copied",
-  draftJsonOutputLabel: "Draft registry JSON (read-only)",
-  exampleJson: JSON.stringify(integrateRegistryDraftExampleBody),
-} as const;
-
 export const homeHeroCtaLabels = {
   demo: HOME_HERO_DEMO_CTA_LABEL,
 } as const satisfies HomeHeroCtaLabels;
@@ -418,22 +331,6 @@ export const productCopy = {
   /** Shared report view one-liner (UI-only). */
   publicShareReportIntro:
     "Private verification snapshot for sharing in tickets or Slack. This URL is not indexed for search; see Security & Trust for how the site handles data.",
-
-  /** Commercial terms above pricing grid — server-rendered from this list. */
-  pricingCommercialTermsBullets: [
-    {
-      lead: "Paid verification",
-      body: "Licensed verification with the published npm CLI requires an active Individual, Team, Business, or Enterprise subscription (trial counts); monthly quota applies after subscribe.",
-    },
-    {
-      lead: "Enforcement and CI",
-      body: "CI locks, the enforce command, and quick verify with lock flags use the same subscription requirement.",
-    },
-    {
-      lead: "Contracts",
-      body: "Limits and semantics: OpenAPI at /openapi-commercial-v1.yaml, plans JSON at /api/v1/commercial/plans, and entitlement docs on GitHub main.",
-    },
-  ] as const,
 
   /** Server intro on `/account` (AccountServerAboveFold); links are composed in TSX. */
   accountPage: {
@@ -670,8 +567,7 @@ export const productCopy = {
 
   commercialSurface: {
     title: "What paid plans unlock",
-    lead:
-      "Open-source includes local verify and `--output-lock` without a site key. Paid adds licensed npm, API keys, reserve, quota, and CI compare/enforce—Stripe on Pricing. See docs/commercial-ssot.md (free vs paid boundary).",
+    lead: METERING_CLARIFIER,
   },
 
   /** Homepage section CTAs that only scroll to `#try-it` (distinct from hero demo CTA). */
@@ -687,7 +583,6 @@ export const productCopy = {
   pricingHeroExample,
   pricingRiskReassurance,
   pricingCardStarterPaidQuotaCaption,
-  pricingFeatureComparison,
   pricingRecommendedPill,
   pricingTeamFootnote,
   pricingPlanCtas,

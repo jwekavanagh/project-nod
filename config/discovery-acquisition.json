@@ -3,7 +3,7 @@
   "slug": "/database-truth-vs-traces",
   "readmeTitle": "AgentSkeptic — when traces say success but your database does not match",
   "heroTitle": "Your traces say \"success.\" Your database disagrees.",
-  "heroSubtitle": "Verify your database state with read-only SQL before you ship, bill, or close. Not traces. Not logs. The actual database.",
+  "heroSubtitle": "Verify your database state with read-only SQL before you ship, bill, or close. Not arbitrary log search—structured tool events (for example NDJSON), then read-only SQL against the actual database.",
   "homepageAcquisitionCtaLabel": "Product brief",
   "homepageDecisionFraming": "AgentSkeptic runs read-only SQL at verification time on Postgres or SQLite, comparing persisted rows to structured tool activity—before you ship, bill, or close.",
   "homepageHero": {

@@ -6,6 +6,7 @@ import { shareableTerminalFailureExcerpt } from "@/lib/shareableTerminalFailureE
 import { buildHomeTrustStripLinks, openapiHrefFromProcessEnv } from "@/lib/siteChrome";
 import Link from "next/link";
 import { Fragment } from "react";
+import { EvaluatorTruthAndAdoptionSection } from "./home/EvaluatorTruthAndAdoptionSection";
 import { TryItSection } from "./home/TryItSection";
 import { HOME_SECTION_ORDER, type HomeSectionId } from "./page.sections";
 
@@ -113,6 +114,11 @@ export default function HomePage() {
         </ul>
       </section>
     ),
+    evaluatorTruthAndAdoption: (
+      <Fragment key="evaluatorTruthAndAdoption">
+        <EvaluatorTruthAndAdoptionSection />
+      </Fragment>
+    ),
     howItWorks: (
       <section
         key="howItWorks"
@@ -204,7 +210,7 @@ export default function HomePage() {
         aria-labelledby="commercial-surface-heading"
       >
         <h2 id="commercial-surface-heading">{productCopy.commercialSurface.title}</h2>
-        <p>{productCopy.commercialSurface.lead}</p>
+        <p data-testid="home-commercial-metering">{productCopy.commercialSurface.lead}</p>
         <p className="commercial-links">
           <Link href="/pricing">Pricing</Link>
           {" · "}

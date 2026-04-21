@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { loadSchemaValidator } from "agentskeptic/schemaLoad";
+import { demoVerifySuccessResponseSchema as demoVerifySuccessResponseShape } from "./demoVerifySuccessResponse.client";
 import { DEMO_SCENARIO_IDS, type DemoScenarioId } from "./demoScenarioIds";
 
 export { DEMO_SCENARIO_IDS, type DemoScenarioId };
@@ -16,13 +17,11 @@ function outcomeCertificateRefines(data: unknown): boolean {
   return validateOutcomeCertificate(data) === true;
 }
 
-export const demoVerifySuccessResponseSchema = z.object({
-  ok: z.literal(true),
-  scenarioId: z.enum(DEMO_SCENARIO_IDS),
+/** Server / tests: same shape as the client schema plus Outcome Certificate JSON Schema validation. */
+export const demoVerifySuccessResponseSchema = demoVerifySuccessResponseShape.extend({
   certificate: z.unknown().refine(outcomeCertificateRefines, {
     message: "certificate failed outcome-certificate-v1 JSON Schema",
   }),
-  humanReport: z.string().min(1),
 });
 
 export type DemoVerifySuccessResponse = z.infer<typeof demoVerifySuccessResponseSchema>;

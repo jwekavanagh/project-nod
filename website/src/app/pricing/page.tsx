@@ -1,50 +1,12 @@
+import { PRICING_COMMERCIAL_TERMS_BULLETS } from "@/content/marketingContracts";
 import { productCopy } from "@/content/productCopy";
 import { enterpriseMailtoHref } from "@/lib/contactSalesEmail";
 import { loadCommercialPlans, type PlanId } from "@/lib/plans";
 import Link from "next/link";
 import { PricingClient, type PlanRow } from "./PricingClient";
+import { PricingCompareTable } from "./PricingCompareTable";
 
 export const dynamic = "force-dynamic";
-
-function PricingCompareTable() {
-  const compare = productCopy.pricingFeatureComparison;
-  return (
-    <section
-      className="pricing-compare"
-      aria-labelledby="pricing-compare-title"
-      data-testid="pricing-compare-section"
-    >
-      <h2 id="pricing-compare-title" className="pricing-compare-heading">
-        {compare.title}
-      </h2>
-      <div className="pricing-compare-scroll">
-        <table className="pricing-compare-table">
-          <thead>
-            <tr>
-              {compare.columnLabels.map((label) => (
-                <th key={label} scope="col">
-                  {label}
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {compare.rows.map((row) => (
-              <tr key={row.feature}>
-                <th scope="row">{row.feature}</th>
-                <td>{row.starter}</td>
-                <td>{row.individual}</td>
-                <td>{row.team}</td>
-                <td>{row.business}</td>
-                <td>{row.enterprise}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    </section>
-  );
-}
 
 export default function PricingPage() {
   const commercial = loadCommercialPlans();
@@ -98,7 +60,7 @@ export default function PricingPage() {
       <PricingCompareTable />
 
       <ul aria-label="Commercial terms" className="muted pricing-commercial-terms">
-        {productCopy.pricingCommercialTermsBullets.map((row) => (
+        {PRICING_COMMERCIAL_TERMS_BULLETS.map((row) => (
           <li key={row.lead}>
             <strong>{row.lead}</strong> {row.body}
           </li>

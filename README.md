@@ -5,7 +5,7 @@
 <!-- discovery-acquisition-fold:start -->
 ## Your traces say "success." Your database disagrees.
 
-Verify your database state with read-only SQL before you ship, bill, or close. Not traces. Not logs. The actual database.
+Verify your database state with read-only SQL before you ship, bill, or close. Not arbitrary log search—structured tool events (for example NDJSON), then read-only SQL against the actual database.
 
 Teams ship agent and automation workflows where traces, tool responses, and success flags look green while the database row is missing, stale, or wrong. AgentSkeptic compares structured tool activity to read-only SQL against your SQLite or Postgres at verification time and reports whether observed state matched expectations derived from what the workflow claimed—not whether the step narrative read as successful.
 

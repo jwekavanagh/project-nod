@@ -2,6 +2,7 @@
 
 import { productCopy } from "@/content/productCopy";
 import { LiveStatus } from "@/components/LiveStatus";
+import { demoVerifySuccessResponseSchema } from "@/lib/demoVerifySuccessResponse.client";
 import {
   DEMO_SCENARIO_IDS,
   DEMO_SCENARIO_PRESENTATION,
@@ -10,7 +11,7 @@ import {
 import { createElement, useState } from "react";
 
 type DemoResponse =
-  | { ok: true; truthReportText: string; workflowResult: unknown }
+  | { ok: true; humanReport: string; certificate: unknown }
   | { ok: false; error: string };
 
 export type TryItSectionProps = {
@@ -50,11 +51,12 @@ export function TryItSection({ variant = "page" }: TryItSectionProps) {
         });
         return;
       }
-      if (j.ok === true && typeof j.truthReportText === "string") {
+      const parsed = demoVerifySuccessResponseSchema.safeParse(j);
+      if (parsed.success) {
         setResult({
           ok: true,
-          truthReportText: j.truthReportText,
-          workflowResult: j.workflowResult,
+          humanReport: parsed.data.humanReport,
+          certificate: parsed.data.certificate,
         });
         return;
       }
@@ -117,11 +119,11 @@ export function TryItSection({ variant = "page" }: TryItSectionProps) {
         <div className="try-it-output">
           <h3 className="try-it-subheading">Human report</h3>
           <pre className="code-block" data-testid={productCopy.uiTestIds.tryTruthReport}>
-            {result.truthReportText}
+            {result.humanReport}
           </pre>
-          <h3 className="try-it-subheading">workflow-result (JSON)</h3>
+          <h3 className="try-it-subheading">Outcome certificate (JSON)</h3>
           <pre className="code-block" data-testid={productCopy.uiTestIds.tryWorkflowJson}>
-            {JSON.stringify(result.workflowResult, null, 2)}
+            {JSON.stringify(result.certificate, null, 2)}
           </pre>
         </div>
       )}

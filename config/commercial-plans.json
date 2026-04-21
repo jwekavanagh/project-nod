@@ -43,7 +43,7 @@
       "monthlyUsdCents": null,
       "displayPrice": "Custom",
       "marketingHeadline": "Enterprise",
-      "audience": "Procurement, SLAs, on-prem, or locked-down environments.",
+      "audience": "Procurement, custom limits, on-prem, or locked-down environments.",
       "valueUnlock": "Sales-led onboarding with contract terms and limits tailored to you.",
       "stripePriceEnvKey": null
     }

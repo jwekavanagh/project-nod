@@ -1,0 +1,28 @@
+{
+  "ok": true,
+  "scenarioId": "wf_complete",
+  "humanReport": "workflow_id: wf_complete\nworkflow_status: complete\ntrust: TRUSTED: Every step matched the database under the configured verification rules.\nsteps:\n  - seq=0 tool=crm.upsert_contact result=Matched the database.\n",
+  "certificate": {
+    "schemaVersion": 1,
+    "workflowId": "wf_complete",
+    "runKind": "contract_sql",
+    "stateRelation": "matches_expectations",
+    "highStakesReliance": "permitted",
+    "relianceRationale": "Contract verification completed with matches_expectations; high-stakes reliance permitted per normative table.",
+    "intentSummary": "TRUSTED: Every step matched the database under the configured verification rules.",
+    "explanation": {
+      "headline": "Fixture wf_complete",
+      "details": [{ "code": "OK", "message": "Matched the database." }]
+    },
+    "steps": [
+      {
+        "seq": 0,
+        "toolId": "crm.upsert_contact",
+        "declaredAction": "Upsert contact",
+        "expectedOutcome": "Row present with required fields",
+        "observedOutcome": "Matched the database."
+      }
+    ],
+    "humanReport": "workflow_id: wf_complete\nworkflow_status: complete\ntrust: TRUSTED: Every step matched the database under the configured verification rules.\nsteps:\n  - seq=0 tool=crm.upsert_contact result=Matched the database.\n"
+  }
+}

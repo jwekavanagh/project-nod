@@ -1,6 +1,7 @@
 "use client";
 
 import { LiveStatus } from "@/components/LiveStatus";
+import { METERING_CLARIFIER } from "@/content/marketingContracts";
 import { productCopy } from "@/content/productCopy";
 import { emailSignInOptions } from "@/lib/sanitizeInternalCallbackUrl";
 import { signIn } from "next-auth/react";
@@ -51,6 +52,9 @@ function SignInForm() {
           <li key={b}>{b}</li>
         ))}
       </ul>
+      <p className="muted u-mt-1" data-testid="signin-metering-clarifier">
+        {METERING_CLARIFIER}
+      </p>
       <form onSubmit={onSubmit} className="card card-narrow-24 u-mt-1">
         <label htmlFor="email">Email</label>
         <input

@@ -1,0 +1,124 @@
+/**
+ * Contract-tested marketing copy: pricing comparison table, commercial terms bullets,
+ * homepage evaluator/adoption block, metering clarifier (sign-in + homepage), security quick-fact line.
+ * Plan metadata stays in config/commercial-plans.json; numeric caps in the table must match that file
+ * (see website/__tests__/pricing-comparison-numeric-parity.contract.test.ts).
+ */
+import { publicProductAnchors } from "@/lib/publicProductAnchors";
+
+/** GitHub anchor for docs/commercial-ssot.md — keep in sync with heading text in that file. */
+export const COMMERCIAL_SSOT_PROGRAMMATIC_VS_CLI_ANCHOR = "programmatic-verification-vs-licensed-cli";
+
+export const COMMERCIAL_SSOT_PROGRAMMATIC_VS_CLI_HREF = `${publicProductAnchors.gitRepositoryUrl}/blob/main/docs/commercial-ssot.md#${COMMERCIAL_SSOT_PROGRAMMATIC_VS_CLI_ANCHOR}`;
+
+/** Same verbatim string on sign-in and homepage commercial strip (render tests assert equality). */
+export const METERING_CLARIFIER = `In-process library use (createDecisionGate) evaluates read-only SQL without calling the license reserve API. The published npm CLI path—contract verify, quick with lock flags, and enforce—requires an API key and POST /api/v1/usage/reserve. Boundary: ${COMMERCIAL_SSOT_PROGRAMMATIC_VS_CLI_HREF}`;
+
+/** Two normative lines from docs/commercial-entitlement-policy.md — commercial-pricing-policy-parity.test.mjs requires these substrings in this file. */
+export const NORMATIVE_PAID_VERIFICATION_LINE =
+  "Licensed verification with the published npm CLI requires an active Individual, Team, Business, or Enterprise subscription (trial counts); monthly quota applies after subscribe.";
+
+export const NORMATIVE_ENFORCEMENT_CI_LINE =
+  "CI locks, the enforce command, and quick verify with lock flags use the same subscription requirement.";
+
+export const PRICING_COMMERCIAL_TERMS_BULLETS = [
+  {
+    lead: "Paid verification" as const,
+    body: `${NORMATIVE_PAID_VERIFICATION_LINE}`,
+  },
+  {
+    lead: "Enforcement and CI" as const,
+    body: `${NORMATIVE_ENFORCEMENT_CI_LINE}`,
+  },
+  {
+    lead: "Contracts" as const,
+    body: "Limits and semantics: OpenAPI at /openapi-commercial-v1.yaml, plans JSON at /api/v1/commercial/plans, and entitlement docs on GitHub main.",
+  },
+] as const;
+
+export type PlanColumn = "starter" | "individual" | "team" | "business" | "enterprise";
+
+export type PricingComparisonRow = {
+  feature: string;
+} & Record<PlanColumn, string>;
+
+export const PRICING_FEATURE_COMPARISON = {
+  title: "Compare plans in detail",
+  columnLabels: ["Capability", "Starter", "Individual", "Team", "Business", "Enterprise"] as const,
+  rows: [
+    {
+      feature: "Verify locally with an OSS build from source (no subscription)",
+      starter: "Yes",
+      individual: "Yes",
+      team: "Yes",
+      business: "Yes",
+      enterprise: "Yes",
+    },
+    {
+      feature: "Fail CI on contract mismatch using OSS build agentskeptic verify (non-zero exit)",
+      starter: "Yes",
+      individual: "Yes",
+      team: "Yes",
+      business: "Yes",
+      enterprise: "Yes",
+    },
+    {
+      feature: "Run published npm contract verify / quick in CI with API key + reserve",
+      starter: "No",
+      individual: "Yes",
+      team: "Yes",
+      business: "Yes",
+      enterprise: "Yes",
+    },
+    {
+      feature: "Lock compare (--expect-lock) and enforce on published npm",
+      starter: "No",
+      individual: "Yes",
+      team: "Yes",
+      business: "Yes",
+      enterprise: "Yes",
+    },
+    {
+      feature: "Included paid verifications / month (published npm metered)",
+      starter: "None (subscribe for quota)",
+      individual: "2,000",
+      team: "10,000",
+      business: "50,000",
+      enterprise: "Custom",
+    },
+    {
+      feature:
+        "OSS — generate --output-lock fixtures (compare / enforce on published npm remains commercial)",
+      starter: "Yes",
+      individual: "Yes",
+      team: "Yes",
+      business: "Yes",
+      enterprise: "Yes",
+    },
+  ] as const satisfies readonly PricingComparisonRow[],
+};
+
+/** Third bullet (index 2) on Security quick facts — quick preview vs contract for high-stakes reliance. */
+export const SECURITY_QUICK_VS_CONTRACT_BULLET =
+  "Quick verify is a preview path; contract verification with an Outcome Certificate is what the engine treats as decision-grade for matches—see outcome-certificate-normative on GitHub for highStakesReliance rules.";
+
+export const EVALUATOR_TRUTH_AND_ADOPTION = {
+  sectionTitle: "What verification checks (and what it does not)",
+  whatWeCheckHeading: "What this checks",
+  whatWeCheck:
+    "Whether rows and fields your registry expects from structured tool activity actually exist in SQLite or Postgres at verification time—via read-only SELECTs, not trace color alone.",
+  whatEvidenceHeading: "What evidence it uses",
+  whatEvidence:
+    "Structured tool activity (for example NDJSON lines with tool IDs and parameters) plus your tools.json mapping. That is not arbitrary log search.",
+  whatWeDoNotProveHeading: "What it does not prove",
+  whatWeDoNotProve:
+    "That a specific HTTP request or tool invocation caused a row, or that the database will stay unchanged after verification—only that observed state matched or did not match expectations when read.",
+  quickVsContract:
+    "Quick-style outputs are not interchangeable with contract Outcome Certificates for high-stakes reliance; use contract mode when a human decision depends on the artifact.",
+  crossingCanonicalSentence:
+    "The default integrator path is agentskeptic crossing (bootstrap-led or pack-led); exit 0 means crossing success for that run.",
+  antiSubstitutionOneLiner:
+    "Crossing success is exit 0 from agentskeptic crossing in bootstrap-led or pack-led mode. Bootstrap exit 0 alone, IntegrateSpineComplete alone, and PatternComplete alone are not crossing success and are not substitutes for it.",
+  integrateCtaLabel: "Get started",
+  integrateHref: "/integrate" as const,
+} as const;
