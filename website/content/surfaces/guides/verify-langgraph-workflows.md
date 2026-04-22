@@ -10,13 +10,11 @@ route: /guides/verify-langgraph-workflows
 evaluatorLens: false
 ---
 
-For verification against **additional SQL engines and external state stores** (MySQL, BigQuery, SQL Server, vector indexes, S3, HTTP witnesses, MongoDB), see [`docs/verification-state-stores-ssot.md`](https://github.com/jwekavanagh/agentskeptic/blob/main/docs/verification-state-stores-ssot.md).
-
 # Verify LangGraph workflows against your database
 
 **See a verified certificate on-site:** open **[`/examples/langgraph-checkpoint-trust`](/examples/langgraph-checkpoint-trust)** for a captured B-row Outcome Certificate (checkpoint verdicts, `runKind: contract_sql_langgraph_checkpoint_trust`) before reading any GitHub SSOT.
 
-**Integrator primacy:** Python-first verification lives in **[`examples/python-verification/README.md`](https://github.com/jwekavanagh/agentskeptic/blob/main/examples/python-verification/README.md)** with the merged SSOT **[`docs/integrator-verification-ssot.md`](https://github.com/jwekavanagh/agentskeptic/blob/main/docs/integrator-verification-ssot.md)**. Generated **[`docs/partner-quickstart-commands.md`](https://github.com/jwekavanagh/agentskeptic/blob/main/docs/partner-quickstart-commands.md)** still carries the **Node oracle** shell for CI regression only.
+**Integrator primacy:** Python-first verification lives in **[`examples/python-verification/README.md`](https://github.com/jwekavanagh/agentskeptic/blob/main/examples/python-verification/README.md)** with the merged SSOT **[`docs/integrator-verification-ssot.md`](https://github.com/jwekavanagh/agentskeptic/blob/main/docs/integrator-verification-ssot.md)**. **Additional SQL engines and state stores** (MySQL, BigQuery, SQL Server, vectors, S3, HTTP witnesses, MongoDB): [`docs/verification-state-stores-ssot.md`](https://github.com/jwekavanagh/agentskeptic/blob/main/docs/verification-state-stores-ssot.md). Generated **[`docs/partner-quickstart-commands.md`](https://github.com/jwekavanagh/agentskeptic/blob/main/docs/partner-quickstart-commands.md)** still carries the **Node oracle** shell for CI regression only.
 
 **Authoritative behavior** for LangGraph checkpoint trust (v3 wire, terminal rows A1–D, production gate, shared kernel with the decision gate) is anchored in **[`docs/integrator-verification-ssot.md#langgraph-checkpoint-trust`](https://github.com/jwekavanagh/agentskeptic/blob/main/docs/integrator-verification-ssot.md#langgraph-checkpoint-trust)** — this guide links experience and law.
 
