@@ -3,12 +3,13 @@
     "requiredSubstrings": [
       "Verify LangGraph workflows against your database See a verified certificate on-site:",
       "/examples/langgraph-checkpoint-trust for a captured B-row Outcome Certificate",
-      "Integrator primacy: the minimal LangGraph emitter and copy-paste verify commands live in",
-      "examples/python-verification/README.md with docs/integrator-verification-ssot.md and generated docs/partner-quickstart-commands.md",
-      "LangGraph reference section",
-      "Authoritative behavior for LangGraph checkpoint trust (v3 wire, CLI flag, terminal rows A1–D, production gate, shared kernel with the decision gate) lives in the repository SSOT",
-      "docs/langgraph-checkpoint-trust-ssot.md",
-      "normative tables stay there; this guide links experience and law.",
+      "Integrator primacy: Python-first verification lives in",
+      "examples/python-verification/README.md",
+      "docs/integrator-verification-ssot.md",
+      "docs/partner-quickstart-commands.md still carries the Node oracle shell for CI regression only",
+      "Authoritative behavior for LangGraph checkpoint trust (v3 wire, terminal rows A1–D, production gate, shared kernel with the decision gate) is anchored in",
+      "docs/integrator-verification-ssot.md#langgraph-checkpoint-trust",
+      "this guide links experience and law.",
       "Documentation boundaries (what belongs in which doc): docs/langgraph-reference-boundaries-ssot.md",
       "Run first-run on your database via /integrate."
     ]

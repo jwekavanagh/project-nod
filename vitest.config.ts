@@ -5,6 +5,6 @@ export default defineConfig({
     globals: false,
     environment: "node",
     include: ["src/**/*.test.ts", "test/**/*.test.ts"],
-    exclude: ["**/*.sqlite.test.mjs"],
+    exclude: ["**/*.sqlite.test.mjs", "**/node_modules/**"],
   },
 });
