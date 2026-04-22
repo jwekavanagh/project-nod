@@ -97,7 +97,7 @@ for (const entry of manifest.packageJsonExact) {
   if (
     file !== "website/package.json" &&
     file !== "package.json" &&
-    file !== "examples/langgraph-reference/package.json"
+    file !== "test/fixtures/langgraph-node-oracle/package.json"
   ) {
     fail(`PIN_MANIFEST_SCHEMA file=unknown path=packageJsonExact[].file value=${JSON.stringify(file)}`);
   }
@@ -113,7 +113,7 @@ for (const entry of manifest.packageJsonExact) {
 }
 
 const rootLockPath = path.join(repoRoot, "package-lock.json");
-const exLockPath = path.join(repoRoot, "examples", "langgraph-reference", "package-lock.json");
+const exLockPath = path.join(repoRoot, "test", "fixtures", "langgraph-node-oracle", "package-lock.json");
 
 for (const [label, p] of [
   ["root", rootLockPath],

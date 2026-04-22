@@ -1,0 +1,45 @@
+Metadata-Version: 2.4
+Name: agentskeptic
+Version: 1.0.0
+Summary: Python-native database-truth verification for CrewAI, AutoGen, and LangGraph (AgentSkeptic kernel).
+License: MIT
+Requires-Python: >=3.11
+Description-Content-Type: text/markdown
+Requires-Dist: jsonschema>=4.22
+Provides-Extra: dev
+Requires-Dist: pytest>=8.0; extra == "dev"
+Requires-Dist: pytest-asyncio>=0.24; extra == "dev"
+Provides-Extra: postgres
+Requires-Dist: psycopg[binary]>=3.2; extra == "postgres"
+Provides-Extra: crewai
+Requires-Dist: crewai>=0.80; extra == "crewai"
+Provides-Extra: autogen
+Requires-Dist: autogen-agentchat>=0.4; extra == "autogen"
+Provides-Extra: langgraph
+Requires-Dist: langgraph>=0.2; extra == "langgraph"
+Requires-Dist: langchain-core>=0.3; extra == "langgraph"
+
+# agentskeptic (Python)
+
+First-party Python verification kernel and `agentskeptic.verify()` integration surface.
+
+Authoritative integrator narrative: [../docs/integrator-verification-ssot.md](../docs/integrator-verification-ssot.md).
+
+```bash
+pip install -e ".[dev]"
+pytest
+```
+
+Parity vectors live under `tests/parity_vectors/`; regenerate with Node (after `npm run build`):
+
+```bash
+node ../scripts/emit-python-parity-goldens.mjs
+```
+
+Cold-path smoke (from **repository root**; copies partner fixtures + `schemas/` into the image):
+
+```bash
+docker build -f python/Dockerfile -t agentskeptic-py-verify .
+```
+
+PyPI releases: push a git tag matching `py-v*` to run trusted publishing (see `.github/workflows/python-verify.yml`).

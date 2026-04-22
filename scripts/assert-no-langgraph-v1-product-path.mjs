@@ -9,7 +9,7 @@ import { fileURLToPath } from "node:url";
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 
 const watchedFiles = [
-  path.join(root, "examples", "langgraph-reference", "run.mjs"),
+  path.join(root, "test", "fixtures", "langgraph-node-oracle", "run.mjs"),
   path.join(root, "scripts", "lib", "langgraphReferenceVerifyCore.mjs"),
   path.join(root, "docs", "partner-quickstart-commands.md"),
   path.join(root, "src", "verify", "batchVerifyTelemetrySubcommand.ts"),
@@ -25,7 +25,7 @@ function fail(msg) {
 const runPath = watchedFiles[0];
 const runSrc = readFileSync(runPath, "utf8");
 if (runSrc.includes('"schemaVersion": 1') || runSrc.includes("'schemaVersion': 1")) {
-  fail("examples/langgraph-reference/run.mjs must not emit schemaVersion 1");
+  fail("test/fixtures/langgraph-node-oracle/run.mjs must not emit schemaVersion 1");
 }
 
 const corePath = watchedFiles[1];

@@ -1,0 +1,33 @@
+{
+  "schemaVersion": 1,
+  "workflowId": "wf_partner",
+  "runKind": "contract_sql_langgraph_checkpoint_trust",
+  "stateRelation": "matches_expectations",
+  "highStakesReliance": "permitted",
+  "relianceRationale": "Contract verification used your registry and read-only SQL; every captured step matched declared expectations under the configured rules, and every LangGraph checkpoint rollup verdict is verified. You may treat this artifact as decision-grade for those steps, subject to your own scope and retention policy.",
+  "intentSummary": "TRUSTED: Every step matched the database under the configured verification rules.",
+  "explanation": {
+    "headline": "TRUSTED: Every step matched the database under the configured verification rules.",
+    "details": []
+  },
+  "steps": [
+    {
+      "seq": 0,
+      "toolId": "crm.upsert_contact",
+      "declaredAction": "Upsert contact \"partner_1\" with fields {\"name\":\"You\",\"status\":\"active\"}",
+      "expectedOutcome": "table=contacts identity=[id=partner_1] required_fields=[name, status]",
+      "observedOutcome": "rowCount=1"
+    }
+  ],
+  "humanReport": "workflow_id: wf_partner\nworkflow_status: complete\ntrust: TRUSTED: Every step matched the database under the configured verification rules.\nexecution_path: execution_path_concerns=2; codes=MISSING_RUN_COMPLETED,NO_RETRIEVAL_EVENTS\n  - path_finding: code=NO_RETRIEVAL_EVENTS severity=low concern=context_quality scope=run_context codes=NO_RETRIEVAL_EVENTS\n    detail: No retrieval events recorded before tool observations (coarse missing-context signal).\n  - path_finding: code=MISSING_RUN_COMPLETED severity=medium concern=workflow_completeness scope=run_context codes=MISSING_RUN_COMPLETED\n    detail: No run_completed control event after tool observations (v2 graph).\nrun_level: (none)\nevent_sequence: normal\nsteps:\n  - seq=0 tool=crm.upsert_contact\n    declared: tool=crm.upsert_contact; intent=Upsert contact \"partner_1\" with fields {\"name\":\"You\",\"status\":\"active\"}; parameters_digest={\"fields\":{\"name\":\"You\",\"status\":\"active\"},\"recordId\":\"partner_1\"}\n    expected: table=contacts identity=[id=partner_1] required_fields=[name, status]\n    observed_database: rowCount=1\n    verification_verdict: outcome=VERIFIED; Matched the database.\n    observations: evaluated=1 of 1 in_capture_order\n\nlanggraph_checkpoint_verdicts:\nt-contract\u001f\u001fcp-contract\tverified\tProduction may advance under this checkpoint identity.",
+  "checkpointVerdicts": [
+    {
+      "checkpointKey": "t-contract\u001f\u001fcp-contract",
+      "verdict": "verified",
+      "seqs": [
+        0
+      ],
+      "productionMeaning": "Production may advance under this checkpoint identity."
+    }
+  ]
+}

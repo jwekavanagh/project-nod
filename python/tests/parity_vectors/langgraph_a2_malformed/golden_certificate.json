@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 1,
+  "workflowId": "wf_partner",
+  "runKind": "contract_sql_langgraph_checkpoint_trust",
+  "stateRelation": "not_established",
+  "highStakesReliance": "prohibited",
+  "relianceRationale": "LangGraph checkpoint trust mode did not establish a single approved production snapshot (ineligible wire, incomplete verification, incomplete checkpoint rollup, or sequence integrity). Do not treat absence of a mismatch as proof of success.",
+  "intentSummary": "LangGraph checkpoint trust: ineligible",
+  "explanation": {
+    "headline": "LangGraph checkpoint trust: ineligible",
+    "details": [
+      {
+        "code": "MALFORMED_EVENT_LINE",
+        "message": "Event line was missing, invalid JSON, or failed schema validation for a tool observation."
+      }
+    ]
+  },
+  "steps": [],
+  "humanReport": "LangGraph checkpoint trust: ineligible\nMALFORMED_EVENT_LINE: Event line was missing, invalid JSON, or failed schema validation for a tool observation."
+}

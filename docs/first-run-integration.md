@@ -1,5 +1,7 @@
 # First-run integration (SSOT)
 
+**Python verification SSOT:** Collapsed integrator narrative (LangGraph tables, `verify()` entrypoint, TypeScript pointer) lives in [`integrator-verification-ssot.md`](integrator-verification-ssot.md). This file remains the **npm / adoption spine** checklist.
+
 Checklist anchors: **PatternComplete**, **AdoptionComplete_PatternComplete**, **AC-TRUST-01**, **AC-OPS-01**, **IntegrateSpineComplete**.
 
 <!-- epistemic-contract:consumer:first-run-integration -->
@@ -26,7 +28,7 @@ npm start
 
 ## Step 2: Run first-run-verify (AdoptionComplete_PatternComplete)
 
-Runs the repo’s scripted first-run checks after the demo.
+Runs the repo's scripted first-run checks after the demo.
 
 ```bash
 npm run first-run-verify

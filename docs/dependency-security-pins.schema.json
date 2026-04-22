@@ -19,7 +19,7 @@
             "enum": [
               "website/package.json",
               "package.json",
-              "examples/langgraph-reference/package.json"
+              "test/fixtures/langgraph-node-oracle/package.json"
             ]
           },
           "path": {

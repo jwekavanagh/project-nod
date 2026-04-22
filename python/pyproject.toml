@@ -1,0 +1,31 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "agentskeptic"
+version = "1.0.0"
+description = "Python-native database-truth verification for CrewAI, AutoGen, and LangGraph (AgentSkeptic kernel)."
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "MIT" }
+dependencies = [
+  "jsonschema>=4.22",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8.0", "pytest-asyncio>=0.24"]
+postgres = ["psycopg[binary]>=3.2"]
+crewai = ["crewai>=0.80"]
+autogen = ["autogen-agentchat>=0.4"]
+langgraph = ["langgraph>=0.2", "langchain-core>=0.3"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+markers = [
+  "parity_oracle: requires Node dist/cli.js to refresh goldens",
+  "integration: optional framework deps",
+]

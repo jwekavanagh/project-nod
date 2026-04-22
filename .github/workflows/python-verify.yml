@@ -1,0 +1,67 @@
+# Python package: in-process kernel tests, subprocess guard, timed parity smoke.
+name: Python verify
+
+on:
+  pull_request:
+    paths:
+      - "python/**"
+      - "schemas/**"
+      - "examples/python-verification/**"
+      - "docs/integrator-verification-ssot.md"
+      - "scripts/check-python-no-subprocess.mjs"
+      - "scripts/assert-python-langgraph-primacy.mjs"
+      - ".github/workflows/python-verify.yml"
+  push:
+    branches: [main]
+    paths:
+      - "python/**"
+      - "schemas/**"
+      - "examples/python-verification/**"
+      - "docs/integrator-verification-ssot.md"
+      - "scripts/check-python-no-subprocess.mjs"
+      - "scripts/assert-python-langgraph-primacy.mjs"
+      - ".github/workflows/python-verify.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  pytest:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Guardrails
+        run: node scripts/check-python-no-subprocess.mjs && node scripts/assert-python-langgraph-primacy.mjs
+      - name: Pytest
+        run: cd python && python -m pip install -e ".[dev]" && python -m pytest tests/ -q
+      - name: Timed parity smoke
+        env:
+          TIMED_VERIFY_BUDGET_S: "900"
+        run: cd python && python scripts/timed_first_verify.py
+
+  docker-timed:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build python image (runs timed_first_verify in Dockerfile)
+        run: docker build -f python/Dockerfile -t agentskeptic-py-verify .
+
+  publish-pypi:
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/py-v')
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Build wheel
+        run: cd python && python -m pip install build && python -m build
+      - name: Publish to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          packages-dir: python/dist/

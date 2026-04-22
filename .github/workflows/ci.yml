@@ -81,8 +81,8 @@ jobs:
         run: npm ci
       - name: Epistemic contract structure (sync + validate)
         run: node scripts/sync-epistemic-contract-website.mjs && node scripts/validate-epistemic-contract-structure.mjs
-      - name: Install langgraph-reference example dependencies
-        run: npm ci --prefix examples/langgraph-reference
+      - name: Install LangGraph Node oracle fixture dependencies
+        run: npm ci --prefix test/fixtures/langgraph-node-oracle
       - name: Build, tests, and adoption chain (CI / Postgres)
         run: npm run test:ci
 

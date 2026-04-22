@@ -1,0 +1,25 @@
+{
+  "cases": [
+    {
+      "id": "partner_contract_sql",
+      "mode": "contract_sql",
+      "events": "examples/partner-quickstart/partner.events.ndjson",
+      "registry": "examples/partner-quickstart/partner.tools.json",
+      "workflowId": "wf_partner"
+    },
+    {
+      "id": "partner_langgraph_row_b",
+      "mode": "langgraph_checkpoint_trust",
+      "events_inline": "v3_single_line",
+      "registry": "examples/partner-quickstart/partner.tools.json",
+      "workflowId": "wf_partner"
+    },
+    {
+      "id": "langgraph_a2_malformed",
+      "mode": "langgraph_checkpoint_trust",
+      "events_inline": "malformed_ndjson",
+      "registry": "examples/partner-quickstart/partner.tools.json",
+      "workflowId": "wf_partner"
+    }
+  ]
+}

@@ -11,9 +11,9 @@
     { "file": "package.json", "path": ["overrides", "esbuild"], "value": "0.25.12" },
     { "file": "package.json", "path": ["overrides", "tmp"], "value": "0.2.4" },
     { "file": "package.json", "path": ["overrides", "cookie"], "value": "0.7.2" },
-    { "file": "examples/langgraph-reference/package.json", "path": ["dependencies", "@langchain/core"], "value": "0.3.80" },
-    { "file": "examples/langgraph-reference/package.json", "path": ["dependencies", "@langchain/langgraph"], "value": "0.2.74" },
-    { "file": "examples/langgraph-reference/package.json", "path": ["overrides", "langsmith"], "value": "0.5.19" }
+    { "file": "test/fixtures/langgraph-node-oracle/package.json", "path": ["dependencies", "@langchain/core"], "value": "0.3.80" },
+    { "file": "test/fixtures/langgraph-node-oracle/package.json", "path": ["dependencies", "@langchain/langgraph"], "value": "0.2.74" },
+    { "file": "test/fixtures/langgraph-node-oracle/package.json", "path": ["overrides", "langsmith"], "value": "0.5.19" }
   ],
   "lockfileAssertions": [
     { "lockfile": "root", "package": "drizzle-orm", "match": "websiteWorkspaceExact", "exactVersion": "0.45.2" },

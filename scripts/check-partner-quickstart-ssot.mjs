@@ -49,17 +49,17 @@ if (!seed.startsWith(prefix)) {
   fail("partner.seed.sql must start with partner.schema-only.sql content + single newline");
 }
 
-const lgReadmePath = path.join(root, "examples", "langgraph-reference", "README.md");
-if (!existsSync(lgReadmePath)) fail("missing examples/langgraph-reference/README.md");
+const lgReadmePath = path.join(root, "test", "fixtures", "langgraph-node-oracle", "README.md");
+if (!existsSync(lgReadmePath)) fail("missing test/fixtures/langgraph-node-oracle/README.md");
 const lgReadme = readFileSync(lgReadmePath, "utf8");
 for (const line of lgReadme.split(/\n/)) {
   if (/^\s*```/.test(line) || /^\s*~~~/.test(line)) {
-    fail("examples/langgraph-reference/README.md must not contain fenced code blocks (no ``` or ~~~ line starts)");
+    fail("test/fixtures/langgraph-node-oracle/README.md must not contain fenced code blocks (no ``` or ~~~ line starts)");
   }
 }
 const lgBacklink = "langgraph-reference-boundaries-ssot.md#langgraph-reference-documentation-boundaries";
 if (!lgReadme.includes(lgBacklink)) {
-  fail(`examples/langgraph-reference/README.md must include backlink substring: ${lgBacklink}`);
+  fail(`test/fixtures/langgraph-node-oracle/README.md must include backlink substring: ${lgBacklink}`);
 }
 
 const corePath = path.join(root, "scripts", "lib", "langgraphReferenceVerifyCore.mjs");

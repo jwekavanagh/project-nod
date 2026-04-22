@@ -14,7 +14,7 @@ embedKey: langgraph_checkpoint_trust
 
 This page shows a **real** Outcome Certificate from **`--langgraph-checkpoint-trust`** verify against the partner quickstart contract (`wf_partner`, `crm.upsert_contact`, v3 `tool_observed` with `langgraphCheckpoint`).
 
-For copy-paste emitter and CLI commands, use **[`examples/langgraph-reference/README.md`](https://github.com/jwekavanagh/agentskeptic/blob/main/examples/langgraph-reference/README.md)** and the generated partner quickstart doc. **Normative terminal behavior** (A1–D, ineligible rules, production gate) lives only in **[`docs/langgraph-checkpoint-trust-ssot.md`](https://github.com/jwekavanagh/agentskeptic/blob/main/docs/langgraph-checkpoint-trust-ssot.md)**.
+For the Python-first path, use **[`examples/python-verification/README.md`](https://github.com/jwekavanagh/agentskeptic/blob/main/examples/python-verification/README.md)** and **[`docs/integrator-verification-ssot.md`](https://github.com/jwekavanagh/agentskeptic/blob/main/docs/integrator-verification-ssot.md)**. The generated partner quickstart doc still documents the **Node oracle** shell for CI. **Normative terminal behavior** (A1–D, ineligible rules, production gate) is anchored in **[`docs/integrator-verification-ssot.md#langgraph-checkpoint-trust`](https://github.com/jwekavanagh/agentskeptic/blob/main/docs/integrator-verification-ssot.md#langgraph-checkpoint-trust)**.
 
 ## What to do next
 

@@ -45,12 +45,14 @@ node dist/cli.js --workflow-id wf_partner --events examples/partner-quickstart/p
 
 ## LangGraph reference (emit events, then verify)
 
-Minimal graph sample: `examples/langgraph-reference/` (see its README). From **repository root** after `npm run build`:
+**Python default path:** `pip install -e "python/[dev]"` then `python examples/python-verification/run_partner_kernel_demo.py` (in-process kernel; no `node dist/cli.js` on the hot path). Authority: [integrator-verification-ssot.md](integrator-verification-ssot.md).
+
+**Node oracle (CI / regression only):** minimal emitter in `test/fixtures/langgraph-node-oracle/`. From **repository root** after `npm run build`:
 
 ```bash
-npm ci --prefix examples/langgraph-reference
+npm ci --prefix test/fixtures/langgraph-node-oracle
 EVENTS="$(mktemp)"
-node examples/langgraph-reference/run.mjs "$EVENTS"
+node test/fixtures/langgraph-node-oracle/run.mjs "$EVENTS"
 DB="$(mktemp).db"
 sqlite3 "$DB" < examples/partner-quickstart/partner.seed.sql
 node dist/cli.js --workflow-id wf_partner --events "$EVENTS" --registry examples/partner-quickstart/partner.tools.json --db "$DB" --langgraph-checkpoint-trust
@@ -59,9 +61,9 @@ node dist/cli.js --workflow-id wf_partner --events "$EVENTS" --registry examples
 Postgres (same `PARTNER_POSTGRES_URL` contract as above; apply the seed with your usual SQL client, then verify against the emitted file):
 
 ```bash
-npm ci --prefix examples/langgraph-reference
+npm ci --prefix test/fixtures/langgraph-node-oracle
 EVENTS="$(mktemp)"
-node examples/langgraph-reference/run.mjs "$EVENTS"
+node test/fixtures/langgraph-node-oracle/run.mjs "$EVENTS"
 node dist/cli.js --workflow-id wf_partner --events "$EVENTS" --registry examples/partner-quickstart/partner.tools.json --postgres-url "$PARTNER_POSTGRES_URL" --langgraph-checkpoint-trust
 ```
 

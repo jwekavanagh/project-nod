@@ -12,7 +12,7 @@ const repoRoot = path.resolve(__dirname, "..");
 const ALLOWED_FILES = new Set([
   "website/package.json",
   "package.json",
-  "examples/langgraph-reference/package.json",
+  "test/fixtures/langgraph-node-oracle/package.json",
 ]);
 const ALLOWED_LOCKFILE = new Set(["root", "example"]);
 const ALLOWED_MATCH = new Set(["everyInstanceExact", "websiteWorkspaceExact"]);
