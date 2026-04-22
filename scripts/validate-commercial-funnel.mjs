@@ -175,9 +175,9 @@ if (
 }
 
 const websiteDir = path.join(root, "website");
-const anchorsRaw = readFileSync(path.join(root, "config", "public-product-anchors.json"), "utf8");
+const anchorsRaw = readFileSync(path.join(root, "config", "primary-marketing.json"), "utf8");
 const anchors = JSON.parse(anchorsRaw);
-const { normalize } = require("./public-product-anchors.cjs");
+const { normalize } = require("./emit-primary-marketing.cjs");
 
 const websiteTestEnv = {
   ...process.env,

@@ -71,7 +71,7 @@ Normative contracts for the Next.js website (`website/`). Audience sections are 
 
 ## Operator
 
-- **Vercel production:** Set `VERCEL_ENV=production` (Vercel default on Production). Set `NEXT_PUBLIC_APP_URL` to the canonical public origin (must match [`config/public-product-anchors.json`](../config/public-product-anchors.json) `productionCanonicalOrigin` per existing build parity checks).
+- **Vercel production:** Set `VERCEL_ENV=production` (Vercel default on Production). Set `NEXT_PUBLIC_APP_URL` to the canonical public origin (must match [`config/primary-marketing.json`](../config/primary-marketing.json) `productionCanonicalOrigin` per existing build parity checks).
 - **Forbidden in Vercel Production:** `E2E_COMMERCIAL_FUNNEL=1`, `RESERVE_EMERGENCY_ALLOW=1` — deployment will fail cold start with the guard violation message in runtime logs until removed.
 - **Stripe webhooks:** Endpoint `/api/webhooks/stripe`; use signing secret in `STRIPE_WEBHOOK_SECRET`. Retries after transient failures are safe by design.
 - **`next build`:** Requires `AUTH_SECRET` (≥32 chars) in CI/local for static collection, as before.

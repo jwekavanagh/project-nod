@@ -62,7 +62,7 @@ gate.appendRunEvent(ev);
 await gate.assertSafeForIrreversibleAction();
 ```
 <!-- adoption-canonical-llms:end -->
-Truth is persisted rows at verification time: read-only SQL checks database state against structured tool activity—not trace color or success flags.
+Truth is verified external state at verification time: the npm CLI and PyPI `agentskeptic` check structured tool activity against read-only SQL and contract witness stores—not trace color or success flags.
 
 ## Primary links
 - Canonical site: https://agentskeptic.com/
@@ -129,7 +129,7 @@ steps:
 workflow_id: wf_missing
 workflow_status: inconsistent
 steps:
-  - seq=0 tool=crm.upsert_contact result=Expected row is missing from the database (the log implies a write that is not present).
+  - seq=0 tool=crm.upsert_contact result:Expected row is missing from the database (the log implies a write that is not present).
     reference_code: ROW_ABSENT
 
 {
@@ -157,7 +157,7 @@ steps:
 ## Not for
 - unstructured log search as verification
 - proof that a specific HTTP request caused a write
-- non-SQL systems without a queryable mirror
+- systems without queryable or witnessable state
 
 ## Related queries
 - green LangGraph trace postgres row missing
@@ -182,6 +182,6 @@ steps:
 
 ## Visitor problem (canonical answer)
 
-Your traces, tool responses, and workflow success flags can look green while persisted database rows are missing, stale, or wrong. AgentSkeptic compares structured tool activity to read-only SQL at verification time on your SQLite or Postgres and emits a binary outcome: observed state matched expectations derived from what the workflow claimed—or it did not—not whether the step narrative read as successful.
+Your traces, tool responses, and workflow success flags can look green while persisted state is missing, stale, or wrong—SQL rows, vector records, S3 objects, HTTP witness payloads, or Mongo fields. The npm CLI and PyPI `agentskeptic` compare structured tool activity to read-only checks at verification time and emit a binary outcome: observed state matched expectations derived from what the workflow claimed—or it did not—not whether the step narrative read as successful.
 
-Use read-only verification before customer-facing actions, compliance evidence, or CI gates when you need row truth—not more log volume.
+Use verification before customer-facing actions, compliance evidence, or CI gates when you need ground truth across external systems—not more log volume.

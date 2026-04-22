@@ -37,7 +37,7 @@ describe("homepage causality invariant", { timeout: 180_000 }, () => {
 
   it("exactly one canonical not-guaranteed sentence in main visible text; full visitor block absent; mechanism copy static rules", async () => {
     const root = getRepoRoot();
-    const discoveryPath = join(root, "config", "discovery-acquisition.json");
+    const discoveryPath = join(root, "config", "primary-marketing.json");
     const disc = JSON.parse(readFileSync(discoveryPath, "utf8")) as {
       visitorProblemAnswer: string;
     };

@@ -20,18 +20,18 @@ export function getRepoRoot(): string {
 }
 
 export function loadAnchors(): PublicProductAnchors {
-  const p = join(getRepoRoot(), "config", "public-product-anchors.json");
+  const p = join(getRepoRoot(), "config", "primary-marketing.json");
   return JSON.parse(readFileSync(p, "utf8")) as PublicProductAnchors;
 }
 
 export function loadDiscoveryAcquisitionPageDescription(): string {
-  const p = join(getRepoRoot(), "config", "discovery-acquisition.json");
+  const p = join(getRepoRoot(), "config", "primary-marketing.json");
   const raw = JSON.parse(readFileSync(p, "utf8")) as { pageMetadata: { description: string } };
   return raw.pageMetadata.description;
 }
 
 export function loadDiscoveryAcquisitionSlug(): string {
-  const p = join(getRepoRoot(), "config", "discovery-acquisition.json");
+  const p = join(getRepoRoot(), "config", "primary-marketing.json");
   const raw = JSON.parse(readFileSync(p, "utf8")) as { slug: string };
   return raw.slug;
 }

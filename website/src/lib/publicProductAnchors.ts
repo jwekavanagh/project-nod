@@ -1,3 +1,4 @@
-import productAnchors from "../../../config/public-product-anchors.json";
+import primaryMarketing from "./primaryMarketing";
 
-export const publicProductAnchors = productAnchors;
+/** Same object as `primary-marketing.json` (URLs, identity, keywords). */
+export const publicProductAnchors = primaryMarketing;

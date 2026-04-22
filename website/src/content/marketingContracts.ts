@@ -5,6 +5,7 @@
  * (see website/__tests__/pricing-comparison-numeric-parity.contract.test.ts).
  */
 import { publicProductAnchors } from "@/lib/publicProductAnchors";
+import primaryMarketing from "@/lib/primaryMarketing";
 
 /** GitHub anchor for docs/commercial-ssot.md — keep in sync with heading text in that file. */
 export const COMMERCIAL_SSOT_PROGRAMMATIC_VS_CLI_ANCHOR = "programmatic-verification-vs-licensed-cli";
@@ -102,23 +103,19 @@ export const PRICING_FEATURE_COMPARISON = {
 export const SECURITY_QUICK_VS_CONTRACT_BULLET =
   "Quick verify is a preview path; contract verification with an Outcome Certificate is what the engine treats as decision-grade for matches—see outcome-certificate-normative on GitHub for highStakesReliance rules.";
 
+const ev = primaryMarketing.evaluator;
 export const EVALUATOR_TRUTH_AND_ADOPTION = {
-  sectionTitle: "What verification checks (and what it does not)",
-  whatWeCheckHeading: "What this checks",
-  whatWeCheck:
-    "Whether rows and fields your registry expects from structured tool activity actually exist in SQLite or Postgres at verification time—via read-only SELECTs, not trace color alone.",
-  whatEvidenceHeading: "What evidence it uses",
-  whatEvidence:
-    "Structured tool activity (for example NDJSON lines with tool IDs and parameters) plus your tools.json mapping. That is not arbitrary log search.",
-  whatWeDoNotProveHeading: "What it does not prove",
-  whatWeDoNotProve:
-    "That a specific HTTP request or tool invocation caused a row, or that the database will stay unchanged after verification—only that observed state matched or did not match expectations when read.",
-  quickVsContract:
-    "Quick-style outputs are not interchangeable with contract Outcome Certificates for high-stakes reliance; use contract mode when a human decision depends on the artifact.",
-  crossingCanonicalSentence:
-    "The default integrator path is agentskeptic crossing (bootstrap-led or pack-led); exit 0 means crossing success for that run.",
-  antiSubstitutionOneLiner:
-    "Crossing success is exit 0 from agentskeptic crossing in bootstrap-led or pack-led mode. Bootstrap exit 0 alone, IntegrateSpineComplete alone, and PatternComplete alone are not crossing success and are not substitutes for it.",
-  integrateCtaLabel: "Get started",
-  integrateHref: "/integrate" as const,
+  sectionTitle: ev.sectionTitle,
+  whatWeCheckHeading: ev.whatWeCheckHeading,
+  whatWeCheck: ev.whatWeCheck,
+  whatEvidenceHeading: ev.whatEvidenceHeading,
+  whatEvidence: ev.whatEvidence,
+  whatWeDoNotProveHeading: ev.whatWeDoNotProveHeading,
+  whatWeDoNotProve: ev.whatWeDoNotProve,
+  quickVsContract: ev.quickVsContract,
+  crossingCanonicalSentence: ev.crossingCanonicalSentence,
+  antiSubstitutionOneLiner: ev.antiSubstitutionOneLiner,
+  frameworkMaturity: primaryMarketing.r2.frameworkMaturity,
+  integrateCtaLabel: ev.integrateCtaLabel,
+  integrateHref: ev.integrateHref,
 } as const;

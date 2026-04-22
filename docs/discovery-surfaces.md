@@ -6,7 +6,7 @@ Single place for **which URLs are indexable**, which stay **private**, and how t
 
 This document covers **human and agent discovery** for the AgentSkeptic website. Wire formats for posting private reports remain in [`shareable-verification-reports.md`](shareable-verification-reports.md).
 
-**Authoring:** Routable discovery pages live as markdown under `website/content/surfaces/{guides,examples,compare}/` with Zod-validated frontmatter (`website/src/lib/surfaceMarkdown.ts`). URLs are fixed to `/guides/<slug>`, `/examples/<slug>`, and `/compare/<slug>` via `website/src/app/guides/[slug]/page.tsx`, `examples/[slug]/page.tsx`, and `compare/[slug]/page.tsx`. Acquisition copy for `/` and `/database-truth-vs-traces` stays in [`config/discovery-acquisition.json`](../config/discovery-acquisition.json). The buyer authority guides under `/guides/buyer-*` are **generated** from fenced excerpts in normative docs by [`scripts/sync-buyer-authority-surfaces.mjs`](../scripts/sync-buyer-authority-surfaces.mjs) (wired in `website/package.json` `prebuild` / `test:vitest`).
+**Authoring:** Routable discovery pages live as markdown under `website/content/surfaces/{guides,examples,compare}/` with Zod-validated frontmatter (`website/src/lib/surfaceMarkdown.ts`). URLs are fixed to `/guides/<slug>`, `/examples/<slug>`, and `/compare/<slug>` via `website/src/app/guides/[slug]/page.tsx`, `examples/[slug]/page.tsx`, and `compare/[slug]/page.tsx`. Acquisition copy for `/` and `/database-truth-vs-traces` stays in [`config/primary-marketing.json`](../config/primary-marketing.json). The buyer authority guides under `/guides/buyer-*` are **generated** from fenced excerpts in normative docs by [`scripts/sync-buyer-authority-surfaces.mjs`](../scripts/sync-buyer-authority-surfaces.mjs) (wired in `website/package.json` `prebuild` / `test:vitest`).
 
 **Requirement 3 (first-run):** The only `guideJob: implementation` surface is [`website/content/surfaces/guides/first-run-verification.md`](../website/content/surfaces/guides/first-run-verification.md) at `/guides/first-run-verification`; CI enforces literals and `primaryCta: integrate` in `website/__tests__/surface-job.contract.test.ts`.
 
@@ -14,12 +14,12 @@ This document covers **human and agent discovery** for the AgentSkeptic website.
 
 **Migration proof:** [`website/__tests__/fixtures/guide-migration-goldens.json`](../website/__tests__/fixtures/guide-migration-goldens.json) and [`guide-migration-length-floors.json`](../website/__tests__/fixtures/guide-migration-length-floors.json) back `website/__tests__/guide-migration.parity.test.ts`.
 
-**Manual:** When adding routes, extend `llms.txt` via `npm run sync:public-product-anchors` (or the scripts it chains) so Primary links stay aligned.
+**Manual:** When adding routes, extend `llms.txt` via `npm run emit-primary-marketing` (or the scripts it chains) so Primary links stay aligned.
 
 ## Indexable routes
 
-- **Acquisition slug** from `config/discovery-acquisition.json` → `slug` (currently `/database-truth-vs-traces`).
-- **`/problems`** — lists `problemIndex` from `config/discovery-acquisition.json` in publication order (primary guide plus related paths); indexable; in `sitemap.xml`; primary nav **Problems** links here after **Learn** (`/guides`).
+- **Acquisition slug** from `config/primary-marketing.json` → `slug` (currently `/database-truth-vs-traces`).
+- **`/problems`** — lists `problemIndex` from `config/primary-marketing.json` in publication order (primary guide plus related paths); indexable; in `sitemap.xml`; primary nav **Problems** links here after **Learn** (`/guides`).
 - **`/guides`** — Learn hub: lists markdown **guides** (`surfaceKind: guide`), **failure scenarios** (`surfaceKind: scenario`), and bundled **examples**; indexable; in `sitemap.xml` after `/integrate`.
 - **`/guides/*`** — one file per slug under `content/surfaces/guides/`; included in `sitemap.xml` and under `## Indexable guides` in `llms.txt` (sorted by `route`).
 - **`/examples/*`** — under `content/surfaces/examples/`; same indexability; **`GET /examples`** (no slug) **308** to **`/guides`** (see [`website/next.config.ts`](../website/next.config.ts)).
@@ -36,10 +36,10 @@ This document covers **human and agent discovery** for the AgentSkeptic website.
 
 ## Sync commands
 
-From repository root after editing `config/discovery-acquisition.json` or anchors:
+From repository root after editing `config/primary-marketing.json`:
 
-- `npm run sync:public-product-anchors`
-- `npm run check:discovery-acquisition`
+- `npm run emit-primary-marketing` (or `npm run sync:public-product-anchors`, the alias)
+- `npm run check:discovery-acquisition` (or `check:primary-marketing`)
 
 ## Embed redaction
 

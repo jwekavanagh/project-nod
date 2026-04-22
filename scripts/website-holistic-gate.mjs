@@ -2,7 +2,7 @@
 /**
  * Starts Next production server for agentskeptic-web, runs Playwright holistic specs, then LHCI.
  * Requires the same env keys as .github/workflows/ci.yml commercial job (plus AUTH_SECRET length).
- * Sets `NEXT_PUBLIC_APP_URL` to `productionCanonicalOrigin` from `config/public-product-anchors.json`
+ * Sets `NEXT_PUBLIC_APP_URL` to `productionCanonicalOrigin` from `config/primary-marketing.json`
  * so `next.config` origin parity passes under `NODE_ENV=production` even when `website/.env` pins a
  * loopback URL for local dev (Next would otherwise inject that value after an omitted key).
  * Exit: 0 ok, 1 test/assert failure, 2 missing env, 3 readiness/5xx.
@@ -47,7 +47,7 @@ if (preflight.status !== 0) {
   process.exit(preflight.status === null ? 1 : preflight.status);
 }
 
-const anchorsPath = path.join(root, "config", "public-product-anchors.json");
+const anchorsPath = path.join(root, "config", "primary-marketing.json");
 const { productionCanonicalOrigin } = JSON.parse(readFileSync(anchorsPath, "utf8"));
 const canonicalAppUrl = new URL(String(productionCanonicalOrigin).trim()).origin;
 

@@ -15,6 +15,10 @@ const REQUIRED = [
   "dist/discovery-payload-v1.json",
   "scripts/discovery-payload.lib.cjs",
   "scripts/discovery-acquisition.lib.cjs",
+  "scripts/emit-primary-marketing.cjs",
+  "scripts/origin.cjs",
+  "config/primary-marketing.json",
+  "config/primary-marketing.schema.json",
   "scripts/render-discovery-ci.mjs",
 ];
 

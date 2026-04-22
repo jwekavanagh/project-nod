@@ -1,13 +1,12 @@
 /** Single source for homepage, pricing recap, sign-in framing, and test ids. */
 
-import discoveryAcquisition from "@/lib/discoveryAcquisition";
+import primaryMarketing from "@/lib/primaryMarketing";
 import { EPISTEMIC_CONTRACT_INTEGRATOR_SNIPPET } from "@/generated/epistemicContractIntegrator";
 import { DECISION_READY_PRODUCTION_COMPLETE_ADOPTION_BLOB_URL } from "@/lib/githubHeadingSlug";
 import {
   METERING_CLARIFIER,
   SECURITY_QUICK_VS_CONTRACT_BULLET,
 } from "@/content/marketingContracts";
-import { publicProductAnchors } from "@/lib/publicProductAnchors";
 
 export type InternalHref = "/security" | "/support" | "/pricing" | "/privacy" | "/terms" | "/integrate";
 
@@ -140,12 +139,11 @@ export const pricingTrustBandBeforeGrid = {
   ],
 } as const satisfies PricingTrustBandBeforeGrid;
 
-/** Above-the-fold `/pricing` hero (title, stakes, subhead). */
+/** Above-the-fold `/pricing` hero (title, stakes, subhead) — from primary-marketing.json. */
 export const pricingHero = {
-  title: "Pricing for database truth verification",
-  positioning: "Stop shipping workflows that look successful but write incorrect data.",
-  subtitle:
-    "Plans and quotas are below. Read the buyer guide for the commercial boundary before checkout.",
+  title: primaryMarketing.site.pricing.heroTitle,
+  positioning: primaryMarketing.site.pricing.positioning,
+  subtitle: primaryMarketing.site.pricing.subtitle,
 } as const;
 
 export const pricingHeroExample = {
@@ -267,7 +265,7 @@ export const homeHeroCtaLabels = {
 
 export const productCopy = {
   links: {
-    cliQuickstart: `${publicProductAnchors.gitRepositoryUrl}#try-it-about-one-minute`,
+    cliQuickstart: `${primaryMarketing.gitRepositoryUrl}#try-it-about-one-minute`,
     /** Relative to site origin — pair with NEXT_PUBLIC_APP_URL in prose docs. */
     openapiCommercial: "/openapi-commercial-v1.yaml",
     commercialPlansApi: "/api/v1/commercial/plans",
@@ -287,26 +285,25 @@ export const productCopy = {
   },
 
   hero: {
-    title: discoveryAcquisition.heroTitle,
-    subtitle: discoveryAcquisition.heroSubtitle,
+    title: primaryMarketing.heroTitle,
+    subtitle: primaryMarketing.heroSubtitle,
   },
 
   /**
    * Homepage hero only: one line under `homepageDecisionFraming`. Must not equal
-   * `discoveryAcquisition.heroSubtitle` (that string is brief-only after IA split).
+   * `primaryMarketing.heroSubtitle` (that string is brief-only after IA split).
    */
-  homeHeroShortTagline:
-    "See the product brief for depth and the full terminal contrast. Try the demo below, or Get started on your database.",
+  homeHeroShortTagline: primaryMarketing.site.home.heroShortTagline,
 
-  /** Discovery SSOT: outcome framing before mechanism (`hero.subtitle`). */
+  /** SSOT: outcome framing before mechanism (`hero.subtitle`). */
   homepageHeroNarrative: {
-    why: discoveryAcquisition.homepageHero.why,
-    what: discoveryAcquisition.homepageHero.what,
-    when: discoveryAcquisition.homepageHero.when,
+    why: primaryMarketing.homepageHero.why,
+    what: primaryMarketing.homepageHero.what,
+    when: primaryMarketing.homepageHero.when,
   },
 
-  /** Discovery SSOT: single above-the-fold paragraph on `/` (“when to use / is this for me”). */
-  homepageDecisionFraming: discoveryAcquisition.homepageDecisionFraming,
+  /** SSOT: single above-the-fold paragraph on `/` (“when to use / is this for me”). */
+  homepageDecisionFraming: primaryMarketing.homepageDecisionFraming,
 
   /** Acquisition page closing section title (UI-only). */
   acquisitionDeepContextSectionTitle: "How this fits the problem",
@@ -355,11 +352,11 @@ export const productCopy = {
     compareApproachesLabel: "Compare approaches",
   },
 
-  /** `/problems` metadata (UI-only; list body comes from discovery-acquisition `problemIndex`). */
+  /** `/problems` metadata (UI-only; list body comes from `primary-marketing.json` `problemIndex`). */
   problemsPageMetadata: {
     title: "Problems the product routes to — AgentSkeptic",
     description:
-      "Buyer moments from discovery-acquisition.json in publication order—each with a primary guide and related paths for first-run, pricing, or the product brief.",
+      "Buyer moments from `config/primary-marketing.json` `problemIndex` in publication order—each with a primary guide and related paths for first-run, pricing, or the product brief.",
   },
 
   /** Visible text around the `/compare` link on `/problems`. */
@@ -369,12 +366,8 @@ export const productCopy = {
   problemsHubIntroTrail: ".",
 
   homeWhatCatches: {
-    sectionTitle: "What this catches",
-    bullets: [
-      "Missing rows (ROW_ABSENT) from read-only SQL at verification time.",
-      "Wrong values versus what structured tool activity claimed.",
-      "Workflows that look finished in traces but are incomplete in the database.",
-    ],
+    sectionTitle: primaryMarketing.homeWhatCatches.sectionTitle,
+    bullets: primaryMarketing.homeWhatCatches.bullets as unknown as readonly string[],
   },
 
   homeClosing: {
@@ -399,8 +392,8 @@ export const productCopy = {
   },
 
   homepageAcquisitionCta: {
-    href: discoveryAcquisition.slug,
-    label: discoveryAcquisition.homepageAcquisitionCtaLabel,
+    href: primaryMarketing.slug,
+    label: primaryMarketing.homepageAcquisitionCtaLabel,
     testId: "homepage-acquisition-cta" as const,
   },
 
@@ -423,8 +416,8 @@ export const productCopy = {
       },
     ],
     docLinks: {
-      verificationProductSsot: `${publicProductAnchors.gitRepositoryUrl}/blob/main/docs/verification-product-ssot.md`,
-      commercialSsot: `${publicProductAnchors.gitRepositoryUrl}/blob/main/docs/commercial-ssot.md`,
+      verificationProductSsot: `${primaryMarketing.gitRepositoryUrl}/blob/main/docs/verification-product-ssot.md`,
+      commercialSsot: `${primaryMarketing.gitRepositoryUrl}/blob/main/docs/commercial-ssot.md`,
     },
   },
 
@@ -441,24 +434,15 @@ export const productCopy = {
   },
 
   mechanism: {
-    title: "Three steps",
-    intro: "Capture activity once, declare what the database should show, then verify with read-only SQL.",
-    items: ["Capture tool activity", "Define expected DB state", "Verify with read-only SQL"],
-    notObservability:
-      "This is not generic observability or log search. It compares expected database state to read-only query results at verification time.",
+    title: primaryMarketing.mechanism.title,
+    intro: primaryMarketing.mechanism.intro,
+    items: [...primaryMarketing.mechanism.items],
+    notObservability: primaryMarketing.mechanism.notObservability,
   },
 
-  forYou: [
-    "You emit structured tool activity (e.g. NDJSON) your pipeline can produce.",
-    "You have SQL-accessible ground truth (SQLite, Postgres, or a mirror).",
-    "You care when the run looked fine but rows are wrong or missing.",
-  ],
+  forYou: primaryMarketing.buyerFit.forYou as unknown as readonly string[],
 
-  notForYou: [
-    "You only have unstructured logs and no SQL ground truth.",
-    "You need causal proof that a particular call wrote a row.",
-    "You want a generic APM or log analytics replacement.",
-  ],
+  notForYou: primaryMarketing.buyerFit.notForYou as unknown as readonly string[],
 
   guarantees: {
     title: "What is guaranteed (and what is not)",

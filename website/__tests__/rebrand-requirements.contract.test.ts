@@ -2,37 +2,29 @@ import { readFileSync } from "node:fs";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
 
-const HERO_TITLE = "Your trace says success. Your database is the verdict.";
-const README_TITLE = "AgentSkeptic — trust database rows, not trace color";
-const PAGE_METADATA_DESCRIPTION =
-  "Traces and success flags are not proof: read-only SQL at verification time checks persisted database rows against structured tool activity—VERIFIED or inconsistent with reason codes, not log search.";
-const OG_ALT =
-  "AgentSkeptic — trust reality, not traces; read-only SQL verifies persisted database rows";
-
 function repoRoot(): string {
   return path.join(__dirname, "..", "..");
 }
 
-describe("rebrand requirements R1–R5", () => {
-  it("R1 discovery + README acquisition fold + llms + anchors identity", () => {
-    const root = repoRoot();
-    const disc = JSON.parse(readFileSync(path.join(root, "config", "discovery-acquisition.json"), "utf8")) as {
-      heroTitle: string;
-      readmeTitle: string;
-      pageMetadata: { description: string };
-      visitorProblemAnswer: string;
-    };
-    expect(disc.heroTitle).toBe(HERO_TITLE);
-    expect(disc.readmeTitle).toBe(README_TITLE);
-    expect(disc.pageMetadata.description).toBe(PAGE_METADATA_DESCRIPTION);
+function loadPrimaryMarketing(root: string) {
+  return JSON.parse(readFileSync(path.join(root, "config", "primary-marketing.json"), "utf8")) as {
+    heroTitle: string;
+    readmeTitle: string;
+    pageMetadata: { description: string };
+    visitorProblemAnswer: string;
+    identityOneLiner: string;
+    site: { openGraph: { image: { alt: string; path: string } } };
+  };
+}
 
-    const anchors = JSON.parse(readFileSync(path.join(root, "config", "public-product-anchors.json"), "utf8")) as {
-      identityOneLiner: string;
-    };
-    const idLine = anchors.identityOneLiner;
+describe("rebrand requirements R1–R5", () => {
+  it("R1 primary marketing + README acquisition fold + llms + identity", () => {
+    const root = repoRoot();
+    const pm = loadPrimaryMarketing(root);
+    const idLine = pm.identityOneLiner;
 
     const llms = readFileSync(path.join(root, "llms.txt"), "utf8");
-    const visitorFirst = disc.visitorProblemAnswer.split("\n\n")[0] ?? "";
+    const visitorFirst = pm.visitorProblemAnswer.split("\n\n")[0] ?? "";
     expect(llms).toContain(visitorFirst);
     expect(llms).toContain(idLine);
 
@@ -44,7 +36,7 @@ describe("rebrand requirements R1–R5", () => {
     expect(i).toBeGreaterThan(-1);
     expect(j).toBeGreaterThan(i);
     const fold = readme.slice(i + foldStart.length, j);
-    expect(fold).toContain(HERO_TITLE);
+    expect(fold).toContain(pm.heroTitle);
   });
 
   it("R2 surface-ghost utility + hero terminal (dashed) in CSS; terminal appears on homepage", () => {
@@ -84,19 +76,18 @@ describe("rebrand requirements R1–R5", () => {
 
   it("R5 package description parity + OG alt + /og.png path", () => {
     const root = repoRoot();
-    const disc = JSON.parse(readFileSync(path.join(root, "config", "discovery-acquisition.json"), "utf8")) as {
-      pageMetadata: { description: string };
-    };
+    const pm = loadPrimaryMarketing(root);
     const pkg = JSON.parse(readFileSync(path.join(root, "package.json"), "utf8")) as { description: string };
-    expect(pkg.description).toBe(disc.pageMetadata.description);
+    expect(pkg.description).toBe(pm.pageMetadata.description);
 
     const metaPath = path.join(__dirname, "..", "src", "content", "siteMetadata.ts");
     const metaSrc = readFileSync(metaPath, "utf8");
-    expect(metaSrc).toContain(OG_ALT);
+    expect(metaSrc).toContain("primaryMarketing");
+    expect(metaSrc).toContain("openGraphImage: primaryMarketing.site.openGraph.image");
 
     const layout = readFileSync(path.join(__dirname, "..", "src", "app", "layout.tsx"), "utf8");
     expect(layout).toContain("siteMetadata.openGraphImage.path");
-    const siteMeta = readFileSync(metaPath, "utf8");
-    expect(siteMeta).toContain('path: "/og.png"');
+    expect(layout).toContain("siteMetadata.openGraphImage.alt");
+    expect(pm.site.openGraph.image.path).toBe("/og.png");
   });
 });

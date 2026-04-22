@@ -8,8 +8,8 @@ const relatedRe =
   /^\/(guides|examples|compare)\/[a-z0-9-]+$|^\/(integrate|pricing|database-truth-vs-traces)$/;
 
 describe("buyer plane problemIndex contract", () => {
-  it("matches config/discovery-acquisition.json publication order", () => {
-    const raw = readFileSync(join(process.cwd(), "..", "config", "discovery-acquisition.json"), "utf8");
+  it("matches config/primary-marketing.json publication order", () => {
+    const raw = readFileSync(join(process.cwd(), "..", "config", "primary-marketing.json"), "utf8");
     const parsed = JSON.parse(raw) as { problemIndex: typeof discoveryAcquisition.problemIndex };
     expect(parsed.problemIndex).toEqual(discoveryAcquisition.problemIndex);
   });

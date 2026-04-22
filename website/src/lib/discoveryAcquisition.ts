@@ -1,7 +1,5 @@
-import discoveryAcquisitionJson from "../../../config/discovery-acquisition.json";
+import primaryMarketing, { type PrimaryMarketing } from "./primaryMarketing";
 
-export type DiscoveryAcquisition = typeof discoveryAcquisitionJson;
+export type DiscoveryAcquisition = PrimaryMarketing;
 
-const discoveryAcquisition = discoveryAcquisitionJson as DiscoveryAcquisition;
-
-export default discoveryAcquisition;
+export default primaryMarketing;

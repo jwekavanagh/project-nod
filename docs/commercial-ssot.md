@@ -158,7 +158,7 @@ From the repo root, **`npm run validate-commercial`** requires **`DATABASE_URL`*
 ## Machine contracts (OpenAPI)
 
 - **Normative file (repo):** [`schemas/openapi-commercial-v1.yaml`](../schemas/openapi-commercial-v1.yaml)
-- **Deployed URL (static):** **`/openapi-commercial-v1.yaml`** on the app origin. The file is generated into **`website/public/`** during **`website` `prebuild`** by **`npm run sync:public-product-anchors`** from the repo root (via **`npm --prefix .. run sync:public-product-anchors`**), then served as a static asset. The committed copy under `schemas/` is the canonical spec for review; the public copy may use the effective deployment origin for `servers` and the self-URL.
+- **Deployed URL (static):** **`/openapi-commercial-v1.yaml`** on the app origin. The file is generated into **`website/public/`** during **`website` `prebuild`** by **`npm run sync:public-product-anchors`** (which runs **`emit-primary-marketing`**) from the repo root, then served as a static asset. The committed copy under `schemas/` is the canonical spec for review; the public copy may use the effective deployment origin for `servers` and the self-URL.
 
 ### Public anchors and OpenAPI source
 

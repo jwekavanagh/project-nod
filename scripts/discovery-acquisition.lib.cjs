@@ -20,8 +20,8 @@ const PLACEHOLDER_KEYS = [
  */
 function discoveryPaths(root) {
   return {
-    jsonPath: join(root, "config", "discovery-acquisition.json"),
-    schemaPath: join(root, "config", "discovery-acquisition.schema.json"),
+    jsonPath: join(root, "config", "primary-marketing.json"),
+    schemaPath: join(root, "config", "primary-marketing.schema.json"),
   };
 }
 
@@ -185,12 +185,10 @@ function validateDiscoveryAcquisition(root) {
   const validate = ajv.compile(schema);
   if (!validate(discovery)) {
     const msg = ajv.errorsText(validate.errors, { separator: "\n" });
-    throw new Error(`discovery-acquisition: schema validation failed:\n${msg}`);
+    throw new Error(`primary-marketing: schema validation failed:\n${msg}`);
   }
-  const anchorsPath = join(root, "config", "public-product-anchors.json");
-  const anchors = JSON.parse(readFileSync(anchorsPath, "utf8"));
-  const { normalize } = require("./public-product-anchors.cjs");
-  const origin = normalize(anchors.productionCanonicalOrigin);
+  const { normalize } = require("./origin.cjs");
+  const origin = normalize(String(discovery.productionCanonicalOrigin));
   buildDiscoveryFoldBody(discovery, origin);
   const demo = discovery.shareableTerminalDemo;
   if (demo && String(demo.transcript).includes("```")) {

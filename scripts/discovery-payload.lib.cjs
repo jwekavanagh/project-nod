@@ -132,8 +132,10 @@ function buildDiscoveryPayload(root) {
     problemAnchor: padAnchor(path),
     embedKey: embedKeyForExamplePath(path),
   }));
-  const anchorsPath = join(root, "config", "public-product-anchors.json");
-  const anchors = JSON.parse(readFileSync(anchorsPath, "utf8"));
+  const pm = /** @type {{ productionCanonicalOrigin: string; identityOneLiner: string; gitRepositoryUrl: string; npmPackageUrl: string }} */ (
+    discovery
+  );
+  const anchors = pm;
   const canonicalOrigin = normalizeOrigin(anchors.productionCanonicalOrigin);
   const integrateUrl = `${canonicalOrigin}/integrate`;
   const learnHubUrl = `${canonicalOrigin}/guides`;

@@ -18,7 +18,7 @@ test("discovery JSON validates against schema", () => {
 
 test("README discovery fold body matches buildDiscoveryFoldBody", () => {
   const discovery = lib.loadDiscoveryAcquisition(root);
-  const anchors = JSON.parse(readFileSync(join(root, "config", "public-product-anchors.json"), "utf8"));
+  const anchors = JSON.parse(readFileSync(join(root, "config", "primary-marketing.json"), "utf8"));
   const origin = normalize(anchors.productionCanonicalOrigin);
   const expected = lib.buildDiscoveryFoldBody(discovery, origin);
   const readme = readFileSync(join(root, "README.md"), "utf8");
@@ -47,7 +47,7 @@ test("README discovery-readme-title matches readmeTitle", () => {
 });
 
 test("invalid visitorProblemAnswer fails schema (negative)", () => {
-  const schemaPath = join(root, "config", "discovery-acquisition.schema.json");
+  const schemaPath = join(root, "config", "primary-marketing.schema.json");
   const schema = JSON.parse(readFileSync(schemaPath, "utf8"));
   const ajv = new Ajv({ allErrors: true, strict: true });
   addFormats(ajv);
@@ -84,7 +84,7 @@ test("invalid visitorProblemAnswer fails schema (negative)", () => {
 });
 
 test("invalid pageMetadata.description fails schema (negative)", () => {
-  const schemaPath = join(root, "config", "discovery-acquisition.schema.json");
+  const schemaPath = join(root, "config", "primary-marketing.schema.json");
   const schema = JSON.parse(readFileSync(schemaPath, "utf8"));
   const ajv = new Ajv({ allErrors: true, strict: true });
   addFormats(ajv);
@@ -147,7 +147,7 @@ test("invalid pageMetadata.description fails schema (negative)", () => {
 });
 
 test("shareableTerminalDemo transcript containing markdown fence fails schema", () => {
-  const schemaPath = join(root, "config", "discovery-acquisition.schema.json");
+  const schemaPath = join(root, "config", "primary-marketing.schema.json");
   const schema = JSON.parse(readFileSync(schemaPath, "utf8"));
   const ajv = new Ajv({ allErrors: true, strict: true });
   addFormats(ajv);

@@ -1,0 +1,263 @@
+{
+  "schemaVersion": 1,
+  "slug": "/database-truth-vs-traces",
+  "identityOneLiner": "Truth is verified external state at verification time: the npm CLI and PyPI `agentskeptic` check structured tool activity against read-only SQL and contract witness stores—not trace color or success flags.",
+  "productionCanonicalOrigin": "https://agentskeptic.com",
+  "gitRepositoryUrl": "https://github.com/jwekavanagh/agentskeptic",
+  "gitRepositoryGitUrl": "git+https://github.com/jwekavanagh/agentskeptic.git",
+  "npmPackageUrl": "https://www.npmjs.com/package/agentskeptic",
+  "bugsUrl": "https://github.com/jwekavanagh/agentskeptic/issues",
+  "keywords": [
+    "agentskeptic",
+    "agent-skeptic",
+    "workflow",
+    "verification",
+    "database",
+    "sql",
+    "state",
+    "read-only",
+    "agent",
+    "automation",
+    "ndjson",
+    "postgres",
+    "sqlite",
+    "mysql",
+    "bigquery",
+    "python",
+    "pypi",
+    "crewai",
+    "autogen",
+    "langgraph",
+    "vector",
+    "s3",
+    "tool-calls",
+    "compliance",
+    "crm",
+    "ai-workflow",
+    "ci-gate",
+    "false-positive",
+    "trace-vs-database",
+    "silent-failure",
+    "ai-agent-verification",
+    "workflow-validation",
+    "langgraph-observability",
+    "tool-call-grounding",
+    "state-verification"
+  ],
+  "readmeTitle": "AgentSkeptic — trust persisted state, not trace color",
+  "heroTitle": "Your trace says success. Persisted state is the verdict.",
+  "heroSubtitle": "Traces and success flags are appearances. The published npm CLI and the PyPI `agentskeptic` package compare structured tool activity to read-only checks at verification time—SQL across Postgres, MySQL, BigQuery, and SQL Server, plus vector indexes, S3, HTTP witnesses, and Mongo in contract mode. Quick verify stays SQL-inference. Outcomes: VERIFIED or inconsistent—before you ship, bill, or close.",
+  "homepageAcquisitionCtaLabel": "Product brief",
+  "homepageDecisionFraming": "Traces and logs show what appeared to happen. AgentSkeptic verifies declared tool activity against read-only state at verification time: relational SQL, vectors, object storage, HTTP, and more via the same registry—using the Node CLI or Python package—not trace color—before you ship, bill, or close.",
+  "homepageHero": {
+    "what": "The engine turns tool parameters and `tools.json` into read-only checks—SQL SELECTs in Quick, full contract witness kinds (vectors, S3, HTTP, Mongo) when you need them—separate from whether a step narrative read as successful.",
+    "why": "Most reviews still treat traces and chat as proof of what landed; that habit is how wrong rows, stale objects, and silent drift slip through green CI.",
+    "when": "Use it after a replay or deploy when you need a decisive check before customer-facing actions, finance touches, or a merge—not when you only want another log volume."
+  },
+  "visitorProblemAnswer": "Your traces, tool responses, and workflow success flags can look green while persisted state is missing, stale, or wrong—SQL rows, vector records, S3 objects, HTTP witness payloads, or Mongo fields. The npm CLI and PyPI `agentskeptic` compare structured tool activity to read-only checks at verification time and emit a binary outcome: observed state matched expectations derived from what the workflow claimed—or it did not—not whether the step narrative read as successful.\n\nUse verification before customer-facing actions, compliance evidence, or CI gates when you need ground truth across external systems—not more log volume.",
+  "pageMetadata": {
+    "title": "Database truth vs traces — AgentSkeptic",
+    "description": "Traces and success flags are not proof: read-only verification at check time against SQL and contract state stores—npm CLI and PyPI—with structured tool activity, VERIFIED or inconsistent with reason codes, not log search."
+  },
+  "r2": {
+    "frameworkMaturity": "Python integrations: CrewAI tool hooks are production-ready. AutoGen (AgentChat) is experimental and may be incomplete—see integrator SSOT and python/FRAMEWORK_LOCK.md before relying on it."
+  },
+  "site": {
+    "integrate": {
+      "title": "Get started",
+      "description": "Install Node.js 22.13+, Git, and npm. Use the published npm CLI or `pip install agentskeptic` (PyPI) for the Python package. Follow the command block to clone, build, run the bundled demo, then first-run verify with read-only state checks. Crossing on your SQLite is a mechanical checkpoint—not ProductionComplete on your emitters. Cold clones may take several minutes."
+    },
+    "openGraph": {
+      "image": {
+        "path": "/og.png",
+        "width": 1200,
+        "height": 630,
+        "alt": "AgentSkeptic — trust reality, not traces; verify structured tool activity against read-only state stores at verification time"
+      }
+    },
+    "pricing": {
+      "heroTitle": "Pricing for state and workflow verification",
+      "positioning": "Stop shipping workflows that look successful but leave external state wrong.",
+      "subtitle": "Plans and quotas are below. Read the buyer guide for the commercial boundary before checkout."
+    },
+    "home": {
+      "heroShortTagline": "See the product brief for depth and the full terminal contrast. Try the demo below, or Get started on your stack."
+    },
+    "security": {
+      "title": "Security & Trust — AgentSkeptic",
+      "description": "High-level data handling, verification boundary, and links to authoritative product and commercial documentation."
+    },
+    "support": {
+      "title": "Support and procurement — AgentSkeptic",
+      "description": "How to get support, Enterprise procurement, and links to legal and security documentation."
+    },
+    "claim": {
+      "title": "Claim verification run — AgentSkeptic",
+      "description": "Connect an open-source CLI verification run to your account after opening the claim link from your terminal and signing in with email (magic link may open in a new tab on the same browser)."
+    }
+  },
+  "evaluator": {
+    "sectionTitle": "What verification checks (and what it does not)",
+    "whatWeCheckHeading": "What this checks",
+    "whatWeCheck": "Whether rows, vectors, objects, and witness responses your registry expects from structured tool activity actually match read-only state at verification time—via SQL and contract witness kinds—not trace color alone.",
+    "whatEvidenceHeading": "What evidence it uses",
+    "whatEvidence": "Structured tool activity (for example NDJSON lines with tool IDs and parameters) plus your tools.json mapping. That is not arbitrary log search.",
+    "whatWeDoNotProveHeading": "What it does not prove",
+    "whatWeDoNotProve": "That a specific HTTP request or tool invocation caused a write, or that external state will stay unchanged after verification—only that observed state matched or did not match expectations when read.",
+    "quickVsContract": "Quick-style outputs are not interchangeable with contract Outcome Certificates for high-stakes reliance; use contract mode when a human decision depends on the artifact.",
+    "crossingCanonicalSentence": "The default integrator path is agentskeptic crossing (bootstrap-led or pack-led); exit 0 means crossing success for that run.",
+    "antiSubstitutionOneLiner": "Crossing success is exit 0 from agentskeptic crossing in bootstrap-led or pack-led mode. Bootstrap exit 0 alone, IntegrateSpineComplete alone, and PatternComplete alone are not crossing success and are not substitutes for it.",
+    "integrateCtaLabel": "Get started",
+    "integrateHref": "/integrate"
+  },
+  "buyerFit": {
+    "forYou": [
+      "You emit structured tool activity (e.g. NDJSON) your pipeline can produce.",
+      "You have queryable ground truth: SQL stores (Postgres, MySQL, BigQuery, SQL Server, SQLite) or the non-SQL state your registry can witness (vectors, S3, HTTP, Mongo) per tools.json.",
+      "You care when the run looked fine but external state is wrong or missing."
+    ],
+    "notForYou": [
+      "You only have unstructured logs and no queryable or witnessable state.",
+      "You need causal proof that a particular call wrote a row or object.",
+      "You want a generic APM or log analytics replacement."
+    ]
+  },
+  "homeWhatCatches": {
+    "sectionTitle": "What this catches",
+    "bullets": [
+      "Missing or wrong persisted state (e.g. ROW_ABSENT) from read-only checks at verification time.",
+      "Wrong values versus what structured tool activity claimed—across SQL and contract witness stores.",
+      "Workflows that look finished in traces but are incomplete in external state."
+    ]
+  },
+  "mechanism": {
+    "title": "Three steps",
+    "intro": "Capture activity once, declare what external state should show, then verify with read-only checks under your registry.",
+    "items": [
+      "Capture tool activity",
+      "Define expected state in your registry",
+      "Verify with read-only SQL and witness kinds"
+    ],
+    "notObservability": "This is not generic observability or log search. It compares expected state to read-only results at verification time under your tools.json rules."
+  },
+  "sections": [
+    {
+      "heading": "The moment it bites",
+      "paragraphs": [
+        "Your run finished with a green trace or a tool response that looks like success, but the ticket is still open in Postgres, the CRM row never landed, the vector metadata is wrong, or CI passed while production would fail. Read-only checks against authoritative state are the forcing truth—not another narrative."
+      ]
+    },
+    {
+      "heading": "What AgentSkeptic adds",
+      "paragraphs": [
+        "You emit structured tool activity (for example NDJSON lines with tool IDs and parameters). The engine derives expected state under your registry rules and runs read-only SQL and contract witnesses. You get verified, missing, or inconsistent with reason codes such as ROW_ABSENT—still at verification time, not as proof that a specific API call wrote the row or object."
+      ]
+    },
+    {
+      "heading": "Shareable failure pattern",
+      "paragraphs": [
+        "The bundled demo contrasts `wf_complete` (row matches) with `wf_missing` (success-shaped run, row absent)—the product in one glance."
+      ]
+    },
+    {
+      "heading": "What to do next",
+      "paragraphs": [
+        "Run the homepage demo, follow /integrate for first-run on your database, or install the CLI or Python package from the repository README. When you need licensed npm features, use the commercial package and API keys described on the site.",
+        "To turn a verification run into a private, pasteable link, use the CLI with a share-report origin pointing at this site (HTTPS origin only; details ship with the open-source CLI). For deeper walkthroughs and bundled proof pages, see Learn (/guides), including bundled examples at /guides#bundled-proof"
+      ]
+    }
+  ],
+  "problemIndex": [
+    {
+      "moment": "Green LangGraph or agent trace but wrong or missing Postgres row",
+      "primaryRoute": "/guides/trace-green-postgres-row-missing",
+      "relatedRoutes": ["/integrate", "/database-truth-vs-traces"]
+    },
+    {
+      "moment": "OpenAI-style tool loop reported success; CRM or SQLite state does not match",
+      "primaryRoute": "/guides/tool-loop-success-crm-state-wrong",
+      "relatedRoutes": ["/integrate", "/pricing"]
+    },
+    {
+      "moment": "CI passed on workflow logs; database side effect never showed up",
+      "primaryRoute": "/guides/ci-green-logs-row-absent",
+      "relatedRoutes": ["/guides/ci-green-missing-database-side-effect", "/integrate"]
+    },
+    {
+      "moment": "Need a gate before production: read-only verification, not more log volume",
+      "primaryRoute": "/guides/pre-production-read-only-sql-gate",
+      "relatedRoutes": ["/integrate", "/pricing"]
+    },
+    {
+      "moment": "Green dashboards still happen when an AI agent writes wrong CRM data and you need read-only SQL before you trust the row.",
+      "primaryRoute": "/guides/ai-agent-wrong-crm-data",
+      "relatedRoutes": ["/database-truth-vs-traces"]
+    },
+    {
+      "moment": "When automation reports success while database records disagree with declared tool parameters until read-only verification, treat trace color as non-authoritative.",
+      "primaryRoute": "/guides/automation-success-database-mismatch",
+      "relatedRoutes": ["/integrate"]
+    },
+    {
+      "moment": "Debugging Postgres after a LangGraph run requires row-level truth at verification time beyond trace completion flags alone for customer-facing data.",
+      "primaryRoute": "/guides/debug-postgres-after-langgraph",
+      "relatedRoutes": ["/guides/verify-langgraph-workflows", "/integrate"]
+    },
+    {
+      "moment": "When a Stripe webhook returns OK you still need the ledger database row to match before finance treats settlement as final and read-only SQL verifies persisted state.",
+      "primaryRoute": "/guides/stripe-webhook-database-alignment",
+      "relatedRoutes": ["/pricing"]
+    },
+    {
+      "moment": "CI can stay green on workflow logs while the database side effect is missing until a read-only gate surfaces ROW_ABSENT before production.",
+      "primaryRoute": "/guides/scenario-ci-green-side-effect-missing",
+      "relatedRoutes": ["/guides/ci-green-missing-database-side-effect", "/integrate"]
+    }
+  ],
+  "cliFollowupLines": [
+    "TRUST REALITY, NOT TRACES. More context (green trace vs database): {{ACQUISITION_URL}}",
+    "First-run on your database: {{INTEGRATE_URL}}",
+    "PatternComplete checklist (SSOT): https://github.com/jwekavanagh/agentskeptic/blob/main/docs/first-run-integration.md#adoptioncomplete_patterncomplete-normative",
+    "Canonical site: {{ORIGIN}}/"
+  ],
+  "shareableTerminalDemo": {
+    "title": "Pasteable terminal proof (bundled demo)",
+    "transcript": "### Success (`wf_complete`)\n\nworkflow_id: wf_complete\nworkflow_status: complete\ntrust: TRUSTED: Every step matched the database under the configured verification rules.\nsteps:\n  - seq=0 tool=crm.upsert_contact result=Matched the database.\n\n{\n  \"schemaVersion\": 15,\n  \"workflowId\": \"wf_complete\",\n  \"status\": \"complete\",\n  \"steps\": [{ \"seq\": 0, \"toolId\": \"crm.upsert_contact\", \"status\": \"verified\" }]\n}\n\n### Failure (`wf_missing`)\n\nworkflow_id: wf_missing\nworkflow_status: inconsistent\nsteps:\n  - seq=0 tool=crm.upsert_contact result:Expected row is missing from the database (the log implies a write that is not present).\n    reference_code: ROW_ABSENT\n\n{\n  \"schemaVersion\": 15,\n  \"workflowId\": \"wf_missing\",\n  \"status\": \"inconsistent\",\n  \"steps\": [\n    {\n      \"seq\": 0,\n      \"toolId\": \"crm.upsert_contact\",\n      \"status\": \"missing\",\n      \"reasons\": [{ \"code\": \"ROW_ABSENT\" }]\n    }\n  ]\n}"
+  },
+  "llms": {
+    "intentPhrases": [
+      "green trace wrong database row agent workflow",
+      "trace says success but CRM row missing",
+      "read-only SQL check after LangGraph or automation run",
+      "structured tool activity NDJSON verification",
+      "ROW_ABSENT inconsistent workflow result"
+    ],
+    "notFor": [
+      "unstructured log search as verification",
+      "proof that a specific HTTP request caused a write",
+      "systems without queryable or witnessable state"
+    ],
+    "relatedQueries": [
+      "green LangGraph trace postgres row missing",
+      "how to verify AI agent wrote to postgres",
+      "CI passed but database inconsistent side effect",
+      "compare tool parameters to sql row verification",
+      "agent run record workflow result json"
+    ]
+  },
+  "readmeFold": {
+    "templateLines": [
+      "## {{HERO_TITLE}}",
+      "",
+      "{{HERO_SUBTITLE}}",
+      "",
+      "{{VISITOR_PROBLEM_ANSWER}}",
+      "",
+      "### {{TERMINAL_TITLE}}",
+      "",
+      "```text",
+      "{{TERMINAL_TRANSCRIPT}}",
+      "```"
+    ]
+  }
+}

@@ -1,15 +1,15 @@
 <!-- discovery-readme-title:start -->
-# AgentSkeptic — trust database rows, not trace color
+# AgentSkeptic — trust persisted state, not trace color
 <!-- discovery-readme-title:end -->
 
 <!-- discovery-acquisition-fold:start -->
-## Your trace says success. Your database is the verdict.
+## Your trace says success. Persisted state is the verdict.
 
-Traces and success flags are appearances. Read-only SQL at verification time on Postgres or SQLite compares persisted rows to structured tool activity—VERIFIED or inconsistent—before you ship, bill, or close.
+Traces and success flags are appearances. The published npm CLI and the PyPI `agentskeptic` package compare structured tool activity to read-only checks at verification time—SQL across Postgres, MySQL, BigQuery, and SQL Server, plus vector indexes, S3, HTTP witnesses, and Mongo in contract mode. Quick verify stays SQL-inference. Outcomes: VERIFIED or inconsistent—before you ship, bill, or close.
 
-Your traces, tool responses, and workflow success flags can look green while persisted database rows are missing, stale, or wrong. AgentSkeptic compares structured tool activity to read-only SQL at verification time on your SQLite or Postgres and emits a binary outcome: observed state matched expectations derived from what the workflow claimed—or it did not—not whether the step narrative read as successful.
+Your traces, tool responses, and workflow success flags can look green while persisted state is missing, stale, or wrong—SQL rows, vector records, S3 objects, HTTP witness payloads, or Mongo fields. The npm CLI and PyPI `agentskeptic` compare structured tool activity to read-only checks at verification time and emit a binary outcome: observed state matched expectations derived from what the workflow claimed—or it did not—not whether the step narrative read as successful.
 
-Use read-only verification before customer-facing actions, compliance evidence, or CI gates when you need row truth—not more log volume.
+Use verification before customer-facing actions, compliance evidence, or CI gates when you need ground truth across external systems—not more log volume.
 
 ### Pasteable terminal proof (bundled demo)
 
@@ -34,7 +34,7 @@ steps:
 workflow_id: wf_missing
 workflow_status: inconsistent
 steps:
-  - seq=0 tool=crm.upsert_contact result=Expected row is missing from the database (the log implies a write that is not present).
+  - seq=0 tool=crm.upsert_contact result:Expected row is missing from the database (the log implies a write that is not present).
     reference_code: ROW_ABSENT
 
 {
@@ -132,7 +132,7 @@ await gate.assertSafeForIrreversibleAction();
 **Core mechanism:** Read-only SQL checks that your database **at verification time** matches **expectations derived from structured tool activity**—not whether a trace step “succeeded.”
 
 <!-- public-product-anchors:start -->
-Truth is persisted rows at verification time: read-only SQL checks database state against structured tool activity—not trace color or success flags.
+Truth is verified external state at verification time: the npm CLI and PyPI `agentskeptic` check structured tool activity against read-only SQL and contract witness stores—not trace color or success flags.
 
 - **Repository:** https://github.com/jwekavanagh/agentskeptic
 - **npm package:** https://www.npmjs.com/package/agentskeptic

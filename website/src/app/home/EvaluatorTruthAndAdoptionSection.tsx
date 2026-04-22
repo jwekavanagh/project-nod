@@ -18,6 +18,9 @@ export function EvaluatorTruthAndAdoptionSection() {
       <h3 className="guarantee-sub">{e.whatWeDoNotProveHeading}</h3>
       <p className="lede">{e.whatWeDoNotProve}</p>
       <p className="muted">{e.quickVsContract}</p>
+      <p className="lede" data-testid="framework-maturity">
+        {e.frameworkMaturity}
+      </p>
       <p className="lede">{e.crossingCanonicalSentence}</p>
       <p className="muted">{e.antiSubstitutionOneLiner}</p>
       <p className="home-cta-row">

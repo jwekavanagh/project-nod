@@ -13,7 +13,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const root = path.resolve(__dirname, "..");
 
 const anchors = JSON.parse(
-  readFileSync(path.join(root, "config", "public-product-anchors.json"), "utf8"),
+  readFileSync(path.join(root, "config", "primary-marketing.json"), "utf8"),
 );
 const canonical = new URL(String(anchors.productionCanonicalOrigin).trim()).origin;
 

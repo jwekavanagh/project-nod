@@ -9,14 +9,13 @@ import test from "node:test";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 
-test("package.json description matches discovery pageMetadata.description", () => {
-  const discovery = JSON.parse(readFileSync(join(root, "config", "discovery-acquisition.json"), "utf8"));
-  const anchors = JSON.parse(readFileSync(join(root, "config", "public-product-anchors.json"), "utf8"));
+test("package.json description matches primary marketing pageMetadata.description", () => {
+  const pm = JSON.parse(readFileSync(join(root, "config", "primary-marketing.json"), "utf8"));
   const pkg = JSON.parse(readFileSync(join(root, "package.json"), "utf8"));
-  assert.equal(pkg.description, discovery.pageMetadata.description);
+  assert.equal(pkg.description, pm.pageMetadata.description);
   assert.notEqual(
     pkg.description,
-    anchors.identityOneLiner,
+    pm.identityOneLiner,
     "npm description must not fall back to identityOneLiner",
   );
 });

@@ -121,7 +121,7 @@ describe(
 
     it("pack matches discovery; served pages match anchors", async () => {
       const a = loadAnchors();
-      const discoveryPath = join(repoRoot, "config", "discovery-acquisition.json");
+      const discoveryPath = join(repoRoot, "config", "primary-marketing.json");
       const disc = JSON.parse(readFileSync(discoveryPath, "utf8")) as {
         slug: string;
         visitorProblemAnswer: string;

@@ -46,12 +46,12 @@ Ghost framing utility:
 
 | Audience / surface | Source file | Fields |
 |--------------------|-------------|--------|
-| Homepage hero title, README fold hero, `llms.txt` (via sync) | `config/discovery-acquisition.json` | `heroTitle`, `readmeTitle`, `heroSubtitle`, `visitorProblemAnswer`, `homepageDecisionFraming`, `pageMetadata`, `cliFollowupLines`, … |
-| `llms.txt` summary line after adoption fence, OpenAPI package line, discovery payload | `config/public-product-anchors.json` | `identityOneLiner` |
+| Homepage hero title, README fold hero, `llms.txt` (via sync) | `config/primary-marketing.json` | `heroTitle`, `readmeTitle`, `heroSubtitle`, `visitorProblemAnswer`, `homepageDecisionFraming`, `pageMetadata`, `cliFollowupLines`, … |
+| `llms.txt` summary line after adoption fence, OpenAPI package line, discovery payload (same file) | `config/primary-marketing.json` | `identityOneLiner` |
 | Site chrome tagline only | `website/src/components/BrandLockup.tsx` | Literal `TRUST REALITY, NOT TRACES.` (not in discovery JSON) |
 | npm `package.json` `description` | Sync from discovery | `pageMetadata.description` |
 
-After editing JSON, run from repository root: **`npm run sync:public-product-anchors`** (see existing distribution docs in-repo for full artifact list).
+After editing JSON, run from repository root: **`npm run emit-primary-marketing`** (or **`sync:public-product-anchors`**, the alias; see existing distribution docs in-repo for full artifact list).
 
 ## Regenerating `og.png` (single command)
 

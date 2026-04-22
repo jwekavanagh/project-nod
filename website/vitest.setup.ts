@@ -42,7 +42,7 @@ mergeWebsiteDotEnv();
  */
 if (process.env.AGENTSKEPTIC_ALLOW_PUBLIC_ORIGIN_FETCH !== "1") {
   try {
-    const anchorsPath = path.join(__dirname, "..", "config", "public-product-anchors.json");
+    const anchorsPath = path.join(__dirname, "..", "config", "primary-marketing.json");
     const { productionCanonicalOrigin } = JSON.parse(readFileSync(anchorsPath, "utf8")) as {
       productionCanonicalOrigin?: string;
     };
