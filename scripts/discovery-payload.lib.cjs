@@ -113,11 +113,24 @@ function buildDiscoveryPayload(root) {
     navLabel: path.replace(/^\/guides\//, ""),
     problemAnchor: padAnchor(path),
   }));
+  const embedKeyForExamplePath = (examplePath) => {
+    const tail = String(examplePath).replace(/^\/examples\//, "");
+    switch (tail) {
+      case "wf-complete":
+        return "wf_complete";
+      case "wf-missing":
+        return "wf_missing";
+      case "langgraph-checkpoint-trust":
+        return "langgraph_checkpoint_trust";
+      default:
+        throw new Error(`discovery-payload: unknown example path for embedKey: ${examplePath}`);
+    }
+  };
   const indexableExamplesFromMd = grouped.examples.map((path) => ({
     path,
     navLabel: path.replace(/^\/examples\//, ""),
     problemAnchor: padAnchor(path),
-    embedKey: path.endsWith("wf-complete") ? "wf_complete" : "wf_missing",
+    embedKey: embedKeyForExamplePath(path),
   }));
   const anchorsPath = join(root, "config", "public-product-anchors.json");
   const anchors = JSON.parse(readFileSync(anchorsPath, "utf8"));

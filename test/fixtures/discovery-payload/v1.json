@@ -205,6 +205,12 @@
     ],
     "indexableExamples": [
       {
+        "path": "/examples/langgraph-checkpoint-trust",
+        "navLabel": "langgraph-checkpoint-trust",
+        "problemAnchor": "Markdown-backed discovery surface content for /examples/langgraph-checkpoint-trust — read-only SQL verification context.",
+        "embedKey": "langgraph_checkpoint_trust"
+      },
+      {
         "path": "/examples/wf-complete",
         "navLabel": "wf-complete",
         "problemAnchor": "Markdown-backed discovery surface content for /examples/wf-complete — read-only SQL verification context.",
