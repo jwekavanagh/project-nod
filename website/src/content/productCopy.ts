@@ -195,90 +195,78 @@ export const productBriefPage = {
     title: "Product brief",
     titleSuffix: "AgentSkeptic" as const,
     description:
-      "Why green traces are not enough, how read-only checks work, production scenarios, and two bundled terminal examples—then Get started on your data.",
+      "The trace-vs-state gap, how read-only verification works (NDJSON, tools.json, verify run), what it catches, and the bundled wf_complete / wf_missing terminal outputs.",
   },
-  jsonLdHeadline: "Product brief: read-only verification of tool claims on your stores",
+  jsonLdHeadline: "Product brief: read-only checks vs tool-claimed work on your stores",
   testIds: {
     cta: "acquisition-cta-row" as const,
   },
-  h1: "Product brief: read-only checks vs. what your tools report",
-  /** Placed after the `visitorProblemAnswer` line; exclusive to the Product brief. */
+  h1: "Product brief",
+  /** Placed after the `visitorProblemAnswer` block. */
   introParagraphs: [
-    "On the homepage you saw a failure slice and a no-account demo. This page is the second step: the production story, a plain-language loop, and the full success and failure transcripts side by side.",
-    "The product is not “another log line.” It adds a verification run that compares **structured tool activity** to **read-only views of your own stores** (SQL, vectors, object stores, document DBs, HTTP witnesses, and the rest of your registries) at a moment you control—before you ship, bill, or sign off in compliance.",
+    "On this page you will see the full picture: the real problem in production, how verification works, what it catches in practice, and the exact success and failure outputs bundled with the product (your own runs use the same engine against your data).",
   ],
   sections: [
     {
       id: "problem" as const,
-      title: "The problem in production",
+      title: "The problem",
       paragraphs: [
-        "Agents, workflows, and automations are easy to reason about as success/failure. Traces and step lists usually stop at “the tool said it worked,” not at “the customer’s record, ledger, or vector index actually shows the right value.”",
-        "The gap is not dishonest traces. It is **missing or late effects** in the place people trust for money and truth: the stored row, the ticket field, the inventory count, the reconciliation total.",
+        "Agents and workflows look successful in traces and logs. The tool reported “done.” The step completed. The graph finished.",
+        "Yet the customer record is missing, the ledger is off, the vector metadata is stale, or the ticket status never updated.",
+        "Traces stop at “the tool said it worked.” Your stored data is what actually matters—and that is where silent failures hide.",
       ],
     },
     {
       id: "how" as const,
       title: "How read-only verification works",
-      intro:
-        "One loop, one gate you run when you are ready. It is smaller than a second observability stack:",
+      intro: "One simple gate you control:",
       steps: [
-        "Emit or collect **structured** lines for the tools and side effects you care about (commonly NDJSON) so a run is replayable in text, not a screenshot.",
-        "Point **tools.json** (and the rest of your registry) at the expectations: which tool IDs map to which read-only checks for which stores for this run.",
-        "Run **verification** against a read-only snapshot: you get a JSON outcome and a human-readable report, or a non-zero exit when something does not line up. That judgment is at verification time, not from trace color.",
+        "Emit structured tool activity (usually NDJSON) for the actions and side effects you care about.",
+        "Map those tool IDs to your real stores in a lightweight `tools.json` registry (and the rest of your registry) for this run.",
+        "Run **verification** against a read-only snapshot of your data.",
       ],
+      outro:
+        "You get a clear JSON outcome and a human-readable report, or a non-zero exit. The check happens at verification time, not from trace color.",
     },
     {
       id: "scenarios" as const,
-      title: "What this can catch (production-shaped examples)",
-      intro:
-        "The engine is the same; the list below is how teams describe the mismatch when they land here from guides or the problems index. None of these is “traces are lying”—they are “success was declared before the world matched.”",
-      scenarios: [
-        {
-          name: "LangGraph and other orchestrators",
-          body: "After a graph run, checkpoint and trace look healthy while the **persisted** row or vector state you care about is missing or wrong—verify before you trust the handoff to billing or a customer.",
-        },
-        {
-          name: "CRM and ticket drift",
-          body: "The loop “closed the ticket” in the narrative; the **CRM** still shows the old status or the row never landed—read-only checks catch that before a customer sees it in production.",
-        },
-        {
-          name: "CI and deploy gates",
-          body: "Pipelines are green on logs while the **side effect** in the target store never shows up in time for release—treat verification as a gate, not a longer log search.",
-        },
-        {
-          name: "Webhooks, ledgers, and reconciliation (e.g. Stripe-style flows)",
-          body: "The HTTP callback was OK, but the **ledger or mirror** in your system of record is still off by one—compare declared activity to a read-only view, not to the last green step.",
-        },
+      title: "What it catches in production",
+      bullets: [
+        "**LangGraph and agent workflows**: The trace looks healthy, but the persisted row or vector is missing or wrong when the handoff happens.",
+        "**CRM and ticket systems**: The agent “closed the ticket,” but the CRM still shows the old state or the record never landed.",
+        "**CI and deploy gates**: Pipelines pass on logs, but the required side effect never appeared in the target store.",
+        "**Webhooks and ledgers** (Stripe-style flows): The external callback succeeded, but your internal ledger or reconciliation is inconsistent.",
       ],
+      coda: "These are not “trace lies” — they are gaps between what was declared and what actually exists when it matters.",
     },
     {
       id: "who" as const,
-      title: "Who this is for (and the hard limits)",
+      title: "Who it's for (and who it's not)",
       forYou: {
-        label: "Use this when",
+        label: "Use AgentSkeptic when",
         items: [
-          "You can get structured tool output and a read-only path to the stores in your registries on the same trust boundary you already use to ship.",
-          "You are willing to model expectations in a registry and run a verification when it matters, instead of re-processing raw logs in an ad-hoc way.",
+          "You emit structured tool output.",
+          "You have queryable stores (SQL, vectors, S3, Mongo, HTTP-accessible data, and similar).",
+          "You have seen green traces that still left bad or missing data behind.",
         ],
       },
       notForYou: {
-        label: "Not a fit when",
+        label: "Not the right fit when",
         items: [
-          "You have **no** queryable store to check; unstructured logs only.",
-          "You need strict proof of **which network call** caused a write, not that state matched expectations when checked read-only.",
-          "You want a full replacement for APM or your log platform.",
+          "You only have unstructured logs with nothing to query.",
+          "You need proof that one specific call caused a write, not a read-only match to expectations at verify time.",
+          "You are looking for a full APM or log analytics replacement.",
         ],
       },
     },
   ],
   terminal: {
-    beforeTitle: "Terminal proof: success and failure in one place",
+    beforeTitle: "Terminal proof: success vs failure",
     intro: [
-      "The block below is the same bundled `wf_complete` and `wf_missing` text shipped with the project. Use it to show stakeholders what a **match** and a **ROW_ABSENT** style miss look like in your own vocabulary—without touching production in this read-only public copy.",
+      "Here are the exact blocks from the bundled demo transcript (`wf_complete` and `wf_missing`). Your own runs use the same verification engine: structured steps, `trust` / `workflow_status`, human lines, a schema-versioned JSON envelope, and `ROW_ABSENT` when a declared effect is not present in the read-only check.",
     ],
   },
-  disclaimer:
-    "Read-only checks at verification time; not proof of which call or step produced a specific write. That honesty line is the same on the homepage.",
+  disclaimer: "**Read-only at verification time** — not proof of which call caused a specific write.",
 } as const;
 
 export const productCopy = {

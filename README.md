@@ -7,7 +7,9 @@
 
 Read-only state vs what you declared—not a green trace alone.
 
-Green runs are not the same as correct data. Check read-only before ship, bill, or compliance.
+Green runs are not the same as correct data.
+
+Read-only checks at verify time align tool claims to stored state before ship, bill, or handoff.
 
 ### Bundled terminal proof
 

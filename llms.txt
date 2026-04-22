@@ -148,19 +148,19 @@ steps:
 ```
 
 ## Intent phrases
-- trace ok data not
+- trace v data
 - read-only verify
 - ROW_ABSENT
 
 ## Not for
-- logs only
+- logs
 - HTTP proof
 - no store
 
 ## Related queries
-- langgraph check
+- langgraph
 - agent verify
-- trace vs data
+- trace data
 
 ## When this hurts (search-shaped)
 - Green trace, bad data — https://agentskeptic.com/guides/trace-green-postgres-row-missing · https://agentskeptic.com/integrate · https://agentskeptic.com/database-truth-vs-traces
@@ -178,4 +178,6 @@ steps:
 
 ## Visitor problem (canonical answer)
 
-Green runs are not the same as correct data. Check read-only before ship, bill, or compliance.
+Green runs are not the same as correct data.
+
+Read-only checks at verify time align tool claims to stored state before ship, bill, or handoff.

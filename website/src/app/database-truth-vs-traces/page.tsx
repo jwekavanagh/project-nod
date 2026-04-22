@@ -30,10 +30,27 @@ function boldSegments(text: string): ReactNode {
   );
 }
 
+/** Splits the bundled `shareableTerminalDemo.transcript` at the failure heading—verbatim engine output. */
+function splitDemoSuccessFailure(transcript: string): { success: string; failure: string } {
+  const needle = "\n\n### Failure (`wf_missing`)";
+  const i = transcript.indexOf(needle);
+  if (i < 0) {
+    throw new Error("splitDemoSuccessFailure: missing Failure block in shareable terminal transcript");
+  }
+  return {
+    success: transcript.slice(0, i).trim(),
+    failure: transcript.slice(i + 2).trim(),
+  };
+}
+
 export default function DatabaseTruthVsTracesPage() {
-  const { visitorProblemAnswer, shareableTerminalDemo, heroSubtitle } = marketing;
+  const { visitorProblemAnswer, shareableTerminalDemo, heroTitle, heroSubtitle } = marketing;
   const pb = productBriefPage;
   const [sProblem, sHow, sScenarios, sWho] = pb.sections;
+  const { success: successBlock, failure: failureBlock } = splitDemoSuccessFailure(shareableTerminalDemo.transcript);
+  if (sHow.id !== "how" || sScenarios.id !== "scenarios") {
+    throw new Error("Product brief sections: expected how then scenarios");
+  }
 
   return (
     <main className="integrate-main product-brief-page">
@@ -43,7 +60,8 @@ export default function DatabaseTruthVsTracesPage() {
         path={marketing.slug}
       />
       <h1 data-testid="acquisition-hero-title">{pb.h1}</h1>
-      <p className="lede">{heroSubtitle}</p>
+      <p className="lede product-brief-tagline">{heroTitle}</p>
+      <p className="lede muted">{heroSubtitle}</p>
       <div data-testid="visitor-problem-answer">
         {visitorProblemAnswer.split(/\n\n+/).filter(Boolean).map((p) => (
           <p key={p.slice(0, 64)} className="lede">
@@ -53,7 +71,7 @@ export default function DatabaseTruthVsTracesPage() {
       </div>
       {pb.introParagraphs.map((p) => (
         <p key={p.slice(0, 64)} className="lede product-brief-prose">
-          {boldSegments(p)}
+          {p}
         </p>
       ))}
 
@@ -61,7 +79,7 @@ export default function DatabaseTruthVsTracesPage() {
         <h2 id="brief-section-problem">{sProblem.title}</h2>
         {sProblem.paragraphs.map((p) => (
           <p key={p.slice(0, 64)} className="lede product-brief-prose">
-            {boldSegments(p)}
+            {p}
           </p>
         ))}
       </section>
@@ -74,6 +92,7 @@ export default function DatabaseTruthVsTracesPage() {
             <li key={step.slice(0, 48)}>{boldSegments(step)}</li>
           ))}
         </ol>
+        <p className="lede product-brief-prose">{sHow.outro}</p>
       </section>
 
       <section
@@ -82,15 +101,14 @@ export default function DatabaseTruthVsTracesPage() {
         aria-labelledby="brief-section-scenarios"
       >
         <h2 id="brief-section-scenarios">{sScenarios.title}</h2>
-        <p className="lede product-brief-prose">{sScenarios.intro}</p>
-        <ul className="product-brief-scenarios">
-          {sScenarios.scenarios.map((row) => (
-            <li key={row.name}>
-              <h3 className="product-brief-scenario-name">{row.name}</h3>
-              <p className="product-brief-prose">{boldSegments(row.body)}</p>
+        <ul className="product-brief-catch-bullets">
+          {sScenarios.bullets.map((b) => (
+            <li key={b.slice(0, 64)} className="product-brief-prose">
+              {boldSegments(b)}
             </li>
           ))}
         </ul>
+        <p className="muted product-brief-catch-coda">{sScenarios.coda}</p>
       </section>
 
       <section className="home-section" data-testid="acquisition-brief-section-who" aria-labelledby="brief-section-who">
@@ -120,16 +138,22 @@ export default function DatabaseTruthVsTracesPage() {
             {boldSegments(p)}
           </p>
         ))}
-        <h3 className="muted product-brief-terminal-sub" id="terminal-demo-heading">
-          {shareableTerminalDemo.title}
+        <h3 className="product-brief-terminal-block-title" id="terminal-success-heading">
+          Success (`wf_complete`)
         </h3>
-        <pre className="truth-report-pre" aria-labelledby="terminal-demo-heading">
-          {shareableTerminalDemo.transcript}
+        <pre className="truth-report-pre" aria-labelledby="terminal-success-heading">
+          {successBlock}
+        </pre>
+        <h3 className="product-brief-terminal-block-title" id="terminal-failure-heading">
+          Failure (`wf_missing`) — <span className="product-brief-row-absent">ROW_ABSENT</span>
+        </h3>
+        <pre className="truth-report-pre" aria-labelledby="terminal-failure-heading">
+          {failureBlock}
         </pre>
       </section>
 
       <p className="muted product-brief-disclaimer" data-testid="acquisition-brief-disclaimer">
-        {pb.disclaimer}
+        {boldSegments(pb.disclaimer)}
       </p>
       <div
         className="product-brief-cta-wrap"

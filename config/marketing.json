@@ -11,10 +11,10 @@
   "readmeTitle": "AgentSkeptic — state vs trace",
   "heroTitle": "Trust reality, not traces.",
   "heroSubtitle": "Read-only state vs what you declared—not a green trace alone.",
-  "visitorProblemAnswer": "Green runs are not the same as correct data. Check read-only before ship, bill, or compliance.",
+  "visitorProblemAnswer": "Green runs are not the same as correct data.\n\nRead-only checks at verify time align tool claims to stored state before ship, bill, or handoff.",
   "heroOutcome": "Traces say success. Your actual data does not.",
   "heroMechanism": "Read-only checks at verify time: what tools claimed vs. what actually exists.",
-  "guaranteeFootnote": "Read-only at verify time; not proof which call or step caused a write.",
+  "guaranteeFootnote": "Read-only at verify time; not which call or step wrote data.",
   "siteDefaultMetadata": {
     "title": "AgentSkeptic",
     "description": "Tool claims vs read-only state."
@@ -22,7 +22,7 @@
   "homepageAcquisitionCtaLabel": "Product brief",
   "pageMetadata": {
     "title": "Traces vs state",
-    "description": "Read-only checks—VERIFIED or inconsistent."
+    "description": "Read-only checks: VERIFIED or inconsistent."
   },
   "readmeFold": {
     "templateLines": [
@@ -49,7 +49,7 @@
     "{{ORIGIN}}/"
   ],
   "r2": {
-    "frameworkMaturity": "CrewAI: ready. AutoGen: experimental. See repo FRAMEWORK_LOCK.md"
+    "frameworkMaturity": "CrewAI ready, AutoGen experimental. FRAMEWORK_LOCK.md in repo"
   },
   "site": {
     "integrate": {
@@ -95,7 +95,7 @@
       "Not causal proof; read-only verify only"
     ]
   },
-  "briefProblem": "Claims vs read-only; ROW_ABSENT. Product brief page: depth.",
+  "briefProblem": "Claims vs read-only; ROW_ABSENT. See Product brief page.",
   "briefSections": [],
   "homeWhatCatches": {
     "sectionTitle": "What it catches",
@@ -189,8 +189,8 @@
     }
   ],
   "llms": {
-    "intentPhrases": ["trace ok data not", "read-only verify", "ROW_ABSENT"],
-    "notFor": ["logs only", "HTTP proof", "no store"],
-    "relatedQueries": ["langgraph check", "agent verify", "trace vs data"]
+    "intentPhrases": ["trace v data", "read-only verify", "ROW_ABSENT"],
+    "notFor": ["logs", "HTTP proof", "no store"],
+    "relatedQueries": ["langgraph", "agent verify", "trace data"]
   }
 }
