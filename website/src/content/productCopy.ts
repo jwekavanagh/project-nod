@@ -2,6 +2,7 @@
 
 import marketing from "@/lib/marketing";
 import {
+  HOME_COMMERCIAL_STRIP_LEAD,
   METERING_CLARIFIER,
   SECURITY_QUICK_VS_CONTRACT_BULLET,
 } from "@/content/marketingContracts";
@@ -59,10 +60,7 @@ export type LearnBundledProofLedes = { primary: string; secondaryMuted: string }
 export type HomeHeroCtaLabels = { demo: string };
 
 /** Hero primary CTA — scrolls to bundled Try it. */
-export const HOME_HERO_DEMO_CTA_LABEL = "Run the bundled demo" as const;
-
-/** Section repeat CTAs — same anchor, different copy so the page does not read template-driven. */
-export const HOME_SCROLL_TO_TRY_CTA_LABEL = "Jump to Try it" as const;
+export const HOME_HERO_DEMO_CTA_LABEL = "Try the demo (no account)" as const;
 
 /** Try-it control — performs POST /api/demo/verify (distinct from scroll CTAs). */
 export const HOME_TRY_IT_RUN_BUTTON_LABEL = "Run sample verification" as const;
@@ -187,6 +185,13 @@ export const securityQuickFacts = {
 export const homeHeroCtaLabels = {
   demo: HOME_HERO_DEMO_CTA_LABEL,
 } as const satisfies HomeHeroCtaLabels;
+
+/** Hero secondary CTA — distinct from nav “Product brief” (database-truth page). */
+export const homeHeroSecondaryCta = {
+  href: "/integrate" as const,
+  label: "Get started",
+  testId: "home-hero-get-started" as const,
+} as const;
 
 export const productCopy = {
   links: {
@@ -471,11 +476,10 @@ export const productCopy = {
   commercialSurface: {
     title: "What paid plans unlock",
     lead: METERING_CLARIFIER,
+    /** Homepage strip only — shorter than `lead` (METERING_CLARIFIER). */
+    homeStrip: HOME_COMMERCIAL_STRIP_LEAD,
     compareApproachesLabel: "Compare approaches",
   },
-
-  /** Homepage section CTAs that only scroll to `#try-it` (distinct from hero demo CTA). */
-  homeScrollToTryCtaLabel: HOME_SCROLL_TO_TRY_CTA_LABEL,
 
   /** Retained for SSOT strings; `/pricing` renders `pricingHero` instead. */
   pricingRecap: pricingHero.subtitle,
@@ -525,6 +529,7 @@ export const productCopy = {
   },
 
   homeHeroCtaLabels,
+  homeHeroSecondaryCta,
   pricingTrustBandBeforeGrid,
   securityQuickFacts,
   learnBundledProofLedes,

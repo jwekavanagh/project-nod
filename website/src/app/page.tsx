@@ -37,16 +37,6 @@ const anchors = {
   bugsUrl: publicProductAnchors.bugsUrl,
 };
 
-function demoRepeatCta(testId: string) {
-  return (
-    <p className="home-repeat-cta">
-      <a className="btn secondary" href="#try-it" data-testid={testId}>
-        {productCopy.homeScrollToTryCtaLabel}
-      </a>
-    </p>
-  );
-}
-
 export default function HomePage() {
   const trustLinks = buildHomeTrustStripLinks({
     anchors,
@@ -76,10 +66,10 @@ export default function HomePage() {
               </a>
               <Link
                 className="btn secondary"
-                href={productCopy.homepageAcquisitionCta.href}
-                data-testid={productCopy.homepageAcquisitionCta.testId}
+                href={productCopy.homeHeroSecondaryCta.href}
+                data-testid={productCopy.homeHeroSecondaryCta.testId}
               >
-                {productCopy.homepageAcquisitionCta.label}
+                {productCopy.homeHeroSecondaryCta.label}
               </Link>
             </p>
             <p className="muted" data-testid="home-guarantee-footnote">
@@ -207,7 +197,6 @@ export default function HomePage() {
       >
         <h2 id="home-closing-heading">{productCopy.homeClosing.sectionTitle}</h2>
         <p className="lede">{productCopy.homeClosing.subtitle}</p>
-        {demoRepeatCta("home-repeat-cta-closing")}
         <p className="muted home-closing-links-caption">{productCopy.homeClosing.integratorLinksCaption}</p>
         <ul className="home-trust-strip-list">
           {trustLinks.map((item) => (
@@ -232,7 +221,7 @@ export default function HomePage() {
         aria-labelledby="commercial-surface-heading"
       >
         <h2 id="commercial-surface-heading">{productCopy.commercialSurface.title}</h2>
-        <p data-testid="home-commercial-metering">{productCopy.commercialSurface.lead}</p>
+        <p data-testid="home-commercial-metering">{productCopy.commercialSurface.homeStrip}</p>
         <p className="commercial-links">
           <Link href="/pricing">Pricing</Link>
           {" · "}

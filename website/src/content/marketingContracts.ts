@@ -13,6 +13,9 @@ export const COMMERCIAL_SSOT_PROGRAMMATIC_VS_CLI_HREF = `${publicProductAnchors.
 /** Same verbatim string on sign-in and homepage commercial strip (render tests assert equality). */
 export const METERING_CLARIFIER = `In-process library use (createDecisionGate) evaluates read-only SQL without calling the license reserve API. The published npm CLI path—contract verify, quick with lock flags, and enforce—requires an API key and POST /api/v1/usage/reserve. Boundary: ${COMMERCIAL_SSOT_PROGRAMMATIC_VS_CLI_HREF}`;
 
+/** Short homepage commercial strip; sign-in and contracts still use METERING_CLARIFIER. */
+export const HOME_COMMERCIAL_STRIP_LEAD = `Licensed npm verification uses an API key and your plan; in-process library use does not call the usage reserve. Full boundary: ${COMMERCIAL_SSOT_PROGRAMMATIC_VS_CLI_HREF}`;
+
 /** Two normative lines from docs/commercial-entitlement-policy.md — commercial-pricing-policy-parity.test.mjs requires these substrings in this file. */
 export const NORMATIVE_PAID_VERIFICATION_LINE =
   "Licensed verification with the published npm CLI requires an active Individual, Team, Business, or Enterprise subscription (trial counts); monthly quota applies after subscribe.";

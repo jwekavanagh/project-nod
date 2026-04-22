@@ -1,7 +1,7 @@
 {
   "name": "agentskeptic",
   "version": "1.1.0",
-  "description": "Read-only tool checks vs stores—VERIFIED or inconsistent.",
+  "description": "Read-only checks vs stores—VERIFIED or inconsistent.",
   "license": "MIT",
   "type": "module",
   "x-agentskeptic-decision-ready-contract": "1",

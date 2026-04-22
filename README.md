@@ -1,13 +1,13 @@
 <!-- discovery-readme-title:start -->
-# AgentSkeptic — persisted state, not trace color
+# AgentSkeptic — state vs trace
 <!-- discovery-readme-title:end -->
 
 <!-- discovery-acquisition-fold:start -->
 ## Your trace says success. Persisted state is the verdict.
 
-Read-only checks at verification time against your registries and stores—more than a green trace.
+Check read-only state vs registries—not a green trace alone.
 
-Green is not enough when data is wrong. CLI vs read-only state: match or miss—not proof which call wrote a row. Use before ship or compliance.
+Wrong data beats a green run. Read-only state is match or miss—use before ship or compliance.
 
 ### Bundled terminal proof
 
@@ -130,7 +130,7 @@ await gate.assertSafeForIrreversibleAction();
 **Core mechanism:** Read-only SQL checks that your database **at verification time** matches **expectations derived from structured tool activity**—not whether a trace step “succeeded.”
 
 <!-- public-product-anchors:start -->
-Structured tool activity checked against read-only SQL and contract stores at verification time—not trace color.
+Read-only SQL checks of tool activity at verify time—not trace color.
 
 - **Repository:** https://github.com/jwekavanagh/agentskeptic
 - **npm package:** https://www.npmjs.com/package/agentskeptic
