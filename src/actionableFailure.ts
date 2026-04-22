@@ -102,6 +102,24 @@ const STEP_CODE_TO_CATEGORY: Record<string, ActionableFailureCategory> = {
   [SQL_VERIFICATION_OUTCOME_CODE.MULTI_EFFECT_PARTIAL]: "downstream_execution_failure",
   [SQL_VERIFICATION_OUTCOME_CODE.MULTI_EFFECT_ALL_FAILED]: "downstream_execution_failure",
   [SQL_VERIFICATION_OUTCOME_CODE.MULTI_EFFECT_INCOMPLETE]: "bad_input",
+
+  [SQL_VERIFICATION_OUTCOME_CODE.STATE_WITNESS_UNAVAILABLE_IN_SQLITE_FILE_MODE]: "bad_input",
+  [SQL_VERIFICATION_OUTCOME_CODE.STATE_WITNESS_SETUP_ERROR]: "bad_input",
+  [SQL_VERIFICATION_OUTCOME_CODE.VECTOR_NOT_FOUND]: "state_inconsistency",
+  [SQL_VERIFICATION_OUTCOME_CODE.VECTOR_METADATA_MISMATCH]: "state_inconsistency",
+  [SQL_VERIFICATION_OUTCOME_CODE.VECTOR_PAYLOAD_MISMATCH]: "state_inconsistency",
+  [SQL_VERIFICATION_OUTCOME_CODE.VECTOR_PROVIDER_ERROR]: "downstream_execution_failure",
+  [SQL_VERIFICATION_OUTCOME_CODE.OBJECT_MISSING]: "state_inconsistency",
+  [SQL_VERIFICATION_OUTCOME_CODE.OBJECT_DIGEST_MISMATCH]: "state_inconsistency",
+  [SQL_VERIFICATION_OUTCOME_CODE.OBJECT_SIZE_MISMATCH]: "state_inconsistency",
+  [SQL_VERIFICATION_OUTCOME_CODE.OBJECT_METADATA_MISMATCH]: "state_inconsistency",
+  [SQL_VERIFICATION_OUTCOME_CODE.OBJECT_TOO_LARGE_FOR_HASH]: "bad_input",
+  [SQL_VERIFICATION_OUTCOME_CODE.HTTP_WITNESS_STATUS_MISMATCH]: "state_inconsistency",
+  [SQL_VERIFICATION_OUTCOME_CODE.HTTP_WITNESS_ASSERTION_MISMATCH]: "state_inconsistency",
+  [SQL_VERIFICATION_OUTCOME_CODE.HTTP_WITNESS_NETWORK_ERROR]: "downstream_execution_failure",
+  [SQL_VERIFICATION_OUTCOME_CODE.MONGO_DOCUMENT_MISSING]: "state_inconsistency",
+  [SQL_VERIFICATION_OUTCOME_CODE.MONGO_VALUE_MISMATCH]: "state_inconsistency",
+
   [STEP_NO_REASON_CODE]: "control_flow_problem",
   [TEST_BLOCKING_CODE]: "control_flow_problem",
 
@@ -186,6 +204,72 @@ const STEP_CODE_TO_REMEDIATION: Record<string, RemediationRow> = {
     recommendedAction: "correct_verification_inputs",
     automationSafe: false,
   },
+
+  [SQL_VERIFICATION_OUTCOME_CODE.STATE_WITNESS_UNAVAILABLE_IN_SQLITE_FILE_MODE]: {
+    recommendedAction: "fix_verification_database_connection",
+    automationSafe: false,
+  },
+  [SQL_VERIFICATION_OUTCOME_CODE.STATE_WITNESS_SETUP_ERROR]: {
+    recommendedAction: "correct_verification_inputs",
+    automationSafe: false,
+  },
+  [SQL_VERIFICATION_OUTCOME_CODE.VECTOR_NOT_FOUND]: {
+    recommendedAction: "reconcile_downstream_state",
+    automationSafe: false,
+  },
+  [SQL_VERIFICATION_OUTCOME_CODE.VECTOR_METADATA_MISMATCH]: {
+    recommendedAction: "reconcile_downstream_state",
+    automationSafe: false,
+  },
+  [SQL_VERIFICATION_OUTCOME_CODE.VECTOR_PAYLOAD_MISMATCH]: {
+    recommendedAction: "reconcile_downstream_state",
+    automationSafe: false,
+  },
+  [SQL_VERIFICATION_OUTCOME_CODE.VECTOR_PROVIDER_ERROR]: {
+    recommendedAction: "improve_read_connectivity",
+    automationSafe: false,
+  },
+  [SQL_VERIFICATION_OUTCOME_CODE.OBJECT_MISSING]: {
+    recommendedAction: "reconcile_downstream_state",
+    automationSafe: false,
+  },
+  [SQL_VERIFICATION_OUTCOME_CODE.OBJECT_DIGEST_MISMATCH]: {
+    recommendedAction: "reconcile_downstream_state",
+    automationSafe: false,
+  },
+  [SQL_VERIFICATION_OUTCOME_CODE.OBJECT_SIZE_MISMATCH]: {
+    recommendedAction: "reconcile_downstream_state",
+    automationSafe: false,
+  },
+  [SQL_VERIFICATION_OUTCOME_CODE.OBJECT_METADATA_MISMATCH]: {
+    recommendedAction: "reconcile_downstream_state",
+    automationSafe: false,
+  },
+  [SQL_VERIFICATION_OUTCOME_CODE.OBJECT_TOO_LARGE_FOR_HASH]: {
+    recommendedAction: "correct_verification_inputs",
+    automationSafe: false,
+  },
+  [SQL_VERIFICATION_OUTCOME_CODE.HTTP_WITNESS_STATUS_MISMATCH]: {
+    recommendedAction: "reconcile_downstream_state",
+    automationSafe: false,
+  },
+  [SQL_VERIFICATION_OUTCOME_CODE.HTTP_WITNESS_ASSERTION_MISMATCH]: {
+    recommendedAction: "reconcile_downstream_state",
+    automationSafe: false,
+  },
+  [SQL_VERIFICATION_OUTCOME_CODE.HTTP_WITNESS_NETWORK_ERROR]: {
+    recommendedAction: "improve_read_connectivity",
+    automationSafe: false,
+  },
+  [SQL_VERIFICATION_OUTCOME_CODE.MONGO_DOCUMENT_MISSING]: {
+    recommendedAction: "reconcile_downstream_state",
+    automationSafe: false,
+  },
+  [SQL_VERIFICATION_OUTCOME_CODE.MONGO_VALUE_MISMATCH]: {
+    recommendedAction: "reconcile_downstream_state",
+    automationSafe: false,
+  },
+
   [STEP_NO_REASON_CODE]: { recommendedAction: "fix_event_ingest_and_steps", automationSafe: false },
   [TEST_BLOCKING_CODE]: { recommendedAction: "fix_event_ingest_and_steps", automationSafe: false },
 

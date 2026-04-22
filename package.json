@@ -91,6 +91,7 @@
     "yaml": "^2.8.3"
   },
   "overrides": {
+    "fast-xml-parser": "4.5.5",
     "esbuild": "0.25.12",
     "tmp": "0.2.4",
     "cookie": "0.7.2",
