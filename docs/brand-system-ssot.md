@@ -7,7 +7,7 @@ This file is the **only** branding documentation added for the rebrand. Do not a
 | File | Purpose |
 |------|---------|
 | `website/public/brand/lockup.svg` | Header mark (navy `#0b1f33` + signal `#00c853`). Wordmark text lives in React (`BrandLockup`), not in this SVG. |
-| `website/public/og.png` | Open Graph raster, **1200×630**, same palette as `--bg`. |
+| `website/public/og.png` | Open Graph raster, **1200×630**, background matches site `--bg` (see `export-og-from-lockup.cjs`). |
 
 When either asset changes, update **both** SHA-256 constants in `website/__tests__/rebrand-assets.contract.test.ts` in the **same** commit.
 
@@ -17,17 +17,17 @@ Defined in `website/src/app/globals.css` inside the `:root` block (byte-pinned b
 
 | Token | Hex / value | Role |
 |-------|----------------|------|
-| `--bg` | `#070b12` | Page background |
-| `--surface` | `#0c121c` | Panels |
-| `--surface-2` | `#141c2a` | Elevated panels |
-| `--fg` | `#e8eaef` | Primary text |
-| `--muted` | `#8b95a8` | Secondary text |
-| `--brand-navy-ink` | `#0b1f33` | Wordmark “Agent” |
+| `--bg` | `#f6f8fc` | Page background (light) |
+| `--surface` | `#eef2f7` | Panels |
+| `--surface-2` | `#e2e8f0` | Elevated panels / secondary buttons |
+| `--fg` | `#0b1220` | Primary text |
+| `--muted` | `#5c6b7a` | Secondary text |
+| `--brand-navy-ink` | `#0b1f33` | Wordmark “Agent”, tagline |
 | `--accent` | `#00c853` | Links, “Skeptic”, focus ring, primary CTA fill |
-| `--accent-on-card` | `#69f0ae` | Small text on `--card` over accent hints |
-| `--accent-contrast` | `#031008` | Text on solid accent buttons |
-| `--card` | `#0a1018` | Cards |
-| `--border` | `#1e2a3d` | Borders |
+| `--accent-on-card` | `#007a3d` | Muted green on white (AA on `--card`) |
+| `--accent-contrast` | `#ffffff` | Text on solid accent buttons |
+| `--card` | `#ffffff` | Cards / inputs |
+| `--border` | `#d0d7e0` | Borders |
 | `--font-sans` | (Next `Inter` + fallbacks) | All UI typography |
 
 Ghost framing utility:
@@ -62,6 +62,6 @@ Then recompute SHA-256 for `website/public/og.png` and update `OG_PNG_SHA256` in
 
 ## Non-goals
 
-- No second theme (light mode).
+- No dark/light toggle: the commercial site is **light theme only** (tokens above).
 - No edits to `debug-ui/` in this cutover.
 - No additional markdown branding documents beyond this file.

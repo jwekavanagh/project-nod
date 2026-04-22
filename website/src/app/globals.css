@@ -56,17 +56,17 @@ textarea:focus-visible,
 }
 
 :root {
-  --bg: #070b12;
-  --surface: #0c121c;
-  --surface-2: #141c2a;
-  --fg: #e8eaef;
-  --muted: #8b95a8;
+  --bg: #f6f8fc;
+  --surface: #eef2f7;
+  --surface-2: #e2e8f0;
+  --fg: #0b1220;
+  --muted: #5c6b7a;
   --brand-navy-ink: #0b1f33;
   --accent: #00c853;
-  --accent-on-card: #69f0ae;
-  --accent-contrast: #031008;
-  --card: #0a1018;
-  --border: #1e2a3d;
+  --accent-on-card: #007a3d;
+  --accent-contrast: #ffffff;
+  --card: #ffffff;
+  --border: #d0d7e0;
   /* Populated by next/font variable on <html> (see layout.tsx). */
   --font-sans: ui-sans-serif, system-ui, sans-serif;
 }
@@ -147,10 +147,10 @@ main {
   padding: 0.9rem 1rem;
   border: 1px solid var(--accent);
   border-radius: 10px;
-  background: linear-gradient(145deg, var(--surface-2) 0%, #1a1f2e 100%);
+  background: linear-gradient(145deg, var(--surface) 0%, var(--surface-2) 100%);
   box-shadow:
-    0 0 0 1px rgba(0, 200, 83, 0.28),
-    0 4px 14px rgba(0, 0, 0, 0.35);
+    0 0 0 1px rgba(0, 200, 83, 0.22),
+    0 4px 14px rgba(15, 23, 42, 0.08);
 }
 .account-api-key-reveal code {
   flex: 1 1 14rem;
@@ -160,7 +160,7 @@ main {
   font-size: 0.8125rem;
   line-height: 1.5;
   word-break: break-all;
-  color: #f2f4f8;
+  color: var(--fg);
 }
 .account-api-key-reveal button.secondary {
   flex: 0 0 auto;
@@ -899,8 +899,7 @@ main {
   color: var(--fg);
 }
 .home-hero-verdict-failed {
-  color: color-mix(in srgb, #f87171 95%, var(--fg));
-  text-shadow: 0 0 14px color-mix(in srgb, #f87171 40%, transparent);
+  color: #b91c1c;
 }
 .home-stakes-tagline {
   font-weight: 600;
@@ -932,9 +931,8 @@ main {
   padding: 0.35rem 0 0;
 }
 .home-hero-terminal-hit {
-  color: color-mix(in srgb, #f87171 92%, var(--fg));
+  color: #b91c1c;
   font-weight: 600;
-  text-shadow: 0 0 12px color-mix(in srgb, #f87171 35%, transparent);
 }
 .home-moment-line {
   font-weight: 500;
@@ -1041,8 +1039,8 @@ a.button-link {
   margin-top: 0.35rem;
   padding: 0.5rem;
   border-radius: 8px;
-  border: 1px solid #38444d;
-  background: #0f1419;
+  border: 1px solid var(--border);
+  background: var(--card);
   color: var(--fg);
 }
 .u-mt-0 {

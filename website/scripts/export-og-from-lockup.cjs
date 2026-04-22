@@ -19,7 +19,7 @@ async function main() {
       width: w,
       height: h,
       channels: 3,
-      background: { r: 7, g: 11, b: 18 },
+      background: { r: 246, g: 248, b: 252 },
     },
   })
     .composite([{ input: mark, left, top }])

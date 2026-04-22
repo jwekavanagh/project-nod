@@ -3,17 +3,17 @@ import path from "node:path";
 import { describe, expect, it } from "vitest";
 
 const ROOT_BLOCK = `:root {
-  --bg: #070b12;
-  --surface: #0c121c;
-  --surface-2: #141c2a;
-  --fg: #e8eaef;
-  --muted: #8b95a8;
+  --bg: #f6f8fc;
+  --surface: #eef2f7;
+  --surface-2: #e2e8f0;
+  --fg: #0b1220;
+  --muted: #5c6b7a;
   --brand-navy-ink: #0b1f33;
   --accent: #00c853;
-  --accent-on-card: #69f0ae;
-  --accent-contrast: #031008;
-  --card: #0a1018;
-  --border: #1e2a3d;
+  --accent-on-card: #007a3d;
+  --accent-contrast: #ffffff;
+  --card: #ffffff;
+  --border: #d0d7e0;
   /* Populated by next/font variable on <html> (see layout.tsx). */
   --font-sans: ui-sans-serif, system-ui, sans-serif;
 }`;

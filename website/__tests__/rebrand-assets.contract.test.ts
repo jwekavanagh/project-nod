@@ -7,7 +7,7 @@ import { describe, expect, it } from "vitest";
 const LOCKUP_SVG_SHA256 = "b9c6abd97b2656d82dae66e9f4781ed350aadad297f8048f80ba52c44d2d82db";
 
 /** Update in the same commit as `website/public/og.png` changes. */
-const OG_PNG_SHA256 = "e635ae9b7c76db10846ce8d8ce826588ebc938308efa589a3e85a8e08fe5ccea";
+const OG_PNG_SHA256 = "f2e3c87361b1ecc91c4429205e4d088eb7bed6c96a26830d4503d01da28a4d39";
 
 function sha256Hex(buf: Buffer): string {
   return createHash("sha256").update(buf).digest("hex");
