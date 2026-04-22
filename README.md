@@ -5,11 +5,11 @@
 <!-- discovery-acquisition-fold:start -->
 ## Trust reality, not traces.
 
-Read-only state vs what you declared—not a green trace alone.
+Read-only checks at verification time match tool claims to real stored state — before you ship, bill, or hand off to customers.
 
 Green runs are not the same as correct data.
 
-Read-only checks at verify time align tool claims to stored state before ship, bill, or handoff.
+Read-only checks at verify time align tool claims to stored state.
 
 ### Bundled terminal proof
 
@@ -132,7 +132,7 @@ await gate.assertSafeForIrreversibleAction();
 **Core mechanism:** Read-only SQL checks that your database **at verification time** matches **expectations derived from structured tool activity**—not whether a trace step “succeeded.”
 
 <!-- public-product-anchors:start -->
-Read-only tool checks at verify time—not color.
+Read-only checks at verify time—not color.
 
 - **Repository:** https://github.com/jwekavanagh/agentskeptic
 - **npm package:** https://www.npmjs.com/package/agentskeptic

@@ -62,7 +62,7 @@ gate.appendRunEvent(ev);
 await gate.assertSafeForIrreversibleAction();
 ```
 <!-- adoption-canonical-llms:end -->
-Read-only tool checks at verify time—not color.
+Read-only checks at verify time—not color.
 
 ## Primary links
 - Canonical site: https://agentskeptic.com/
@@ -180,4 +180,4 @@ steps:
 
 Green runs are not the same as correct data.
 
-Read-only checks at verify time align tool claims to stored state before ship, bill, or handoff.
+Read-only checks at verify time align tool claims to stored state.
