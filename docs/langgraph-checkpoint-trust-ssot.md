@@ -11,7 +11,11 @@ LangGraph checkpoint trust consumes **`schemaVersion: 3`** `tool_observed` lines
 There is **one** implementation of buffered events → **`WorkflowResult`**: **`verifyRunStateFromBufferedRunEvents`** in [`src/verifyRunStateFromBufferedRunEvents.ts`](../src/verifyRunStateFromBufferedRunEvents.ts).
 
 - **`createDecisionGate`** (`evaluate` / `evaluateCertificate`) calls this module after buffering.
-- **`createLangGraphCheckpointTrustGate`** calls it on the **eligible** path only (see below).
+- **`createLangGraphCheckpointTrustGate`**: **`runCheckpointTrust()`** calls it on the **eligible** path only. The **ineligible** path returns an Outcome Certificate from [`validatedLangGraphIneligibleCertificate`](../src/langGraphCheckpointTrustIneligibleCertificate.ts) and **never** opens a database or invokes the verify pipeline.
+
+## Batch CLI (A2 short-circuit)
+
+For **ineligible** LangGraph checkpoint trust, [`runBatchVerifyWithTelemetrySubcommand`](../src/verify/batchVerifyTelemetrySubcommand.ts) builds the certificate and runs telemetry + stdout **without** entering **`runStandardVerifyWorkflowCliToTerminalResult`** (so no `WorkflowResult`, no bundle write, and no `stderrAppendBeforeStdout` hook). **Eligible** LangGraph runs still use that runner after **`verifyRunStateFromBufferedRunEvents`**.
 
 ## Eligibility (LangGraph mode only)
 
@@ -21,7 +25,7 @@ There is **one** implementation of buffered events → **`WorkflowResult`**: **`
 2. There is at least one schema-valid `tool_observed` for the target `workflowId`, and  
 3. Every such line has **`schemaVersion === 3`**.
 
-Otherwise the run is **ineligible**: **no SQL**, one Outcome Certificate on stdout with **`runKind: "contract_sql_langgraph_checkpoint_trust"`**, **`steps: []`**, **`checkpointVerdicts` omitted**, **`stateRelation: "not_established"`**, CLI exit **2**, stderr headline **`LangGraph checkpoint trust: ineligible`** (exact substring).
+Otherwise the run is **ineligible**: **no SQL** and **no database connection** (certificate-only path), one Outcome Certificate on stdout with **`runKind: "contract_sql_langgraph_checkpoint_trust"`**, **`steps: []`**, **`checkpointVerdicts` omitted**, **`stateRelation: "not_established"`**, CLI exit **2**, stderr headline **`LangGraph checkpoint trust: ineligible`** (exact substring).
 
 Pure function: **`classifyLangGraphCheckpointTrustEligibility`** in [`src/langGraphCheckpointTrustGate.ts`](../src/langGraphCheckpointTrustGate.ts).
 

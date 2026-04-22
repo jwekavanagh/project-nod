@@ -1,17 +1,20 @@
 import { randomUUID } from "node:crypto";
 import { readFileSync } from "node:fs";
 import path from "node:path";
-import { parseBatchVerifyCliArgs } from "../cliArgv.js";
+import { parseBatchVerifyCliArgs, type ParsedBatchVerifyCli } from "../cliArgv.js";
 import {
   CLI_OPERATIONAL_CODES,
   cliErrorEnvelope,
   formatOperationalMessage,
 } from "../failureCatalog.js";
-import { runLangGraphCheckpointTrustBatchVerifyToTerminalResult } from "../langGraphCheckpointTrustBatch.js";
-import { eventsFileHasSchemaV3ToolObservedForWorkflow } from "../loadEvents.js";
+import {
+  classifyLangGraphCheckpointTrustEligibility,
+} from "../langGraphCheckpointTrustGate.js";
+import { validatedLangGraphIneligibleCertificate } from "../langGraphCheckpointTrustIneligibleCertificate.js";
+import { eventsFileHasSchemaV3ToolObservedForWorkflow, loadEventsForWorkflow } from "../loadEvents.js";
 import { verifyWorkflow } from "../pipeline.js";
 import { TruthLayerError } from "../truthLayerError.js";
-import type { WorkflowResult } from "../types.js";
+import type { LoadEventsResult, WorkflowResult } from "../types.js";
 import { writeRunBundleCli } from "../writeRunBundleCli.js";
 import { runLicensePreflightIfNeeded } from "../commercial/licensePreflight.js";
 import { postVerifyOutcomeBeacon } from "../commercial/postVerifyOutcomeBeacon.js";
@@ -21,6 +24,13 @@ import { formatDistributionFooter } from "../distributionFooter.js";
 import { maybeEmitOssClaimTicketUrlToStderr } from "../telemetry/maybeEmitOssClaimTicketUrl.js";
 import { classifyWorkflowLineage } from "../funnel/workflowLineageClassify.js";
 import { postProductActivationEvent } from "../telemetry/postProductActivationEvent.js";
+import {
+  buildOutcomeCertificateLangGraphCheckpointTrustFromWorkflowResult,
+  type OutcomeCertificateV1,
+} from "../outcomeCertificate.js";
+import { loadSchemaValidator } from "../schemaLoad.js";
+import { postPublicVerificationReport } from "../shareReport/postPublicVerificationReport.js";
+import { verifyRunStateFromBufferedRunEvents } from "../verifyRunStateFromBufferedRunEvents.js";
 import {
   CLI_EXITED_AFTER_ERROR,
   emitOutcomeCertificateCliAndExitByStateRelation,
@@ -48,7 +58,7 @@ export async function runBatchVerifyWithTelemetrySubcommand(
     stderrAppendBeforeStdout?: (result: WorkflowResult) => void;
   },
 ): Promise<void> {
-  let parsedBatch;
+  let parsedBatch: ParsedBatchVerifyCli;
   try {
     parsedBatch = parseBatchVerifyCliArgs(batchArgs);
   } catch (e) {
@@ -126,45 +136,38 @@ export async function runBatchVerifyWithTelemetrySubcommand(
       process.exit(code);
     },
   };
-  try {
-    const { certificate, workflowResult } = await runStandardVerifyWorkflowCliToTerminalResult({
-      shareReportOrigin: parsedBatch.shareReportOrigin,
-      runVerify: parsedBatch.langgraphCheckpointTrust
-        ? undefined
-        : () =>
-            verifyWorkflow({
-              workflowId: parsedBatch.workflowId,
-              eventsPath: parsedBatch.eventsPath,
-              registryPath: parsedBatch.registryPath,
-              database: parsedBatch.database,
-              verificationPolicy: parsedBatch.verificationPolicy,
-              truthReport: () => {},
-            }),
-      runVerifyWithCertificate: parsedBatch.langgraphCheckpointTrust
-        ? () =>
-            runLangGraphCheckpointTrustBatchVerifyToTerminalResult({
-              workflowId: parsedBatch.workflowId,
-              eventsPath: parsedBatch.eventsPath,
-              registryPath: parsedBatch.registryPath,
-              database: parsedBatch.database,
-              verificationPolicy: parsedBatch.verificationPolicy,
-              truthReport: () => {},
-              logStep: () => {},
-            })
-        : undefined,
-      maybeWriteBundle:
-        parsedBatch.writeRunBundleDir === undefined
-          ? undefined
-          : (wfResult: WorkflowResult) =>
-              writeRunBundleCli(
-                parsedBatch.writeRunBundleDir!,
-                readFileSync(path.resolve(parsedBatch.eventsPath)),
-                wfResult,
-                parsedBatch.signPrivateKeyPath,
-              ),
-      io: batchIo,
-    });
-    if (!parsedBatch.noHumanReport && parsedBatch.shareReportOrigin === undefined) {
+
+  const projectRoot = path.resolve(process.cwd());
+
+  async function finishCertificateTelemetryAndExit(
+    certificate: OutcomeCertificateV1,
+    workflowResultForStderrHook: WorkflowResult | undefined,
+    humanAndShareMode: "afterStandardRunner" | "ineligibleCertificateOnly",
+  ): Promise<void> {
+    if (humanAndShareMode === "ineligibleCertificateOnly") {
+      const shareOrigin = parsedBatch.shareReportOrigin;
+      if (shareOrigin !== undefined) {
+        const shareRes = await postPublicVerificationReport(shareOrigin, {
+          schemaVersion: 2,
+          certificate,
+        });
+        if (!shareRes.ok) {
+          writeCliError(
+            CLI_OPERATIONAL_CODES.SHARE_REPORT_FAILED,
+            formatOperationalMessage(
+              `share_report_origin=${shareOrigin} http_status=${String(shareRes.status)} detail=${shareRes.bodySnippet}`,
+            ),
+          );
+          batchIo.exit(3);
+          throw new Error(CLI_EXITED_AFTER_ERROR);
+        }
+        if (!parsedBatch.noHumanReport) {
+          batchIo.stderrLine(`${certificate.humanReport}\n${formatDistributionFooter()}`);
+        }
+      } else if (!parsedBatch.noHumanReport) {
+        process.stderr.write(`${certificate.humanReport}\n${formatDistributionFooter()}\n`);
+      }
+    } else if (!parsedBatch.noHumanReport && parsedBatch.shareReportOrigin === undefined) {
       process.stderr.write(`${certificate.humanReport}\n${formatDistributionFooter()}\n`);
     }
     const terminalStatus = terminalStatusFromCertificate(certificate);
@@ -194,8 +197,94 @@ export async function runBatchVerifyWithTelemetrySubcommand(
       workload_class: batchWorkloadClass,
       subcommand: opts.telemetrySubcommand,
     });
-    opts.stderrAppendBeforeStdout?.(workflowResult);
+    if (workflowResultForStderrHook !== undefined) {
+      opts.stderrAppendBeforeStdout?.(workflowResultForStderrHook);
+    }
     emitOutcomeCertificateCliAndExitByStateRelation(certificate, batchIo);
+  }
+
+  let langGraphEligibleLoad: LoadEventsResult | undefined;
+  if (parsedBatch.langgraphCheckpointTrust) {
+    const load = loadEventsForWorkflow(parsedBatch.eventsPath, parsedBatch.workflowId);
+    const eligibility = classifyLangGraphCheckpointTrustEligibility({
+      runLevelReasons: load.runLevelReasons,
+      toolObservedEvents: load.events,
+    });
+    if (!eligibility.eligible) {
+      try {
+        const certificate = validatedLangGraphIneligibleCertificate(
+          parsedBatch.workflowId,
+          eligibility.certificateReasons,
+        );
+        await finishCertificateTelemetryAndExit(certificate, undefined, "ineligibleCertificateOnly");
+      } catch (e) {
+        if (e instanceof Error && e.message === CLI_EXITED_AFTER_ERROR) return;
+        throw e;
+      }
+      return;
+    }
+    langGraphEligibleLoad = load;
+  }
+
+  try {
+    const { certificate, workflowResult } = await runStandardVerifyWorkflowCliToTerminalResult({
+      shareReportOrigin: parsedBatch.shareReportOrigin,
+      runVerify: parsedBatch.langgraphCheckpointTrust
+        ? undefined
+        : () =>
+            verifyWorkflow({
+              workflowId: parsedBatch.workflowId,
+              eventsPath: parsedBatch.eventsPath,
+              registryPath: parsedBatch.registryPath,
+              database: parsedBatch.database,
+              verificationPolicy: parsedBatch.verificationPolicy,
+              truthReport: () => {},
+            }),
+      runVerifyWithCertificate: parsedBatch.langgraphCheckpointTrust
+        ? async () => {
+            const load = langGraphEligibleLoad!;
+            const workflowResult = await verifyRunStateFromBufferedRunEvents({
+              workflowId: parsedBatch.workflowId,
+              registryPath: parsedBatch.registryPath,
+              database: parsedBatch.database,
+              projectRoot,
+              bufferedRunEvents: load.runEvents,
+              runLevelReasons: load.runLevelReasons,
+              verificationPolicy: parsedBatch.verificationPolicy,
+              logStep: () => {},
+              truthReport: () => {},
+            });
+            const validateWf = loadSchemaValidator("workflow-result");
+            if (!validateWf(workflowResult)) {
+              throw new TruthLayerError(
+                CLI_OPERATIONAL_CODES.WORKFLOW_RESULT_SCHEMA_INVALID,
+                JSON.stringify(validateWf.errors ?? []),
+              );
+            }
+            const certificate = buildOutcomeCertificateLangGraphCheckpointTrustFromWorkflowResult(workflowResult);
+            const validateCert = loadSchemaValidator("outcome-certificate-v1");
+            if (!validateCert(certificate)) {
+              throw new TruthLayerError(
+                CLI_OPERATIONAL_CODES.WORKFLOW_RESULT_SCHEMA_INVALID,
+                JSON.stringify(validateCert.errors ?? []),
+              );
+            }
+            return { workflowResult, certificate };
+          }
+        : undefined,
+      maybeWriteBundle:
+        parsedBatch.writeRunBundleDir === undefined
+          ? undefined
+          : (wfResult: WorkflowResult) =>
+              writeRunBundleCli(
+                parsedBatch.writeRunBundleDir!,
+                readFileSync(path.resolve(parsedBatch.eventsPath)),
+                wfResult,
+                parsedBatch.signPrivateKeyPath,
+              ),
+      io: batchIo,
+    });
+    await finishCertificateTelemetryAndExit(certificate, workflowResult, "afterStandardRunner");
   } catch (e) {
     if (e instanceof Error && e.message === CLI_EXITED_AFTER_ERROR) return;
     throw e;

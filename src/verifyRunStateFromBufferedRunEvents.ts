@@ -25,7 +25,7 @@ export type VerifyRunStateFromBufferedRunEventsInput = {
 
 /**
  * Single shared path: buffered run events + registry + DB → `WorkflowResult`.
- * Used by `createDecisionGate` and `createLangGraphCheckpointTrustGate` (eligible path).
+ * Used by `createDecisionGate` and `createLangGraphCheckpointTrustGate.runCheckpointTrust` (eligible path only).
  */
 export async function verifyRunStateFromBufferedRunEvents(
   input: VerifyRunStateFromBufferedRunEventsInput,

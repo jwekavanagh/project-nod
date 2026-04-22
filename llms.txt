@@ -96,6 +96,7 @@ State verification engine: read-only SQL checks that database state matches expe
 - https://agentskeptic.com/guides/verify-langgraph-workflows
 
 ## Indexable examples
+- https://agentskeptic.com/examples/langgraph-checkpoint-trust
 - https://agentskeptic.com/examples/wf-complete
 - https://agentskeptic.com/examples/wf-missing
 

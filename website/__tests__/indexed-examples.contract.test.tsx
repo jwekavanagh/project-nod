@@ -54,4 +54,11 @@ describe("indexed examples", () => {
     expect(container.textContent).toContain("ROW_ABSENT");
     expect(container.querySelector('[data-testid="verification-report-embed"]')).toBeTruthy();
   });
+
+  it("langgraph-checkpoint-trust surface shows checkpoint trust embed", () => {
+    const surface = readSurfaceFile("examples", "langgraph-checkpoint-trust");
+    const { container } = render(<DiscoverySurfacePage surface={surface} /> as ReactElement);
+    expect(container.textContent).toContain("LangGraph checkpoint trust");
+    expect(container.querySelector('[data-testid="verification-report-embed"]')).toBeTruthy();
+  });
 });

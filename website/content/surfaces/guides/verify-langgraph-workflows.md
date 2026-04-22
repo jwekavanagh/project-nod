@@ -12,9 +12,11 @@ evaluatorLens: false
 
 # Verify LangGraph workflows against your database
 
+**See a verified certificate on-site:** open **[`/examples/langgraph-checkpoint-trust`](/examples/langgraph-checkpoint-trust)** for a captured B-row Outcome Certificate (checkpoint verdicts, `runKind: contract_sql_langgraph_checkpoint_trust`) before reading any GitHub SSOT.
+
 **Integrator primacy:** the minimal LangGraph emitter and copy-paste verify commands live in **[`examples/langgraph-reference/README.md`](https://github.com/jwekavanagh/agentskeptic/blob/main/examples/langgraph-reference/README.md)** with generated **[`docs/partner-quickstart-commands.md`](https://github.com/jwekavanagh/agentskeptic/blob/main/docs/partner-quickstart-commands.md)** (LangGraph reference section).
 
-**Authoritative behavior** for LangGraph checkpoint trust (v3 wire, CLI flag, terminal rows A1–D, production gate, shared kernel with the decision gate) lives in the repository SSOT **[`docs/langgraph-checkpoint-trust-ssot.md`](https://github.com/jwekavanagh/agentskeptic/blob/main/docs/langgraph-checkpoint-trust-ssot.md)** — this page is a **stub** so guides stay navigable without duplicating normative tables.
+**Authoritative behavior** for LangGraph checkpoint trust (v3 wire, CLI flag, terminal rows A1–D, production gate, shared kernel with the decision gate) lives in the repository SSOT **[`docs/langgraph-checkpoint-trust-ssot.md`](https://github.com/jwekavanagh/agentskeptic/blob/main/docs/langgraph-checkpoint-trust-ssot.md)** — normative tables stay there; this guide links experience and law.
 
 **Documentation boundaries** (what belongs in which doc): [`docs/langgraph-reference-boundaries-ssot.md`](https://github.com/jwekavanagh/agentskeptic/blob/main/docs/langgraph-reference-boundaries-ssot.md).
 

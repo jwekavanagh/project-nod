@@ -20,7 +20,7 @@ const surfaceFrontmatterSchema = z
     evaluatorLens: z.boolean(),
     guideJob: z.enum(["problem", "implementation"]).optional(),
     symptomLead: z.string().optional(),
-    embedKey: z.enum(["wf_complete", "wf_missing"]).optional(),
+    embedKey: z.enum(["wf_complete", "wf_missing", "langgraph_checkpoint_trust"]).optional(),
   })
   .superRefine((data, ctx) => {
     if (data.surfaceKind === "comparison") {
