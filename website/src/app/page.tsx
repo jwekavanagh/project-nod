@@ -73,7 +73,11 @@ export default function HomePage() {
               </Link>
             </p>
             <p className="muted" data-testid="home-guarantee-footnote">
-              {productCopy.guaranteeFootnote}
+              {productCopy.guaranteeFootnote}{" "}
+              <Link href={marketing.slug} data-testid="home-guarantee-product-brief-link">
+                {productCopy.guaranteeProductBriefCtaLabel}
+              </Link>
+              .
             </p>
           </div>
           <div className="home-hero-terminal" data-testid="home-hero-terminal">
@@ -121,11 +125,13 @@ export default function HomePage() {
             <li key={t}>{t}</li>
           ))}
         </ul>
-        <ul>
-          {productCopy.homeStakes.stakesBullets.map((t) => (
-            <li key={t}>{t}</li>
-          ))}
-        </ul>
+        {productCopy.homeStakes.stakesBullets.length > 0 ? (
+          <ul>
+            {productCopy.homeStakes.stakesBullets.map((t) => (
+              <li key={t}>{t}</li>
+            ))}
+          </ul>
+        ) : null}
       </section>
     ),
     howItWorks: (
@@ -142,15 +148,6 @@ export default function HomePage() {
             <li key={item.slice(0, 48)}>{item}</li>
           ))}
         </ol>
-        <p className="muted">
-          <Link href="/examples/wf-missing">{productCopy.howItWorks.exampleWfMissingLabel}</Link>
-          {" · "}
-          <Link href={marketing.slug}>{productCopy.howItWorks.acquisitionDepthLinkLabel}</Link>
-          {" · "}
-          <Link href="/security">Security & Trust</Link>
-          {" · "}
-          <Link href="/compare">{productCopy.howItWorks.compareApproachesLabel}</Link>
-        </p>
       </section>
     ),
     fitAndLimits: (
@@ -161,13 +158,13 @@ export default function HomePage() {
         aria-labelledby="fit-limits-heading"
       >
         <h2 id="fit-limits-heading">{productCopy.fitAndLimits.sectionTitle}</h2>
-        <h3>For you</h3>
+        <h3>{productCopy.fitAndLimits.forYouHeading}</h3>
         <ul>
           {productCopy.forYou.map((t) => (
             <li key={t}>{t}</li>
           ))}
         </ul>
-        <h3>Not for you</h3>
+        <h3>{productCopy.fitAndLimits.notForYouHeading}</h3>
         <ul>
           {productCopy.notForYou.map((t) => (
             <li key={t}>{t}</li>

@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "slug": "/database-truth-vs-traces",
-  "identityOneLiner": "Read-only SQL checks of tool activity at verify time—not trace color.",
+  "identityOneLiner": "Read-only tool checks at verify time—not color.",
   "productionCanonicalOrigin": "https://agentskeptic.com",
   "gitRepositoryUrl": "https://github.com/jwekavanagh/agentskeptic",
   "gitRepositoryGitUrl": "git+https://github.com/jwekavanagh/agentskeptic.git",
@@ -9,20 +9,20 @@
   "bugsUrl": "https://github.com/jwekavanagh/agentskeptic/issues",
   "keywords": ["agentskeptic", "verification", "database", "read-only", "agent", "workflow"],
   "readmeTitle": "AgentSkeptic — state vs trace",
-  "heroTitle": "Your trace says success. Persisted state is the verdict.",
-  "heroSubtitle": "Check read-only state vs registries—not a green trace alone.",
-  "visitorProblemAnswer": "Wrong data beats a green run. Read-only state is match or miss—use before ship or compliance.",
-  "heroOutcome": "Traces lie. Your database is the verdict.",
-  "heroMechanism": "Read-only SQL at verify time: declared tool activity vs your stores—not trace color.",
-  "guaranteeFootnote": "Read-only at verification time; not proof which call wrote data. https://github.com/jwekavanagh/agentskeptic/blob/main/docs/verification-product-ssot.md",
+  "heroTitle": "Trust reality, not traces.",
+  "heroSubtitle": "Read-only state vs what you declared—not a green trace alone.",
+  "visitorProblemAnswer": "Green runs are not the same as correct data. Check read-only before ship, bill, or compliance.",
+  "heroOutcome": "Traces say success. Your actual data does not.",
+  "heroMechanism": "Read-only checks at verify time: what tools claimed vs. what actually exists.",
+  "guaranteeFootnote": "Read-only at verify time; not proof which call or step caused a write.",
   "siteDefaultMetadata": {
     "title": "AgentSkeptic",
-    "description": "Verify persisted state vs tool claims—read-only."
+    "description": "Tool claims vs read-only state."
   },
   "homepageAcquisitionCtaLabel": "Product brief",
   "pageMetadata": {
-    "title": "Database truth vs traces",
-    "description": "Read-only checks vs stores—VERIFIED or inconsistent."
+    "title": "Traces vs state",
+    "description": "Read-only checks—VERIFIED or inconsistent."
   },
   "readmeFold": {
     "templateLines": [
@@ -49,12 +49,12 @@
     "{{ORIGIN}}/"
   ],
   "r2": {
-    "frameworkMaturity": "CrewAI: ready. AutoGen: experimental. See python/FRAMEWORK_LOCK.md"
+    "frameworkMaturity": "CrewAI: ready. AutoGen: experimental. See repo FRAMEWORK_LOCK.md"
   },
   "site": {
     "integrate": {
       "title": "Get started",
-      "description": "Node 22+, read-only DB, NDJSON, tools.json. Command on /integrate; runbooks on GitHub."
+      "description": "Node 22+, store access, NDJSON, tools.json. One command on /integrate."
     },
     "openGraph": {
       "image": {
@@ -66,8 +66,8 @@
     },
     "pricing": {
       "heroTitle": "Pricing",
-      "positioning": "Do not ship “success” on bad persisted state.",
-      "subtitle": "Plans below. Read limits before checkout."
+      "positioning": "Do not ship success on bad state.",
+      "subtitle": "Plans below. Read limits at checkout."
     },
     "home": {},
     "security": {
@@ -85,70 +85,70 @@
   },
   "integratePage": {
     "packLedCommand": "npx agentskeptic crossing --workflow-id YOUR_WORKFLOW_ID --events ./path/to/events.ndjson --registry ./path/to/tools.json --db ./path/to/readable.sqlite",
-    "proofLine": "Declared activity matched read-only state for that workflow and registry on this run.",
+    "proofLine": "Activity and read-only state matched for that run.",
     "githubDeepLink": "https://github.com/jwekavanagh/agentskeptic/blob/main/docs/crossing-normative.md",
     "githubFirstRunLink": "https://github.com/jwekavanagh/agentskeptic/blob/main/docs/first-run-integration.md",
     "requirements": [
       "Node 22+",
-      "Read-only DB URL",
+      "Read-only access to a queryable store",
       "NDJSON + tools.json",
       "Not causal proof; read-only verify only"
     ]
   },
-  "briefProblem": "Claims vs read-only data; ROW_ABSENT when missing. Same demo as the site.",
+  "briefProblem": "Claims vs read-only; ROW_ABSENT. Same as site demo.",
   "briefSections": [
     {
       "heading": "More",
-      "body": "Footer and GitHub: CI, commercial limits, more."
+      "body": "Footer, CI, commercial links."
     }
   ],
   "homeWhatCatches": {
-    "sectionTitle": "Catches",
+    "sectionTitle": "What it catches",
     "bullets": [
-      "`ROW_ABSENT`: implied write; no row in read-only SQL.",
-      "Registry-bound claim; row value or presence fails.",
-      "Green step; persisted row still wrong."
+      "Tool claimed a write; store missing it or still wrong.",
+      "Green steps; state lags, partial, or wrong.",
+      "You still ship, bill, and report success."
     ]
   },
   "mechanism": {
     "title": "How",
     "intro": "Three steps each run.",
     "items": [
-      "Emit structured tool lines (e.g. NDJSON).",
-      "Map tool IDs to checks in `tools.json`.",
-      "Verify at the gate: JSON or exit—not trace color."
+      "Emit structured tool activity (e.g. NDJSON).",
+      "Map tool IDs in `tools.json` to your registries and stores.",
+      "Run read-only verification: JSON or exit code—not trace color."
     ],
-    "notObservability": "State vs claims; not logs or APM."
+    "notObservability": "State vs. claims; not log search or APM."
   },
   "homeStakes": {
-    "sectionTitle": "When the row disagrees",
-    "stakesTagline": "Trust follows the row—revenue, compliance, customers.",
+    "sectionTitle": "The cost of the gap",
+    "stakesTagline": "Revenue, compliance, incidents: wrong when trace and data disagree.",
     "tensionBullets": [
-      "Story says success.",
-      "Row missing, late, or wrong.",
-      "You still ship or bill."
+      "The run looks successful.",
+      "The store does not back the story.",
+      "Work continues on a bad read."
     ],
-    "stakesBullets": ["Revenue", "Audit", "Incidents"]
+    "stakesBullets": []
   },
   "homeClosing": {
     "sectionTitle": "Next",
-    "subtitle": "Verify read-only, then ship."
+    "subtitle": "Verify, then ship."
   },
   "buyerFit": {
     "forYou": [
-      "Structured tool lines exist.",
-      "Read-only queries are possible.",
-      "Green traces have lied before."
+      "You emit structured tool output.",
+      "You have store-backed systems: SQL, S3, vectors, Mongo, HTTP, and similar.",
+      "Green has hidden bad state before."
     ],
     "notForYou": [
-      "No DB to check.",
-      "Need causal proof of a specific call.",
-      "Want APM or log search as a swap-in."
+      "Unstructured logs only, nothing to query.",
+      "You need causal proof of a specific write.",
+      "You want a full APM or log product swap."
     ]
   },
   "problemIndex": [
     {
-      "moment": "Green trace, bad row",
+      "moment": "Green trace, bad data",
       "primaryRoute": "/guides/trace-green-postgres-row-missing",
       "relatedRoutes": ["/integrate", "/database-truth-vs-traces"]
     },
@@ -158,12 +158,12 @@
       "relatedRoutes": ["/integrate", "/pricing"]
     },
     {
-      "moment": "CI green, no DB write",
+      "moment": "CI green, no write",
       "primaryRoute": "/guides/ci-green-logs-row-absent",
       "relatedRoutes": ["/guides/ci-green-missing-database-side-effect", "/integrate"]
     },
     {
-      "moment": "Pre-prod SQL gate",
+      "moment": "Pre-prod read-only gate",
       "primaryRoute": "/guides/pre-production-read-only-sql-gate",
       "relatedRoutes": ["/integrate", "/pricing"]
     },
@@ -173,12 +173,12 @@
       "relatedRoutes": ["/database-truth-vs-traces"]
     },
     {
-      "moment": "Params vs DB",
+      "moment": "Params vs store",
       "primaryRoute": "/guides/automation-success-database-mismatch",
       "relatedRoutes": ["/integrate"]
     },
     {
-      "moment": "LangGraph row check",
+      "moment": "LangGraph data check",
       "primaryRoute": "/guides/debug-postgres-after-langgraph",
       "relatedRoutes": ["/guides/verify-langgraph-workflows", "/integrate"]
     },
@@ -194,8 +194,8 @@
     }
   ],
   "llms": {
-    "intentPhrases": ["trace ok db not", "read-only verify", "ROW_ABSENT"],
-    "notFor": ["logs only", "HTTP proof", "no DB"],
-    "relatedQueries": ["langgraph row", "agent verify sql", "trace vs db"]
+    "intentPhrases": ["trace ok data not", "read-only verify", "ROW_ABSENT"],
+    "notFor": ["logs only", "HTTP proof", "no store"],
+    "relatedQueries": ["langgraph check", "agent verify", "trace vs data"]
   }
 }

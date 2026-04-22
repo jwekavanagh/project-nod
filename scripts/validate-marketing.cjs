@@ -79,8 +79,8 @@ function validateMarketingValue(m) {
   if (!g.toLowerCase().includes("read-only")) {
     throw new Error("marketing: guaranteeFootnote must mention read-only");
   }
-  if (!g.includes("https://github.com/")) {
-    throw new Error("marketing: guaranteeFootnote must include a GitHub https URL");
+  if (g.includes("https://github.com/") || g.includes("http://github.com/")) {
+    throw new Error("marketing: guaranteeFootnote must not include a GitHub URL (site-local copy only)");
   }
   if (g.toLowerCase().includes("causality")) {
     throw new Error("marketing: guaranteeFootnote must not contain the word causality");

@@ -1,11 +1,7 @@
 /** Single source for homepage, pricing recap, sign-in framing, and test ids. */
 
 import marketing from "@/lib/marketing";
-import {
-  HOME_COMMERCIAL_STRIP_LEAD,
-  METERING_CLARIFIER,
-  SECURITY_QUICK_VS_CONTRACT_BULLET,
-} from "@/content/marketingContracts";
+import { METERING_CLARIFIER, SECURITY_QUICK_VS_CONTRACT_BULLET } from "@/content/marketingContracts";
 
 export type InternalHref = "/security" | "/support" | "/pricing" | "/privacy" | "/terms" | "/integrate";
 
@@ -223,8 +219,10 @@ export const productCopy = {
   heroOutcome: marketing.heroOutcome,
   /** Homepage hero: one-line mechanism. */
   heroMechanism: marketing.heroMechanism,
-  /** Muted footnote under hero: read-only, non-causal, link. */
+  /** Muted footnote under hero: read-only, non-causal; pair with on-site `Product brief` link in page.tsx. */
   guaranteeFootnote: marketing.guaranteeFootnote,
+  /** CTA for internal link on `guaranteeFootnote` (no raw GitHub URLs in hero). */
+  guaranteeProductBriefCtaLabel: "Product brief",
 
   /** Learn hub (`/guides`) first line under H1 (UI-only). */
   learnHubPrimaryLede: "Short reads for runs that looked fine until you checked the database.",
@@ -303,6 +301,8 @@ export const productCopy = {
 
   fitAndLimits: {
     sectionTitle: "Fit and limits",
+    forYouHeading: "Who it's for",
+    notForYouHeading: "Who it's not for",
   },
 
   homepageAcquisitionCta: {
@@ -361,11 +361,11 @@ export const productCopy = {
   guarantees: {
     title: "What is guaranteed (and what is not)",
     guaranteed: [
-      "Verdicts are based on read-only SQL against your DB at verification time, under your registry rules.",
-      "Same inputs and DB snapshot yield the same deterministic result shape (schema-versioned JSON).",
+      "Verdicts use read-only checks against your stores at verification time, under your registry rules.",
+      "Same inputs and store snapshot yield the same deterministic result shape (schema-versioned JSON).",
     ],
     notGuaranteed: [
-      "Not proof that a tool executed, committed, or caused a row—only that state did or did not match expectations when checked.",
+      "Not proof a tool caused a specific write—only that observed state did or did not match expectations when checked.",
     ],
   },
 
@@ -375,7 +375,7 @@ export const productCopy = {
     introHeroEmbed: "Pick a scenario and run—the same verification engine as the open-source CLI, on bundled fixtures.",
     /** Shown above the run control so failures feel intentional, not random. */
     preButtonFraming:
-      "Tip: choose the missing-row scenario (wf_missing)—verification fails with ROW_ABSENT when the log implies a write read-only SQL does not find.",
+      "Tip: use the missing write scenario (wf_missing)—`ROW_ABSENT` when the log implies a write the store does not show.",
     runButton: HOME_TRY_IT_RUN_BUTTON_LABEL,
     running: "Running…",
     scenarioLabel: "Scenario",
@@ -476,8 +476,11 @@ export const productCopy = {
   commercialSurface: {
     title: "What paid plans unlock",
     lead: METERING_CLARIFIER,
-    /** Homepage strip only — shorter than `lead` (METERING_CLARIFIER). */
-    homeStrip: HOME_COMMERCIAL_STRIP_LEAD,
+    /**
+     * Homepage: outcome-focused, no license URLs; sign-in and contracts still use `lead` (METERING_CLARIFIER).
+     */
+    homeStrip:
+      "Run verification in CI, enforce before deploy, and scale with included monthly quota. Local and open-source use stays free. In-process library use never calls the usage API.",
     compareApproachesLabel: "Compare approaches",
   },
 

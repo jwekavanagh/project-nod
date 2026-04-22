@@ -8,7 +8,7 @@ info:
     repository: https://github.com/jwekavanagh/agentskeptic
     npmPackage: https://www.npmjs.com/package/agentskeptic
     openApi: https://agentskeptic.com/openapi-commercial-v1.yaml
-  description: "Read-only SQL checks of tool activity at verify time—not trace color.\n\nMachine-readable contract for license preflight used by the published npm CLI.\nBase URL is your deployed app origin (same as NEXT_PUBLIC_APP_URL).\n"
+  description: "Read-only tool checks at verify time—not color.\n\nMachine-readable contract for license preflight used by the published npm CLI.\nBase URL is your deployed app origin (same as NEXT_PUBLIC_APP_URL).\n"
 externalDocs:
   description: "First-run integration guide"
   url: https://agentskeptic.com/integrate
