@@ -189,6 +189,98 @@ export const homeHeroSecondaryCta = {
   testId: "home-hero-get-started" as const,
 } as const;
 
+/** Deeper layer after the homepage: `/database-truth-vs-traces` (not in `config/marketing.json` word budget). */
+export const productBriefPage = {
+  metadata: {
+    title: "Product brief",
+    titleSuffix: "AgentSkeptic" as const,
+    description:
+      "Why green traces are not enough, how read-only checks work, production scenarios, and two bundled terminal examples—then Get started on your data.",
+  },
+  jsonLdHeadline: "Product brief: read-only verification of tool claims on your stores",
+  testIds: {
+    cta: "acquisition-cta-row" as const,
+  },
+  h1: "Product brief: read-only checks vs. what your tools report",
+  /** Placed after the `visitorProblemAnswer` line; exclusive to the Product brief. */
+  introParagraphs: [
+    "On the homepage you saw a failure slice and a no-account demo. This page is the second step: the production story, a plain-language loop, and the full success and failure transcripts side by side.",
+    "The product is not “another log line.” It adds a verification run that compares **structured tool activity** to **read-only views of your own stores** (SQL, vectors, object stores, document DBs, HTTP witnesses, and the rest of your registries) at a moment you control—before you ship, bill, or sign off in compliance.",
+  ],
+  sections: [
+    {
+      id: "problem" as const,
+      title: "The problem in production",
+      paragraphs: [
+        "Agents, workflows, and automations are easy to reason about as success/failure. Traces and step lists usually stop at “the tool said it worked,” not at “the customer’s record, ledger, or vector index actually shows the right value.”",
+        "The gap is not dishonest traces. It is **missing or late effects** in the place people trust for money and truth: the stored row, the ticket field, the inventory count, the reconciliation total.",
+      ],
+    },
+    {
+      id: "how" as const,
+      title: "How read-only verification works",
+      intro:
+        "One loop, one gate you run when you are ready. It is smaller than a second observability stack:",
+      steps: [
+        "Emit or collect **structured** lines for the tools and side effects you care about (commonly NDJSON) so a run is replayable in text, not a screenshot.",
+        "Point **tools.json** (and the rest of your registry) at the expectations: which tool IDs map to which read-only checks for which stores for this run.",
+        "Run **verification** against a read-only snapshot: you get a JSON outcome and a human-readable report, or a non-zero exit when something does not line up. That judgment is at verification time, not from trace color.",
+      ],
+    },
+    {
+      id: "scenarios" as const,
+      title: "What this can catch (production-shaped examples)",
+      intro:
+        "The engine is the same; the list below is how teams describe the mismatch when they land here from guides or the problems index. None of these is “traces are lying”—they are “success was declared before the world matched.”",
+      scenarios: [
+        {
+          name: "LangGraph and other orchestrators",
+          body: "After a graph run, checkpoint and trace look healthy while the **persisted** row or vector state you care about is missing or wrong—verify before you trust the handoff to billing or a customer.",
+        },
+        {
+          name: "CRM and ticket drift",
+          body: "The loop “closed the ticket” in the narrative; the **CRM** still shows the old status or the row never landed—read-only checks catch that before a customer sees it in production.",
+        },
+        {
+          name: "CI and deploy gates",
+          body: "Pipelines are green on logs while the **side effect** in the target store never shows up in time for release—treat verification as a gate, not a longer log search.",
+        },
+        {
+          name: "Webhooks, ledgers, and reconciliation (e.g. Stripe-style flows)",
+          body: "The HTTP callback was OK, but the **ledger or mirror** in your system of record is still off by one—compare declared activity to a read-only view, not to the last green step.",
+        },
+      ],
+    },
+    {
+      id: "who" as const,
+      title: "Who this is for (and the hard limits)",
+      forYou: {
+        label: "Use this when",
+        items: [
+          "You can get structured tool output and a read-only path to the stores in your registries on the same trust boundary you already use to ship.",
+          "You are willing to model expectations in a registry and run a verification when it matters, instead of re-processing raw logs in an ad-hoc way.",
+        ],
+      },
+      notForYou: {
+        label: "Not a fit when",
+        items: [
+          "You have **no** queryable store to check; unstructured logs only.",
+          "You need strict proof of **which network call** caused a write, not that state matched expectations when checked read-only.",
+          "You want a full replacement for APM or your log platform.",
+        ],
+      },
+    },
+  ],
+  terminal: {
+    beforeTitle: "Terminal proof: success and failure in one place",
+    intro: [
+      "The block below is the same bundled `wf_complete` and `wf_missing` text shipped with the project. Use it to show stakeholders what a **match** and a **ROW_ABSENT** style miss look like in your own vocabulary—without touching production in this read-only public copy.",
+    ],
+  },
+  disclaimer:
+    "Read-only checks at verification time; not proof of which call or step produced a specific write. That honesty line is the same on the homepage.",
+} as const;
+
 export const productCopy = {
   links: {
     cliQuickstart: `${marketing.gitRepositoryUrl}#try-it-about-one-minute`,
@@ -310,6 +402,8 @@ export const productCopy = {
     label: marketing.homepageAcquisitionCtaLabel,
     testId: "homepage-acquisition-cta" as const,
   },
+
+  productBriefPage,
 
   /** Security & Trust page — factual only; link out to normative docs for guarantees. */
   securityTrust: {

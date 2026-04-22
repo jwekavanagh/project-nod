@@ -1,4 +1,4 @@
-import { productCopy } from "@/content/productCopy";
+import { productBriefPage, productCopy } from "@/content/productCopy";
 import marketing from "@/lib/marketing";
 import {
   ensureMarketingSiteRunning,
@@ -39,9 +39,17 @@ describe("home vs brief exclusive content", { timeout: 180_000 }, () => {
     );
     const transcriptNeedle = "### Success (`wf_complete`)";
 
-    for (const h of marketing.briefSections) {
-      expect(briefText).toContain(h.heading);
-      expect(homeText).not.toContain(h.heading);
+    for (const s of productCopy.productBriefPage.sections) {
+      expect(briefText).toContain(s.title);
+      expect(homeText).not.toContain(s.title);
+    }
+    for (const line of productBriefPage.terminal.intro) {
+      const norm = normWs(line);
+      if (norm.length < 4) {
+        throw new Error("product brief terminal intro line too short for exclusivity");
+      }
+      expect(briefText).toContain(norm);
+      expect(homeText).not.toContain(norm);
     }
 
     expect(briefText).toContain(visitorNorm);

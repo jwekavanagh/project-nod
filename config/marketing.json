@@ -95,13 +95,8 @@
       "Not causal proof; read-only verify only"
     ]
   },
-  "briefProblem": "Claims vs read-only; ROW_ABSENT. Same as site demo.",
-  "briefSections": [
-    {
-      "heading": "More",
-      "body": "Footer, CI, commercial links."
-    }
-  ],
+  "briefProblem": "Claims vs read-only; ROW_ABSENT. Product brief page: depth.",
+  "briefSections": [],
   "homeWhatCatches": {
     "sectionTitle": "What it catches",
     "bullets": [
