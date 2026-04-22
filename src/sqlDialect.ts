@@ -10,7 +10,8 @@ export function quoteIdent(dialect: SqlRowDialect | RelationalSqlDialect, id: st
     return "[" + id.replace(/\]/g, "]]") + "]";
   }
   if (dialect === "bigquery") {
-    return "`" + id.replace(/`/g, "\\`") + "`";
+    // GoogleSQL delimited identifiers: escape ` by doubling (``).
+    return "`" + id.replace(/`/g, "``") + "`";
   }
   return `"${id.replace(/"/g, '""')}"`;
 }
@@ -19,7 +20,7 @@ export function quoteIdent(dialect: SqlRowDialect | RelationalSqlDialect, id: st
 export function quoteBigQueryTableId(full: string): string {
   const parts = full.split(".").filter(Boolean);
   if (parts.length === 0) return "`invalid`";
-  return parts.map((p) => "`" + p.replace(/`/g, "\\`") + "`").join(".");
+  return parts.map((p) => "`" + p.replace(/`/g, "``") + "`").join(".");
 }
 
 export function nextPlaceholderSqlRow(dialect: SqlRowDialect, n: number): string {
