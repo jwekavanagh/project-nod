@@ -6,10 +6,11 @@ This file is the **only** branding documentation added for the rebrand. Do not a
 
 | File | Purpose |
 |------|---------|
-| `website/public/brand/lockup.svg` | Header mark (navy `#0b1f33` + signal `#00c853`). Wordmark text lives in React (`BrandLockup`), not in this SVG. |
-| `website/public/og.png` | Open Graph raster, **1200×630**, background matches site `--bg` (see `export-og-from-lockup.cjs`). |
+| `website/public/brand/mark.png` | Square header + OG source mark (navy + signal green). Wordmark and tagline text live in React (`BrandLockup`) and on the OG composite. |
+| `website/src/app/icon.png` / `apple-icon.png` | Favicon + touch icon, rasterized from `mark.png` (regenerate if the mark file changes). |
+| `website/public/og.png` | Open Graph raster, **1200×630**: `mark.png` + wordmark (see `export-og-from-lockup.cjs`). |
 
-When either asset changes, update **both** SHA-256 constants in `website/__tests__/rebrand-assets.contract.test.ts` in the **same** commit.
+When `mark.png` or `og.png` changes, update the SHA-256 constants in `website/__tests__/rebrand-assets.contract.test.ts` in the **same** commit. After editing `mark.png`, re-run the OG script and, if the square dimensions change, regenerate `icon.png` / `apple-icon.png` from the new PNG.
 
 ## Canonical CSS tokens
 
@@ -28,6 +29,8 @@ Defined in `website/src/app/globals.css` inside the `:root` block (byte-pinned b
 | `--accent-contrast` | `#ffffff` | Text on solid accent buttons |
 | `--card` | `#ffffff` | Cards / inputs |
 | `--border` | `#d0d7e0` | Borders |
+| `--link` / `--link-hover` | `#1a4a6e` / `#0b1f33` | Default underlined text links in page content (nav/footer reset to `--fg` / accent) |
+| `--danger` / `--danger-bright` / `--danger-border` | `#b91c1c` / `#d92d20` + mix | Form errors, terminal failure hit color, error JSON border |
 | `--font-sans` | (Next `Inter` + fallbacks) | All UI typography |
 
 Ghost framing utility:

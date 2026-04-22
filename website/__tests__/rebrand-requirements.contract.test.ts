@@ -47,13 +47,13 @@ describe("rebrand requirements R1–R5", () => {
     expect(fold).toContain(HERO_TITLE);
   });
 
-  it("R2 surface-ghost in CSS and homepage; class appears in DOM", () => {
+  it("R2 surface-ghost utility + hero terminal (dashed) in CSS; terminal appears on homepage", () => {
     const css = readFileSync(path.join(__dirname, "..", "src", "app", "globals.css"), "utf8");
     expect(css).toContain(".surface-ghost {");
     expect(css).toContain("dashed");
-
+    expect(css).toContain(".home-hero-terminal");
     const pageSrc = readFileSync(path.join(__dirname, "..", "src", "app", "page.tsx"), "utf8");
-    expect(pageSrc).toMatch(/surface-ghost/);
+    expect(pageSrc).toMatch(/home-hero-terminal/);
   });
 
   it("R3 layout uses Inter; cutover covered by rebrand-cutover for DM_Sans", () => {
@@ -70,7 +70,7 @@ describe("rebrand requirements R1–R5", () => {
     expect(src).toContain("TRUST REALITY, NOT TRACES.");
     expect(src).toContain("brand-wordmark-agent");
     expect(src).toContain("brand-wordmark-skeptic");
-    expect(src).toContain('src="/brand/lockup.svg"');
+    expect(src).toContain('src="/brand/mark.png"');
     expect(src).toContain(">Agent</span>");
     expect(src).toContain(">Skeptic</span>");
   });

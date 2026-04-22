@@ -88,7 +88,7 @@ export default function HomePage() {
               </Link>
             </p>
           </div>
-          <div className="home-hero-terminal surface-ghost" data-testid="home-hero-terminal">
+          <div className="home-hero-terminal" data-testid="home-hero-terminal">
             <p className="home-hero-terminal-label muted">Bundled demo output (failure)</p>
             <p className="home-hero-verdict" aria-hidden="true">
               VERDICT: <span className="home-hero-verdict-failed">FAILED</span>

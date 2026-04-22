@@ -9,9 +9,14 @@ const ROOT_BLOCK = `:root {
   --fg: #0b1220;
   --muted: #5c6b7a;
   --brand-navy-ink: #0b1f33;
+  --link: #1a4a6e;
+  --link-hover: #0b1f33;
   --accent: #00c853;
   --accent-on-card: #007a3d;
   --accent-contrast: #ffffff;
+  --danger: #b91c1c;
+  --danger-bright: #d92d20;
+  --danger-border: color-mix(in srgb, var(--danger) 55%, #1f0a0a);
   --card: #ffffff;
   --border: #d0d7e0;
   /* Populated by next/font variable on <html> (see layout.tsx). */
