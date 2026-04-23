@@ -20,7 +20,7 @@ const individualPlan: PlanRow = {
   id: "individual",
   checkoutPlanId: "individual",
   headline: "Individual",
-  displayPrice: "$25/mo",
+  displayPrice: "$25/month",
   includedMonthly: 2000,
   audience: "Solo developers.",
   valueUnlock: "Licensed verify.",

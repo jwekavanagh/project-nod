@@ -218,6 +218,12 @@ main {
   margin-bottom: 0.65rem;
   color: var(--fg);
 }
+.pricing-page .pricing-unlock-before-plans {
+  margin-bottom: 0.15rem;
+}
+.pricing-page .pricing-unlock-before-plans + .pricing-plans-heading {
+  margin-top: 1.05rem;
+}
 .pricing-page .pricing-plans-heading {
   font-size: 1.2rem;
   margin: 1.35rem 0 0.65rem;

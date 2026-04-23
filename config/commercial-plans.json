@@ -8,34 +8,34 @@
       "displayPrice": "Free",
       "marketingHeadline": "Starter",
       "audience": "Evaluation and initial setup",
-      "valueUnlock": "Open-source and local runs stay completely free. Upgrade anytime for CI features.",
+      "valueUnlock": "Open-source and local runs stay completely free. Upgrade when you need CI enforcement and quotas.",
       "stripePriceEnvKey": null
     },
     "individual": {
       "includedMonthly": 2000,
       "monthlyUsdCents": 2500,
-      "displayPrice": "$25/mo",
+      "displayPrice": "$25/month",
       "marketingHeadline": "Individual",
       "audience": "Solo engineers running verification in CI",
-      "valueUnlock": "Run verification in CI and automatically fail builds on mismatch, with included monthly quota.",
+      "valueUnlock": "Verification in CI with licensed npm, locks, enforce, and included monthly quota.",
       "stripePriceEnvKey": "STRIPE_PRICE_INDIVIDUAL"
     },
     "team": {
       "includedMonthly": 10000,
       "monthlyUsdCents": 10000,
-      "displayPrice": "$100/mo",
+      "displayPrice": "$100/month",
       "marketingHeadline": "Team",
       "audience": "Teams sharing CI pipelines",
-      "valueUnlock": "Enforcement and quota for shared pipelines without constantly hitting the ceiling.",
+      "valueUnlock": "Same paid features with more monthly verifications for shared CI.",
       "stripePriceEnvKey": "STRIPE_PRICE_TEAM"
     },
     "business": {
       "includedMonthly": 50000,
       "monthlyUsdCents": 30000,
-      "displayPrice": "$300/mo",
+      "displayPrice": "$300/month",
       "marketingHeadline": "Business",
       "audience": "Multiple services and high-volume workflows",
-      "valueUnlock": "More monthly verifications when you run checks across several services or busy pipelines.",
+      "valueUnlock": "Higher quota when you verify across several services or busy pipelines.",
       "stripePriceEnvKey": "STRIPE_PRICE_BUSINESS"
     },
     "enterprise": {

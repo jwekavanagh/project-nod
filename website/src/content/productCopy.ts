@@ -198,7 +198,7 @@ export const pricingBillingAndQuestionsBand = {
   billingTitle: "Billing",
   billingParagraphs: [
     "Cancel anytime.",
-    "Subscribe with Stripe Checkout and manage your plan from your Account page.",
+    "Subscribe with Stripe Checkout and manage everything from your Account page.",
     "In-process library use never calls the usage API.",
   ],
   questionsTitle: "Questions?",
@@ -233,12 +233,14 @@ export const pricingHeroExample = pricingWhatYouGetPaidPlans;
 
 export const pricingPlansSectionTitle = "Plans";
 
+/** `<summary>` for expandable commercial terms on `/pricing`. */
+export const pricingCommercialTermsDetailsSummary = "Paid vs OSS — expand for full terms";
+
 export const pricingLocalVerificationFreeFootnote =
   "Local OSS verification remains free forever.";
 
-/** `/pricing` Starter card: `includedMonthly` is 0 (evaluation; no paid CLI allowance). */
-export const pricingCardStarterPaidQuotaCaption =
-  "Free tier — upgrade when you want paid CI features and monthly quota.";
+/** `/pricing` Starter card: optional line under price when `includedMonthly` is 0 (hidden when empty). */
+export const pricingCardStarterPaidQuotaCaption = "";
 
 /** Truthful guidance without implying existing customer mix. */
 export const pricingRecommendedPill = "For production CI";
@@ -668,6 +670,7 @@ export const productCopy = {
   pricingWhatYouGetPaidPlans,
   pricingHeroExample,
   pricingPlansSectionTitle,
+  pricingCommercialTermsDetailsSummary,
   pricingLocalVerificationFreeFootnote,
   pricingCardStarterPaidQuotaCaption,
   pricingRecommendedPill,

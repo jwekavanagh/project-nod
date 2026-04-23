@@ -113,18 +113,24 @@ export function PricingClient({
             )}
             <h2>{p.headline}</h2>
             <p className="pricing-card-price">{p.displayPrice}</p>
-            <p
-              className="pricing-card-quota muted"
-              data-included-monthly={p.includedMonthly ?? "custom"}
-            >
-              {p.id === "enterprise"
-                ? "Custom pricing and limits"
-                : p.includedMonthly === null
-                  ? "Custom"
-                  : p.includedMonthly === 0
-                    ? productCopy.pricingCardStarterPaidQuotaCaption
-                    : `${p.includedMonthly.toLocaleString()} verifications / month`}
-            </p>
+            {!(
+              p.id === "starter" &&
+              p.includedMonthly === 0 &&
+              productCopy.pricingCardStarterPaidQuotaCaption.length === 0
+            ) && (
+              <p
+                className="pricing-card-quota muted"
+                data-included-monthly={p.includedMonthly ?? "custom"}
+              >
+                {p.id === "enterprise"
+                  ? "Custom pricing and limits"
+                  : p.includedMonthly === null
+                    ? "Custom"
+                    : p.includedMonthly === 0
+                      ? productCopy.pricingCardStarterPaidQuotaCaption
+                      : `${p.includedMonthly.toLocaleString()} verifications / month`}
+              </p>
+            )}
             <p className="pricing-card-outcome muted">
               <strong>Best for:</strong> {p.audience}
             </p>

@@ -53,11 +53,8 @@ export default function PricingPage() {
         ) : null}
       </section>
 
-      <h2 className="pricing-plans-heading">{productCopy.pricingPlansSectionTitle}</h2>
-      <PricingClient plans={plans} enterpriseMailto={enterpriseMailto} />
-
       <section
-        className="pricing-example"
+        className="pricing-example pricing-unlock-before-plans"
         data-testid="pricing-what-you-get"
         aria-labelledby="pricing-what-you-get-title"
       >
@@ -74,10 +71,15 @@ export default function PricingPage() {
         </p>
       </section>
 
+      <h2 className="pricing-plans-heading">{productCopy.pricingPlansSectionTitle}</h2>
+      <PricingClient plans={plans} enterpriseMailto={enterpriseMailto} />
+
       <PricingCompareTable />
 
       <details className="pricing-commercial-details">
-        <summary className="pricing-commercial-details-summary">Commercial entitlement details</summary>
+        <summary className="pricing-commercial-details-summary">
+          {productCopy.pricingCommercialTermsDetailsSummary}
+        </summary>
         <ul aria-label="Commercial terms" className="muted pricing-commercial-terms">
           {PRICING_COMMERCIAL_TERMS_BULLETS.map((row) => (
             <li key={row.lead}>
