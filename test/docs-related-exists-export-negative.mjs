@@ -37,11 +37,11 @@ function walkFiles(dir, acc) {
 }
 
 describe("related_exists export SSOT docs + no stale limitation literal", () => {
-  it("verification-product-ssot and quick-verify-normative contain required phrases and no forbidden substrings", () => {
-    const product = readFileSync(join(root, "docs", "verification-product-ssot.md"), "utf8");
+  it("verification-product and quick-verify-normative contain required phrases and no forbidden substrings", () => {
+    const product = readFileSync(join(root, "docs", "verification-product.md"), "utf8");
     const quick = readFileSync(join(root, "docs", "quick-verify-normative.md"), "utf8");
     for (const s of FORBIDDEN_SUBSTRINGS) {
-      assert.equal(product.includes(s), false, `verification-product-ssot.md must not contain: ${s}`);
+      assert.equal(product.includes(s), false, `verification-product.md must not contain: ${s}`);
       assert.equal(quick.includes(s), false, `quick-verify-normative.md must not contain: ${s}`);
     }
     assert.ok(

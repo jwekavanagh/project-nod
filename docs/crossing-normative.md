@@ -9,7 +9,7 @@ This document is the **single normative source** for **`agentskeptic crossing`**
 ## Outcome and telemetry
 
 - **Outcome:** A qualified integrator completes **one** integrator-owned verification on non-bundled paths with the **same semantics** as the final phase of standalone **`agentskeptic verify-integrator-owned`** (same `WorkflowResult` schema and batch verify path).
-- **Product-activation telemetry** for that **final** phase uses the **`verify_integrator_owned`** subcommand discriminator (same as standalone **`verify-integrator-owned`**). See [`funnel-observability-ssot.md`](funnel-observability-ssot.md).
+- **Product-activation telemetry** for that **final** phase uses the **`verify_integrator_owned`** subcommand discriminator (same as standalone **`verify-integrator-owned`**). See [`funnel-observability.md`](funnel-observability.md).
 
 **Advanced / CI (not the default integrator story):** **`agentskeptic bootstrap`** and **`agentskeptic verify-integrator-owned`** remain supported; docs must not present standalone bootstrap exit 0 as sufficient “activation” without crossing or an explicit integrator-owned verify.
 
@@ -78,5 +78,5 @@ Hermetic **`crossing`** bootstrap-led against **commercial** `dist/cli.js` with 
 
 - Integrator-owned gate and bundled suffixes: [`agentskeptic.md`](agentskeptic.md) (**Integrator-owned gate**).
 - Bootstrap pack contract: [`bootstrap-pack-normative.md`](bootstrap-pack-normative.md).
-- Decision-ready ProductionComplete (A1–A5): [`adoption-epistemics-ssot.md`](adoption-epistemics-ssot.md#decision-ready-productioncomplete-normative).
+- Decision-ready ProductionComplete (A1–A5): [`adoption-epistemics.md`](adoption-epistemics.md#decision-ready-productioncomplete-normative).
 - Optional L0 clone spine (not crossing success): [`first-run-integration.md`](first-run-integration.md#integrate-spine-normative).

@@ -49,7 +49,7 @@ LangGraph checkpoint trust consumes **`schemaVersion: 3`** lines whose **`type`*
 
 - **TypeScript:** **`verifyRunStateFromBufferedRunEvents`** in [`src/verifyRunStateFromBufferedRunEvents.ts`](../src/verifyRunStateFromBufferedRunEvents.ts).
 - **Python:** `agentskeptic.kernel.verify_sqlite` (SQLite sync path; Postgres port is optional / behind extras).
-- **Other engines and witness kinds:** [`verification-state-stores-ssot.md`](verification-state-stores-ssot.md).
+- **Other engines and witness kinds:** [`verification-state-stores.md`](verification-state-stores.md).
 
 ### Batch / CLI (A2 short-circuit)
 
@@ -87,6 +87,6 @@ Otherwise the run is **ineligible**: **no SQL** and **no database connection** (
 
 ## Related SSOT
 
-- LangGraph **documentation** boundaries (authority matrix): [`langgraph-reference-boundaries-ssot.md`](langgraph-reference-boundaries-ssot.md)  
-- Decision gate vs batch: [`decision-gate-ssot.md`](decision-gate-ssot.md)  
+- LangGraph **documentation** boundaries (authority matrix): [`langgraph-reference-boundaries.md`](langgraph-reference-boundaries.md)  
+- Decision gate vs batch: [`decision-gate.md`](decision-gate.md)  
 - Outcome Certificate fields: [`outcome-certificate-normative.md`](outcome-certificate-normative.md)

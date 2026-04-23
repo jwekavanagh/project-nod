@@ -66,11 +66,11 @@ Required for the licensed website surface: **`DATABASE_URL`**, **`STRIPE_SECRET_
 
 Forward Stripe webhooks to **`/api/webhooks/stripe`** (local: `stripe listen --forward-to <BASE_URL>/api/webhooks/stripe`; use the printed secret as **`STRIPE_WEBHOOK_SECRET`**).
 
-Normative contracts (webhook event list, Checkout vs Billing Portal, account **`commercial-state`** and **`billing-portal`** routes, reserve **`BILLING_PRICE_UNMAPPED`**, emergency flag semantics): **[`docs/commercial-ssot.md`](../docs/commercial-ssot.md)** — *Commercial layer — single source of truth*.
+Normative contracts (webhook event list, Checkout vs Billing Portal, account **`commercial-state`** and **`billing-portal`** routes, reserve **`BILLING_PRICE_UNMAPPED`**, emergency flag semantics): **[`docs/commercial.md`](../docs/commercial.md)** — *Commercial layer — single source of truth*.
 
 **Website Vitest:** from the repo root, **`npm run validate-commercial`** enforces **`DATABASE_URL`**, runs migrate in **`website/`**, then full website Vitest, then **`scripts/pack-smoke-commercial.mjs`** and **`npm run build`** to restore OSS **`dist/`**.
 
-**Local integration DBs:** `vitest.setup.ts` loads **`website/.env`** when the file exists (same merge rule as **`scripts/db-migrate.mjs`**: only keys that are missing or empty in `process.env` are set). That way **`npm run verify:decision-readiness`** (and other DB-backed website suites) see **`DATABASE_URL`** and **`TELEMETRY_DATABASE_URL`** from your gitignored `.env` without pre-exporting them in the shell. **Production / hosted CI** keep using platform-injected env only (no `.env` on the server). Operator KPI SQL is defined only in **`docs/growth-metrics-ssot.md`** and is not executed by those Vitest gates.
+**Local integration DBs:** `vitest.setup.ts` loads **`website/.env`** when the file exists (same merge rule as **`scripts/db-migrate.mjs`**: only keys that are missing or empty in `process.env` are set). That way **`npm run verify:decision-readiness`** (and other DB-backed website suites) see **`DATABASE_URL`** and **`TELEMETRY_DATABASE_URL`** from your gitignored `.env` without pre-exporting them in the shell. **Production / hosted CI** keep using platform-injected env only (no `.env` on the server). Operator KPI SQL is defined only in **`docs/growth-metrics.md`** and is not executed by those Vitest gates.
 
 **`RESERVE_EMERGENCY_ALLOW=1`:** see SSOT — waives inactive-subscription checks only where documented; does not bypass **`BILLING_PRICE_UNMAPPED`**.
 

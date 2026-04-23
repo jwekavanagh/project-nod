@@ -5,9 +5,9 @@ import { describe, expect, it } from "vitest";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const repoRoot = join(__dirname, "..", "..");
-const growthSsoDocPath = join(repoRoot, "docs", "growth-metrics-ssot.md");
+const growthSsoDocPath = join(repoRoot, "docs", "growth-metrics.md");
 
-/** Every canonical metric section must have a following ```sql fence (see docs/growth-metrics-ssot.md). */
+/** Every canonical metric section must have a following ```sql fence (see docs/growth-metrics.md). */
 const CANONICAL_METRIC_IDS = [
   "ActiveInstalls_DistinctInstallId_VerifyStarted_Rolling7dUtc",
   "TimeToFirstVerifyOutcome_Seconds",
@@ -25,7 +25,7 @@ const BANNED_SUBSTRINGS_IN_GROWTH_SSOT = [
   "website/src/lib/growthMetrics",
   "growthMetricsSqlParity",
   "export:telemetry-daily-pack",
-  "telemetry-daily-pack-ssot.md",
+  "telemetry-daily-pack.md",
   "export-telemetry-daily-pack.mjs",
   "telemetry-daily-pack-sql.mjs",
   "telemetry-daily-pack-sql-contract",
@@ -52,12 +52,12 @@ const REQUIRED_WARNING_MARKERS = [
 const REQUIRED_CORE_RETENTION_MARKER =
   "**Core-tier metric (`DATABASE_URL` only):**";
 
-describe("growth-metrics-ssot.contract", () => {
+describe("growth-metrics.contract", () => {
   const md = readFileSync(growthSsoDocPath, "utf8");
 
   it("bans removed pipeline and mirror references in growth SSOT", () => {
     for (const s of BANNED_SUBSTRINGS_IN_GROWTH_SSOT) {
-      expect(md, `banned substring in growth-metrics-ssot: ${s}`).not.toContain(s);
+      expect(md, `banned substring in growth-metrics: ${s}`).not.toContain(s);
     }
   });
 

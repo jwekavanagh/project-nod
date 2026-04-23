@@ -5,7 +5,7 @@ Thanks for helping improve **agentskeptic**.
 ## Before you start
 
 - Read **[README.md](README.md)** for the product model and quickest demo (`npm start`).
-- Normative behavior and CLI contracts live in **[docs/agentskeptic.md](docs/agentskeptic.md)**; product and correctness boundaries in **[docs/verification-product-ssot.md](docs/verification-product-ssot.md)** and **[docs/correctness-definition-normative.md](docs/correctness-definition-normative.md)**.
+- Normative behavior and CLI contracts live in **[docs/agentskeptic.md](docs/agentskeptic.md)**; product and correctness boundaries in **[docs/verification-product.md](docs/verification-product.md)** and **[docs/correctness-definition-normative.md](docs/correctness-definition-normative.md)**.
 
 ## Development setup
 
@@ -28,7 +28,7 @@ Thanks for helping improve **agentskeptic**.
 
 ## Pull requests
 
-- **Public URLs, one-liner, and acquisition copy:** edit **[`config/marketing.json`](config/marketing.json)** only; run **`node scripts/validate-marketing.cjs`** (also executed by **`npm run check:primary-marketing`**). From **repo root** run **`npm run emit-primary-marketing`** (or **`npm run sync:public-product-anchors`**, the alias) and commit the derived artifacts: `schemas/openapi-commercial-v1.yaml`, root `package.json` fields, `llms.txt`, `src/publicDistribution.generated.ts`, and README marker regions. This matches [`docs/public-distribution-ssot.md`](docs/public-distribution-ssot.md). If you touch distribution surfaces, run **`npm run validate-commercial`** (requires Postgres **`DATABASE_URL`** and **`TELEMETRY_DATABASE_URL`** in `website/.env`) before opening a PR. If you change **`prepublishOnly`**, **`scripts/pack-smoke-commercial.mjs`**, or commercial codegen, also run **`npm run pack-smoke`** (or rely on **`validate-commercial`**, which includes it). Do not edit prose inside README sync markers by hand.
+- **Public URLs, one-liner, and acquisition copy:** edit **[`config/marketing.json`](config/marketing.json)** only; run **`node scripts/validate-marketing.cjs`** (also executed by **`npm run check:primary-marketing`**). From **repo root** run **`npm run emit-primary-marketing`** (or **`npm run sync:public-product-anchors`**, the alias) and commit the derived artifacts: `schemas/openapi-commercial-v1.yaml`, root `package.json` fields, `llms.txt`, `src/publicDistribution.generated.ts`, and README marker regions. This matches [`docs/public-distribution.md`](docs/public-distribution.md). If you touch distribution surfaces, run **`npm run validate-commercial`** (requires Postgres **`DATABASE_URL`** and **`TELEMETRY_DATABASE_URL`** in `website/.env`) before opening a PR. If you change **`prepublishOnly`**, **`scripts/pack-smoke-commercial.mjs`**, or commercial codegen, also run **`npm run pack-smoke`** (or rely on **`validate-commercial`**, which includes it). Do not edit prose inside README sync markers by hand.
 - Keep changes focused; match existing style and patterns in touched files.
 - If you change user-visible CLI behavior, stdout/stderr, or schemas, update the relevant **docs** and **tests** (many behaviors are guarded by doc-contract and golden tests).
 - Do not duplicate normative numbers or stream contracts in the README when they belong in `docs/quick-verify-normative.md` or `docs/agentskeptic.md`.
@@ -46,7 +46,7 @@ Thanks for helping improve **agentskeptic**.
 - **Marketing SSOT:** edit **`config/marketing.json`** (**`node scripts/validate-marketing.cjs`**; **`npm run check:primary-marketing`** or **`check:discovery-acquisition`** runs discovery + marketing validation).
 - **Site-only copy:** edit **`website/src/content/productCopy.ts`** for non-JSON UI strings (account, integrate shell, a11y, short labels). **Public commercial and pricing text** lives in **`website/src/lib/commercialNarrative.ts`** with numerics in **`config/commercial-plans.json`** (not duplicated in `productCopy`).
 - **Site IA (nav, Learn hub, sitemap, redirect):** canonical rules live in **`docs/website-product-experience.md`** and must stay consistent with **`website/src/lib/siteChrome.ts`** and **`website/src/app/sitemap.ts`**. The **`/guides`** Learn hub is **indexable** and listed in the sitemap; **`GET /examples`** (hub path only) **308** redirects to **`/guides`**.
-- **Sync:** after changing marketing JSON, run **`npm run emit-primary-marketing`** (or **`sync:public-product-anchors`**) from repo root and commit the regenerated artifacts listed in [`docs/public-distribution-ssot.md`](docs/public-distribution-ssot.md).
+- **Sync:** after changing marketing JSON, run **`npm run emit-primary-marketing`** (or **`sync:public-product-anchors`**) from repo root and commit the regenerated artifacts listed in [`docs/public-distribution.md`](docs/public-distribution.md).
 - **Gate:** before merging marketing changes, run **`npm run verify:web-marketing-copy`** so validation, visitor-outcome node tests, the website build, **`marketing-*.contract` tests**, and the full website Vitest suite (including **`docs-marketing-contract`**) all pass.
 
 ## GitHub Actions (operator)

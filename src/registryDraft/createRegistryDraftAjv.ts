@@ -20,7 +20,7 @@ const BOOTSTRAP_PACK_INPUT_ID = "https://agentskeptic.com/schemas/bootstrap-pack
 const TOOLS_REGISTRY_ID = "https://agentskeptic.com/schemas/tools-registry.schema.json";
 
 /**
- * Isolated AJV for registry-draft HTTP + tests. Registration order is normative (see docs/registry-draft-ssot.md).
+ * Isolated AJV for registry-draft HTTP + tests. Registration order is normative (see docs/registry-draft.md).
  */
 export function createRegistryDraftAjv(): InstanceType<typeof Ajv2020> {
   const ajv = new Ajv2020({ allErrors: true, strict: true, allowUnionTypes: true });

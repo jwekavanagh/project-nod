@@ -2,7 +2,7 @@
 
 Normative contract for **active discovery**: branded AgentSkeptic output appears inside **another repository’s** GitHub Actions run (job summary on every run; pull-request comment on verification failure only).
 
-**Licensing** for the published CLI is unchanged — see [`commercial-ssot.md`](commercial-ssot.md).
+**Licensing** for the published CLI is unchanged — see [`commercial.md`](commercial.md).
 
 ## Engineer
 

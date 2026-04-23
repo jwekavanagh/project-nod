@@ -71,7 +71,7 @@ pull — fetch a new funnel_anon_id from the canonical site and save it to
 ~/.agentskeptic/config.json for attributed product-activation telemetry.
 Requires AGENTSKEPTIC_FUNNEL_ANON_ID to be unset (CI proof mode).
 
-set — persist the browser-issued funnel anonymous id (see docs/funnel-observability-ssot.md).
+set — persist the browser-issued funnel anonymous id (see docs/funnel-observability.md).
 
 Optional override for operators: set AGENTSKEPTIC_FUNNEL_ANON_ID instead of using disk.
 

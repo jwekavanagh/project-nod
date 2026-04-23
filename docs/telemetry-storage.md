@@ -8,9 +8,9 @@ Isolate **telemetry-tier** funnel traffic (anonymous acquisition/surface impress
 
 Cross-links:
 
-- Core production boundary: [`docs/core-database-boundary-ssot.md`](core-database-boundary-ssot.md)
-- Funnel HTTP semantics: [`docs/funnel-observability-ssot.md`](funnel-observability-ssot.md)
-- Growth KPI SQL (telemetry DB for telemetry-tier metrics): [`docs/growth-metrics-ssot.md`](growth-metrics-ssot.md)
+- Core production boundary: [`docs/core-database-boundary.md`](core-database-boundary.md)
+- Funnel HTTP semantics: [`docs/funnel-observability.md`](funnel-observability.md)
+- Growth KPI SQL (telemetry DB for telemetry-tier metrics): [`docs/growth-metrics.md`](growth-metrics.md)
 
 ## Environment variables
 
@@ -28,7 +28,7 @@ Cross-links:
 | 2 | Set `AGENTSKEPTIC_TELEMETRY_CORE_WRITE_FREEZE=1` in production; confirm **503** on the three routes. |
 | 3 | Run [`website/scripts/telemetry-backfill-core-to-telemetry.mjs`](../website/scripts/telemetry-backfill-core-to-telemetry.mjs) with both URLs set; script exits **0** only if telemetry DB was empty beforehand and counts match core. |
 | 4 | Single deploy: unset freeze, set `AGENTSKEPTIC_TELEMETRY_WRITES_TELEMETRY_DB=1`, keep `TELEMETRY_DATABASE_URL` (see [`website/src/lib/funnelEvent.ts`](../website/src/lib/funnelEvent.ts)). |
-| 5 | Operators run telemetry-tier KPI SQL from [`docs/growth-metrics-ssot.md`](growth-metrics-ssot.md) via **Cursor + Supabase MCP** against the `TELEMETRY_DATABASE_URL` database (see that SSOT); application `dbTelemetry` remains for ingestion and product tests only. |
+| 5 | Operators run telemetry-tier KPI SQL from [`docs/growth-metrics.md`](growth-metrics.md) via **Cursor + Supabase MCP** against the `TELEMETRY_DATABASE_URL` database (see that SSOT); application `dbTelemetry` remains for ingestion and product tests only. |
 | 6 | After steady state, apply core cleanup migration **`0012_core_telemetry_cleanup`** (removes telemetry-tier rows and activation beacons from core; tightens `funnel_event` CHECK to core-tier events only). |
 
 ## Schema
@@ -39,4 +39,4 @@ Cross-links:
 
 ## Sanctioned tooling
 
-Telemetry schema changes use the same guarded `drizzle-kit` entry as core: `npm run db:generate:telemetry` (see [`docs/core-database-boundary-ssot.md`](core-database-boundary-ssot.md)).
+Telemetry schema changes use the same guarded `drizzle-kit` entry as core: `npm run db:generate:telemetry` (see [`docs/core-database-boundary.md`](core-database-boundary.md)).

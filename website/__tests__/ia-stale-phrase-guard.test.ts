@@ -10,7 +10,7 @@ const STALE_IA_PHRASES = [
 
 const FILE_ALLOWLIST = [
   "docs/discovery-surfaces.md",
-  "docs/public-distribution-ssot.md",
+  "docs/public-distribution.md",
   "docs/website-product-experience.md",
   "AGENTS.md",
   "CONTRIBUTING.md",

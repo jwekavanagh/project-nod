@@ -9,8 +9,8 @@ import { fileURLToPath } from "node:url";
 const needle = "/api/oss/claim-handoff";
 const root = join(fileURLToPath(new URL(".", import.meta.url)), "..");
 const docsDir = join(root, "docs");
-const allowOssSot = "docs/oss-account-claim-ssot.md";
-const allowJourney = "docs/eval-to-revenue-journey-ssot.md";
+const allowOssSot = "docs/oss-account-claim.md";
+const allowJourney = "docs/eval-to-revenue-journey.md";
 
 function* walkMarkdownFiles(dir) {
   for (const name of readdirSync(dir)) {

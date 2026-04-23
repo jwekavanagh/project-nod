@@ -2,15 +2,15 @@
 
 This document is the **hand-authored** source for **why** the product gates certain capabilities. Machine-readable entitlement rows live in [`config/commercial-entitlement-matrix.v1.json`](../config/commercial-entitlement-matrix.v1.json). The generated table is [`commercial-entitlement-matrix.md`](commercial-entitlement-matrix.md).
 
-**Implementation SSOT (reserve bodies, codes, Stripe lifecycle, account `commercial-state`, deletion policy):** **[`docs/commercial-ssot.md`](commercial-ssot.md)** — section *Subscription state, Stripe webhooks, and account API*.
+**Implementation SSOT (reserve bodies, codes, Stripe lifecycle, account `commercial-state`, deletion policy):** **[`docs/commercial.md`](commercial.md)** — section *Subscription state, Stripe webhooks, and account API*.
 
-**Free vs paid capability matrix (OSS, commercial npm, Starter account):** **[`docs/commercial-ssot.md`](commercial-ssot.md)** — subsection *Free vs paid boundary (normative v1)*. Do not duplicate that matrix here.
+**Free vs paid capability matrix (OSS, commercial npm, Starter account):** **[`docs/commercial.md`](commercial.md)** — subsection *Free vs paid boundary (normative v1)*. Do not duplicate that matrix here.
 
 The **OSS** default build does not expose **`enforce`** (exit **`ENFORCE_REQUIRES_COMMERCIAL_BUILD`**); entitlement rows below apply to **commercial** CLI builds. See **[`docs/commercial-enforce-gate-normative.md`](commercial-enforce-gate-normative.md)**.
 
 ## Why licensed `verify` is subscription-gated only on **paid** tiers
 
-The **published npm** path is gated in **`POST /api/v1/usage/reserve`**. **Starter** accounts can **`verify`** up to the **free included** monthly allowance in config (`VERIFICATION` proceeds to quota; hard cap, no overage). **Individual / Team / Business / Enterprise** require an **active** Stripe-backed subscription (including **trialing**) for both **`verify`** and **`enforce`**, and paid tiers may continue past **included** into **metered overage** per plan. See [`docs/commercial-ssot.md`](commercial-ssot.md) for HTTP codes and `upgrade_url` behavior.
+The **published npm** path is gated in **`POST /api/v1/usage/reserve`**. **Starter** accounts can **`verify`** up to the **free included** monthly allowance in config (`VERIFICATION` proceeds to quota; hard cap, no overage). **Individual / Team / Business / Enterprise** require an **active** Stripe-backed subscription (including **trialing**) for both **`verify`** and **`enforce`**, and paid tiers may continue past **included** into **metered overage** per plan. See [`docs/commercial.md`](commercial.md) for HTTP codes and `upgrade_url` behavior.
 
 **OSS builds** from source (`WF_BUILD_PROFILE=oss`) do not call the license server and are not subscription-gated—see README and [`commercial-enforce-gate-normative.md`](commercial-enforce-gate-normative.md).
 

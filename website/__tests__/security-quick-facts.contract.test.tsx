@@ -27,6 +27,6 @@ describe("Security quick facts", () => {
     expect(list).toBeTruthy();
     const items = within(list!).getAllByRole("listitem");
     expect(items[3].textContent).toContain("trust buyer guide");
-    expect(items[3].textContent).toContain("verification-product-ssot.md");
+    expect(items[3].textContent).toContain("verification-product.md");
   });
 });

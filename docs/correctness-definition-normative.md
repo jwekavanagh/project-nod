@@ -30,7 +30,7 @@ This document is the **behavioral single source of truth** for `workflowTruthRep
 - **`step_sql_expectation` / `plan_transition_expectation`:** `enforceableProjection.verificationRequest` (or plan-target fields) is **sufficient** to diff or author the corresponding tools-registry expectation and to re-run `agentskeptic` with the same logical check when events and DB are available.
 - **`run_ingest_integrity` / `event_capture_integrity`:** `primaryFailureCodes` or `forbiddenEventSequenceCodes` plus `workflowId` and `verificationPolicyFragment` are **sufficient** to build ingest or capture CI gates that reject bad runs **before** verification.
 - **`run_context_fairness`:** `ingestIndex`, `requiredUpstreamContract`, and `primaryRunContextCodes` are **sufficient** to document upstream prerequisites for fair tool evaluation.
-- **`quick_inferred_sql_row` / `quick_inferred_relational`:** `sqlRowRequest` or relational fields are **sufficient** to build a provisional or exported registry check (subject to Quick Verify coverage limits in [`docs/verification-product-ssot.md`](verification-product-ssot.md)).
+- **`quick_inferred_sql_row` / `quick_inferred_relational`:** `sqlRowRequest` or relational fields are **sufficient** to build a provisional or exported registry check (subject to Quick Verify coverage limits in [`docs/verification-product.md`](verification-product.md)).
 - **`quick_mapping_gap`:** Projection is **sufficient** to choose among extending structured tool activity, adding an explicit registry tool, or `manual_review`—see `remediationAlignment`.
 
 ## `requiredUpstreamContract` (run context)

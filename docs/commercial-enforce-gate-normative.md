@@ -9,7 +9,7 @@ Single source of truth for **who may run `agentskeptic enforce`** and how it rel
 - **Commercial `enforce`:** compare-only — **`--output-lock` is rejected** (`ENFORCE_USAGE`); use batch or quick verify with **`--output-lock`** to generate locks, then `enforce` with **`--expect-lock`** (see `src/enforceCli.ts` + `src/cli/lockOrchestration.ts`).
 - **`ENFORCE_USAGE`** is **not** emitted on the OSS build for bare `enforce` (commercial gate only). **`ENFORCE_USAGE`** may appear on the **commercial** build for malformed `enforce` arguments (including **`--output-lock`** on enforce).
 
-**Funnel ordering for lock runs** (VS / VO / beacon / partial activation): [`funnel-observability-ssot.md#cli-lock-telemetry-sequencing`](funnel-observability-ssot.md#cli-lock-telemetry-sequencing).
+**Funnel ordering for lock runs** (VS / VO / beacon / partial activation): [`funnel-observability.md#cli-lock-telemetry-sequencing`](funnel-observability.md#cli-lock-telemetry-sequencing).
 
 ## Help
 

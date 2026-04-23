@@ -1,6 +1,6 @@
 # Verification operational notes (runbooks)
 
-**Audience:** engineers wiring a first run, integrators automating stdout/stderr, operators hardening database access. Product intent and trust boundary remain in [`verification-product-ssot.md`](verification-product-ssot.md); CLI semantics in [`agentskeptic.md`](agentskeptic.md) and [`quick-verify-normative.md`](quick-verify-normative.md).
+**Audience:** engineers wiring a first run, integrators automating stdout/stderr, operators hardening database access. Product intent and trust boundary remain in [`verification-product.md`](verification-product.md); CLI semantics in [`agentskeptic.md`](agentskeptic.md) and [`quick-verify-normative.md`](quick-verify-normative.md).
 
 ## For engineers (first run)
 

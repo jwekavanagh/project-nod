@@ -4,7 +4,7 @@ Single source of truth for the **`agentskeptic bootstrap`** subcommand: flags, s
 
 **Audience:** engineers implementing or testing the CLI; integrators using bootstrap to obtain a first contract pack without hand-authoring `tools.json` or production `events.ndjson`.
 
-**Not in scope:** unstructured log ingestion. Bootstrap accepts only **`BootstrapPackInput` v1** (JSON). Arbitrary text logs remain out of scope per [verification-product-ssot.md](verification-product-ssot.md).
+**Not in scope:** unstructured log ingestion. Bootstrap accepts only **`BootstrapPackInput` v1** (JSON). Arbitrary text logs remain out of scope per [verification-product.md](verification-product.md).
 
 **Authority:** Quick inference thresholds and export bytes identity remain in [quick-verify-normative.md](quick-verify-normative.md). Batch verify semantics and `WorkflowResult` shape remain in [agentskeptic.md](agentskeptic.md); this document links to those sources and does not duplicate numeric ladders.
 
@@ -26,7 +26,7 @@ No other flags in v1. **`--help` / `-h`** print usage and exit `0`.
 |-------|-------------------------|
 | `bootstrap` flags, I/O, exit codes, staging, success definition | **This file** |
 | `BootstrapPackInput` v1 JSON | This file **Contract appendix** + `schemas/bootstrap-pack-input-v1.schema.json` (schema must not contradict the appendix) |
-| Optional hosted registry draft (website API, absolute schema `$ref` / AJV order, commercial harness) | [registry-draft-ssot.md](registry-draft-ssot.md) |
+| Optional hosted registry draft (website API, absolute schema `$ref` / AJV order, commercial harness) | [registry-draft.md](registry-draft.md) |
 | Quick thresholds, `--export-registry` byte identity | [quick-verify-normative.md](quick-verify-normative.md) |
 | `verify` stdout/stderr for `WorkflowResult` | [agentskeptic.md](agentskeptic.md) + shared `runStandardVerifyWorkflowCliFlow` behavior |
 

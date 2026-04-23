@@ -2,7 +2,7 @@
 
 Normative contract for converting **anonymous OSS CLI verification** into an **identified account** by binding a `run_id` to `user_id` after email sign-in. Commercial npm builds (`LICENSE_PREFLIGHT_ENABLED`) do not use this surface: they require an API key before verify.
 
-**Not duplicated here:** North-star funnel definitions remain in [`funnel-observability-ssot.md`](funnel-observability-ssot.md) and [`growth-metrics-ssot.md`](growth-metrics-ssot.md). This document is the only SSOT for claim URLs, claim HTTP semantics, rate limits, and retention.
+**Not duplicated here:** North-star funnel definitions remain in [`funnel-observability.md`](funnel-observability.md) and [`growth-metrics.md`](growth-metrics.md). This document is the only SSOT for claim URLs, claim HTTP semantics, rate limits, and retention.
 
 ---
 
@@ -26,7 +26,7 @@ Normative contract for converting **anonymous OSS CLI verification** into an **i
 
 - **`handoff_url`** is **`GET`** `…/verify/link?h=<opaque>` on the canonical origin. The **`h`** value is **not** derivable from `run_id` and is **not** the wire `claim_secret`.
 - **stdout** must remain machine JSON only for batch/quick; claim text is **stderr only**.
-- **`AGENTSKEPTIC_TELEMETRY=0`:** no stderr line from this helper and **no** claim-ticket `fetch` (silent), matching the product-activation opt-out in [`docs/funnel-observability-ssot.md`](funnel-observability-ssot.md).
+- **`AGENTSKEPTIC_TELEMETRY=0`:** no stderr line from this helper and **no** claim-ticket `fetch` (silent), matching the product-activation opt-out in [`docs/funnel-observability.md`](funnel-observability.md).
 
 **Normative browser path:** Open **`handoff_url`** once in the same browser profile you will use for magic link. The **`GET`** handler validates **`h`**, rate-limits by IP, sets **`handoff_consumed_at`** for the current token, and responds **`302`** to **`/auth/signin?callbackUrl=/claim`** (encoded as required) with **`Set-Cookie: __Host-as_pc_v1`** (signed envelope; implementation [`website/src/lib/ossClaimPendingCookie.ts`](../website/src/lib/ossClaimPendingCookie.ts), mint helper [`website/src/lib/ossClaimPendingMint.ts`](../website/src/lib/ossClaimPendingMint.ts)). After sign-in, **`GET /claim`** runs **`POST /api/oss/claim-redeem`** with body **`{}`** and `credentials: 'include'`.
 
@@ -39,7 +39,7 @@ Normative contract for converting **anonymous OSS CLI verification** into an **i
 - **Headers:** Same as [`POST /api/funnel/product-activation`](../website/src/app/api/funnel/product-activation/route.ts): `X-AgentSkeptic-Product: cli`, `X-AgentSkeptic-Cli-Version` semver, `Content-Type: application/json`.
 - **Body (JSON):** discriminated by **`schema_version`** (see [`website/src/lib/ossClaimTicketPayload.ts`](../website/src/lib/ossClaimTicketPayload.ts)):
   - **v1 (legacy):** `{ claim_secret, run_id, issued_at, terminal_status, workload_class, subcommand, build_profile }` — enums align with product-activation outcome payload; **no** `schema_version` key on the wire.
-  - **v2:** v1 fields plus **`"schema_version": 2`** and required **`telemetry_source`**: `"local_dev"` \| `"unknown"`. Reject **`legacy_unattributed`** on the wire (**`400`**). Optional **`interactive_human`**: when **`true`**, the row is in the mint-time interactive-human cohort (`interactive_human_claim`); see [`docs/eval-to-revenue-journey-ssot.md`](eval-to-revenue-journey-ssot.md).
+  - **v2:** v1 fields plus **`"schema_version": 2`** and required **`telemetry_source`**: `"local_dev"` \| `"unknown"`. Reject **`legacy_unattributed`** on the wire (**`400`**). Optional **`interactive_human`**: when **`true`**, the row is in the mint-time interactive-human cohort (`interactive_human_claim`); see [`docs/eval-to-revenue-journey.md`](eval-to-revenue-journey.md).
 - **Persistence:** on first insert, nullable column **`telemetry_source`** is set from the v2 body or to **`legacy_unattributed`** for v1 rows. Each row has **`handoff_token`** (opaque) and nullable **`handoff_consumed_at`** for the **current** token lifecycle; **`interactive_human_claim`** (boolean, default false) from optional body **`interactive_human`**; nullable **`browser_open_invoked_at`** set once by **`POST /api/oss/claim-continuation`** for interactive rows.
 - **`issued_at` skew:** ±300s vs server time (same constant as product-activation).
 - **Responses (Contract B):**
@@ -120,7 +120,7 @@ This flow is **not** part of [`schemas/openapi-commercial-v1.yaml`](../schemas/o
 - **Active unclaimed:** `claimed_at IS NULL AND expires_at > now()`
 - **Expired unclaimed:** `claimed_at IS NULL AND expires_at <= now()`
 
-**Operator aggregates excluding local dev noise:** when counting tickets that represent non-local operator traffic, filter with **`telemetry_source IS DISTINCT FROM 'local_dev'`** (and remember **`unknown`** is not a guarantee of “external-only” origin—see [`docs/funnel-observability-ssot.md`](funnel-observability-ssot.md)).
+**Operator aggregates excluding local dev noise:** when counting tickets that represent non-local operator traffic, filter with **`telemetry_source IS DISTINCT FROM 'local_dev'`** (and remember **`unknown`** is not a guarantee of “external-only” origin—see [`docs/funnel-observability.md`](funnel-observability.md)).
 
 **Handoff health (examples):**
 

@@ -1,5 +1,5 @@
 /**
- * Registry-draft request schema + normalization (docs/registry-draft-ssot.md).
+ * Registry-draft request schema + normalization (docs/registry-draft.md).
  */
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";

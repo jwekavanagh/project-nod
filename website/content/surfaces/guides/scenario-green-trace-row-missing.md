@@ -13,7 +13,7 @@ symptomLead: When your LangGraph trace lists every step as successful yet the Po
 
 # When green traces hide a missing Postgres row
 
-When your LangGraph trace lists every step as successful yet the Postgres row your workflow implied is still missing at verification time, treat the trace as narrative—not ledger proof. Normative LangGraph checkpoint trust behavior: [`docs/langgraph-checkpoint-trust-ssot.md`](https://github.com/jwekavanagh/agentskeptic/blob/main/docs/langgraph-checkpoint-trust-ssot.md). Export structured tool parameters, run read-only `SELECT`s against the same database, and expect ROW_ABSENT when the declared identity is absent.
+When your LangGraph trace lists every step as successful yet the Postgres row your workflow implied is still missing at verification time, treat the trace as narrative—not ledger proof. Normative LangGraph checkpoint trust behavior: [`docs/langgraph-checkpoint-trust.md`](https://github.com/jwekavanagh/agentskeptic/blob/main/docs/langgraph-checkpoint-trust.md). Export structured tool parameters, run read-only `SELECT`s against the same database, and expect ROW_ABSENT when the declared identity is absent.
 
 ## What to do next
 

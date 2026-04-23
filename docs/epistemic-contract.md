@@ -2,7 +2,7 @@
 
 This file is the **sole authored source** for normative **epistemic contract** prose: what “grounded” verification output means, what the repository can and cannot prove, how that differs from **funnel** or **telemetry** stories, and what operators must not infer. **Do not restate these definitions elsewhere**—downstream docs and the website use **approved pointers** or **generated excerpts** from this file only (see [`config/epistemic-contract-structure.json`](../config/epistemic-contract-structure.json) and `scripts/validate-epistemic-contract-structure.mjs`).
 
-**Operational SSOT** (four-way model, ProductionComplete cohort checklist, commercial validation verdict field semantics, negative validation list) lives in [`adoption-epistemics-ssot.md`](adoption-epistemics-ssot.md)—link there for checklists and verdicts, not for duplicating this contract.
+**Operational SSOT** (four-way model, ProductionComplete cohort checklist, commercial validation verdict field semantics, negative validation list) lives in [`adoption-epistemics.md`](adoption-epistemics.md)—link there for checklists and verdicts, not for duplicating this contract.
 
 ---
 
@@ -12,7 +12,7 @@ This file is the **sole authored source** for normative **epistemic contract** p
 
 ## Structural vs empirical (definitions)
 
-Proof split in the four-way model ([`adoption-epistemics-ssot.md`](adoption-epistemics-ssot.md) table) is **structural** (definitions and what CI can exercise). **Where users drop off in production** is **empirical** and requires telemetry and analytics; that evidence is **not** committed in this repository.
+Proof split in the four-way model ([`adoption-epistemics.md`](adoption-epistemics.md) table) is **structural** (definitions and what CI can exercise). **Where users drop off in production** is **empirical** and requires telemetry and analytics; that evidence is **not** committed in this repository.
 
 ## First necessary constraint on grounded output (formal property)
 
@@ -22,11 +22,11 @@ Proof split in the four-way model ([`adoption-epistemics-ssot.md`](adoption-epis
 
 **What “correctly-shaped” means (pointers only):**
 
-- **Structured tool activity** and ICP limits: [`verification-product-ssot.md`](verification-product-ssot.md) (core promise, exclusions).
+- **Structured tool activity** and ICP limits: [`verification-product.md`](verification-product.md) (core promise, exclusions).
 - **Event line contract (NDJSON / observation model):** [Event line schema](agentskeptic.md#event-line-schema) in [`agentskeptic.md`](agentskeptic.md).
 - **Registry and contract verify path:** [`first-run-integration.md`](first-run-integration.md) (spine and Step 4).
 
-**Relationship to operator metrics:** Rolling rates that include **`workload_class` = `non_bundled`** are a **path heuristic** for “outside bundled example paths,” not proof of ProductionComplete, ICP fit, or user understanding—see [Qualification proxy (operator)](funnel-observability-ssot.md#qualification-proxy-operator) and [`growth-metrics-ssot.md`](growth-metrics-ssot.md).
+**Relationship to operator metrics:** Rolling rates that include **`workload_class` = `non_bundled`** are a **path heuristic** for “outside bundled example paths,” not proof of ProductionComplete, ICP fit, or user understanding—see [Qualification proxy (operator)](funnel-observability.md#qualification-proxy-operator) and [`growth-metrics.md`](growth-metrics.md).
 
 **Dominant real-world drop-off:** **Which** link in the chain loses the most mass in production (evaluation vs install vs integrate spine vs Step 4 vs paid conversion) **cannot be ranked from this repository**; ranking requires time-bounded telemetry and context outside committed files (same line as **Structural vs empirical** above).
 
@@ -37,9 +37,9 @@ Proof split in the four-way model ([`adoption-epistemics-ssot.md`](adoption-epis
 Use these terms consistently:
 
 - **First necessary constraint on grounded output / first dependency:** Same property as [First necessary constraint on grounded output (formal property)](#first-necessary-constraint-on-grounded-output-formal-property)—throughput of **grounded** verification cannot exceed integrator-owned, correctly-shaped inputs on authoritative SQL. This is **provable from repository definitions**; it is **not** a claim about which funnel stage loses the most mass in production without operator data.
-- **Empirical (dominant) drop-off:** Which stage loses the most integrators **requires** time-bounded telemetry and context outside committed files—see **Dominant real-world drop-off** above and [`growth-metrics-ssot.md`](growth-metrics-ssot.md) (*Ranking dominant funnel loss*).
-- **Telemetry L1 (path heuristic):** `workload_class = non_bundled` on activation rows ([`src/commercial/verifyWorkloadClassify.ts`](../src/commercial/verifyWorkloadClassify.ts))—not proof of ProductionComplete (see [Qualification proxy (operator)](funnel-observability-ssot.md#qualification-proxy-operator)).
-- **Telemetry L2 (lineage heuristic):** `workflow_lineage = integrator_scoped` on **schema_version 3** activation rows ([`src/funnel/workflowLineageClassify.ts`](../src/funnel/workflowLineageClassify.ts))—excludes shipped catalog workflow ids and **`wf_integrate_spine`**; still **not** human **Decision-ready ProductionComplete** artifacts (A1–A5)—see [`growth-metrics-ssot.md`](growth-metrics-ssot.md) §**CrossSurface_ConversionRate_QualifiedIntegrateToIntegratorScopedVerifyOutcome_Rolling7dUtc**.
+- **Empirical (dominant) drop-off:** Which stage loses the most integrators **requires** time-bounded telemetry and context outside committed files—see **Dominant real-world drop-off** above and [`growth-metrics.md`](growth-metrics.md) (*Ranking dominant funnel loss*).
+- **Telemetry L1 (path heuristic):** `workload_class = non_bundled` on activation rows ([`src/commercial/verifyWorkloadClassify.ts`](../src/commercial/verifyWorkloadClassify.ts))—not proof of ProductionComplete (see [Qualification proxy (operator)](funnel-observability.md#qualification-proxy-operator)).
+- **Telemetry L2 (lineage heuristic):** `workflow_lineage = integrator_scoped` on **schema_version 3** activation rows ([`src/funnel/workflowLineageClassify.ts`](../src/funnel/workflowLineageClassify.ts))—excludes shipped catalog workflow ids and **`wf_integrate_spine`**; still **not** human **Decision-ready ProductionComplete** artifacts (A1–A5)—see [`growth-metrics.md`](growth-metrics.md) §**CrossSurface_ConversionRate_QualifiedIntegrateToIntegratorScopedVerifyOutcome_Rolling7dUtc**.
 
 ---
 
@@ -48,5 +48,5 @@ Use these terms consistently:
 The following block is **machine-extracted** into `website/src/generated/epistemicContractIntegrator.ts` for the `/integrate` page. **Edit only here**; do not duplicate in `productCopy.ts`.
 
 <!-- epistemic-contract-integrator-snippet:begin -->
-Grounded integrator-owned output: run contract verify on your events, registry, and authoritative DB (Step 4 in docs/first-run-integration.md). Normative one-shot path: agentskeptic crossing (docs/crossing-normative.md); final-phase telemetry matches verify_integrator_owned. agentskeptic verify-integrator-owned remains for explicit pack-led parity and CI (docs/agentskeptic.md Integrator-owned gate). IntegrateSpineComplete when exit code is 0: you ran the pedagogical demo and AdoptionComplete_PatternComplete mid-script on temp paths, then the final bootstrap plus agentskeptic crossing pack-led on your AGENTSKEPTIC_VERIFY_DB using the fixed pack under examples/integrate-your-db (L0 shell: scripts/templates/integrate-activation-shell.bash). The final crossing on your file may not satisfy AC-OPS-03 temp-path rules by design—see docs/first-run-integration.md (Integrate spine). Decision-ready ProductionComplete (artifacts A1–A5 on integrator-owned inputs) is a stronger bar; IntegrateSpineComplete does not substitute. Full epistemic definitions: https://github.com/jwekavanagh/agentskeptic/blob/main/docs/epistemic-contract.md — Decision-ready checklist: https://github.com/jwekavanagh/agentskeptic/blob/main/docs/adoption-epistemics-ssot.md#decision-ready-productioncomplete-normative
+Grounded integrator-owned output: run contract verify on your events, registry, and authoritative DB (Step 4 in docs/first-run-integration.md). Normative one-shot path: agentskeptic crossing (docs/crossing-normative.md); final-phase telemetry matches verify_integrator_owned. agentskeptic verify-integrator-owned remains for explicit pack-led parity and CI (docs/agentskeptic.md Integrator-owned gate). IntegrateSpineComplete when exit code is 0: you ran the pedagogical demo and AdoptionComplete_PatternComplete mid-script on temp paths, then the final bootstrap plus agentskeptic crossing pack-led on your AGENTSKEPTIC_VERIFY_DB using the fixed pack under examples/integrate-your-db (L0 shell: scripts/templates/integrate-activation-shell.bash). The final crossing on your file may not satisfy AC-OPS-03 temp-path rules by design—see docs/first-run-integration.md (Integrate spine). Decision-ready ProductionComplete (artifacts A1–A5 on integrator-owned inputs) is a stronger bar; IntegrateSpineComplete does not substitute. Full epistemic definitions: https://github.com/jwekavanagh/agentskeptic/blob/main/docs/epistemic-contract.md — Decision-ready checklist: https://github.com/jwekavanagh/agentskeptic/blob/main/docs/adoption-epistemics.md#decision-ready-productioncomplete-normative
 <!-- epistemic-contract-integrator-snippet:end -->

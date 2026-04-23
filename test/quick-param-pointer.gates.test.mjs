@@ -80,22 +80,22 @@ describe("quick-param-pointer version 1.2.0 surfaces", () => {
 describe("docs quick-param-pointer SSOT", () => {
   it("normative + product + README contracts", () => {
     const normative = readFileSync(join(root, "docs/quick-verify-normative.md"), "utf8");
-    const product = readFileSync(join(root, "docs/verification-product-ssot.md"), "utf8");
+    const product = readFileSync(join(root, "docs/verification-product.md"), "utf8");
     const readme = readFileSync(join(root, "README.md"), "utf8");
     const needle = "eligible_export_sql_row_param_pointer";
     assert.strictEqual(countSubstring(normative, needle), 1);
     assert.strictEqual(
       countSubstring(product, needle),
       0,
-      "verification-product-ssot.md must not name implementation predicates; see quick-verify-normative + operational notes",
+      "verification-product.md must not name implementation predicates; see quick-verify-normative + operational notes",
     );
     const merge = readFileSync(
       join(root, "test/golden/quick-param-pointer/v1/normative-merge-section.md"),
       "utf8",
     ).trim();
     assert.strictEqual(normative.replace(/\r\n/g, "\n").includes(merge), true);
-    const plain = "[docs/verification-product-ssot.md](docs/verification-product-ssot.md)";
-    const bold = "[`docs/verification-product-ssot.md`](docs/verification-product-ssot.md)";
+    const plain = "[docs/verification-product.md](docs/verification-product.md)";
+    const bold = "[`docs/verification-product.md`](docs/verification-product.md)";
     assert.ok(countSubstring(readme, plain) + countSubstring(readme, bold) >= 1);
     const forbidden = [
       "eligible_export_sql_row_param_pointer",

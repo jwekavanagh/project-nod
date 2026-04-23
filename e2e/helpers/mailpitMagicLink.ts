@@ -6,7 +6,7 @@ type MailpitMessagesResponse = {
 
 /**
  * Poll Mailpit for the latest magic-link URL sent to `toEmail` (commercial E2E harness).
- * Uses `GET http://127.0.0.1:8025/api/v1/messages` per docs/commercial-ssot.md.
+ * Uses `GET http://127.0.0.1:8025/api/v1/messages` per docs/commercial.md.
  */
 export async function pollLatestMagicLinkUrl(params: {
   toEmail: string;

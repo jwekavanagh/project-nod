@@ -30,7 +30,7 @@ const whatToDoNext = `## What to do next
 
 const surfaces = [
   {
-    doc: "docs/commercial-ssot.md",
+    doc: "docs/commercial.md",
     begin: "<!-- buyer-surface-commercial-boundary:begin -->",
     end: "<!-- buyer-surface-commercial-boundary:end -->",
     slug: "buyer-commercial-boundary",
@@ -64,7 +64,7 @@ evaluatorLens: false
 ---`,
   },
   {
-    doc: "docs/verification-product-ssot.md",
+    doc: "docs/verification-product.md",
     begin: "<!-- buyer-surface-trust-production-implications:begin -->",
     end: "<!-- buyer-surface-trust-production-implications:end -->",
     slug: "buyer-trust-production-implications",

@@ -12,5 +12,5 @@ export function githubHeadingSlug(headingPlainText: string): string {
 }
 
 export const DECISION_READY_PRODUCTION_COMPLETE_ADOPTION_BLOB_URL =
-  "https://github.com/jwekavanagh/agentskeptic/blob/main/docs/adoption-epistemics-ssot.md#" +
+  "https://github.com/jwekavanagh/agentskeptic/blob/main/docs/adoption-epistemics.md#" +
   githubHeadingSlug("Decision-ready ProductionComplete (normative)");

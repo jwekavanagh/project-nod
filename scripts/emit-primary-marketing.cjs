@@ -69,7 +69,7 @@ function distributionSsotBlobUrl(anchors) {
   const m = u.match(/github\.com\/([^/]+)\/([^/#?]+)/i);
   if (!m) throw new Error("emit-primary-marketing: cannot derive SSOT blob URL from gitRepositoryUrl");
   const repo = m[2].replace(/\.git$/i, "");
-  return `https://github.com/${m[1]}/${repo}/blob/main/docs/public-distribution-ssot.md`;
+  return `https://github.com/${m[1]}/${repo}/blob/main/docs/public-distribution.md`;
 }
 
 /**
@@ -144,7 +144,7 @@ function writeAgentsMd(anchors, discovery) {
   const openapiRaw = `https://raw.githubusercontent.com/${owner}/${repo}/refs/heads/${branch}/schemas/openapi-commercial-v1.yaml`;
   const body = `# AGENTS
 
-Normative **public distribution** and anchor sync: [\`docs/public-distribution-ssot.md\`](docs/public-distribution-ssot.md) (same content as ${url}).
+Normative **public distribution** and anchor sync: [\`docs/public-distribution.md\`](docs/public-distribution.md) (same content as ${url}).
 
 ## Machine-readable product entrypoints
 

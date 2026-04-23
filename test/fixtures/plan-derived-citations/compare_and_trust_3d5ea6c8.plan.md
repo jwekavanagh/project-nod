@@ -14,7 +14,7 @@ todos:
   - id: playwright-ci
     content: Add @playwright/test; test/debug-ui/*.spec.ts; extend test:ci with npx playwright install chromium && npm run test:debug-ui
     status: completed
-  - id: readme-ssot
+  - id: readme
     content: README compare/trust subsection + agentskeptic.md compare section + API/HTML contract + v2→v3 breaking note
     status: completed
 isProject: false

@@ -25,7 +25,7 @@ describe("commercialNarrative vs commercial-plans.json", () => {
     const t = getMeteringClarifier();
     expect(t).toContain("POST /api/v1/usage/reserve");
     expect(t).toMatch(
-      /docs\/commercial-ssot\.md#programmatic-verification-vs-licensed-cli/,
+      /docs\/commercial\.md#programmatic-verification-vs-licensed-cli/,
     );
   });
 

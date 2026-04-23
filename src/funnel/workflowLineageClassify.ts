@@ -1,6 +1,6 @@
 /**
  * Machine-derived workflow lineage for product-activation telemetry (schema v3).
- * Normative semantics: docs/adoption-epistemics-ssot.md, docs/growth-metrics-ssot.md
+ * Normative semantics: docs/adoption-epistemics.md, docs/growth-metrics.md
  */
 
 export type WorkflowLineage = "catalog_shipped" | "integrate_spine" | "integrator_scoped" | "unknown";

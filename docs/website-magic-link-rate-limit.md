@@ -6,7 +6,7 @@ This document is the **single source of truth** for server-side throttling of ma
 
 Magic link delivery uses Resend (or Mailpit in E2E). Throttling prevents unbounded sends per recipient email and per client IP within a **UTC calendar hour**, using Postgres as the authority.
 
-When `E2E_COMMERCIAL_FUNNEL=1`, rate reservation is **skipped** so E2E can drive Mailpit without hitting caps (see [commercial-ssot.md](commercial-ssot.md) — Auth email).
+When `E2E_COMMERCIAL_FUNNEL=1`, rate reservation is **skipped** so E2E can drive Mailpit without hitting caps (see [commercial.md](commercial.md) — Auth email).
 
 ## Fixed window burst (product acceptance)
 

@@ -18,7 +18,7 @@ This log is retired. Use [golden-path.md](golden-path.md) and [adoption-validati
 describe("adoption docs boundary", () => {
   it("golden-path and product SSOT omit banned onboarding phrases", () => {
     const gp = readFileSync(join(root, "docs", "golden-path.md"), "utf8");
-    const ssot = readFileSync(join(root, "docs", "verification-product-ssot.md"), "utf8");
+    const ssot = readFileSync(join(root, "docs", "verification-product.md"), "utf8");
     for (const s of [gp, ssot]) {
       assert.equal(s.includes("agentskeptic quick"), false);
       assert.equal(s.includes("workflow-verifier quick"), false);

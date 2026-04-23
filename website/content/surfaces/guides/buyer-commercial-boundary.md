@@ -18,7 +18,7 @@ In-process **`createDecisionGate`** in your application evaluates read-only SQL 
 
 ## Evaluation path
 
-Run the mechanical first-run path on the canonical site at **`/integrate`** (clone, build, bundled demo, then crossing on your prepared SQLite or Postgres). When you need Stripe-backed metering, API keys, and plan caps, use **`/pricing`** on the same site and keep this repository’s **commercial SSOT** (`docs/commercial-ssot.md`) as the normative contract for entitlements.
+Run the mechanical first-run path on the canonical site at **`/integrate`** (clone, build, bundled demo, then crossing on your prepared SQLite or Postgres). When you need Stripe-backed metering, API keys, and plan caps, use **`/pricing`** on the same site and keep this repository’s **commercial SSOT** (`docs/commercial.md`) as the normative contract for entitlements.
 
 ## What to do next
 

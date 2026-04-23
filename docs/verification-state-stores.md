@@ -2,7 +2,7 @@
 
 This document is the **single normative reference** for verification beyond SQLite file mode: which **`tools.json`** `verification.kind` values exist, how they resolve, which **`databaseUrl`** schemes apply to SQL-shaped verification, required **environment variables**, and how **reason codes** map to outcomes.
 
-For the shared verification kernel (policy, step statuses, event replay), see [`agentskeptic.md`](agentskeptic.md) and [`decision-gate-ssot.md`](decision-gate-ssot.md). For relational SQL check authoring, see [`relational-verification.md`](relational-verification.md).
+For the shared verification kernel (policy, step statuses, event replay), see [`agentskeptic.md`](agentskeptic.md) and [`decision-gate.md`](decision-gate.md). For relational SQL check authoring, see [`relational-verification.md`](relational-verification.md).
 
 ---
 

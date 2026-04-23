@@ -12,7 +12,7 @@
     "npm": "https://www.npmjs.com/package/agentskeptic",
     "llmsRaw": "https://raw.githubusercontent.com/jwekavanagh/agentskeptic/refs/heads/main/llms.txt",
     "llmsBlob": "https://github.com/jwekavanagh/agentskeptic/blob/main/llms.txt",
-    "integratorVerificationSsotRaw": "https://raw.githubusercontent.com/jwekavanagh/agentskeptic/refs/heads/main/docs/integrator-verification-ssot.md"
+    "integratorVerificationSsotRaw": "https://raw.githubusercontent.com/jwekavanagh/agentskeptic/refs/heads/main/docs/integrator-verification.md"
   },
   "appendix": {
     "slug": "/database-truth-vs-traces",

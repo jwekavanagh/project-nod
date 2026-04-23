@@ -66,4 +66,4 @@ Direct `npx drizzle-kit …` against team infrastructure is **unsupported** and 
 ## Cross-links
 
 - Commercial guards: [`docs/website-security-and-operations.md`](website-security-and-operations.md)
-- Telemetry store + cutover: [`docs/telemetry-storage-ssot.md`](telemetry-storage-ssot.md)
+- Telemetry store + cutover: [`docs/telemetry-storage.md`](telemetry-storage.md)

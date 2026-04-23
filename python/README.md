@@ -2,7 +2,7 @@
 
 First-party Python verification kernel and `agentskeptic.verify()` integration surface.
 
-Authoritative integrator narrative: [../docs/integrator-verification-ssot.md](../docs/integrator-verification-ssot.md).
+Authoritative integrator narrative: [../docs/integrator-verification.md](../docs/integrator-verification.md).
 
 ```bash
 pip install -e ".[dev]"

@@ -7,10 +7,10 @@ This document is the **SSOT** for the **four-way proof model**, **ProductionComp
 **Normative detail elsewhere (do not duplicate here):**
 
 - **Epistemic contract (grounded vs funnel, proxies, ranking limits)** — [`epistemic-contract.md`](epistemic-contract.md)
-- **HTTP semantics, beacon shapes, and `funnel_event` ingestion** — [`funnel-observability-ssot.md`](funnel-observability-ssot.md)
-- **Metric ids, SQL, denominators, numerators, and explicit prohibitions** — [`growth-metrics-ssot.md`](growth-metrics-ssot.md)
+- **HTTP semantics, beacon shapes, and `funnel_event` ingestion** — [`funnel-observability.md`](funnel-observability.md)
+- **Metric ids, SQL, denominators, numerators, and explicit prohibitions** — [`growth-metrics.md`](growth-metrics.md)
 - **PatternComplete checklist, IntegrateSpineComplete, Step 4 ProductionComplete commands** — [`first-run-integration.md`](first-run-integration.md)
-- **Commercial billing, Stripe, `POST /api/v1/usage/reserve`** — [`commercial-ssot.md`](commercial-ssot.md)
+- **Commercial billing, Stripe, `POST /api/v1/usage/reserve`** — [`commercial.md`](commercial.md)
 
 ## Four-way model (structural truth)
 
@@ -21,7 +21,7 @@ Four different notions are often conflated. They are **not interchangeable**.
 | **PatternComplete** | Mechanical contract `verify` on **temp** artifact paths and a **SQLite DB copy under the OS temp directory** (not bundled example paths on the verify invocation); checklist IDs `AC-TRUST-*` / `AC-OPS-*`. | `node scripts/validate-adoption-complete.mjs` → [`artifacts/adoption-complete-validation-verdict.json`](../artifacts/adoption-complete-validation-verdict.json) |
 | **IntegrateSpineComplete** | Full L0 bash from [`scripts/templates/integrate-activation-shell.bash`](../scripts/templates/integrate-activation-shell.bash): demo + mid-script PatternComplete-shaped segment + **final** bootstrap and **`crossing`** pack-led on integrator-supplied `AGENTSKEPTIC_VERIFY_DB` (final verify may **not** satisfy AC-OPS-03 by design). | `node scripts/validate-integrate-spine.mjs` → [`artifacts/integrate-spine-validation-verdict.json`](../artifacts/integrate-spine-validation-verdict.json) |
 | **ProductionComplete** | Contract verification (and/or bootstrap) against **the integrator’s** authoritative SQLite or Postgres and **their** structured tool activity / registry—ongoing ownership. | **Not** asserted by default `npm test`. Satisfied only when the integrator completes [Step 4](first-run-integration.md#step-4-bootstrap-when-you-have-your-own-tool_calls-and-a-db-url) (or equivalent) per [`first-run-integration.md`](first-run-integration.md). |
-| **Telemetry KPIs** | **Operator observation** of anonymous or licensed beacons in Postgres—correlation and rolling rates per [`growth-metrics-ssot.md`](growth-metrics-ssot.md). | Production telemetry DB + queries; **not** proof of user-side correctness (see [User outcome vs telemetry capture](funnel-observability-ssot.md#user-outcome-vs-telemetry-capture-operator)). |
+| **Telemetry KPIs** | **Operator observation** of anonymous or licensed beacons in Postgres—correlation and rolling rates per [`growth-metrics.md`](growth-metrics.md). | Production telemetry DB + queries; **not** proof of user-side correctness (see [User outcome vs telemetry capture](funnel-observability.md#user-outcome-vs-telemetry-capture-operator)). |
 
 **Structural vs empirical (pointer):** The four-way table below is **structural** (definitions and repo proofs). **Where users drop off in production** is **empirical**—normative definitions and proxy vocabulary live only in [`epistemic-contract.md`](epistemic-contract.md).
 
@@ -51,8 +51,8 @@ When set to **`1`**, the script requires **`layers.playwrightCommercialE2e === t
 
 Use this checklist when a human operator assists an integrator to reach **ProductionComplete** outside CI. **Completion** means every item is satisfied and **artifacts** (stdout JSON paths or equivalent) are retained by the integrator or operator for their records.
 
-1. ** Preconditions:** Integrator has **structured tool activity** (NDJSON or bootstrap-capable `tool_calls` input) and **read-only** access to **their** SQLite or Postgres per [`verification-product-ssot.md`](verification-product-ssot.md) ICP.
-2. **Trust doctrine:** Integrator has read [What this does not prove](verification-product-ssot.md#what-this-does-not-prove-trust-boundary) and [Quick Verify positioning](verification-product-ssot.md#quick-verify-positioning) if Quick is in scope.
+1. ** Preconditions:** Integrator has **structured tool activity** (NDJSON or bootstrap-capable `tool_calls` input) and **read-only** access to **their** SQLite or Postgres per [`verification-product.md`](verification-product.md) ICP.
+2. **Trust doctrine:** Integrator has read [What this does not prove](verification-product.md#what-this-does-not-prove-trust-boundary) and [Quick Verify positioning](verification-product.md#quick-verify-positioning) if Quick is in scope.
 3. **Bootstrap or registry:** Either run `agentskeptic bootstrap` with **their** `BootstrapPackInput` v1 JSON and DB per [Step 4](first-run-integration.md#step-4-bootstrap-when-you-have-your-own-tool_calls-and-a-db-url), or supply committed **events.ndjson** + **tools.json** they own.
 4. **Contract verify:** Run contract batch `verify` with **their** `--events`, `--registry`, and exactly one of `--db` / `--postgres-url`; capture **exit code** and **stdout** Outcome Certificate v1 JSON.
 5. **Success criteria (normative):** Meet **Decision-ready ProductionComplete** as defined in [§ Decision-ready ProductionComplete (normative)](#decision-ready-productioncomplete-normative) (pass, explained mismatch, or explained incomplete, each with artifacts **A1–A5** specified in that subsection—not "green only").
@@ -82,6 +82,6 @@ Use this checklist when a human operator assists an integrator to reach **Produc
 
 - Treating **`layers.playwrightCommercialE2e: false`** in [`artifacts/commercial-validation-verdict.json`](../artifacts/commercial-validation-verdict.json) as evidence that **operator funnel conversion** is low — **invalid** reading.
 - Claiming **`npm test` green** implies a specific customer reached **ProductionComplete** — **invalid** unless that customer’s Step 4 evidence exists outside this repo.
-- Inferring **no verification ran** from **missing** `verify_outcome` telemetry alone — **invalid** without ruling out opt-out, transport failure, split deployment, or missing `funnel_anon_id` per [`growth-metrics-ssot.md`](growth-metrics-ssot.md) and [`funnel-observability-ssot.md`](funnel-observability-ssot.md).
-- Treating the **lowest** rolling cross-surface rate in [`growth-metrics-ssot.md`](growth-metrics-ssot.md) as proof of **which funnel stage loses the most mass** for real users — **invalid** without time-bounded telemetry and context outside this repository; see [`epistemic-contract.md`](epistemic-contract.md).
-- Reading **`CrossSurface_ConversionRate_QualifiedIntegrateToVerifyOutcome_Rolling7dUtc`** as proof of ICP fit, dominant commercial bottleneck resolution, or a substitute for **user outcome** — **invalid**; see the operator cross-metric reading table in [`growth-metrics-ssot.md`](growth-metrics-ssot.md) and [Qualification proxy (operator)](funnel-observability-ssot.md#qualification-proxy-operator).
+- Inferring **no verification ran** from **missing** `verify_outcome` telemetry alone — **invalid** without ruling out opt-out, transport failure, split deployment, or missing `funnel_anon_id` per [`growth-metrics.md`](growth-metrics.md) and [`funnel-observability.md`](funnel-observability.md).
+- Treating the **lowest** rolling cross-surface rate in [`growth-metrics.md`](growth-metrics.md) as proof of **which funnel stage loses the most mass** for real users — **invalid** without time-bounded telemetry and context outside this repository; see [`epistemic-contract.md`](epistemic-contract.md).
+- Reading **`CrossSurface_ConversionRate_QualifiedIntegrateToVerifyOutcome_Rolling7dUtc`** as proof of ICP fit, dominant commercial bottleneck resolution, or a substitute for **user outcome** — **invalid**; see the operator cross-metric reading table in [`growth-metrics.md`](growth-metrics.md) and [Qualification proxy (operator)](funnel-observability.md#qualification-proxy-operator).

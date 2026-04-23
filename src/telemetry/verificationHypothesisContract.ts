@@ -1,6 +1,6 @@
 /**
  * Canonical rules for optional `verification_hypothesis` on product-activation wire (schema_version 2).
- * @see docs/funnel-observability-ssot.md (field semantics; charset lives only here).
+ * @see docs/funnel-observability.md (field semantics; charset lives only here).
  */
 
 export const VERIFICATION_HYPOTHESIS_MIN_LEN = 1;

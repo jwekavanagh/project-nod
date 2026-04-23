@@ -66,7 +66,7 @@ Read-only checks at verify time—not color.
 
 ## Primary links
 - Canonical site: https://agentskeptic.com/
-- Integrator verification SSOT (Python + LangGraph tables): https://raw.githubusercontent.com/jwekavanagh/agentskeptic/refs/heads/main/docs/integrator-verification-ssot.md
+- Integrator verification SSOT (Python + LangGraph tables): https://raw.githubusercontent.com/jwekavanagh/agentskeptic/refs/heads/main/docs/integrator-verification.md
 - First-run integration: https://agentskeptic.com/integrate
 - Learn: https://agentskeptic.com/guides
 - OpenAPI (canonical): https://agentskeptic.com/openapi-commercial-v1.yaml

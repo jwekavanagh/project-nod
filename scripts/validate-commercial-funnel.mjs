@@ -119,7 +119,7 @@ function gitHead() {
 
 const layers = { regression: false, playwrightCommercialE2e: false };
 
-if (!run(process.execPath, ["scripts/check-commercial-plans-ssot.mjs"])) {
+if (!run(process.execPath, ["scripts/check-commercial-plans.mjs"])) {
   writeVerdict("not_solved", layers);
   process.exit(1);
 }
@@ -297,7 +297,7 @@ writeVerdict(solved ? "solved" : "not_solved", layers);
 process.exit(solved ? 0 : 1);
 
 /**
- * REGISTRY_DRAFT_OUTCOME_HARNESS — root `node:test` proofs (see docs/registry-draft-ssot.md).
+ * REGISTRY_DRAFT_OUTCOME_HARNESS — root `node:test` proofs (see docs/registry-draft.md).
  * Must run only after OSS `dist/` restore (`PHASE:postPackSmokeOssRestoreBuild` above).
  */
 function runRegistryDraftOutcomeHarness(r) {

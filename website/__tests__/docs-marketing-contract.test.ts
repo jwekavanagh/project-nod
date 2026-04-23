@@ -76,12 +76,12 @@ describe("docs marketing contract", () => {
     }
   });
 
-  it("public-distribution-ssot mandated section contains needles", () => {
-    const doc = readFileSync(join(root, "docs", "public-distribution-ssot.md"), "utf8");
+  it("public-distribution doc mandated section contains needles", () => {
+    const doc = readFileSync(join(root, "docs", "public-distribution.md"), "utf8");
     const h = "### Ownership: marketing.json vs productCopy.ts";
     const body = sectionAfterHeader(doc, h);
     for (const n of DOCS_SECTION_NEEDLES[h]) {
-      expect(body, `public-distribution-ssot.md § ${h} missing ${n}`).toContain(n);
+      expect(body, `public-distribution.md § ${h} missing ${n}`).toContain(n);
     }
   });
 

@@ -1,6 +1,6 @@
 # AGENTS
 
-Normative **public distribution** and anchor sync: [`docs/public-distribution-ssot.md`](docs/public-distribution-ssot.md) (same content as https://github.com/jwekavanagh/agentskeptic/blob/main/docs/public-distribution-ssot.md).
+Normative **public distribution** and anchor sync: [`docs/public-distribution.md`](docs/public-distribution.md) (same content as https://github.com/jwekavanagh/agentskeptic/blob/main/docs/public-distribution.md).
 
 ## Machine-readable product entrypoints
 

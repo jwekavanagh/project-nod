@@ -2,7 +2,7 @@
 
 Normative completion contract for the **OSS eval-to-account** bridge and downstream commercial spine. **RR** (release-ready) gates prove plumbing in CI; **SP** (solved-in-production) gates are weekly production SQL on real traffic.
 
-Detailed HTTP tables for claim routes remain in [`docs/oss-account-claim-ssot.md`](oss-account-claim-ssot.md) (do not duplicate full HTTP semantics here).
+Detailed HTTP tables for claim routes remain in [`docs/oss-account-claim.md`](oss-account-claim.md) (do not duplicate full HTTP semantics here).
 
 ---
 

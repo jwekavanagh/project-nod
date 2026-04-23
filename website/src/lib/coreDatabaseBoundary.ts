@@ -4,7 +4,7 @@ import path from "node:path";
 import { isProductionLike } from "@/lib/canonicalSiteOrigin";
 
 export const CORE_DATABASE_BOUNDARY_VIOLATION =
-  "AGENTSKEPTIC_CORE_DATABASE_BOUNDARY_VIOLATION: non-production-like process must not use the production core DATABASE_URL fingerprint (see docs/core-database-boundary-ssot.md)";
+  "AGENTSKEPTIC_CORE_DATABASE_BOUNDARY_VIOLATION: non-production-like process must not use the production core DATABASE_URL fingerprint (see docs/core-database-boundary.md)";
 
 const FINGERPRINT_FILENAME = "commercial-production-core-database-fingerprint.sha256";
 

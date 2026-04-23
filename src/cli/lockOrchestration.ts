@@ -1,6 +1,6 @@
 /**
  * Batch/quick CI lock orchestration: R → VS → LOCK → VO → BC → JSON → footers → exit.
- * Normative telemetry ordering: docs/funnel-observability-ssot.md
+ * Normative telemetry ordering: docs/funnel-observability.md
  */
 import { randomUUID } from "node:crypto";
 import path from "path";

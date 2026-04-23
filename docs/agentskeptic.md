@@ -2,9 +2,9 @@
 
 **Integrators — public verification artifact:** Outcome Certificate v1 is defined in [`outcome-certificate-normative.md`](outcome-certificate-normative.md); usage and CLI contracts in [`outcome-certificate-integrator.md`](outcome-certificate-integrator.md). This document is the **engine / wire / reconciliation** SSOT (`WorkflowResult`, NDJSON, registry SQL semantics).
 
-**Quick Verify (zero-config inference)** is specified in [`quick-verify-normative.md`](quick-verify-normative.md). **Bootstrap pack** (`agentskeptic bootstrap`) is specified in [`bootstrap-pack-normative.md`](bootstrap-pack-normative.md). Product narrative, audiences, and documentation ownership for the wedge live in [`verification-product-ssot.md`](verification-product-ssot.md). This document remains the SSOT for **Advanced verification** (NDJSON events, `tools.json` registry, `WorkflowResult`).
+**Quick Verify (zero-config inference)** is specified in [`quick-verify-normative.md`](quick-verify-normative.md). **Bootstrap pack** (`agentskeptic bootstrap`) is specified in [`bootstrap-pack-normative.md`](bootstrap-pack-normative.md). Product narrative, audiences, and documentation ownership for the wedge live in [`verification-product.md`](verification-product.md). This document remains the SSOT for **Advanced verification** (NDJSON events, `tools.json` registry, `WorkflowResult`).
 
-This document is the authoritative specification for the MVP. The product verifies **external SQL state** (**observed**) against **expectations** derived from **declared tool parameters** and a **tool registry**—**not** proof that a tool executed, and **not** a logging or tracing system. Product positioning and non-guarantees: [`verification-product-ssot.md`](verification-product-ssot.md).
+This document is the authoritative specification for the MVP. The product verifies **external SQL state** (**observed**) against **expectations** derived from **declared tool parameters** and a **tool registry**—**not** proof that a tool executed, and **not** a logging or tracing system. Product positioning and non-guarantees: [`verification-product.md`](verification-product.md).
 
 **Mechanical doc contract:** Top-level `##` heading order in this file is enforced by [`test/docs-contract-headings.json`](../test/docs-contract-headings.json) (update that JSON in the same PR as any `##` reorder, add, remove, or rename).
 
@@ -21,7 +21,7 @@ This table defines **where** each concern is authoritative. Other markdown may s
 
 | Concern | Single source of truth | Others |
 |--------|-------------------------|--------|
-| **Quick Verify** (`agentskeptic quick`, inferred units, `quick-verify-report`, export registry array) | [`quick-verify-normative.md`](quick-verify-normative.md), [`schemas/quick-verify-report.schema.json`](../schemas/quick-verify-report.schema.json) | Product SSOT: [`verification-product-ssot.md`](verification-product-ssot.md); README summarizes; behavior must match the normative doc. |
+| **Quick Verify** (`agentskeptic quick`, inferred units, `quick-verify-report`, export registry array) | [`quick-verify-normative.md`](quick-verify-normative.md), [`schemas/quick-verify-report.schema.json`](../schemas/quick-verify-report.schema.json) | Product SSOT: [`verification-product.md`](verification-product.md); README summarizes; behavior must match the normative doc. |
 | **Bootstrap pack** (`agentskeptic bootstrap`, `BootstrapPackInput` v1, pack directory layout, exit I/O) | [`bootstrap-pack-normative.md`](bootstrap-pack-normative.md), [`schemas/bootstrap-pack-input-v1.schema.json`](../schemas/bootstrap-pack-input-v1.schema.json) | This document lists the subcommand in usage only; flags, stdout/stderr, and exit codes are normative in `bootstrap-pack-normative.md` only. |
 | **Correctness definition** (`correctnessDefinition` on truth report and quick units; forward MUST text + `enforceableProjection`) | [`correctness-definition-normative.md`](correctness-definition-normative.md), [`schemas/workflow-truth-report.schema.json`](../schemas/workflow-truth-report.schema.json) (`$defs.correctnessDefinitionV1`) | Implementation: `src/correctnessDefinition.ts`, `src/correctnessDefinitionTemplates.ts`; human stderr includes `correctness_definition:` after `failure_explanation:` when non-null. |
 | **Emitted wire shape** (property names, types, `schemaVersion`, `verificationRequest` variants, `evidenceSummary` keys as JSON) | [`schemas/workflow-engine-result.schema.json`](../schemas/workflow-engine-result.schema.json), [`schemas/workflow-result.schema.json`](../schemas/workflow-result.schema.json), [`schemas/tools-registry.schema.json`](../schemas/tools-registry.schema.json) | Markdown describes behavior; it must not introduce fields or types absent from these schemas. |
@@ -68,7 +68,7 @@ This subsection maps **workflow-level verdict** and **auditable run records** ac
 
 - **`agentRunBundle.ts`**: **`writeAgentRunBundle`** writes each final file via a temp name in the run directory then **rename** into place. Order: **`events.ndjson`** → **`workflow-result.json`** → (when signing) **`workflow-result.sig.json`** → **`agent-run.json`** (manifest last). **Unsigned** path: three finals only (**`schemaVersion` `1`**). **Signed** path: on thrown error after some renames, the implementation **best-effort unlinks** completed finals in **reverse order** (sig → workflow-result → events) for that invocation only, then rethrows—see [Cryptographic signing](#cryptographic-signing-of-workflow-result-normative). On failure mid-write, temp files for the current attempt are removed; **process crash** can still leave an inconsistent directory—only **successful return** guarantees consistency for the signed path.
 - **`workflowTruthReport.ts`**: **`buildWorkflowVerdictSurface(WorkflowResult)`** for API/UI only.
-- **`decisionGate.ts`**: **`createDecisionGate`** buffers [event lines](#event-line-schema), then **`evaluate()`** / **`evaluateCertificate()`** / **`assertSafeForIrreversibleAction()`** against the same kernel as **`verifyWorkflow`**. **`toNdjsonUtf8()`** returns capture-ordered NDJSON bytes for **`writeRunBundleFromDecisionGate`** / **`writeAgentRunBundle`** (see [`decision-gate-ssot.md`](decision-gate-ssot.md)).
+- **`decisionGate.ts`**: **`createDecisionGate`** buffers [event lines](#event-line-schema), then **`evaluate()`** / **`evaluateCertificate()`** / **`assertSafeForIrreversibleAction()`** against the same kernel as **`verifyWorkflow`**. **`toNdjsonUtf8()`** returns capture-ordered NDJSON bytes for **`writeRunBundleFromDecisionGate`** / **`writeAgentRunBundle`** (see [`decision-gate.md`](decision-gate.md)).
 
 ### Workflow verdict — Integrator
 
@@ -123,7 +123,7 @@ Types: **`runTrustPanelHtml`** non-empty string (from **`renderRunTrustPanelHtml
 | **`ul[data-etl-list="introduced\|resolved\|recurring"]`** | Compare highlight lists (may be empty; no placeholder **`li`**) |
 | **`section[data-etl-section="run-trust"]`** | Trust panel root |
 | **`p[data-etl-verification-basis]`** | Fixed operator line: independent SQL basis (plan-transition runs: git + machine plan rules basis — see [Plan transition validation](#plan-transition-validation-normative)) |
-| **`table[data-etl-table="verify-evidence"]`**, **`tr[data-etl-seq]`**, **`td[data-etl-dimension="declared|expected|observed_database|verification_verdict"]`** | Step alignment + four reconciliation columns (see [reconciliation-vocabulary-ssot.md](reconciliation-vocabulary-ssot.md#reconciliation-vocabulary-canonical)) |
+| **`table[data-etl-table="verify-evidence"]`**, **`tr[data-etl-seq]`**, **`td[data-etl-dimension="declared|expected|observed_database|verification_verdict"]`** | Step alignment + four reconciliation columns (see [reconciliation-vocabulary.md](reconciliation-vocabulary.md#reconciliation-vocabulary-canonical)) |
 | **`tr[data-etl-alignment-warning="true"]`** | Truth/engine seq misalignment |
 | **`section[data-etl-section="execution-path"]`**, **`p[data-etl-execution-path-empty]`**, **`p[data-etl-execution-path-summary]`**, **`ol[data-etl-list="execution-findings"]`**, **`li[data-etl-finding-code]`** | Execution-path rollup |
 
@@ -348,7 +348,7 @@ Relational check authoring and the mapping from product vocabulary to registry c
 
 Primary integration: **`createDecisionGate`** from **`decisionGate.ts`** (package export). Call **`appendRunEvent`** after each tool with one [event line](#event-line-schema). Before irreversible work, call **`await assertSafeForIrreversibleAction()`** (throws **`DecisionUnsafeError`** with a six-line human blocker). **`evaluate()`** returns **`WorkflowResult`**; **`evaluateCertificate()`** returns **`OutcomeCertificateV1`**.
 
-**Postgres and SQLite:** pass `databaseUrl` as either a filesystem path (SQLite) or a `postgres://` / `postgresql://` URL. **`consistencyMode: "eventual"`** is supported the same as batch verify. For **MySQL, BigQuery, Microsoft SQL Server**, vector indexes, object storage, HTTP witnesses, and MongoDB verification kinds, see the normative matrix in [`verification-state-stores-ssot.md`](verification-state-stores-ssot.md).
+**Postgres and SQLite:** pass `databaseUrl` as either a filesystem path (SQLite) or a `postgres://` / `postgresql://` URL. **`consistencyMode: "eventual"`** is supported the same as batch verify. For **MySQL, BigQuery, Microsoft SQL Server**, vector indexes, object storage, HTTP witnesses, and MongoDB verification kinds, see the normative matrix in [`verification-state-stores.md`](verification-state-stores.md).
 
 Normative contracts:
 
@@ -358,7 +358,7 @@ Normative contracts:
 
 **Defaults (`truthReport` / `logStep`):** match **`verifyWorkflow`**: override with `truthReport: () => {}` in tests; pass explicit `logStep` if you need per-step stderr JSON.
 
-Full integrator SSOT: [`decision-gate-ssot.md`](decision-gate-ssot.md).
+Full integrator SSOT: [`decision-gate.md`](decision-gate.md).
 
 ### Postgres verification (batch and CLI)
 
@@ -393,7 +393,7 @@ node dist/cli.js --workflow-id <id> --events <path> --registry <path> --postgres
 
 **Gate (SQLite only):** After the same license preflight as batch verify, the CLI classifies paths with **`classifyBatchVerifyWorkload`** (`src/commercial/verifyWorkloadClassify.ts`). If the result is **`bundled_examples`**, the CLI writes a short **stderr** message containing **`INTEGRATOR_OWNED_GATE`** and **`bundled_examples`**, then exits **2** **without** running **`verifyWorkflow`** and **without** posting **`verify_started`** / **`verify_outcome`** product-activation beacons. Use standard batch verify for demos on shipped `examples/*` triples; use **`verify-integrator-owned`** when asserting integrator-owned paths (see [`docs/first-run-integration.md`](first-run-integration.md)). Postgres invocations are always **`non_bundled`** for this classifier and are never blocked by the gate.
 
-**Telemetry:** When the gate passes, product-activation bodies use wire **`subcommand`:** **`verify_integrator_owned`** (same **`workflow_lineage`** rules as **`batch_verify`** — [`src/funnel/workflowLineageClassify.ts`](../src/funnel/workflowLineageClassify.ts)). Semantics: [`docs/funnel-observability-ssot.md`](funnel-observability-ssot.md).
+**Telemetry:** When the gate passes, product-activation bodies use wire **`subcommand`:** **`verify_integrator_owned`** (same **`workflow_lineage`** rules as **`batch_verify`** — [`src/funnel/workflowLineageClassify.ts`](../src/funnel/workflowLineageClassify.ts)). Semantics: [`docs/funnel-observability.md`](funnel-observability.md).
 
 **CI lock flags:** **`--output-lock`** and **`--expect-lock`** are **not** supported on this subcommand (exit **3** with **`CLI_USAGE`**); use standard batch verify for lock orchestration.
 
@@ -500,7 +500,7 @@ When **`LICENSE_PREFLIGHT_ENABLED`** is true (commercial npm profile), the CLI m
 **Stdout contract (normative):** Emitted **`WorkflowResult`** uses **`schemaVersion` `15`**. The **`runLevelCodes`** field is **absent** on v15 objects (AJV **`additionalProperties: false`** rejects it). Operators and tools that need a flat list of run-level codes should use **`runLevelReasons[].code`** (or derive `runLevelReasons.map((r) => r.code)`). **`runLevelReasons`** remains required.
 <!-- ci:workflow-result-normative-prose:end -->
 
-**SSOT precedence (normative):** (1) JSON field names, requiredness, types, and enums on stdout are authoritative in **`schemas/*.schema.json`**; if this document’s prose disagrees, fix the prose. (2) Human stderr layout — exact line prefixes, order, and fixed phrases inside **`verification_verdict:`** — is authoritative in **this section** (Human truth report grammar) and in **`reconciliationPresentation.ts`** for the four reconciliation prefixes; **`workflowTruthReport.ts`** must match verbatim; golden tests enforce agreement. (3) Where both schema and prose describe the same JSON semantics, **the schema wins**; prose summarizes and links without redefining shapes. Canonical dimension IDs and HTML titles: [reconciliation-vocabulary-ssot.md](reconciliation-vocabulary-ssot.md#reconciliation-vocabulary-canonical).
+**SSOT precedence (normative):** (1) JSON field names, requiredness, types, and enums on stdout are authoritative in **`schemas/*.schema.json`**; if this document’s prose disagrees, fix the prose. (2) Human stderr layout — exact line prefixes, order, and fixed phrases inside **`verification_verdict:`** — is authoritative in **this section** (Human truth report grammar) and in **`reconciliationPresentation.ts`** for the four reconciliation prefixes; **`workflowTruthReport.ts`** must match verbatim; golden tests enforce agreement. (3) Where both schema and prose describe the same JSON semantics, **the schema wins**; prose summarizes and links without redefining shapes. Canonical dimension IDs and HTML titles: [reconciliation-vocabulary.md](reconciliation-vocabulary.md#reconciliation-vocabulary-canonical).
 
 This section is **normative**: literals and line shape match `formatWorkflowTruthReportStruct` applied to `buildWorkflowTruthReport(engine)` in `workflowTruthReport.ts` and the contract tests.
 
@@ -651,7 +651,7 @@ These fields are **verification** metadata for **external** consumers: they desc
    - Line exactly `steps:`.
    - For each step in array order:
      - One header line `  - seq=` + decimal seq + ` tool=` + toolId (defensive: `\r`/`\n` in toolId → `_`). **No** `result=` on this line.
-     - Exactly four reconciliation lines (four leading spaces each), using the same prefixes as **`reconciliationPresentation.ts`** (see [SSOT table](reconciliation-vocabulary-ssot.md#reconciliation-vocabulary-canonical)):
+     - Exactly four reconciliation lines (four leading spaces each), using the same prefixes as **`reconciliationPresentation.ts`** (see [SSOT table](reconciliation-vocabulary.md#reconciliation-vocabulary-canonical)):
        1. `    declared: ` + single line: `tool=<toolId>; intent=<narrative>` with empty narrative → `intent=(none)`; always `; parameters_digest=<observedExecution.paramsCanonical>` (operational-message normalized).
        2. `    expected: ` + one-line **`verifyTarget`** from truth JSON when non-null; when **`verifyTarget`** is JSON **`null`**, the literal **`(none — no resolvable SQL expectation)`** (same string as **`EXPECTED_NONE_NO_SQL`** in code).
        3. `    observed_database: ` + **`observedStateSummary`** (must equal JSON **`workflowTruthReport.steps[].observedStateSummary`** byte-for-byte).
@@ -851,7 +851,7 @@ Resolver messages for `sql_effects` prefix per-effect failures with `effects[<id
 
 ## Funnel attribution CLI (`funnel-anon`) — normative
 
-**Purpose:** Persist the browser-issued anonymous funnel id for **`POST /api/funnel/product-activation`** join keys. Full browser → CLI contract: [`funnel-observability-ssot.md`](funnel-observability-ssot.md#funnel-attribution-normative).
+**Purpose:** Persist the browser-issued anonymous funnel id for **`POST /api/funnel/product-activation`** join keys. Full browser → CLI contract: [`funnel-observability.md`](funnel-observability.md#funnel-attribution-normative).
 
 ### CLI
 

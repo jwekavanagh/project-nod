@@ -1,14 +1,14 @@
 # Growth metrics — single source of truth
 
-<!-- epistemic-contract:consumer:growth-metrics-ssot -->
-**Epistemic framing (pointer only):** Normative definitions—[`epistemic-contract.md`](epistemic-contract.md). Adoption operational SSOT (four-way, verdicts): [`adoption-epistemics-ssot.md`](adoption-epistemics-ssot.md).
-<!-- /epistemic-contract:consumer:growth-metrics-ssot -->
+<!-- epistemic-contract:consumer:growth-metrics -->
+**Epistemic framing (pointer only):** Normative definitions—[`epistemic-contract.md`](epistemic-contract.md). Adoption operational SSOT (four-way, verdicts): [`adoption-epistemics.md`](adoption-epistemics.md).
+<!-- /epistemic-contract:consumer:growth-metrics -->
 
-This document is the **normative semantics SSOT** for **operator growth metrics**: cross-surface correlation, conversion, retention, and related KPIs backed by `funnel_event` and `usage_counter` data. **Normative SQL** lives only in the fenced `sql` blocks below; **structural completeness** of this file is enforced by `website/__tests__/growth-metrics-ssot.contract.test.ts` in CI.
+This document is the **normative semantics SSOT** for **operator growth metrics**: cross-surface correlation, conversion, retention, and related KPIs backed by `funnel_event` and `usage_counter` data. **Normative SQL** lives only in the fenced `sql` blocks below; **structural completeness** of this file is enforced by `website/__tests__/growth-metrics.contract.test.ts` in CI.
 
-**Join completeness:** Cross-surface numerators that correlate on **`funnel_anon_id`** assume the integrator followed [Funnel attribution (normative)](funnel-observability-ssot.md#funnel-attribution-normative) (`agentskeptic funnel-anon pull`, **`funnel-anon set`**, or the documented env override).
+**Join completeness:** Cross-surface numerators that correlate on **`funnel_anon_id`** assume the integrator followed [Funnel attribution (normative)](funnel-observability.md#funnel-attribution-normative) (`agentskeptic funnel-anon pull`, **`funnel-anon set`**, or the documented env override).
 
-**HTTP ingestion, attribution field shapes, max lengths, and `schema_version` for beacons** are defined only in [`docs/funnel-observability-ssot.md`](funnel-observability-ssot.md). This document references **`funnel_anon_id`** as a join key only; it does **not** redefine attribution schema. **`install_id`** (CLI pseudonymous machine cohort on `funnel_event`) is defined only in that SSOT.
+**HTTP ingestion, attribution field shapes, max lengths, and `schema_version` for beacons** are defined only in [`docs/funnel-observability.md`](funnel-observability.md). This document references **`funnel_anon_id`** as a join key only; it does **not** redefine attribution schema. **`install_id`** (CLI pseudonymous machine cohort on `funnel_event`) is defined only in that SSOT.
 
 ### Operator execution contract (normative)
 
@@ -22,7 +22,7 @@ This document is the **normative semantics SSOT** for **operator growth metrics*
 
 **Read-only obligation:** Operators MUST issue only **read-only** statements for production observation—**`SELECT`** and **`EXPLAIN`** (for analysis). Operators MUST NOT run **`INSERT`**, **`UPDATE`**, **`DELETE`**, or **DDL** (`CREATE`, `ALTER`, `DROP`, etc.) against production from operator sessions.
 
-**Two databases (summary):** Telemetry-tier anonymous funnel KPIs → **`TELEMETRY_DATABASE_URL`**. Core-tier `reserve_allowed` retention → **`DATABASE_URL`**. Storage split: [`docs/telemetry-storage-ssot.md`](telemetry-storage-ssot.md).
+**Two databases (summary):** Telemetry-tier anonymous funnel KPIs → **`TELEMETRY_DATABASE_URL`**. Core-tier `reserve_allowed` retention → **`DATABASE_URL`**. Storage split: [`docs/telemetry-storage.md`](telemetry-storage.md).
 
 ### Rolling versus calendar bounded windows (normative warning)
 
@@ -37,8 +37,8 @@ This document is the **normative semantics SSOT** for **operator growth metrics*
 | `ActiveInstalls_DistinctInstallId_VerifyStarted_Rolling7dUtc` | Operator | Distinct CLI `install_id` values with ≥1 **non–`local_dev`** `verify_started` in rolling 7 UTC days (install cohort, not humans) |
 | `CrossSurface_ConversionRate_AcquisitionToIntegrate_Rolling7dUtc` | Operator | Among acquisition-landed ids in the window, what fraction also have `integrate_landed` in the window (motivation / next-step proxy) |
 | `CrossSurface_ConversionRate_IntegrateToVerifyOutcome_Rolling7dUtc` | Operator | Among integrate-landed ids in the window, what fraction also have a qualifying `verify_outcome` in the window (execution proxy) |
-| `CrossSurface_ConversionRate_QualifiedIntegrateToVerifyOutcome_Rolling7dUtc` | Operator | Same denominator as integrate→`verify_outcome`; numerator restricted to **`verify_outcome`** rows with **`metadata->>'workload_class' = 'non_bundled'`** (path heuristic—see [`funnel-observability-ssot.md`](funnel-observability-ssot.md) §**Qualification proxy (operator)**) |
-| `CrossSurface_ConversionRate_QualifiedIntegrateToIntegratorScopedVerifyOutcome_Rolling7dUtc` | Operator | Same denominator as qualified integrate→`verify_outcome`; numerator further requires **`metadata->>'workflow_lineage' = 'integrator_scoped'`** (CLI schema v3—see [`funnel-observability-ssot.md`](funnel-observability-ssot.md) **product-activation v3**) |
+| `CrossSurface_ConversionRate_QualifiedIntegrateToVerifyOutcome_Rolling7dUtc` | Operator | Same denominator as integrate→`verify_outcome`; numerator restricted to **`verify_outcome`** rows with **`metadata->>'workload_class' = 'non_bundled'`** (path heuristic—see [`funnel-observability.md`](funnel-observability.md) §**Qualification proxy (operator)**) |
+| `CrossSurface_ConversionRate_QualifiedIntegrateToIntegratorScopedVerifyOutcome_Rolling7dUtc` | Operator | Same denominator as qualified integrate→`verify_outcome`; numerator further requires **`metadata->>'workflow_lineage' = 'integrator_scoped'`** (CLI schema v3—see [`funnel-observability.md`](funnel-observability.md) **product-activation v3**) |
 | `CrossSurface_ConversionRate_QualifiedIntegrateToVerifyStarted_Rolling7dUtc` | Operator | Among integrate-landed ids in the window, what fraction also have ≥1 **qualified** **`verify_started`** in the window (failure mode **A**—missing qualified start signal after integrate impression) |
 | `Counts_QualifiedVerifyOutcomesByTerminalStatus_Rolling7dUtc` | Operator | Among qualified **`verify_outcome`** rows in the window, counts by **`terminal_status`** wire literals plus **`malformed_other`** (failure mode **B**—terminal mix + malformed) |
 
@@ -46,10 +46,10 @@ This document is the **normative semantics SSOT** for **operator growth metrics*
 
 ## Funnel metadata reference (read-only)
 
-- **`funnel_anon_id`:** pseudonymous correlation id on anonymous `funnel_event` rows (surface + product-activation). Semantics: [`docs/funnel-observability-ssot.md`](funnel-observability-ssot.md).
-- **`install_id`:** nullable column on `funnel_event` for CLI activation telemetry (default pseudonymous install). Semantics: [`docs/funnel-observability-ssot.md`](funnel-observability-ssot.md).
+- **`funnel_anon_id`:** pseudonymous correlation id on anonymous `funnel_event` rows (surface + product-activation). Semantics: [`docs/funnel-observability.md`](funnel-observability.md).
+- **`install_id`:** nullable column on `funnel_event` for CLI activation telemetry (default pseudonymous install). Semantics: [`docs/funnel-observability.md`](funnel-observability.md).
 - **`telemetry_source`:** string in `funnel_event.metadata` for activation rows (`verify_started` / `verify_outcome`). Wire v2 sends `local_dev` or `unknown`; v1 clients are stored as **`legacy_unattributed`** server-side. **`unknown` is not “external-only.”** It labels non–`local_dev` client-declared traffic that still posts. Metrics that exclude local operator noise filter with **`metadata->>'telemetry_source' IS DISTINCT FROM 'local_dev'`** (see metric sections below).
-- **`workflow_lineage`:** optional string on activation rows from **schema_version 3** bodies only (`catalog_shipped` \| `integrate_spine` \| `integrator_scoped` \| `unknown`). Semantics and classifier: [`src/funnel/workflowLineageClassify.ts`](../src/funnel/workflowLineageClassify.ts); wire: [`docs/funnel-observability-ssot.md`](funnel-observability-ssot.md). Rows without this key (v1/v2 clients) never satisfy **`= 'integrator_scoped'`** filters.
+- **`workflow_lineage`:** optional string on activation rows from **schema_version 3** bodies only (`catalog_shipped` \| `integrate_spine` \| `integrator_scoped` \| `unknown`). Semantics and classifier: [`src/funnel/workflowLineageClassify.ts`](../src/funnel/workflowLineageClassify.ts); wire: [`docs/funnel-observability.md`](funnel-observability.md). Rows without this key (v1/v2 clients) never satisfy **`= 'integrator_scoped'`** filters.
 
 ---
 
@@ -97,7 +97,7 @@ SELECT (
 
 ### Operator interpretation contract (funnel decomposition)
 
-Normative rules for reading **stage-separated** cross-surface rates next to the **compressed** acquisition→`verify_outcome` rate. Ingestion HTTP contracts and beacon field shapes are **not** redefined here—only [`docs/funnel-observability-ssot.md`](docs/funnel-observability-ssot.md).
+Normative rules for reading **stage-separated** cross-surface rates next to the **compressed** acquisition→`verify_outcome` rate. Ingestion HTTP contracts and beacon field shapes are **not** redefined here—only [`docs/funnel-observability.md`](docs/funnel-observability.md).
 
 **Allowed inferences**
 
@@ -119,7 +119,7 @@ Normative rules for reading **stage-separated** cross-surface rates next to the 
 
 - **Integrate-only ids:** If the only in-window surface rows for an id are `integrate_landed` (no in-window `acquisition_landed` for that id), that id **does not** enter the **acquisition→integrate** denominator and **does** enter the **integrate→verify outcome** denominator when integrate fired. Operators **must not** read integrate-only traffic as a failure of the acquisition→integrate rate (that rate’s denominator excludes those ids by definition).
 
-- **Missing join key on activation:** `verify_outcome` rows where `metadata->>'funnel_anon_id'` is null or empty **cannot** increase any cross-surface numerator that joins on that key. Operators **must not** treat a low rate as proof that verification did not run if the CLI did not propagate the browser id (see optional env in [`docs/funnel-observability-ssot.md`](docs/funnel-observability-ssot.md)).
+- **Missing join key on activation:** `verify_outcome` rows where `metadata->>'funnel_anon_id'` is null or empty **cannot** increase any cross-surface numerator that joins on that key. Operators **must not** treat a low rate as proof that verification did not run if the CLI did not propagate the browser id (see optional env in [`docs/funnel-observability.md`](docs/funnel-observability.md)).
 
 - **Outcome without integrate:** `verify_outcome` **without** an in-window `integrate_landed` for the same id **does not** count toward the **integrate→verify outcome** numerator.
 
@@ -140,7 +140,7 @@ Normative rules for reading **stage-separated** cross-surface rates next to the 
 | `CrossSurface_ConversionRate_IntegrateToVerifyOutcome_Rolling7dUtc` | Among integrate-landed ids in the window, what fraction also have a qualifying `verify_outcome` in the window? | Proof that the user ever hit acquisition; proof that `funnel_anon_id` was propagated on every machine |
 | `CrossSurface_ConversionRate_QualifiedIntegrateToVerifyOutcome_Rolling7dUtc` | Among integrate-landed ids in the window, what fraction also posted a **`verify_outcome`** with **`workload_class` = `non_bundled`** in the window? | Proof of ICP or production traffic; proof the integrator understood the product; substitute for user outcome |
 | `CrossSurface_ConversionRate_QualifiedIntegrateToIntegratorScopedVerifyOutcome_Rolling7dUtc` | Same as qualified integrate→outcome, but the **`verify_outcome`** must also report **`workflow_lineage` = `integrator_scoped`** (schema v3). | Proof of **ProductionComplete** or **Decision-ready** artifacts (A1–A5); proof the integrate spine terminal (`wf_integrate_spine`) ran; proof of revenue; substitute for **user outcome** |
-| `CrossSurface_ConversionRate_QualifiedIntegrateToVerifyStarted_Rolling7dUtc` | Among integrate-landed ids in the window, what fraction also have ≥1 qualified **`verify_started`** in the window? | Proof that the customer failed Step 4 / **ProductionComplete**; proof of revenue; substitute for **Decision-ready ProductionComplete** (see [`adoption-epistemics-ssot.md`](adoption-epistemics-ssot.md)) |
+| `CrossSurface_ConversionRate_QualifiedIntegrateToVerifyStarted_Rolling7dUtc` | Among integrate-landed ids in the window, what fraction also have ≥1 qualified **`verify_started`** in the window? | Proof that the customer failed Step 4 / **ProductionComplete**; proof of revenue; substitute for **Decision-ready ProductionComplete** (see [`adoption-epistemics.md`](adoption-epistemics.md)) |
 | `Counts_QualifiedVerifyOutcomesByTerminalStatus_Rolling7dUtc` | Among qualified **`verify_outcome`** rows in the window, how many terminal **`complete` / `inconsistent` / `incomplete`** vs malformed? | Proof of integrator-owned inputs or A1–A5 artifacts; proof that a low `complete` count means the engine failed |
 
 ---
@@ -234,7 +234,7 @@ SELECT
 
 **Explicit prohibitions (must not):**
 
-- **`non_bundled`** is assigned by [`src/commercial/verifyWorkloadClassify.ts`](../src/commercial/verifyWorkloadClassify.ts); it is **not** proof of customer data or ICP fit—see [`funnel-observability-ssot.md`](funnel-observability-ssot.md) §**Qualification proxy (operator)**.
+- **`non_bundled`** is assigned by [`src/commercial/verifyWorkloadClassify.ts`](../src/commercial/verifyWorkloadClassify.ts); it is **not** proof of customer data or ICP fit—see [`funnel-observability.md`](funnel-observability.md) §**Qualification proxy (operator)**.
 - Rows where **`workload_class`** is null or not exactly **`non_bundled`** do **not** count toward **`N`** (including legacy rows missing the key).
 
 ```sql
@@ -374,7 +374,7 @@ SELECT
 
 **Explicit prohibitions (must not):**
 
-- **Bucket counts are not** proof of **Decision-ready ProductionComplete** or integrator-retained artifacts **A1–A5**; those are defined only in [`adoption-epistemics-ssot.md`](adoption-epistemics-ssot.md).
+- **Bucket counts are not** proof of **Decision-ready ProductionComplete** or integrator-retained artifacts **A1–A5**; those are defined only in [`adoption-epistemics.md`](adoption-epistemics.md).
 
 ```sql
 WITH w AS (
@@ -489,4 +489,4 @@ SELECT
 
 ## Validation (release gate)
 
-`npm run validate-commercial` runs the commercial funnel harness (see [`scripts/validate-commercial-funnel.mjs`](../scripts/validate-commercial-funnel.mjs)). **Growth metric SQL** in this document is not executed in CI; **structural and reference integrity** for this SSOT are enforced by `website/__tests__/growth-metrics-ssot.contract.test.ts` and `website/__tests__/repo-reference-integrity.growth-observability.test.ts`.
+`npm run validate-commercial` runs the commercial funnel harness (see [`scripts/validate-commercial-funnel.mjs`](../scripts/validate-commercial-funnel.mjs)). **Growth metric SQL** in this document is not executed in CI; **structural and reference integrity** for this SSOT are enforced by `website/__tests__/growth-metrics.contract.test.ts` and `website/__tests__/repo-reference-integrity.growth-observability.test.ts`.

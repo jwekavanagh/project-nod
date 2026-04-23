@@ -1,5 +1,5 @@
 /**
- * Branch-B → normalize → parse → synthesizeQuickInputUtf8FromOpenAiV1 → `quick` CLI (see docs/registry-draft-ssot.md).
+ * Branch-B → normalize → parse → synthesizeQuickInputUtf8FromOpenAiV1 → `quick` CLI (see docs/registry-draft.md).
  */
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";

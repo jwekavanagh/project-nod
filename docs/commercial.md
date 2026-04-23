@@ -1,10 +1,10 @@
 # Commercial layer — single source of truth
 
-<!-- epistemic-contract:consumer:commercial-ssot -->
-**Epistemic framing (pointer only):** [`epistemic-contract.md`](epistemic-contract.md). Adoption and verdict semantics: [`adoption-epistemics-ssot.md`](adoption-epistemics-ssot.md).
-<!-- /epistemic-contract:consumer:commercial-ssot -->
+<!-- epistemic-contract:consumer:commercial -->
+**Epistemic framing (pointer only):** [`epistemic-contract.md`](epistemic-contract.md). Adoption and verdict semantics: [`adoption-epistemics.md`](adoption-epistemics.md).
+<!-- /epistemic-contract:consumer:commercial -->
 
-This document is the **narrative SSOT** for the thin commercial layer (website, billing, API keys, CLI preflight). It does **not** redefine CLI verification semantics—see [verification-product-ssot.md](verification-product-ssot.md) and [agentskeptic.md](agentskeptic.md).
+This document is the **narrative SSOT** for the thin commercial layer (website, billing, API keys, CLI preflight). It does **not** redefine CLI verification semantics—see [verification-product.md](verification-product.md) and [agentskeptic.md](agentskeptic.md).
 
 **Related (integrator, not duplicated here):** [first-run-integration.md](first-run-integration.md) — run verification against your own SQL database; rendered on the site as **`/integrate`**.
 
@@ -18,11 +18,11 @@ In-process **`createDecisionGate`** in your application evaluates read-only SQL 
 
 ## Evaluation path
 
-Run the mechanical first-run path on the canonical site at **`/integrate`** (clone, build, bundled demo, then crossing on your prepared SQLite or Postgres). When you need Stripe-backed metering, API keys, and plan caps, use **`/pricing`** on the same site and keep this repository’s **commercial SSOT** (`docs/commercial-ssot.md`) as the normative contract for entitlements.
+Run the mechanical first-run path on the canonical site at **`/integrate`** (clone, build, bundled demo, then crossing on your prepared SQLite or Postgres). When you need Stripe-backed metering, API keys, and plan caps, use **`/pricing`** on the same site and keep this repository’s **commercial SSOT** (`docs/commercial.md`) as the normative contract for entitlements.
 
 <!-- buyer-surface-commercial-boundary:end -->
 
-**Operator funnel metrics (North Star):** [funnel-observability-ssot.md](funnel-observability-ssot.md) — acquisition and integrate impressions, anonymous CLI activation (`verify_started` / `verify_outcome` via `product_activation_*_beacon` on **telemetry** Postgres), and licensed CLI completion beacons on core (`funnel_event` / `verify_outcome_beacon`). Storage split: [telemetry-storage-ssot.md](telemetry-storage-ssot.md). Stage-separated rolling conversion metric ids live only in [growth-metrics-ssot.md](growth-metrics-ssot.md): `CrossSurface_ConversionRate_AcquisitionToIntegrate_Rolling7dUtc`, `CrossSurface_ConversionRate_IntegrateToVerifyOutcome_Rolling7dUtc`, `CrossSurface_ConversionRate_QualifiedIntegrateToVerifyOutcome_Rolling7dUtc` (integrate→outcome with **`workload_class` = `non_bundled`** numerator—see [Qualification proxy (operator)](funnel-observability-ssot.md#qualification-proxy-operator)), `CrossSurface_ConversionRate_QualifiedIntegrateToIntegratorScopedVerifyOutcome_Rolling7dUtc` (same denominator; numerator also requires **`workflow_lineage` = `integrator_scoped`** on schema v3 activation rows—see [growth-metrics-ssot.md](growth-metrics-ssot.md) §**CrossSurface_ConversionRate_QualifiedIntegrateToIntegratorScopedVerifyOutcome_Rolling7dUtc**), and the existing compressed `CrossSurface_ConversionRate_AcquisitionToVerifyOutcome_Rolling7dUtc`. **Interpretation (user vs telemetry capture)** is normative under [User outcome vs telemetry capture (operator)](funnel-observability-ssot.md#user-outcome-vs-telemetry-capture-operator). **CLI activation POST reachability** (403/400/204 behaviors and split-origin guidance) is normative only under **Activation reachability (operator)** in [funnel-observability-ssot.md](funnel-observability-ssot.md#activation-reachability-operator)—not duplicated here.
+**Operator funnel metrics (North Star):** [funnel-observability.md](funnel-observability.md) — acquisition and integrate impressions, anonymous CLI activation (`verify_started` / `verify_outcome` via `product_activation_*_beacon` on **telemetry** Postgres), and licensed CLI completion beacons on core (`funnel_event` / `verify_outcome_beacon`). Storage split: [telemetry-storage.md](telemetry-storage.md). Stage-separated rolling conversion metric ids live only in [growth-metrics.md](growth-metrics.md): `CrossSurface_ConversionRate_AcquisitionToIntegrate_Rolling7dUtc`, `CrossSurface_ConversionRate_IntegrateToVerifyOutcome_Rolling7dUtc`, `CrossSurface_ConversionRate_QualifiedIntegrateToVerifyOutcome_Rolling7dUtc` (integrate→outcome with **`workload_class` = `non_bundled`** numerator—see [Qualification proxy (operator)](funnel-observability.md#qualification-proxy-operator)), `CrossSurface_ConversionRate_QualifiedIntegrateToIntegratorScopedVerifyOutcome_Rolling7dUtc` (same denominator; numerator also requires **`workflow_lineage` = `integrator_scoped`** on schema v3 activation rows—see [growth-metrics.md](growth-metrics.md) §**CrossSurface_ConversionRate_QualifiedIntegrateToIntegratorScopedVerifyOutcome_Rolling7dUtc**), and the existing compressed `CrossSurface_ConversionRate_AcquisitionToVerifyOutcome_Rolling7dUtc`. **Interpretation (user vs telemetry capture)** is normative under [User outcome vs telemetry capture (operator)](funnel-observability.md#user-outcome-vs-telemetry-capture-operator). **CLI activation POST reachability** (403/400/204 behaviors and split-origin guidance) is normative only under **Activation reachability (operator)** in [funnel-observability.md](funnel-observability.md#activation-reachability-operator)—not duplicated here.
 
 ## Approved product scope (v1)
 
@@ -39,7 +39,7 @@ Run the mechanical first-run path on the canonical site at **`/integrate`** (clo
 
 **Source of truth:** [`config/commercial-plans.json`](../config/commercial-plans.json) — included amounts, list prices, annual prepay cents, overage microusd/verification, and Stripe env key *names* (not secrets).
 
-<!-- commercial-plans-parity: included monthly (starter, individual, team, business) = 1000, 5000, 20000, 100000 — scripts/check-commercial-plans-ssot.mjs -->
+<!-- commercial-plans-parity: included monthly (starter, individual, team, business) = 1000, 5000, 20000, 100000 — scripts/check-commercial-plans.mjs -->
 
 ### Free vs paid boundary (normative v1)
 
@@ -123,7 +123,7 @@ Forks: build with `oss` to omit the gate.
 
 **Account UI:** **`Manage billing`** is rendered **only** when **`GET /api/account/commercial-state`** (and server-rendered initial state) include **`hasStripeCustomer: true`** (non-empty trimmed **`stripe_customer_id`**).
 
-**`GET /api/account/commercial-state` (authenticated):** JSON includes existing plan and billing fields plus **`monthlyQuota`**: **`yearMonth`** (UTC `YYYY-MM`), **`keys[]`** with per–API-key **`used`** and **`limit`** (use `null` for unlimited enterprise included monthly), **`distinctReserveUtcDaysThisMonth`** (count of distinct UTC calendar dates with a **`reserve_allowed`** row this month — account activity gauge only), and **`worstUrgency`** (`ok` \| `notice` \| `warning` \| `at_cap`) from usage vs plan thresholds. Operator rolling retention KPIs live in [`docs/growth-metrics-ssot.md`](growth-metrics-ssot.md); do **not** label the month gauge as that retention KPI in UI copy.
+**`GET /api/account/commercial-state` (authenticated):** JSON includes existing plan and billing fields plus **`monthlyQuota`**: **`yearMonth`** (UTC `YYYY-MM`), **`keys[]`** with per–API-key **`used`** and **`limit`** (use `null` for unlimited enterprise included monthly), **`distinctReserveUtcDaysThisMonth`** (count of distinct UTC calendar dates with a **`reserve_allowed`** row this month — account activity gauge only), and **`worstUrgency`** (`ok` \| `notice` \| `warning` \| `at_cap`) from usage vs plan thresholds. Operator rolling retention KPIs live in [`docs/growth-metrics.md`](growth-metrics.md); do **not** label the month gauge as that retention KPI in UI copy.
 
 **Operator — Stripe Dashboard:** Enable the **Customer billing portal**; link the same **Products/Prices** used for self-serve Checkout so customers can switch plans without leaving Stripe’s UI. Misconfiguration surfaces as **500** on **`POST /api/account/billing-portal`** until fixed.
 
@@ -156,11 +156,11 @@ From the repo root, **`npm run validate-commercial`** requires **`DATABASE_URL`*
 
 ### Public anchors and OpenAPI source
 
-The editable OpenAPI “header” and distribution tokens live in [`schemas/openapi-commercial-v1.in.yaml`](../schemas/openapi-commercial-v1.in.yaml). [`schemas/openapi-commercial-v1.yaml`](../schemas/openapi-commercial-v1.yaml) is **generated** — do not hand-edit. Rationale (single source for URLs, valid OAS layout, no placeholder hosts): **[`docs/public-distribution-ssot.md`](public-distribution-ssot.md)**.
+The editable OpenAPI “header” and distribution tokens live in [`schemas/openapi-commercial-v1.in.yaml`](../schemas/openapi-commercial-v1.in.yaml). [`schemas/openapi-commercial-v1.yaml`](../schemas/openapi-commercial-v1.yaml) is **generated** — do not hand-edit. Rationale (single source for URLs, valid OAS layout, no placeholder hosts): **[`docs/public-distribution.md`](public-distribution.md)**.
 
 ## `/integrate` and integrator documentation
 
-- **Operator signal (integrate → qualified `verify_started`, rolling 7d UTC):** see metric id **`CrossSurface_ConversionRate_QualifiedIntegrateToVerifyStarted_Rolling7dUtc`** in [`growth-metrics-ssot.md`](growth-metrics-ssot.md)—not proof of **Decision-ready ProductionComplete** (artifact bar in [`adoption-epistemics-ssot.md`](adoption-epistemics-ssot.md)).
+- **Operator signal (integrate → qualified `verify_started`, rolling 7d UTC):** see metric id **`CrossSurface_ConversionRate_QualifiedIntegrateToVerifyStarted_Rolling7dUtc`** in [`growth-metrics.md`](growth-metrics.md)—not proof of **Decision-ready ProductionComplete** (artifact bar in [`adoption-epistemics.md`](adoption-epistemics.md)).
 - **SSOT prose and commands** remain [`docs/first-run-integration.md`](first-run-integration.md) and [`docs/partner-quickstart-commands.md`](partner-quickstart-commands.md).
 - **`/integrate` route:** [`website/src/app/integrate/page.tsx`](../website/src/app/integrate/page.tsx) renders **pack-led** copy from [`config/marketing.json`](../config/marketing.json) (`integratePage`: one command block, requirements, proof line, GitHub deep links) plus [`website/src/content/siteMetadata.ts`](../website/src/content/siteMetadata.ts) for the `h1` / description. It does **not** import **`integratorDocsEmbedded`** at build or runtime.
 - **Build-embedded strings:** **`website/src/generated/integratorDocsEmbedded.ts`** is still produced by **`node scripts/sync-integrator-docs-embedded.mjs`** during **`website` `prebuild`** so CI parity tests ([`website/__tests__/integratorDocsEmbedded.parity.test.ts`](../website/__tests__/integratorDocsEmbedded.parity.test.ts), [`website/__tests__/integrate-embedded.no-filesystem.test.ts`](../website/__tests__/integrate-embedded.no-filesystem.test.ts)) can assert the generated blobs track `docs/` without reading the monorepo `docs/` tree from the deployed serverless bundle for **`/integrate`**.

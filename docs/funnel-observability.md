@@ -1,16 +1,16 @@
 # Funnel observability — single source of truth
 
-<!-- epistemic-contract:consumer:funnel-observability-ssot -->
-**Epistemic framing (pointer only):** [`epistemic-contract.md`](epistemic-contract.md). Adoption operational SSOT: [`adoption-epistemics-ssot.md`](adoption-epistemics-ssot.md).
-<!-- /epistemic-contract:consumer:funnel-observability-ssot -->
+<!-- epistemic-contract:consumer:funnel-observability -->
+**Epistemic framing (pointer only):** [`epistemic-contract.md`](epistemic-contract.md). Adoption operational SSOT: [`adoption-epistemics.md`](adoption-epistemics.md).
+<!-- /epistemic-contract:consumer:funnel-observability -->
 
 This document is the **SSOT** for **North Star funnel metrics**: measurable progression from canonical acquisition → integrate → **CLI verification attempts and outcomes** (OSS and commercial) → **licensed verification completion** where applicable. It does **not** change verification semantics, entitlements, or OpenAPI integrator contracts.
 
-**Not duplicated here:** Stripe billing and `POST /api/v1/usage/reserve` behavior remain in [`commercial-ssot.md`](commercial-ssot.md). Integrator first-run steps remain in [`first-run-integration.md`](first-run-integration.md).
+**Not duplicated here:** Stripe billing and `POST /api/v1/usage/reserve` behavior remain in [`commercial.md`](commercial.md). Integrator first-run steps remain in [`first-run-integration.md`](first-run-integration.md).
 
-**OSS account claim (binding `run_id` → `user_id`):** Normative HTTP, CLI origin, pending-cookie handoff, rate limits, TTL, and retention live only in [`oss-account-claim-ssot.md`](oss-account-claim-ssot.md). `run_id` is never a public bearer secret; do not add public lookup by `run_id`.
+**OSS account claim (binding `run_id` → `user_id`):** Normative HTTP, CLI origin, pending-cookie handoff, rate limits, TTL, and retention live only in [`oss-account-claim.md`](oss-account-claim.md). `run_id` is never a public bearer secret; do not add public lookup by `run_id`.
 
-**Telemetry-tier persistence:** Which rows live on core vs telemetry Postgres, cutover order, freeze, and backfill are documented only in [`docs/telemetry-storage-ssot.md`](telemetry-storage-ssot.md).
+**Telemetry-tier persistence:** Which rows live on core vs telemetry Postgres, cutover order, freeze, and backfill are documented only in [`docs/telemetry-storage.md`](telemetry-storage.md).
 
 ## Funnel attribution (normative)
 
@@ -50,7 +50,7 @@ When activation telemetry is captured, a successful **IntegrateSpineComplete** r
 
 **`agentskeptic crossing`:** The integrator-owned **final** phase inside **`crossing`** (bootstrap-led or pack-led) posts product-activation telemetry with the same **`verify_integrator_owned`** subcommand discriminator as standalone **`verify-integrator-owned`**—see [`crossing-normative.md`](crossing-normative.md).
 
-Cross-surface metric **SQL and definitions** remain only in [`growth-metrics-ssot.md`](growth-metrics-ssot.md); do not duplicate numerators or denominators here.
+Cross-surface metric **SQL and definitions** remain only in [`growth-metrics.md`](growth-metrics.md); do not duplicate numerators or denominators here.
 
 ---
 
@@ -68,7 +68,7 @@ These **minimum** outcomes for **`POST /api/funnel/product-activation`** are enf
 
 **Definitions (do not conflate):**
 
-- **User outcome** — What happened on the machine running the CLI: terminal workflow or Quick Verify result, stdout/stderr contracts, and exit codes. This is **authoritative for product truth** (see [`verification-product-ssot.md`](verification-product-ssot.md)).
+- **User outcome** — What happened on the machine running the CLI: terminal workflow or Quick Verify result, stdout/stderr contracts, and exit codes. This is **authoritative for product truth** (see [`verification-product.md`](verification-product.md)).
 - **Telemetry capture** — Whether **`funnel_event`** rows (e.g. **`verify_started`**, **`verify_outcome`**) were **accepted and persisted** on the telemetry-tier Postgres. This is **operator observation only** and **not authoritative** for product correctness; it is **not** proof of verification correctness and can diverge from user outcome.
 
 CLI posts use **`postProductActivationEvent`** semantics: **best-effort** `fetch` to **`/api/funnel/product-activation`**, **`AGENTSKEPTIC_TELEMETRY=0`** disables POSTs entirely, and failures do **not** change verification exit codes ([`src/telemetry/postProductActivationEvent.ts`](../src/telemetry/postProductActivationEvent.ts)). Therefore **absence of rows is ambiguous** without local/cli context.
@@ -79,7 +79,7 @@ Factors where the integrator may never reach a terminal verification object, or 
 
 - Environment or repo setup not finished (prerequisites in [`first-run-integration.md`](first-run-integration.md)).
 - Verification engine or config error before a terminal **`WorkflowResult`** / Quick report exists (see **partial activation** in [CLI lock telemetry sequencing](#cli-lock-telemetry-sequencing)).
-- Operator or integrator did not persist the browser **`funnel_anon_id`** (no **`agentskeptic funnel-anon set`** and no non-empty **`AGENTSKEPTIC_FUNNEL_ANON_ID`** override), so cross-surface KPI numerators that join on **`funnel_anon_id`** may not move even when verification ran—see **Missing join key on activation** in [`growth-metrics-ssot.md`](growth-metrics-ssot.md) (*Explicit prohibitions* / operator interpretation contract).
+- Operator or integrator did not persist the browser **`funnel_anon_id`** (no **`agentskeptic funnel-anon set`** and no non-empty **`AGENTSKEPTIC_FUNNEL_ANON_ID`** override), so cross-surface KPI numerators that join on **`funnel_anon_id`** may not move even when verification ran—see **Missing join key on activation** in [`growth-metrics.md`](growth-metrics.md) (*Explicit prohibitions* / operator interpretation contract).
 
 ### Telemetry capture-side
 
@@ -89,28 +89,28 @@ Factors where **user outcome can succeed** while **no qualifying `verify_outcome
 - **Best-effort transport failure** — network, timeout (~400ms bound), skewed **`issued_at`** (**`400`**), oversize body (**`413`**), maintenance (**`503`**), missing telemetry DB (**`503`**); see [HTTP semantics](#post-apifunnelproduct-activation-http-semantics).
 - **Split deployment** — license API origin does not serve **`POST /api/funnel/product-activation`** unless **`AGENTSKEPTIC_TELEMETRY_ORIGIN`** is set correctly (see **Split deployments** above and **When to set `AGENTSKEPTIC_TELEMETRY_ORIGIN`** under [Operator reading metrics](#operator-reading-metrics-do-not-double-count)).
 - **Idempotent replay** — duplicate **`run_id`** for the same phase returns **`204`** without a second row (expected).
-- **Rolling KPI filters** — e.g. **`telemetry_source === 'local_dev'`** excluded from non-local activation metrics per [`growth-metrics-ssot.md`](growth-metrics-ssot.md); interpret metric ids there, do not redefine SQL here.
+- **Rolling KPI filters** — e.g. **`telemetry_source === 'local_dev'`** excluded from non-local activation metrics per [`growth-metrics.md`](growth-metrics.md); interpret metric ids there, do not redefine SQL here.
 
 ### Must not infer (read with growth SSOT)
 
-Normative metric definitions, denominators, numerators, and **explicit prohibitions** (what a low or missing rate does **not** prove) live only in [`growth-metrics-ssot.md`](growth-metrics-ssot.md)—in particular the **operator reading table** (cross-surface metrics) and **Missing join key on activation**. Operators **must not** treat missing **`verify_outcome`** rows as proof that verification did not run, or as proof of ICP fit, without ruling out capture-side causes above.
+Normative metric definitions, denominators, numerators, and **explicit prohibitions** (what a low or missing rate does **not** prove) live only in [`growth-metrics.md`](growth-metrics.md)—in particular the **operator reading table** (cross-surface metrics) and **Missing join key on activation**. Operators **must not** treat missing **`verify_outcome`** rows as proof that verification did not run, or as proof of ICP fit, without ruling out capture-side causes above.
 
 ## Qualification proxy (operator)
 
-**Scope:** This subsection defines the **operator** notion of **qualified integrator activation** for funnel KPIs. It does **not** restate product ICP or trust boundary—those remain in [`verification-product-ssot.md`](verification-product-ssot.md).
+**Scope:** This subsection defines the **operator** notion of **qualified integrator activation** for funnel KPIs. It does **not** restate product ICP or trust boundary—those remain in [`verification-product.md`](verification-product.md).
 
 **Definition (telemetry heuristic):** For product-activation **`verify_outcome`** rows, the CLI persists **`workload_class`** in row metadata ([`website/src/lib/funnelProductActivationMetadata.ts`](../website/src/lib/funnelProductActivationMetadata.ts)). A **`non_bundled`** value means the classifier ([`src/commercial/verifyWorkloadClassify.ts`](../src/commercial/verifyWorkloadClassify.ts)) treated the run as **outside** the shipped bundled example fixture paths (e.g. Postgres, stdin quick input, or paths not on the bundled allowlist)—see **Operational definition of `workload_class`** in the [`POST /api/funnel/product-activation`](#post-apifunnelproduct-activation-http-semantics) section below.
 
-**Qualified vs behavioral activation:** The rolling metric `CrossSurface_ConversionRate_IntegrateToVerifyOutcome_Rolling7dUtc` counts any qualifying **`verify_outcome`** (subject to **`telemetry_source`** rules in [`growth-metrics-ssot.md`](growth-metrics-ssot.md)). The metric **`CrossSurface_ConversionRate_QualifiedIntegrateToVerifyOutcome_Rolling7dUtc`** uses the **same denominator** (integrate-landed ids in window) but restricts the **numerator** to outcomes where **`metadata->>'workload_class' = 'non_bundled'`**. That is a **refinement of the numerator**, not a second funnel stage.
+**Qualified vs behavioral activation:** The rolling metric `CrossSurface_ConversionRate_IntegrateToVerifyOutcome_Rolling7dUtc` counts any qualifying **`verify_outcome`** (subject to **`telemetry_source`** rules in [`growth-metrics.md`](growth-metrics.md)). The metric **`CrossSurface_ConversionRate_QualifiedIntegrateToVerifyOutcome_Rolling7dUtc`** uses the **same denominator** (integrate-landed ids in window) but restricts the **numerator** to outcomes where **`metadata->>'workload_class' = 'non_bundled'`**. That is a **refinement of the numerator**, not a second funnel stage.
 
-**Layer-2 lineage (schema v3):** When the CLI sends **`schema_version`: 3**, persisted activation metadata includes **`workflow_lineage`** from [`src/funnel/workflowLineageClassify.ts`](../src/funnel/workflowLineageClassify.ts). The rolling metric **`CrossSurface_ConversionRate_QualifiedIntegrateToIntegratorScopedVerifyOutcome_Rolling7dUtc`** further restricts the qualified numerator to **`workflow_lineage` = `integrator_scoped`**, excluding shipped catalog workflow ids and the integrate-spine terminal id **`wf_integrate_spine`**—see [`growth-metrics-ssot.md`](growth-metrics-ssot.md) §**CrossSurface_ConversionRate_QualifiedIntegrateToIntegratorScopedVerifyOutcome_Rolling7dUtc** for prohibitions.
+**Layer-2 lineage (schema v3):** When the CLI sends **`schema_version`: 3**, persisted activation metadata includes **`workflow_lineage`** from [`src/funnel/workflowLineageClassify.ts`](../src/funnel/workflowLineageClassify.ts). The rolling metric **`CrossSurface_ConversionRate_QualifiedIntegrateToIntegratorScopedVerifyOutcome_Rolling7dUtc`** further restricts the qualified numerator to **`workflow_lineage` = `integrator_scoped`**, excluding shipped catalog workflow ids and the integrate-spine terminal id **`wf_integrate_spine`**—see [`growth-metrics.md`](growth-metrics.md) §**CrossSurface_ConversionRate_QualifiedIntegrateToIntegratorScopedVerifyOutcome_Rolling7dUtc** for prohibitions.
 
 **Must not (operators)**
 
 - **`non_bundled` is not proof** of production customer data, ICP fit, or that the integrator has structured tool exports in the sense of product doctrine—it is a **deterministic path heuristic** from [`verifyWorkloadClassify`](src/commercial/verifyWorkloadClassify.ts).
-- **Do not** treat qualified rate as proof of **mental model** or qualification to use the product; use [`verification-product-ssot.md`](verification-product-ssot.md) for product fit.
-- **Missing `workload_class`** on legacy or malformed rows: SQL equality to **`non_bundled`** fails; such rows do **not** increment the qualified numerator (see [`growth-metrics-ssot.md`](growth-metrics-ssot.md) §`CrossSurface_ConversionRate_QualifiedIntegrateToVerifyOutcome_Rolling7dUtc`).
-- **Terminal outcome mix (qualified `verify_outcome` buckets + malformed, rolling 7d UTC):** see **`Counts_QualifiedVerifyOutcomesByTerminalStatus_Rolling7dUtc`** in [`growth-metrics-ssot.md`](growth-metrics-ssot.md); wire literals for `terminal_status` remain **`complete` \| `inconsistent` \| `incomplete`** per product activation contract.
+- **Do not** treat qualified rate as proof of **mental model** or qualification to use the product; use [`verification-product.md`](verification-product.md) for product fit.
+- **Missing `workload_class`** on legacy or malformed rows: SQL equality to **`non_bundled`** fails; such rows do **not** increment the qualified numerator (see [`growth-metrics.md`](growth-metrics.md) §`CrossSurface_ConversionRate_QualifiedIntegrateToVerifyOutcome_Rolling7dUtc`).
+- **Terminal outcome mix (qualified `verify_outcome` buckets + malformed, rolling 7d UTC):** see **`Counts_QualifiedVerifyOutcomesByTerminalStatus_Rolling7dUtc`** in [`growth-metrics.md`](growth-metrics.md); wire literals for `terminal_status` remain **`complete` \| `inconsistent` \| `incomplete`** per product activation contract.
 
 ---
 
@@ -144,7 +144,7 @@ The signed-in **`/account`** page lists recent **licensed verify outcomes** per 
   - **`schema_version`: 1 — `verify_outcome`:** same fields as `verify_started` plus `"terminal_status": "complete"|"inconsistent"|"incomplete"` and optional **`funnel_anon_id`** / **`install_id`** (UUID).
   - **`schema_version`: 2 — `verify_started`:** v1 `verify_started` fields plus required **`telemetry_source`**: `"local_dev"` \| `"unknown"`. Reject **`legacy_unattributed`** on the wire for v2 (**`400`**). Optional **`verification_hypothesis`**: when present, must be non-empty after trim and satisfy the single canonical rules module [`src/telemetry/verificationHypothesisContract.ts`](../src/telemetry/verificationHypothesisContract.ts) (no duplicate charset table in this doc); invalid or empty-after-trim values → **`400`**. Omitted key remains valid for backward compatibility. Populated from integrator env **`AGENTSKEPTIC_VERIFICATION_HYPOTHESIS`** on the CLI when valid.
   - **`schema_version`: 2 — `verify_outcome`:** v1 `verify_outcome` fields plus required **`telemetry_source`**: `"local_dev"` \| `"unknown"`. Reject **`legacy_unattributed`** on the wire for v2 (**`400`**). Optional **`verification_hypothesis`**: same rules and failure behavior as v2 **`verify_started`**.
-  - **`schema_version`: 3 — `verify_started` / `verify_outcome`:** same fields as **v2** for the same `event`, plus required **`workflow_lineage`**: `"catalog_shipped"` \| `"integrate_spine"` \| `"integrator_scoped"` \| `"unknown"` (machine meaning: [`src/funnel/workflowLineageClassify.ts`](../src/funnel/workflowLineageClassify.ts); SQL and operator prohibitions: [`growth-metrics-ssot.md`](growth-metrics-ssot.md)).
+  - **`schema_version`: 3 — `verify_started` / `verify_outcome`:** same fields as **v2** for the same `event`, plus required **`workflow_lineage`**: `"catalog_shipped"` \| `"integrate_spine"` \| `"integrator_scoped"` \| `"unknown"` (machine meaning: [`src/funnel/workflowLineageClassify.ts`](../src/funnel/workflowLineageClassify.ts); SQL and operator prohibitions: [`growth-metrics.md`](growth-metrics.md)).
   - When **`funnel_anon_id`** or **`install_id`** is present, invalid UUID → **`400`**. The CLI populates optional request **`funnel_anon_id`** using the precedence in [Funnel attribution (normative)](#funnel-attribution-normative) (disk via **`agentskeptic funnel-anon set`**, or env override **`AGENTSKEPTIC_FUNNEL_ANON_ID`**). **`install_id`** is populated by the CLI by default from a pseudonymous id persisted under **`~/.agentskeptic/config.json`** (see below); omitting **`install_id`** remains valid for older clients and stores **`funnel_event.install_id` = NULL**.
 - **Persistence (server):** On first successful insert for a phase, `funnel_event` rows include nullable column **`install_id`** (canonical; not duplicated inside `metadata` JSON). Value is taken from the request body when valid; otherwise SQL `NULL`. **`metadata.telemetry_source`:** v2 and v3 echo the wire enum; v1 inserts are stored as **`legacy_unattributed`**. **`unknown` is not “external-only.”** It labels non–`local_dev` client-declared activation posts. When a valid v2 or v3 **`verification_hypothesis`** is present on the wire, the trimmed value is copied to **`metadata.verification_hypothesis`** for operator context only (not entitlement, billing, or verification semantics). **v3** rows additionally persist **`metadata.workflow_lineage`** exactly as on the wire.
 - **Skew:** `issued_at` must be within **±300 seconds** of server time (same budget as `issued_at` on `POST /api/v1/usage/reserve`).
@@ -201,7 +201,7 @@ The signed-in **`/account`** page lists recent **licensed verify outcomes** per 
 
 **Funnel metadata** for `licensed_verify_outcome`: `{ "schema_version": 1, "terminal_status", "workload_class", "subcommand" }` (validated in [`website/src/lib/funnelCommercialMetadata.ts`](../website/src/lib/funnelCommercialMetadata.ts)).
 
-**`subcommand` value `verify_integrator_owned`:** Labels runs started via **`agentskeptic verify-integrator-owned`** (same verification engine as batch verify after the integrator-owned path gate). This is a **structural** CLI routing discriminator for operators filtering raw rows—it is **not** a substitute for rolling funnel KPIs and must not be read as proof of ProductionComplete (see [`adoption-epistemics-ssot.md`](adoption-epistemics-ssot.md)).
+**`subcommand` value `verify_integrator_owned`:** Labels runs started via **`agentskeptic verify-integrator-owned`** (same verification engine as batch verify after the integrator-owned path gate). This is a **structural** CLI routing discriminator for operators filtering raw rows—it is **not** a substitute for rolling funnel KPIs and must not be read as proof of ProductionComplete (see [`adoption-epistemics.md`](adoption-epistemics.md)).
 
 ### Integrator
 
@@ -229,7 +229,7 @@ Commercial vs OSS lock flags are normative in [`commercial-enforce-gate-normativ
 | **`verify_outcome`** | Anonymous **activation** telemetry (`POST /api/funnel/product-activation`). | “Did a run reach a terminal verdict?” (OSS + commercial builds that POST successfully.) |
 | **`licensed_verify_outcome`** | **Licensed completion** (`POST /api/v1/funnel/verify-outcome`; requires reservation + API key). | Monetization / entitlement-adjacent reporting: “Did a keyed customer complete on the license server?” |
 
-**Identity roles (do not conflate):** **`funnel_anon_id`** in request/`metadata` is an optional **browser–CLI** join after the integrator runs **`agentskeptic funnel-anon set`** (or sets the override env for debug). **`install_id`** on **`funnel_event`** is the default **CLI machine cohort** (not a human); operator SQL for distinct installs on **`verify_started`** is in [`growth-metrics-ssot.md`](growth-metrics-ssot.md) (`ActiveInstalls_DistinctInstallId_VerifyStarted_Rolling7dUtc`).
+**Identity roles (do not conflate):** **`funnel_anon_id`** in request/`metadata` is an optional **browser–CLI** join after the integrator runs **`agentskeptic funnel-anon set`** (or sets the override env for debug). **`install_id`** on **`funnel_event`** is the default **CLI machine cohort** (not a human); operator SQL for distinct installs on **`verify_started`** is in [`growth-metrics.md`](growth-metrics.md) (`ActiveInstalls_DistinctInstallId_VerifyStarted_Rolling7dUtc`).
 
 **`build_profile` in activation metadata (`oss` \| `commercial`):** reflects the **CLI build** (`LICENSE_PREFLIGHT_ENABLED` at compile time), **not** a live subscription check. Do not treat **`commercial`** as proof of an active paid plan.
 
@@ -239,9 +239,9 @@ Commercial vs OSS lock flags are normative in [`commercial-enforce-gate-normativ
 
 **`verify_started` without `verify_outcome` (same `run_id` in metadata):** means **no terminal activation outcome row was accepted** by the server (or never sent). Causes include: **`AGENTSKEPTIC_TELEMETRY=0`** before the outcome POST, network or timeout, **`issued_at`** skew **`400`**, missing route on the POST origin, CLI **exit 3** before the outcome POST, or engine failure before a terminal result. **Do not** read this pattern as “user abandoned” by itself — it is only “no persisted activation outcome for that run.”
 
-**Operator SQL for KPIs (cross-surface, retention, conversion):** Do not duplicate metric SQL in this document — the normative definitions, fenced SQL, and **operator execution contract** (Cursor + Supabase MCP only) live in [`docs/growth-metrics-ssot.md`](growth-metrics-ssot.md), enforced structurally by `website/__tests__/growth-metrics-ssot.contract.test.ts`.
+**Operator SQL for KPIs (cross-surface, retention, conversion):** Do not duplicate metric SQL in this document — the normative definitions, fenced SQL, and **operator execution contract** (Cursor + Supabase MCP only) live in [`docs/growth-metrics.md`](growth-metrics.md), enforced structurally by `website/__tests__/growth-metrics.contract.test.ts`.
 
-- **Stage-separated conversion metric ids (definitions and interpretation contract only in growth SSOT):** `CrossSurface_ConversionRate_AcquisitionToIntegrate_Rolling7dUtc`, `CrossSurface_ConversionRate_IntegrateToVerifyOutcome_Rolling7dUtc`, `CrossSurface_ConversionRate_QualifiedIntegrateToVerifyOutcome_Rolling7dUtc`; the compressed cross-surface summary remains `CrossSurface_ConversionRate_AcquisitionToVerifyOutcome_Rolling7dUtc` — [`docs/growth-metrics-ssot.md`](growth-metrics-ssot.md).
+- **Stage-separated conversion metric ids (definitions and interpretation contract only in growth SSOT):** `CrossSurface_ConversionRate_AcquisitionToIntegrate_Rolling7dUtc`, `CrossSurface_ConversionRate_IntegrateToVerifyOutcome_Rolling7dUtc`, `CrossSurface_ConversionRate_QualifiedIntegrateToVerifyOutcome_Rolling7dUtc`; the compressed cross-surface summary remains `CrossSurface_ConversionRate_AcquisitionToVerifyOutcome_Rolling7dUtc` — [`docs/growth-metrics.md`](growth-metrics.md).
 
 **Why not Vercel-only page views:** Page views do not correlate `run_id` to a completed licensed run. This design stores **queryable rows** in Postgres.
 

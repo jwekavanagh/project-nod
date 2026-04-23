@@ -4,7 +4,7 @@ import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const docPath = join(__dirname, "..", "..", "docs", "growth-metrics-ssot.md");
+const docPath = join(__dirname, "..", "..", "docs", "growth-metrics.md");
 
 const DENY_SUBSTRINGS = [
   "utm_source",
@@ -17,8 +17,8 @@ const DENY_SUBSTRINGS = [
   "512",
 ] as const;
 
-describe("growth-metrics-ssot-doc-boundary", () => {
-  it("growth-metrics-ssot does not embed attribution-contract literals", () => {
+describe("growth-metrics-doc-boundary", () => {
+  it("growth-metrics does not embed attribution-contract literals", () => {
     const md = readFileSync(docPath, "utf8");
     for (const s of DENY_SUBSTRINGS) {
       expect(md.includes(s), `unexpected substring in growth SSOT: ${s}`).toBe(false);

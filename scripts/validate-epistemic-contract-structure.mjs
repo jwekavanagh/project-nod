@@ -86,11 +86,11 @@ function main() {
     }
   }
 
-  const gmPath = join(root, "docs", "growth-metrics-ssot.md");
+  const gmPath = join(root, "docs", "growth-metrics.md");
   const gmBody = normNl(readFileSync(gmPath, "utf8"));
   const rankingLine = normNl(cfg.rankingPointerLineGrowthMetrics);
   if (!gmBody.includes(rankingLine)) {
-    throw new Error("docs/growth-metrics-ssot.md must contain exact ranking pointer line");
+    throw new Error("docs/growth-metrics.md must contain exact ranking pointer line");
   }
 
   const readme = normNl(readFileSync(join(root, "README.md"), "utf8"));
@@ -98,9 +98,9 @@ function main() {
     throw new Error("README.md documentation map must link docs/epistemic-contract.md");
   }
 
-  const vp = readFileSync(join(root, "docs", "verification-product-ssot.md"), "utf8");
+  const vp = readFileSync(join(root, "docs", "verification-product.md"), "utf8");
   if (!vp.includes("epistemic-contract.md")) {
-    throw new Error("verification-product-ssot.md authority matrix must reference epistemic-contract.md");
+    throw new Error("verification-product.md authority matrix must reference epistemic-contract.md");
   }
 
   const genPath = join(root, cfg.generatedWebsitePath);

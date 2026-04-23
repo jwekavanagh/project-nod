@@ -15,7 +15,7 @@ function fenceInner(content, begin, end) {
 }
 
 test("commercial SSOT buyer fence has required headings and evaluation prose", () => {
-  const c = readFileSync(join(root, "docs", "commercial-ssot.md"), "utf8");
+  const c = readFileSync(join(root, "docs", "commercial.md"), "utf8");
   const inner = fenceInner(
     c,
     "<!-- buyer-surface-commercial-boundary:begin -->",
@@ -38,7 +38,7 @@ test("CI enforcement buyer fence has required heading", () => {
 });
 
 test("verification product SSOT buyer fence has required heading", () => {
-  const c = readFileSync(join(root, "docs", "verification-product-ssot.md"), "utf8");
+  const c = readFileSync(join(root, "docs", "verification-product.md"), "utf8");
   const inner = fenceInner(
     c,
     "<!-- buyer-surface-trust-production-implications:begin -->",

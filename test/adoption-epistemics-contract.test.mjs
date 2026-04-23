@@ -11,15 +11,15 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const root = join(__dirname, "..");
 
 const ANCHOR_DOCS = [
-  "docs/funnel-observability-ssot.md",
-  "docs/growth-metrics-ssot.md",
-  "docs/commercial-ssot.md",
+  "docs/funnel-observability.md",
+  "docs/growth-metrics.md",
+  "docs/commercial.md",
   "docs/first-run-integration.md",
   "docs/golden-path.md",
-  "docs/verification-product-ssot.md",
+  "docs/verification-product.md",
 ];
 
-const LINK_ADOPTION = "adoption-epistemics-ssot.md";
+const LINK_ADOPTION = "adoption-epistemics.md";
 const LINK_EPISTEMIC = "epistemic-contract.md";
 
 describe("adoption epistemics contract", () => {
@@ -35,7 +35,7 @@ describe("adoption epistemics contract", () => {
     assert.equal(typeof v.layers.playwrightCommercialE2e, "boolean");
   });
 
-  it("anchor_docs_link_adoption_epistemics_ssot", () => {
+  it("anchor_docs_link_adoption_epistemics", () => {
     for (const rel of ANCHOR_DOCS) {
       const body = readFileSync(join(root, rel), "utf8");
       assert.ok(body.includes(LINK_ADOPTION), `${rel} must link to ${LINK_ADOPTION}`);
@@ -72,11 +72,11 @@ describe("adoption epistemics contract", () => {
 
   it("cross_doc_links_to_epistemic_contract_for_ranking_context", () => {
     const frag = "epistemic-contract.md";
-    for (const rel of ["docs/first-run-integration.md", "docs/growth-metrics-ssot.md"]) {
+    for (const rel of ["docs/first-run-integration.md", "docs/growth-metrics.md"]) {
       const body = readFileSync(join(root, rel), "utf8");
       assert.ok(body.includes(frag), `${rel} must reference ${frag}`);
     }
-    const vp = readFileSync(join(root, "docs", "verification-product-ssot.md"), "utf8");
+    const vp = readFileSync(join(root, "docs", "verification-product.md"), "utf8");
     assert.ok(
       vp.includes("**Epistemic contract**") && vp.includes("epistemic-contract.md"),
       "verification-product SSOT authority matrix must name epistemic-contract.md",

@@ -19,7 +19,7 @@ function walkMarkdownFiles(dir: string): string[] {
 /** These substrings must not appear in scanned repo surfaces after cutover. */
 const BANNED_REFERENCE_SUBSTRINGS = [
   "export:telemetry-daily-pack",
-  "telemetry-daily-pack-ssot.md",
+  "telemetry-daily-pack.md",
   "scripts/export-telemetry-daily-pack.mjs",
   "scripts/lib/telemetry-daily-pack-sql.mjs",
   "telemetry-daily-pack-sql-contract.test.ts",
@@ -31,7 +31,7 @@ const BANNED_REFERENCE_SUBSTRINGS = [
   "website/src/lib/growthMetrics",
 ] as const;
 
-const TELEMETRY_DAILY_PACK_LINK = /telemetry-daily-pack-ssot\.md\)/;
+const TELEMETRY_DAILY_PACK_LINK = /telemetry-daily-pack\.md\)/;
 
 const ROOT_FILES_TO_SCAN = [
   "package.json",
@@ -72,7 +72,7 @@ describe("repo-reference-integrity.growth-observability", () => {
       for (const ban of BANNED_REFERENCE_SUBSTRINGS) {
         expect(body, `${label} must not contain: ${ban}`).not.toContain(ban);
       }
-      expect(body, `${label} must not link to removed telemetry-daily-pack-ssot`).not.toMatch(
+      expect(body, `${label} must not link to removed telemetry-daily-pack`).not.toMatch(
         TELEMETRY_DAILY_PACK_LINK,
       );
     }

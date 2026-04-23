@@ -59,7 +59,7 @@ node dist/cli.js --workflow-id wf_partner --events examples/partner-quickstart/p
 
 ## LangGraph reference (emit events, then verify)
 
-**Python default path:** \`pip install -e "python/[dev]"\` then \`python examples/python-verification/run_partner_kernel_demo.py\` (in-process kernel; no \`node dist/cli.js\` on the hot path). Authority: [integrator-verification-ssot.md](integrator-verification-ssot.md).
+**Python default path:** \`pip install -e "python/[dev]"\` then \`python examples/python-verification/run_partner_kernel_demo.py\` (in-process kernel; no \`node dist/cli.js\` on the hot path). Authority: [integrator-verification.md](integrator-verification.md).
 
 **Node oracle (CI / regression only):** minimal emitter in \`test/fixtures/langgraph-node-oracle/\`. From **repository root** after \`npm run build\`:
 

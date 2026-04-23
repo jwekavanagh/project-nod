@@ -13,7 +13,7 @@ const PLACEHOLDER_DSN =
   "postgresql://127.0.0.1:5432/workflow_verifier_build_placeholder";
 
 const VIOLATION =
-  "AGENTSKEPTIC_CORE_DATABASE_BOUNDARY_VIOLATION: non-production-like process must not use the production core DATABASE_URL fingerprint (see docs/core-database-boundary-ssot.md)";
+  "AGENTSKEPTIC_CORE_DATABASE_BOUNDARY_VIOLATION: non-production-like process must not use the production core DATABASE_URL fingerprint (see docs/core-database-boundary.md)";
 
 function isProductionLike() {
   return process.env.VERCEL_ENV === "production";

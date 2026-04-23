@@ -155,7 +155,7 @@ This is the fastest way to see **`ROW_ABSENT`** versus **verified** on the same 
 
 **Fast first run on your own DB (bundled quickstart example):** after `npm install` and `npm run build`, run **`npm run partner-quickstart`** from the repo root (SQLite temp DB). Commands reference: **[`docs/partner-quickstart-commands.md`](docs/partner-quickstart-commands.md)**; narrative: **[`docs/first-run-integration.md`](docs/first-run-integration.md)** and **`/integrate`** on the site.
 
-**Integrator-owned output:** The demo above is pedagogy. Default path: **`agentskeptic crossing`** — see **`docs/crossing-normative.md`**. For verification on **your** NDJSON, registry, and authoritative SQLite or Postgres, follow **[`docs/decision-gate-ssot.md`](docs/decision-gate-ssot.md)** after **`npm run build`**. Standalone **`agentskeptic verify-integrator-owned`** remains for explicit pack-led parity and CI (same flags as contract batch verify; rejects shipped example fixture triples with exit **2** and stderr **`INTEGRATOR_OWNED_GATE`**—see **`docs/agentskeptic.md`** Integrator-owned gate).
+**Integrator-owned output:** The demo above is pedagogy. Default path: **`agentskeptic crossing`** — see **`docs/crossing-normative.md`**. For verification on **your** NDJSON, registry, and authoritative SQLite or Postgres, follow **[`docs/decision-gate.md`](docs/decision-gate.md)** after **`npm run build`**. Standalone **`agentskeptic verify-integrator-owned`** remains for explicit pack-led parity and CI (same flags as contract batch verify; rejects shipped example fixture triples with exit **2** and stderr **`INTEGRATOR_OWNED_GATE`**—see **`docs/agentskeptic.md`** Integrator-owned gate).
 
 ```bash
 npm install
@@ -319,11 +319,11 @@ Everything beyond core contract verification lives in **[`docs/agentskeptic.md`]
 | [README — Buy vs build](#buy-vs-build-why-not-only-sql-checks) | Canonical **buy vs build** narrative (failure mode, scripts limits, Quick → Contract) |
 | [`docs/agentskeptic.md`](docs/agentskeptic.md) | Authoritative CLI and behavior reference (SSOT) |
 | [`docs/quick-verify-normative.md`](docs/quick-verify-normative.md) | Quick Verify normative contract |
-| [`docs/verification-product-ssot.md`](docs/verification-product-ssot.md) | Product intent, trust boundary, authority matrix |
-| [`docs/reconciliation-vocabulary-ssot.md`](docs/reconciliation-vocabulary-ssot.md) | Reconciliation dimension IDs and UI mapping |
+| [`docs/verification-product.md`](docs/verification-product.md) | Product intent, trust boundary, authority matrix |
+| [`docs/reconciliation-vocabulary.md`](docs/reconciliation-vocabulary.md) | Reconciliation dimension IDs and UI mapping |
 | [`docs/verification-operational-notes.md`](docs/verification-operational-notes.md) | First-run runbooks, TTFV, export vs replay coverage |
-| [`docs/langgraph-reference-boundaries-ssot.md`](docs/langgraph-reference-boundaries-ssot.md) | LangGraph reference path: emitter/CLI boundaries and test chain |
-| [`docs/langgraph-checkpoint-trust-ssot.md`](docs/langgraph-checkpoint-trust-ssot.md) | LangGraph checkpoint trust: v3 wire, terminal contract, shared kernel, production gate |
+| [`docs/langgraph-reference-boundaries.md`](docs/langgraph-reference-boundaries.md) | LangGraph reference path: emitter/CLI boundaries and test chain |
+| [`docs/langgraph-checkpoint-trust.md`](docs/langgraph-checkpoint-trust.md) | LangGraph checkpoint trust: v3 wire, terminal contract, shared kernel, production gate |
 | [`docs/relational-verification.md`](docs/relational-verification.md) | Relational verification semantics |
 | [`docs/ci-enforcement.md`](docs/ci-enforcement.md) | CI enforcement and lock fixtures |
 | [`docs/correctness-definition-normative.md`](docs/correctness-definition-normative.md) | Correctness and limits (normative) |
@@ -338,7 +338,7 @@ Runs build, Vitest, SQLite Node tests, first-run demo, `assurance run`, the comm
 
 ## Commercial CLI (npm) vs OSS (this repo)
 
-Canonical write-up: **[`docs/commercial-ssot.md`](docs/commercial-ssot.md)** (npm package, Stripe, keys, telemetry, validation, entitlements; operator metrics in **[`docs/funnel-observability-ssot.md`](docs/funnel-observability-ssot.md)**—disable with **`AGENTSKEPTIC_TELEMETRY=0`**). OSS builds in this repo run contract **`verify`** / **`quick`** without a license server and may emit **`--output-lock`** fixtures; **`--expect-lock`**, **`agentskeptic enforce`**, and paid compare require a commercial build per **[`docs/commercial-enforce-gate-normative.md`](docs/commercial-enforce-gate-normative.md)**. Example workflow: **[`examples/github-actions/agentskeptic-commercial.yml`](examples/github-actions/agentskeptic-commercial.yml)**.
+Canonical write-up: **[`docs/commercial.md`](docs/commercial.md)** (npm package, Stripe, keys, telemetry, validation, entitlements; operator metrics in **[`docs/funnel-observability.md`](docs/funnel-observability.md)**—disable with **`AGENTSKEPTIC_TELEMETRY=0`**). OSS builds in this repo run contract **`verify`** / **`quick`** without a license server and may emit **`--output-lock`** fixtures; **`--expect-lock`**, **`agentskeptic enforce`**, and paid compare require a commercial build per **[`docs/commercial-enforce-gate-normative.md`](docs/commercial-enforce-gate-normative.md)**. Example workflow: **[`examples/github-actions/agentskeptic-commercial.yml`](examples/github-actions/agentskeptic-commercial.yml)**.
 
 ## Status, contributing, security
 

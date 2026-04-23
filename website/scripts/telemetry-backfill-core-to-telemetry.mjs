@@ -6,7 +6,7 @@
  * Preconditions: telemetry DB empty for those tables; `AGENTSKEPTIC_TELEMETRY_CORE_WRITE_FREEZE=1`.
  * Postcondition: per-event funnel counts + beacon table counts match core vs telemetry.
  *
- * See docs/telemetry-storage-ssot.md.
+ * See docs/telemetry-storage.md.
  */
 import postgres from "postgres";
 

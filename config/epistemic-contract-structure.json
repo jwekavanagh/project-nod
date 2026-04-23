@@ -6,12 +6,12 @@
     {
       "id": "first-run-integration",
       "path": "docs/first-run-integration.md",
-      "exactInner": "**Epistemic framing (pointer only):** Normative epistemic definitions live only in [`epistemic-contract.md`](epistemic-contract.md). Operational four-way model, Decision-ready ProductionComplete, and commercial verdict semantics: [`adoption-epistemics-ssot.md`](adoption-epistemics-ssot.md).\n\n**Throughput (operator, pointer only):** Metric SQL and ids: [`growth-metrics-ssot.md`](growth-metrics-ssot.md). Interpretation and proxies: [`epistemic-contract.md`](epistemic-contract.md). User outcome vs telemetry capture: [`funnel-observability-ssot.md`](funnel-observability-ssot.md). **Decision-ready ProductionComplete:** [`adoption-epistemics-ssot.md#decision-ready-productioncomplete-normative`](adoption-epistemics-ssot.md#decision-ready-productioncomplete-normative)."
+      "exactInner": "**Epistemic framing (pointer only):** Normative epistemic definitions live only in [`epistemic-contract.md`](epistemic-contract.md). Operational four-way model, Decision-ready ProductionComplete, and commercial verdict semantics: [`adoption-epistemics.md`](adoption-epistemics.md).\n\n**Throughput (operator, pointer only):** Metric SQL and ids: [`growth-metrics.md`](growth-metrics.md). Interpretation and proxies: [`epistemic-contract.md`](epistemic-contract.md). User outcome vs telemetry capture: [`funnel-observability.md`](funnel-observability.md). **Decision-ready ProductionComplete:** [`adoption-epistemics.md#decision-ready-productioncomplete-normative`](adoption-epistemics.md#decision-ready-productioncomplete-normative)."
     },
     {
-      "id": "growth-metrics-ssot",
-      "path": "docs/growth-metrics-ssot.md",
-      "exactInner": "**Epistemic framing (pointer only):** Normative definitions—[`epistemic-contract.md`](epistemic-contract.md). Adoption operational SSOT (four-way, verdicts): [`adoption-epistemics-ssot.md`](adoption-epistemics-ssot.md)."
+      "id": "growth-metrics",
+      "path": "docs/growth-metrics.md",
+      "exactInner": "**Epistemic framing (pointer only):** Normative definitions—[`epistemic-contract.md`](epistemic-contract.md). Adoption operational SSOT (four-way, verdicts): [`adoption-epistemics.md`](adoption-epistemics.md)."
     },
     {
       "id": "golden-path",
@@ -19,14 +19,14 @@
       "exactInner": "**Epistemic framing (pointer only):** [`epistemic-contract.md`](epistemic-contract.md) — then follow adoption and product SSOT below."
     },
     {
-      "id": "commercial-ssot",
-      "path": "docs/commercial-ssot.md",
-      "exactInner": "**Epistemic framing (pointer only):** [`epistemic-contract.md`](epistemic-contract.md). Adoption and verdict semantics: [`adoption-epistemics-ssot.md`](adoption-epistemics-ssot.md)."
+      "id": "commercial",
+      "path": "docs/commercial.md",
+      "exactInner": "**Epistemic framing (pointer only):** [`epistemic-contract.md`](epistemic-contract.md). Adoption and verdict semantics: [`adoption-epistemics.md`](adoption-epistemics.md)."
     },
     {
-      "id": "funnel-observability-ssot",
-      "path": "docs/funnel-observability-ssot.md",
-      "exactInner": "**Epistemic framing (pointer only):** [`epistemic-contract.md`](epistemic-contract.md). Adoption operational SSOT: [`adoption-epistemics-ssot.md`](adoption-epistemics-ssot.md)."
+      "id": "funnel-observability",
+      "path": "docs/funnel-observability.md",
+      "exactInner": "**Epistemic framing (pointer only):** [`epistemic-contract.md`](epistemic-contract.md). Adoption operational SSOT: [`adoption-epistemics.md`](adoption-epistemics.md)."
     }
   ],
   "rankingPointerLineGrowthMetrics": "- **Ranking dominant funnel loss:** Normative rule only—[`epistemic-contract.md`](epistemic-contract.md); metric SQL and denominators below unchanged.",

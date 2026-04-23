@@ -2,7 +2,7 @@
 
 This folder is the **Python-first** LangGraph / kernel demo surface. Commands for the Node reference emitter remain in the generated partner quickstart; this README stays prose-only per repo drift rules.
 
-Authority: [`docs/integrator-verification-ssot.md`](../../docs/integrator-verification-ssot.md).
+Authority: [`docs/integrator-verification.md`](../../docs/integrator-verification.md).
 
 Run the kernel demo (requires repo root `examples/partner-quickstart` fixtures):
 

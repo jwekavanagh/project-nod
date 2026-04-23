@@ -14,7 +14,7 @@ describe("homepage commercial strip", () => {
     expect(section.lead).toBe(HOME_COMMERCIAL_LEAD);
     expect(section.strip.startsWith(getMeteringClarifier())).toBe(true);
     expect(section.strip).toContain("Starter includes");
-    expect(section.strip).toMatch(/docs\/commercial-ssot\.md#programmatic-verification-vs-licensed-cli/);
+    expect(section.strip).toMatch(/docs\/commercial\.md#programmatic-verification-vs-licensed-cli/);
     render(
       <>
         <p data-testid="home-commercial-lead">{section.lead}</p>

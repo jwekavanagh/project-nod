@@ -545,8 +545,8 @@ export const productCopy = {
       },
     ],
     docLinks: {
-      verificationProductSsot: `${marketing.gitRepositoryUrl}/blob/main/docs/verification-product-ssot.md`,
-      commercialSsot: `${marketing.gitRepositoryUrl}/blob/main/docs/commercial-ssot.md`,
+      verificationProductSsot: `${marketing.gitRepositoryUrl}/blob/main/docs/verification-product.md`,
+      commercialSsot: `${marketing.gitRepositoryUrl}/blob/main/docs/commercial.md`,
     },
   },
 

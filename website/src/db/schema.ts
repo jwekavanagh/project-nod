@@ -183,7 +183,7 @@ export const ossClaimTickets = pgTable("oss_claim_ticket", {
   handoffToken: text("handoff_token"),
   /** First successful GET handoff mint time for the **current** `handoff_token`; null after rotation. */
   handoffConsumedAt: timestamp("handoff_consumed_at", { withTimezone: true, mode: "date" }),
-  /** Client-asserted at mint: TTY interactive CLI (see docs/eval-to-revenue-journey-ssot.md). */
+  /** Client-asserted at mint: TTY interactive CLI (see docs/eval-to-revenue-journey.md). */
   interactiveHumanClaim: boolean("interactive_human_claim").notNull().default(false),
   /** Set once when CLI POSTs `claim-continuation` after successful browser spawn. */
   browserOpenInvokedAt: timestamp("browser_open_invoked_at", { withTimezone: true, mode: "date" }),

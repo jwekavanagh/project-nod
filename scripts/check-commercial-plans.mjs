@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Ensures docs/commercial-ssot.md parity table matches config/commercial-plans.json.
+ * Ensures docs/commercial.md parity table matches config/commercial-plans.json.
  */
 import { readFileSync } from "node:fs";
 import path from "node:path";
@@ -9,7 +9,7 @@ import { spawnSync } from "node:child_process";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const jsonPath = path.join(root, "config", "commercial-plans.json");
-const mdPath = path.join(root, "docs", "commercial-ssot.md");
+const mdPath = path.join(root, "docs", "commercial.md");
 
 const plans = JSON.parse(readFileSync(jsonPath, "utf8")).plans;
 const md = readFileSync(mdPath, "utf8");
@@ -23,12 +23,12 @@ const required = [
 
 for (const n of required) {
   if (!md.includes(n)) {
-    console.error(`check-commercial-plans-ssot: docs/commercial-ssot.md must mention limit ${n}`);
+    console.error(`check-commercial-plans: docs/commercial.md must mention limit ${n}`);
     process.exit(1);
   }
 }
 
-console.log("check-commercial-plans-ssot: ok");
+console.log("check-commercial-plans: ok");
 
 const sync = spawnSync(
   process.execPath,

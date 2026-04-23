@@ -29,7 +29,7 @@ export type PlanRow = {
 export const COMMERCIAL_SSOT_PROGRAMMATIC_VS_CLI_ANCHOR =
   "programmatic-verification-vs-licensed-cli" as const;
 
-const ssotPath = `${publicProductAnchors.gitRepositoryUrl}/blob/main/docs/commercial-ssot.md#${COMMERCIAL_SSOT_PROGRAMMATIC_VS_CLI_ANCHOR}`;
+const ssotPath = `${publicProductAnchors.gitRepositoryUrl}/blob/main/docs/commercial.md#${COMMERCIAL_SSOT_PROGRAMMATIC_VS_CLI_ANCHOR}`;
 
 export const COMMERCIAL_SSOT_PROGRAMMATIC_VS_CLI_HREF = ssotPath;
 
@@ -65,7 +65,7 @@ export function getSecurityQuickFacts(): {
       "CLI and verification engine run in your infrastructure against databases you configure; the homepage demo runs bundled fixtures on this server for evaluation only.",
       "Structured tool activity is compared to database query results at verification time; that check does not prove a specific network call caused a row.",
       outcomeCertificateQuickFactBullet,
-      "For the on-site buyer trust summary, use the trust buyer guide on this site; full normative verification semantics stay in verification-product-ssot.md on GitHub.",
+      "For the on-site buyer trust summary, use the trust buyer guide on this site; full normative verification semantics stay in verification-product.md on GitHub.",
     ] as const,
   };
 }

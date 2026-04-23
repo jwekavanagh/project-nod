@@ -11,7 +11,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const root = path.resolve(__dirname, "..");
 
 function fail(msg) {
-  console.error("check-partner-quickstart-ssot:", msg);
+  console.error("check-partner-quickstart:", msg);
   process.exit(1);
 }
 
@@ -57,7 +57,7 @@ for (const line of lgReadme.split(/\n/)) {
     fail("test/fixtures/langgraph-node-oracle/README.md must not contain fenced code blocks (no ``` or ~~~ line starts)");
   }
 }
-const lgBacklink = "langgraph-reference-boundaries-ssot.md#langgraph-reference-documentation-boundaries";
+const lgBacklink = "langgraph-reference-boundaries.md#langgraph-reference-documentation-boundaries";
 if (!lgReadme.includes(lgBacklink)) {
   fail(`test/fixtures/langgraph-node-oracle/README.md must include backlink substring: ${lgBacklink}`);
 }
@@ -79,20 +79,20 @@ if ((commands.split(lgHeading).length - 1) !== 1) {
   fail(`docs/partner-quickstart-commands.md must contain exactly one heading ${lgHeading}`);
 }
 
-const lgBoundariesPath = path.join(root, "docs", "langgraph-reference-boundaries-ssot.md");
-if (!existsSync(lgBoundariesPath)) fail("missing docs/langgraph-reference-boundaries-ssot.md");
+const lgBoundariesPath = path.join(root, "docs", "langgraph-reference-boundaries.md");
+if (!existsSync(lgBoundariesPath)) fail("missing docs/langgraph-reference-boundaries.md");
 const lgBoundaries = readFileSync(lgBoundariesPath, "utf8");
 if (!lgBoundaries.includes("# Langgraph reference documentation boundaries")) {
-  fail("docs/langgraph-reference-boundaries-ssot.md must contain # Langgraph reference documentation boundaries");
+  fail("docs/langgraph-reference-boundaries.md must contain # Langgraph reference documentation boundaries");
 }
 if (!lgBoundaries.includes("| Boundary | Authoritative location | Notes |")) {
-  fail("docs/langgraph-reference-boundaries-ssot.md must include the LangGraph boundary table header row");
+  fail("docs/langgraph-reference-boundaries.md must include the LangGraph boundary table header row");
 }
 
-const ssotPath = path.join(root, "docs", "verification-product-ssot.md");
+const ssotPath = path.join(root, "docs", "verification-product.md");
 const ssot = readFileSync(ssotPath, "utf8");
-if (!ssot.includes("[`langgraph-reference-boundaries-ssot.md`](langgraph-reference-boundaries-ssot.md)")) {
-  fail("docs/verification-product-ssot.md must link to langgraph-reference-boundaries-ssot.md");
+if (!ssot.includes("[`langgraph-reference-boundaries.md`](langgraph-reference-boundaries.md)")) {
+  fail("docs/verification-product.md must link to langgraph-reference-boundaries.md");
 }
 
 const webPxPath = path.join(root, "docs", "website-product-experience.md");
@@ -110,4 +110,4 @@ if (prose.includes("| Artifact | Owns |") || prose.includes("| Must not own |"))
   fail("docs/first-run-integration.md must not duplicate SSOT artifact table headers");
 }
 
-console.log("check-partner-quickstart-ssot: ok");
+console.log("check-partner-quickstart: ok");

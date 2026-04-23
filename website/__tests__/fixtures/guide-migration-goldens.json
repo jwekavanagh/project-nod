@@ -5,18 +5,18 @@
       "/examples/langgraph-checkpoint-trust for a captured B-row Outcome Certificate",
       "Integrator primacy: Python-first verification lives in",
       "examples/python-verification/README.md",
-      "docs/integrator-verification-ssot.md",
+      "docs/integrator-verification.md",
       "docs/partner-quickstart-commands.md still carries the Node oracle shell for CI regression only",
       "Authoritative behavior for LangGraph checkpoint trust (v3 wire, terminal rows A1–D, production gate, shared kernel with the decision gate) is anchored in",
-      "docs/integrator-verification-ssot.md#langgraph-checkpoint-trust",
+      "docs/integrator-verification.md#langgraph-checkpoint-trust",
       "this guide links experience and law.",
-      "Documentation boundaries (what belongs in which doc): docs/langgraph-reference-boundaries-ssot.md",
+      "Documentation boundaries (what belongs in which doc): docs/langgraph-reference-boundaries.md",
       "Run first-run on your database via /integrate."
     ]
   },
   "trace-green-postgres-row-missing": {
     "requiredSubstrings": [
-      "Green trace, missing Postgres row LangGraph checkpoint trust contracts (v3 wire, CLI flag, terminal table) are defined in docs/langgraph-checkpoint-trust-ssot.md; this guide stays symptom-first.",
+      "Green trace, missing Postgres row LangGraph checkpoint trust contracts (v3 wire, CLI flag, terminal table) are defined in docs/langgraph-checkpoint-trust.md; this guide stays symptom-first.",
       "Green LangGraph or agent trace but wrong or missing Postgres row",
       "When your graph finishes with a green step list, you still need a read-only check that the row your business logic cares about is present in Postgres with the expected columns.",
       "Traces record what the runtime believed happened; they do not substitute for SELECT results at verification time.",
@@ -89,7 +89,7 @@
   "debug-postgres-after-langgraph": {
     "requiredSubstrings": [
       "Debug Postgres after LangGraph runs For LangGraph checkpoint trust mode (approval-grade stdout,",
-      "docs/langgraph-checkpoint-trust-ssot.md",
+      "docs/langgraph-checkpoint-trust.md",
       "Debugging Postgres after a LangGraph run requires row-level truth at verification time beyond trace completion flags alone for customer-facing data.",
       "LangGraph gives rich traces; AgentSkeptic adds read-only SQL truth for the rows your graph implied—still a snapshot at verification time, not proof a tool executed.",
       "Use /integrate to mirror the bundled demo on your Postgres instance, exporting the same NDJSON shapes your graph already produces for tools.",
