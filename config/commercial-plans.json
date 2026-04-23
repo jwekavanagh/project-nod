@@ -17,7 +17,7 @@
       "displayPrice": "$25/month",
       "marketingHeadline": "Individual",
       "audience": "Solo engineers running verification in CI",
-      "valueUnlock": "Verification in CI with licensed npm, locks, enforce, and included monthly quota.",
+      "valueUnlock": "Fail CI on mismatched state automatically, with included monthly runs.",
       "stripePriceEnvKey": "STRIPE_PRICE_INDIVIDUAL"
     },
     "team": {
@@ -26,7 +26,7 @@
       "displayPrice": "$100/month",
       "marketingHeadline": "Team",
       "audience": "Teams sharing CI pipelines",
-      "valueUnlock": "Same paid features with more monthly verifications for shared CI.",
+      "valueUnlock": "Same benefits as Individual with more monthly runs for shared pipelines.",
       "stripePriceEnvKey": "STRIPE_PRICE_TEAM"
     },
     "business": {
@@ -35,7 +35,7 @@
       "displayPrice": "$300/month",
       "marketingHeadline": "Business",
       "audience": "Multiple services and high-volume workflows",
-      "valueUnlock": "Higher quota when you verify across several services or busy pipelines.",
+      "valueUnlock": "More monthly runs when you verify across several services or busy CI.",
       "stripePriceEnvKey": "STRIPE_PRICE_BUSINESS"
     },
     "enterprise": {

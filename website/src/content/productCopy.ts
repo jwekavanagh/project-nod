@@ -234,7 +234,7 @@ export const pricingHeroExample = pricingWhatYouGetPaidPlans;
 export const pricingPlansSectionTitle = "Plans";
 
 /** `<summary>` for expandable commercial terms on `/pricing`. */
-export const pricingCommercialTermsDetailsSummary = "Paid vs OSS — expand for full terms";
+export const pricingCommercialTermsDetailsSummary = "Full commercial terms (expand)";
 
 export const pricingLocalVerificationFreeFootnote =
   "Local OSS verification remains free forever.";

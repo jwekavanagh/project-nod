@@ -53,8 +53,11 @@ export default function PricingPage() {
         ) : null}
       </section>
 
+      <h2 className="pricing-plans-heading">{productCopy.pricingPlansSectionTitle}</h2>
+      <PricingClient plans={plans} enterpriseMailto={enterpriseMailto} />
+
       <section
-        className="pricing-example pricing-unlock-before-plans"
+        className="pricing-example"
         data-testid="pricing-what-you-get"
         aria-labelledby="pricing-what-you-get-title"
       >
@@ -71,23 +74,7 @@ export default function PricingPage() {
         </p>
       </section>
 
-      <h2 className="pricing-plans-heading">{productCopy.pricingPlansSectionTitle}</h2>
-      <PricingClient plans={plans} enterpriseMailto={enterpriseMailto} />
-
       <PricingCompareTable />
-
-      <details className="pricing-commercial-details">
-        <summary className="pricing-commercial-details-summary">
-          {productCopy.pricingCommercialTermsDetailsSummary}
-        </summary>
-        <ul aria-label="Commercial terms" className="muted pricing-commercial-terms">
-          {PRICING_COMMERCIAL_TERMS_BULLETS.map((row) => (
-            <li key={row.lead}>
-              <strong>{row.lead}</strong> {row.body}
-            </li>
-          ))}
-        </ul>
-      </details>
 
       <section data-testid="pricing-trust-band" aria-labelledby="pricing-trust-band-title">
         <h2 id="pricing-trust-band-title">{billing.billingTitle}</h2>
@@ -109,6 +96,19 @@ export default function PricingPage() {
           <Link href={billing.secondaryLinks[1].href}>{billing.secondaryLinks[1].label}</Link>
         </p>
       </section>
+
+      <details className="pricing-commercial-details pricing-commercial-details-end">
+        <summary className="pricing-commercial-details-summary">
+          {productCopy.pricingCommercialTermsDetailsSummary}
+        </summary>
+        <ul aria-label="Commercial terms" className="muted pricing-commercial-terms">
+          {PRICING_COMMERCIAL_TERMS_BULLETS.map((row) => (
+            <li key={row.lead}>
+              <strong>{row.lead}</strong> {row.body}
+            </li>
+          ))}
+        </ul>
+      </details>
     </main>
   );
 }

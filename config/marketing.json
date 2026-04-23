@@ -66,7 +66,7 @@
     },
     "pricing": {
       "heroTitle": "Verify before you ship.",
-      "positioning": "Catch bad or missing state in CI — before it reaches customers, breaks compliance, or costs you money.",
+      "positioning": "Catch bad or missing state in CI—before customers, compliance, or revenue take the hit.",
       "subtitle": "Local and open-source verification is always free.",
       "subtitleSecondary": "Paid plans unlock CI enforcement, usage quotas, and team scaling."
     },
