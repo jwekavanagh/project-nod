@@ -1,6 +1,6 @@
 ## AgentSkeptic
 
-Truth is persisted rows at verification time: read-only SQL checks database state against structured tool activity—not trace color or success flags.
+Read-only checks at verify time—not color.
 
 - Canonical site: https://agentskeptic.com/
 - Integrate: https://agentskeptic.com/integrate

@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "identityOneLiner": "Truth is persisted rows at verification time: read-only SQL checks database state against structured tool activity—not trace color or success flags.",
+  "identityOneLiner": "Read-only checks at verify time—not color.",
   "llmBranch": "main",
   "links": {
     "site": "https://agentskeptic.com/",
@@ -16,29 +16,25 @@
   },
   "appendix": {
     "slug": "/database-truth-vs-traces",
-    "visitorProblemAnswer": "Teams ship agent and automation workflows where traces, tool responses, and success flags look green while the database row is missing, stale, or wrong. AgentSkeptic compares structured tool activity to read-only SQL against your SQLite or Postgres at verification time and reports whether observed state matched expectations derived from what the workflow claimed—not whether the step narrative read as successful.\n\nUse it when you need persisted rows checked against declared tool parameters before customer-facing actions, compliance evidence, or CI gates.",
+    "visitorProblemAnswer": "Traces say success. Your data often disagrees. Read-only checks at verify time compare tool claims to stored state—before you ship or bill.",
     "intentPhrases": [
-      "green trace wrong database row agent workflow",
-      "trace says success but CRM row missing",
-      "read-only SQL check after LangGraph or automation run",
-      "structured tool activity NDJSON verification",
-      "ROW_ABSENT inconsistent workflow result"
+      "trace v data",
+      "read-only verify",
+      "ROW_ABSENT"
     ],
     "notFor": [
-      "unstructured log search as verification",
-      "proof that a specific HTTP request caused a write",
-      "non-SQL systems without a queryable mirror"
+      "logs",
+      "HTTP proof",
+      "no store"
     ],
     "relatedQueries": [
-      "green LangGraph trace postgres row missing",
-      "how to verify AI agent wrote to postgres",
-      "CI passed but database inconsistent side effect",
-      "compare tool parameters to sql row verification",
-      "agent run record workflow result json"
+      "langgraph",
+      "agent verify",
+      "trace data"
     ],
     "problemIndex": [
       {
-        "moment": "Green LangGraph or agent trace but wrong or missing Postgres row",
+        "moment": "Green trace, bad data",
         "primaryRoute": "/guides/trace-green-postgres-row-missing",
         "relatedRoutes": [
           "/integrate",
@@ -46,7 +42,7 @@
         ]
       },
       {
-        "moment": "OpenAI-style tool loop reported success; CRM or SQLite state does not match",
+        "moment": "Tool ok, CRM wrong",
         "primaryRoute": "/guides/tool-loop-success-crm-state-wrong",
         "relatedRoutes": [
           "/integrate",
@@ -54,7 +50,7 @@
         ]
       },
       {
-        "moment": "CI passed on workflow logs; database side effect never showed up",
+        "moment": "CI green, no write",
         "primaryRoute": "/guides/ci-green-logs-row-absent",
         "relatedRoutes": [
           "/guides/ci-green-missing-database-side-effect",
@@ -62,7 +58,7 @@
         ]
       },
       {
-        "moment": "Need a gate before production: read-only verification, not more log volume",
+        "moment": "Pre-prod read-only gate",
         "primaryRoute": "/guides/pre-production-read-only-sql-gate",
         "relatedRoutes": [
           "/integrate",
@@ -70,21 +66,21 @@
         ]
       },
       {
-        "moment": "Green dashboards still happen when an AI agent writes wrong CRM data and you need read-only SQL before you trust the row.",
+        "moment": "AI CRM data wrong",
         "primaryRoute": "/guides/ai-agent-wrong-crm-data",
         "relatedRoutes": [
           "/database-truth-vs-traces"
         ]
       },
       {
-        "moment": "When automation reports success while database records disagree with declared tool parameters until read-only verification, treat trace color as non-authoritative.",
+        "moment": "Params vs store",
         "primaryRoute": "/guides/automation-success-database-mismatch",
         "relatedRoutes": [
           "/integrate"
         ]
       },
       {
-        "moment": "Debugging Postgres after a LangGraph run requires row-level truth at verification time beyond trace completion flags alone for customer-facing data.",
+        "moment": "LangGraph data check",
         "primaryRoute": "/guides/debug-postgres-after-langgraph",
         "relatedRoutes": [
           "/guides/verify-langgraph-workflows",
@@ -92,14 +88,14 @@
         ]
       },
       {
-        "moment": "When a Stripe webhook returns OK you still need the ledger database row to match before finance treats settlement as final and read-only SQL verifies persisted state.",
+        "moment": "Webhook vs ledger",
         "primaryRoute": "/guides/stripe-webhook-database-alignment",
         "relatedRoutes": [
           "/pricing"
         ]
       },
       {
-        "moment": "CI can stay green on workflow logs while the database side effect is missing until a read-only gate surfaces ROW_ABSENT before production.",
+        "moment": "CI green, no effect",
         "primaryRoute": "/guides/scenario-ci-green-side-effect-missing",
         "relatedRoutes": [
           "/guides/ci-green-missing-database-side-effect",
@@ -225,8 +221,8 @@
       }
     ],
     "shareableTerminalDemo": {
-      "title": "Pasteable terminal proof (bundled demo)",
-      "transcript": "### Success (`wf_complete`)\n\nworkflow_id: wf_complete\nworkflow_status: complete\ntrust: TRUSTED: Every step matched the database under the configured verification rules.\nsteps:\n  - seq=0 tool=crm.upsert_contact result=Matched the database.\n\n{\n  \"schemaVersion\": 15,\n  \"workflowId\": \"wf_complete\",\n  \"status\": \"complete\",\n  \"steps\": [{ \"seq\": 0, \"toolId\": \"crm.upsert_contact\", \"status\": \"verified\" }]\n}\n\n### Failure (`wf_missing`)\n\nworkflow_id: wf_missing\nworkflow_status: inconsistent\nsteps:\n  - seq=0 tool=crm.upsert_contact result=Expected row is missing from the database (the log implies a write that is not present).\n    reference_code: ROW_ABSENT\n\n{\n  \"schemaVersion\": 15,\n  \"workflowId\": \"wf_missing\",\n  \"status\": \"inconsistent\",\n  \"steps\": [\n    {\n      \"seq\": 0,\n      \"toolId\": \"crm.upsert_contact\",\n      \"status\": \"missing\",\n      \"reasons\": [{ \"code\": \"ROW_ABSENT\" }]\n    }\n  ]\n}"
+      "title": "Bundled terminal proof",
+      "transcript": "### Success (`wf_complete`)\n\nworkflow_id: wf_complete\nworkflow_status: complete\ntrust: TRUSTED: Every step matched the database under the configured verification rules.\nsteps:\n  - seq=0 tool=crm.upsert_contact result=Matched the database.\n\n{\n  \"schemaVersion\": 15,\n  \"workflowId\": \"wf_complete\",\n  \"status\": \"complete\",\n  \"steps\": [{ \"seq\": 0, \"toolId\": \"crm.upsert_contact\", \"status\": \"verified\" }]\n}\n\n### Failure (`wf_missing`)\n\nworkflow_id: wf_missing\nworkflow_status: inconsistent\nsteps:\n  - seq=0 tool=crm.upsert_contact result:Expected row is missing from the database (the log implies a write that is not present).\n    reference_code: ROW_ABSENT\n\n{\n  \"schemaVersion\": 15,\n  \"workflowId\": \"wf_missing\",\n  \"status\": \"inconsistent\",\n  \"steps\": [\n    {\n      \"seq\": 0,\n      \"toolId\": \"crm.upsert_contact\",\n      \"status\": \"missing\",\n      \"reasons\": [{ \"code\": \"ROW_ABSENT\" }]\n    }\n  ]\n}"
     }
   }
 }

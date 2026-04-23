@@ -45,9 +45,12 @@ describe("marketing public route DOM invariants", { timeout: 180_000 }, () => {
     const html = await getSiteHtml("/integrate");
     const $ = cheerio.load(html);
     const $main = $("main.integrate-main");
+    // Page includes a second <pre> inside <details> (activation shell); O1 crossing command is this node only.
     const $packPre = $main.find('[data-testid="integrate-crossing-commands"]');
     expect($packPre.length).toBe(1);
-    expect($packPre.text()).toContain(marketing.integratePage.packLedCommand.trim());
+    const packNorm = $packPre.text().replace(/\s+/g, " ");
+    const cmdNorm = marketing.integratePage.packLedCommand.replace(/\s+/g, " ").trim();
+    expect(packNorm).toContain(cmdNorm);
     expect($main.find("details").length).toBe(1);
     expect($main.find('[data-testid="integrator-activation-commands"]').length).toBe(1);
     const gh = $main.find('a[href^="https://github.com/"]');

@@ -128,6 +128,18 @@ export const learnBundledProofIntegrateLede = {
   after: " for Postgres or SQLite setup, registry shape, and CLI commands.",
 } as const;
 
+/**
+ * Same checklist tokens as `docs/first-run-integration.md` and `integrate-activation-shell.bash` (OCL surface parity).
+ * Values are real substrings; tests require them to appear in this module.
+ */
+export const adoptionCompleteChecklistTokenRefs = {
+  patternComplete: "PatternComplete",
+  adoptionCompletePatternComplete: "AdoptionComplete_PatternComplete",
+  acTrust01: "AC-TRUST-01",
+  acOps01: "AC-OPS-01",
+  integrateSpineComplete: "IntegrateSpineComplete",
+} as const;
+
 /** Curated Learn hub (`/guides`): benefit-led links; routes must match markdown `route` frontmatter. */
 export const learnHub = {
   popularHeading: "Popular guides",
@@ -715,6 +727,7 @@ export const productCopy = {
   securityQuickFacts,
   learnBundledProofLedes,
   learnBundledProofIntegrateLede,
+  adoptionCompleteChecklistTokenRefs,
 
   /** One-line, human captions for `/guides` list items (nav labels stay discovery-stable). */
   learnGuideHubCaptions: {

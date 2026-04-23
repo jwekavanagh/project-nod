@@ -1,3 +1,3 @@
 {
-  "body": "## AgentSkeptic — verification failed\n\nTruth is persisted rows at verification time: read-only SQL checks database state against structured tool activity—not trace color or success flags.\n\n## CLI stderr (last 20 lines)\n\n_(no stderr)_\n---\n\n- https://agentskeptic.com/\n- https://agentskeptic.com/integrate\n- https://agentskeptic.com/guides\n- https://github.com/jwekavanagh/agentskeptic\n\n<!-- agentskeptic-discovery:v1 -->\n"
+  "body": "## AgentSkeptic — verification failed\n\nRead-only checks at verify time—not color.\n\n## CLI stderr (last 20 lines)\n\n_(no stderr)_\n---\n\n- https://agentskeptic.com/\n- https://agentskeptic.com/integrate\n- https://agentskeptic.com/guides\n- https://github.com/jwekavanagh/agentskeptic\n\n<!-- agentskeptic-discovery:v1 -->\n"
 }
