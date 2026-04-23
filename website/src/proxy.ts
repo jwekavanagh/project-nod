@@ -1,5 +1,8 @@
 import { auth } from "@/auth";
-import { NextResponse } from "next/server";
+import { type NextRequest, NextResponse } from "next/server";
+import type { Session } from "next-auth";
+
+type AuthedRequest = NextRequest & { auth: Session | null };
 
 /**
  * Unauthenticated `/account` hits used `redirect()` from a Server Component, which can
@@ -9,7 +12,7 @@ import { NextResponse } from "next/server";
  * Uses the NextAuth middleware wrapper so the session is resolved from this request’s
  * cookies (a bare `auth()` call relies on `headers()` and is not reliable in proxy).
  */
-export default auth((req) => {
+export default auth((req: AuthedRequest) => {
   if (req.auth?.user?.id) {
     return NextResponse.next();
   }
