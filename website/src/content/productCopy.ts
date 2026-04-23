@@ -5,10 +5,12 @@ import { METERING_CLARIFIER, SECURITY_QUICK_VS_CONTRACT_BULLET } from "@/content
 
 export type InternalHref = "/security" | "/support" | "/pricing" | "/privacy" | "/terms" | "/integrate";
 
-export type PricingTrustBandBeforeGrid = {
-  title: string;
-  paragraphs: readonly [string, string];
-  links: readonly [{ label: string; href: "/security" }, { label: string; href: "/support" }];
+export type PricingBillingAndQuestionsBand = {
+  billingTitle: string;
+  billingBullets: readonly [string, string, string];
+  questionsTitle: string;
+  enterpriseCtaLabel: string;
+  secondaryLinks: readonly [{ label: string; href: "/security" }, { label: string; href: "/support" }];
 };
 
 export type SecurityQuickFacts = {
@@ -184,17 +186,20 @@ export const learnHub = {
   ],
 } as const;
 
-export const pricingTrustBandBeforeGrid = {
-  title: "Billing and plan changes",
-  paragraphs: [
-    "Subscribe with Stripe Checkout; manage cards, invoices, and upgrades from Account. Upgrade tiers as usage grows.",
-    "Enterprise: use Contact sales on the Enterprise card for procurement, custom limits, or contract terms—do not use unpublished sales inboxes.",
+export const pricingBillingAndQuestionsBand = {
+  billingTitle: "Billing notes",
+  billingBullets: [
+    "Cancel anytime.",
+    "Subscribe via Stripe Checkout and manage everything from your Account page.",
+    "In-process library use never calls the usage API.",
   ],
-  links: [
+  questionsTitle: "Questions?",
+  enterpriseCtaLabel: "Contact sales for Enterprise",
+  secondaryLinks: [
     { label: "Security & Trust", href: "/security" as const },
     { label: "Support", href: "/support" as const },
   ],
-} as const satisfies PricingTrustBandBeforeGrid;
+} as const satisfies PricingBillingAndQuestionsBand;
 
 /** Above-the-fold `/pricing` hero (title, stakes, subhead) — from `config/marketing.json`. */
 export const pricingHero = {
@@ -203,26 +208,33 @@ export const pricingHero = {
   subtitle: marketing.site.pricing.subtitle,
 } as const;
 
-export const pricingHeroExample = {
-  title: "What you are buying",
+export const pricingWhatYouGetPaidPlans = {
+  title: "What you get with paid plans",
   bullets: [
-    "A workflow writes status = resolved.",
-    "AgentSkeptic verifies that row in CI before deploy.",
-    "If the database does not match, the build fails.",
+    "Run verification in CI and fail builds on mismatch",
+    "Enforce with locks and the published npm CLI",
+    "Included monthly verification quota (scales with plan)",
+    "API keys for licensed features",
   ],
 } as const;
 
-export const pricingRiskReassurance = "Cancel anytime; local verification stays free without a subscription.";
+/** @deprecated Prefer `pricingWhatYouGetPaidPlans` (same content). */
+export const pricingHeroExample = pricingWhatYouGetPaidPlans;
+
+export const pricingPlansSectionTitle = "Plans";
+
+export const pricingLocalVerificationFreeFootnote =
+  "Local verification and OSS builds remain free forever.";
 
 /** `/pricing` Starter card: `includedMonthly` is 0 (evaluation; no paid CLI allowance). */
 export const pricingCardStarterPaidQuotaCaption =
-  "No paid CLI quota—subscribe on Individual, Team, or Business for included monthly verifications.";
+  "No included paid verifications—subscribe when you need licensed npm and monthly quota.";
 
 /** Truthful guidance without implying existing customer mix. */
 export const pricingRecommendedPill = "For production CI";
 
-/** Microcopy under Team card (upgrade trigger for shared CI). */
-export const pricingTeamFootnote = "Upgrade when you enable CI enforcement.";
+/** Microcopy under Team card (positive positioning for the recommended tier). */
+export const pricingTeamFootnote = "The tier most teams choose once CI is shared across the group.";
 
 /** Primary CTA labels on `/pricing` cards (sign-in still required before checkout). */
 export const pricingPlanCtas = {
@@ -384,8 +396,8 @@ export const productCopy = {
   /** Muted line after Learn hub supporting lede — pairs with `/compare`. */
   guidesHubCompareLead: "When you want bundles versus single checks in one view, use",
 
-  /** After pricing hero recap — pairs with `/compare`. */
-  pricingCompareLead: "Compare plans to bundled proof paths when you are choosing an approach:",
+  /** Pairs with `/compare` (also used beside the detailed comparison table). */
+  pricingCompareLead: "When you want bundles versus single checks in one view, use",
 
   /** Under pricing hero positioning — buyer commercial guide (fence-synced). */
   pricingBuyerCommercialBoundaryLinkLabel: "Buyer: commercial boundary and evaluation path",
@@ -643,8 +655,10 @@ export const productCopy = {
   pricingPlanChoiceGuide: pricingHero.subtitle,
 
   pricingHero,
+  pricingWhatYouGetPaidPlans,
   pricingHeroExample,
-  pricingRiskReassurance,
+  pricingPlansSectionTitle,
+  pricingLocalVerificationFreeFootnote,
   pricingCardStarterPaidQuotaCaption,
   pricingRecommendedPill,
   pricingTeamFootnote,
@@ -685,7 +699,7 @@ export const productCopy = {
 
   homeHeroCtaLabels,
   homeHeroSecondaryCta,
-  pricingTrustBandBeforeGrid,
+  pricingBillingAndQuestionsBand,
   securityQuickFacts,
   learnBundledProofLedes,
   learnBundledProofIntegrateLede,

@@ -42,11 +42,11 @@ export type PricingComparisonRow = {
 } & Record<PlanColumn, string>;
 
 export const PRICING_FEATURE_COMPARISON = {
-  title: "Compare plans in detail",
+  title: "Detailed comparison",
   columnLabels: ["Capability", "Starter", "Individual", "Team", "Business", "Enterprise"] as const,
   rows: [
     {
-      feature: "Verify locally with an OSS build from source (no subscription)",
+      feature: "Local OSS verification",
       starter: "Yes",
       individual: "Yes",
       team: "Yes",
@@ -54,7 +54,7 @@ export const PRICING_FEATURE_COMPARISON = {
       enterprise: "Yes",
     },
     {
-      feature: "Fail CI on contract mismatch using OSS build agentskeptic verify (non-zero exit)",
+      feature: "Fail CI on mismatch (OSS)",
       starter: "Yes",
       individual: "Yes",
       team: "Yes",
@@ -62,7 +62,7 @@ export const PRICING_FEATURE_COMPARISON = {
       enterprise: "Yes",
     },
     {
-      feature: "Run published npm contract verify / quick in CI with API key + reserve",
+      feature: "Published npm CLI + API key",
       starter: "No",
       individual: "Yes",
       team: "Yes",
@@ -70,7 +70,7 @@ export const PRICING_FEATURE_COMPARISON = {
       enterprise: "Yes",
     },
     {
-      feature: "Lock compare (--expect-lock) and enforce on published npm",
+      feature: "Lock / enforce commands",
       starter: "No",
       individual: "Yes",
       team: "Yes",
@@ -78,21 +78,12 @@ export const PRICING_FEATURE_COMPARISON = {
       enterprise: "Yes",
     },
     {
-      feature: "Included paid verifications / month (published npm metered)",
-      starter: "None (subscribe for quota)",
+      feature: "Monthly paid verifications",
+      starter: "0",
       individual: "2,000",
       team: "10,000",
       business: "50,000",
       enterprise: "Custom",
-    },
-    {
-      feature:
-        "OSS — generate --output-lock fixtures (compare / enforce on published npm remains commercial)",
-      starter: "Yes",
-      individual: "Yes",
-      team: "Yes",
-      business: "Yes",
-      enterprise: "Yes",
     },
   ] as const satisfies readonly PricingComparisonRow[],
 };

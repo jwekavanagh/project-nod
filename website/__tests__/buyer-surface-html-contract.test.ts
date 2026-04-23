@@ -52,10 +52,14 @@ describe("buyer-surface HTML contracts (R2–R6)", { timeout: 180_000 }, () => {
     expect(html).toContain('data-testid="pricing-trust-band"');
     const $ = cheerio.load(html);
     const band = $('[data-testid="pricing-trust-band"]');
-    expect(band.find("h2").first().text().trim()).toBe(productCopy.pricingTrustBandBeforeGrid.title);
-    const paras = band.find("p").toArray().map((el) => $(el).text().trim());
-    expect(paras).toContain(productCopy.pricingTrustBandBeforeGrid.paragraphs[0]);
-    expect(paras).toContain(productCopy.pricingTrustBandBeforeGrid.paragraphs[1]);
+    expect(band.find("h2").first().text().trim()).toBe(productCopy.pricingBillingAndQuestionsBand.billingTitle);
+    const billingItems = band.find("ul.pricing-billing-notes li").toArray().map((el) => $(el).text().trim());
+    for (const b of productCopy.pricingBillingAndQuestionsBand.billingBullets) {
+      expect(billingItems).toContain(b);
+    }
+    expect(band.find(".pricing-questions-lead").first().text().trim()).toBe(
+      productCopy.pricingBillingAndQuestionsBand.questionsTitle,
+    );
   });
 
   it("/security quick facts match productCopy (R5)", async () => {

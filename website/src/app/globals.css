@@ -213,6 +213,27 @@ main {
   line-height: 1.45;
   color: var(--fg);
 }
+.pricing-page .pricing-plans-heading {
+  font-size: 1.2rem;
+  margin: 1.35rem 0 0.65rem;
+  line-height: 1.25;
+}
+.pricing-page .pricing-compare-lead {
+  margin: 0 0 0.65rem;
+  max-width: 42rem;
+  line-height: 1.45;
+}
+.pricing-page .pricing-billing-notes {
+  margin: 0.5rem 0 0;
+  padding-left: 1.2rem;
+  max-width: 42rem;
+  line-height: 1.45;
+}
+.pricing-page .pricing-questions-lead {
+  margin: 1rem 0 0.35rem;
+  font-weight: 600;
+  color: var(--fg);
+}
 .pricing-page .pricing-example {
   background: var(--card);
   border: 1px solid var(--border);

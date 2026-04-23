@@ -13,7 +13,7 @@ describe("pricing comparison vs commercial-plans.json caps", () => {
       readFileSync(path.join(root, "config", "commercial-plans.json"), "utf8"),
     ) as { plans: Record<string, { includedMonthly: number | null }> };
     const quotaRow = PRICING_FEATURE_COMPARISON.rows.find((r) =>
-      r.feature.startsWith("Included paid verifications"),
+      r.feature.startsWith("Monthly paid verifications"),
     );
     expect(quotaRow).toBeTruthy();
     const fmt = (n: number | null) =>
