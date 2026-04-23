@@ -17,6 +17,25 @@ const vercelLike = process.env.VERCEL === "1" || process.env.VERCEL === "product
 const traceRoot =
   vercelLike || process.env.NEXT_CONFIG_TRACE_ROOT === "1" ? path.join(__dirname, "..") : undefined;
 
+/**
+ * Pin internal RSC webpack loaders to the resolved `next` package. In some environments
+ * (workspace hoisting, skewed installs, or `next` CLI vs app version mismatch) webpack can
+ * fail with: Can't resolve 'next-flight-client-entry-loader'. This mirrors Next's own
+ * `resolveLoader.alias` mapping in `dist/build/webpack-config.js`.
+ */
+function pinNextFlightClientEntryLoader(config: Parameters<NonNullable<NextConfig["webpack"]>>[0]) {
+  const nextDir = path.dirname(require.resolve("next/package.json"));
+  const loaderPath = path.join(nextDir, "dist", "build", "webpack", "loaders", "next-flight-client-entry-loader");
+  const prev = config.resolveLoader as { alias?: Record<string, string> } | undefined;
+  config.resolveLoader = {
+    ...config.resolveLoader,
+    alias: {
+      ...prev?.alias,
+      "next-flight-client-entry-loader": loaderPath,
+    },
+  };
+}
+
 const nextConfig: NextConfig = {
   async redirects() {
     return [
@@ -36,6 +55,10 @@ const nextConfig: NextConfig = {
   outputFileTracingIncludes: {
     "/api/demo/verify": [...DEMO_VERIFY_OUTPUT_FILE_TRACING_GLOBS],
     "/api/integrator/registry-draft": [...REGISTRY_DRAFT_API_FILE_TRACING_GLOBS],
+  },
+  webpack: (config) => {
+    pinNextFlightClientEntryLoader(config);
+    return config;
   },
   async headers() {
     return [
