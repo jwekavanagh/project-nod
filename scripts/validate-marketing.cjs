@@ -5,6 +5,27 @@ const { join } = require("node:path");
 
 const BANNED = /\b(crossing success|PatternComplete|IntegrateSpine|Outcome Certificate|AC-)\b/i;
 
+const URL_IN_TEXT = /https?:\/\/[^[\s<>"')]+/gi;
+
+/**
+ * True if the string contains a URL whose host is GitHub (github.com or a subdomain).
+ * Uses URL parsing so substrings like "evil.com/.../github.com" do not false-positive.
+ * @param {string} s
+ */
+function textContainsGithubHostUrl(s) {
+  for (const m of s.matchAll(URL_IN_TEXT)) {
+    try {
+      const { hostname } = new URL(m[0]);
+      if (hostname === "github.com" || hostname.endsWith(".github.com")) {
+        return true;
+      }
+    } catch {
+      // ignore invalid URL fragments
+    }
+  }
+  return false;
+}
+
 /**
  * @param {string} root
  */
@@ -79,7 +100,7 @@ function validateMarketingValue(m) {
   if (!g.toLowerCase().includes("read-only")) {
     throw new Error("marketing: guaranteeFootnote must mention read-only");
   }
-  if (g.includes("https://github.com/") || g.includes("http://github.com/")) {
+  if (textContainsGithubHostUrl(g)) {
     throw new Error("marketing: guaranteeFootnote must not include a GitHub URL (site-local copy only)");
   }
   if (g.toLowerCase().includes("causality")) {

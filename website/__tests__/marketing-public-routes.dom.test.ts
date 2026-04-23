@@ -41,19 +41,29 @@ describe("marketing public route DOM invariants", { timeout: 180_000 }, () => {
     expect(BANNED.test(text)).toBe(false);
   });
 
-  it("integrate has exactly one pre with packLedCommand; no details; GitHub doc links", async () => {
+  it("integrate has pack-led pre, optional spine in details, and GitHub doc links", async () => {
     const html = await getSiteHtml("/integrate");
     const $ = cheerio.load(html);
     const $main = $("main.integrate-main");
-    expect($main.find("pre").length).toBe(1);
-    expect($main.find("pre").text()).toContain(marketing.integratePage.packLedCommand.trim());
-    expect($main.find("details").length).toBe(0);
+    const $packPre = $main.find('[data-testid="integrate-crossing-commands"]');
+    expect($packPre.length).toBe(1);
+    expect($packPre.text()).toContain(marketing.integratePage.packLedCommand.trim());
+    expect($main.find("details").length).toBe(1);
+    expect($main.find('[data-testid="integrator-activation-commands"]').length).toBe(1);
     const gh = $main.find('a[href^="https://github.com/"]');
     expect(gh.length).toBeGreaterThanOrEqual(1);
     const hrefs = gh
       .toArray()
       .map((el) => $(el).attr("href"))
       .filter(Boolean) as string[];
-    expect(hrefs.some((h) => h.includes("github.com"))).toBe(true);
+    expect(
+      hrefs.some((h) => {
+        try {
+          return new URL(h).hostname === "github.com";
+        } catch {
+          return false;
+        }
+      }),
+    ).toBe(true);
   });
 });

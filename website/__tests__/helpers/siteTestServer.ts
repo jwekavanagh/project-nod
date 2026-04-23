@@ -10,6 +10,15 @@ const { normalize } = require("../../../scripts/public-product-anchors.cjs") as 
   normalize: (s: string) => string;
 };
 
+function isAbsoluteHttpOrHttps(s: string): boolean {
+  try {
+    const { protocol } = new URL(s);
+    return protocol === "http:" || protocol === "https:";
+  } catch {
+    return false;
+  }
+}
+
 let child: ChildProcess | undefined;
 let startPromise: Promise<void> | null = null;
 let teardownRegistered = false;
@@ -128,7 +137,9 @@ export function registerMarketingSiteTeardown(): void {
 
 export async function getSiteHtml(path: string): Promise<string> {
   await ensureMarketingSiteRunning();
-  const url = path.startsWith("http") ? path : `http://127.0.0.1:34100${path.startsWith("/") ? path : `/${path}`}`;
+  const url = isAbsoluteHttpOrHttps(path)
+    ? path
+    : `http://127.0.0.1:34100${path.startsWith("/") ? path : `/${path}`}`;
   const res = await fetch(url);
   return res.text();
 }

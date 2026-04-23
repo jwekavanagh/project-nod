@@ -13,6 +13,7 @@
     { "file": "package.json", "path": ["overrides", "esbuild"], "value": "0.25.12" },
     { "file": "package.json", "path": ["overrides", "tmp"], "value": "0.2.4" },
     { "file": "package.json", "path": ["overrides", "cookie"], "value": "0.7.2" },
+    { "file": "package.json", "path": ["overrides", "uuid"], "value": "14.0.0" },
     { "file": "test/fixtures/langgraph-node-oracle/package.json", "path": ["dependencies", "@langchain/core"], "value": "0.3.80" },
     { "file": "test/fixtures/langgraph-node-oracle/package.json", "path": ["dependencies", "@langchain/langgraph"], "value": "0.2.74" },
     { "file": "test/fixtures/langgraph-node-oracle/package.json", "path": ["overrides", "langsmith"], "value": "0.5.19" }
@@ -25,6 +26,7 @@
     { "lockfile": "root", "package": "esbuild", "match": "everyInstanceExact", "exactVersion": "0.25.12" },
     { "lockfile": "root", "package": "tmp", "match": "everyInstanceExact", "exactVersion": "0.2.4" },
     { "lockfile": "root", "package": "cookie", "match": "everyInstanceExact", "exactVersion": "0.7.2" },
+    { "lockfile": "root", "package": "uuid", "match": "everyInstanceExact", "exactVersion": "14.0.0" },
     { "lockfile": "example", "package": "langsmith", "match": "everyInstanceExact", "exactVersion": "0.5.19" }
   ],
   "drizzleMachineChecks": [

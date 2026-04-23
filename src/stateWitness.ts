@@ -35,6 +35,23 @@ async function fetchWithDeadline(url: string, init: RequestInit, deadlineMs: num
   }
 }
 
+function isAbsoluteHttpOrHttps(s: string): boolean {
+  try {
+    const { protocol } = new URL(s);
+    return protocol === "http:" || protocol === "https:";
+  } catch {
+    return false;
+  }
+}
+
+function vectorProviderBaseFromHost(host: string): string {
+  const t = host.trim();
+  if (isAbsoluteHttpOrHttps(t)) {
+    return t;
+  }
+  return `https://${t}`;
+}
+
 async function reconcileVectorDocument(req: VectorDocumentVerificationRequest): Promise<ReconcileOutput> {
   if (req.expectPayloadSha256) {
     return setupError("vector_document: expectPayloadSha256 is not supported yet; use metadataEq");
@@ -60,7 +77,7 @@ async function reconcileVectorDocument(req: VectorDocumentVerificationRequest): 
   if (!apiKey) {
     return setupError(`vector_document (${req.provider}): missing API key env`);
   }
-  const base = host.startsWith("http") ? host : `https://${host}`;
+  const base = vectorProviderBaseFromHost(host);
   try {
     if (req.provider === "pinecone") {
       const r = await fetchWithDeadline(
