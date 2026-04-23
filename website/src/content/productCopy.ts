@@ -107,16 +107,93 @@ export const supportPage = {
 } as const satisfies SupportPage;
 
 export const learnBundledProofLedes = {
-  primary:
-    "These pages show real verification envelopes for bundled workflows so you can see verified versus ROW_ABSENT outcomes without running the CLI.",
+  primary: "See real verification outputs without running anything.",
   secondaryMuted:
-    "They are indexable public examples. Private paste links use /r/ and stay noindex by design.",
+    "These indexable examples mirror bundled workflows. Private paste links use /r/ and stay noindex by design.",
 } as const satisfies LearnBundledProofLedes;
 
 /** Bundled proof section on `/guides`: visible text split around the `/integrate` link. */
 export const learnBundledProofIntegrateLede = {
-  before: "For first-run on your database, follow ",
+  before: "For first-run on your own stores, follow ",
   after: " for Postgres or SQLite setup, registry shape, and CLI commands.",
+} as const;
+
+/** Curated Learn hub (`/guides`): benefit-led links; routes must match markdown `route` frontmatter. */
+export const learnHub = {
+  popularHeading: "Popular guides",
+  debugHeading: "Debug & troubleshooting",
+  buyersHeading: "For buyers & teams",
+  bundledProofHeading: "Bundled proof examples",
+  moreHeading: "More guides and scenarios",
+  closingTitle: "Ready to try it on your data?",
+  getStartedCtaLabel: "Get started",
+  tryDemoCtaLabel: HOME_HERO_DEMO_CTA_LABEL,
+  popular: [
+    {
+      href: "/guides/ai-agent-wrong-crm-data",
+      title: "AI agent changed the CRM — but the row never landed",
+      caption: "Verify values before you trust the customer record.",
+    },
+    {
+      href: "/guides/scenario-green-trace-row-missing",
+      title: "LangGraph trace looks healthy — but state is wrong",
+      caption: "Catch missing or stale records after a graph run.",
+    },
+    {
+      href: "/guides/scenario-ci-green-side-effect-missing",
+      title: "CI passed, but the side effect is missing",
+      caption: "Green logs do not mean your store actually updated.",
+    },
+    {
+      href: "/guides/tool-loop-success-crm-state-wrong",
+      title: 'Tool loop said "success" — CRM or ledger disagrees',
+      caption: "Close the gap between declared activity and stored state.",
+    },
+    {
+      href: "/guides/scenario-stripe-webhook-ledger-mismatch",
+      title: "Stripe webhook returned 200 — but your ledger is off",
+      caption: "Reconcile external callbacks with internal records before settlement.",
+    },
+  ],
+  debug: [
+    {
+      href: "/guides/debug-postgres-after-langgraph",
+      title: "Debug Postgres or SQLite after LangGraph or agent runs",
+      caption: "Read-only checks when traces and rows disagree.",
+    },
+    {
+      href: "/guides/first-run-verification",
+      title: "First-run verification on your own database",
+      caption: "From clone to a real verify against your data.",
+    },
+    {
+      href: "/guides/pre-production-read-only-sql-gate",
+      title: "Pre-production read-only gate (not another log pipeline)",
+      caption: "Add a gate from expected tool effects, not log volume.",
+    },
+  ],
+  buyers: [
+    {
+      href: "/guides/buyer-ci-enforcement-metering",
+      title: "CI enforcement and metering",
+      caption: "Locks, enforcement, and usage for pipelines.",
+    },
+    {
+      href: "/guides/buyer-commercial-boundary",
+      title: "Commercial versus open-source boundaries",
+      caption: "What is paid product, what stays OSS, and how to evaluate.",
+    },
+    {
+      href: "/guides/buyer-trust-production-implications",
+      title: "What a green verdict really means in production",
+      caption: "Read the trust band before you rely on outcomes.",
+    },
+  ],
+  exampleLinkLabels: {
+    "/examples/wf-complete": "Verified workflow (wf_complete)",
+    "/examples/wf-missing": "Failure with ROW_ABSENT (wf_missing)",
+    "/examples/langgraph-checkpoint-trust": "LangGraph checkpoint trust (certificate example)",
+  },
 } as const;
 
 export const pricingTrustBandBeforeGrid = {
@@ -306,11 +383,11 @@ export const productCopy = {
   guaranteeProductBriefCtaLabel: "Product brief",
 
   /** Learn hub (`/guides`) first line under H1 (UI-only). */
-  learnHubPrimaryLede: "Short reads for runs that looked fine until you checked the database.",
+  learnHubPrimaryLede: "Real problems, real fixes.",
 
   /** Guides hub second lede (UI-only). */
   guidesHubSupportingSentence:
-    "Each guide ties a symptom to read-only SQL you can use as a gate, then sends you to Get started on your own data.",
+    'Guides that turn "it looked fine in the trace" into "here is exactly what to check before it reaches production." Each short read links a common symptom to a concrete read-only verification you can add as a gate — then points you to Get started on your own data.',
 
   /** Muted line after Learn hub supporting lede — pairs with `/compare`. */
   guidesHubCompareLead: "When you want bundles versus single checks in one view, use",
@@ -329,7 +406,7 @@ export const productCopy = {
 
   /** Learn hub (`/guides`) metadata.description (UI-only); includes bundled proof list. */
   learnHubIndexDescription:
-    "Learn: short guides plus bundled wf_complete and wf_missing examples for read-only SQL discovery—not private /r/ share links.",
+    "Learn: symptom-led guides, read-only verification gates for your stores, and bundled public examples (wf_complete, wf_missing)—without private /r/ share links.",
 
   /** Shared report view one-liner (UI-only). */
   publicShareReportIntro:

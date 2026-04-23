@@ -36,16 +36,13 @@ function assertGuideShell(surface: ReturnType<typeof readSurfaceFile>) {
 }
 
 describe("indexed guides", () => {
-  it("hub is indexable and lists guide, scenario, example links, and /integrate", () => {
+  it("hub is indexable and links every guide, scenario, example, /integrate, /compare, and demo", () => {
     expect(hubMeta.metadata.robots).toEqual({ index: true, follow: true });
     const surfaces = listAllSurfaces();
     const guides = surfaces.filter((s) => s.route.startsWith("/guides/") && s.surfaceKind === "guide");
     const scenarios = surfaces.filter((s) => s.route.startsWith("/guides/") && s.surfaceKind === "scenario");
     const examples = surfaces.filter((s) => s.route.startsWith("/examples/"));
     const { container } = render(<GuidesHubPage />);
-    const links = container.querySelectorAll("a[href]");
-    const expectedCount = guides.length + scenarios.length + examples.length + 2;
-    expect(links.length).toBe(expectedCount);
     for (const s of [...guides, ...scenarios]) {
       expect(container.querySelector(`a[href="${s.route}"]`)).toBeTruthy();
     }
@@ -54,6 +51,7 @@ describe("indexed guides", () => {
     }
     expect(container.querySelector('a[href="/integrate"]')).toBeTruthy();
     expect(container.querySelector('a[href="/compare"]')).toBeTruthy();
+    expect(container.querySelector('a[href="/#try-it"]')).toBeTruthy();
   });
 
   it("each guide surfaceKind guide meets shell contract", () => {
