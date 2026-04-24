@@ -56,6 +56,13 @@ function run(args) {
   return spawnSync(process.execPath, [cli, ...args], {
     cwd: root,
     encoding: "utf8",
+    env: {
+      ...process.env,
+      // Hard isolation from other suites that inject loadEvents faults.
+      AGENTSKEPTIC_TEST_THROW_ON_LOAD_EVENTS: "0",
+      // Keep this contract deterministic even when running against a commercial dist build.
+      AGENTSKEPTIC_API_KEY: process.env.AGENTSKEPTIC_API_KEY ?? "test_langgraph_checkpoint_key",
+    },
   });
 }
 
