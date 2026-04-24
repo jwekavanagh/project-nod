@@ -47,7 +47,7 @@ jobs:
       GITHUB_TOKEN: ${{ secrets.SEMANTIC_RELEASE_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
       AGENTSKEPTIC_TELEMETRY: "0"
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
         with:
           ref: "${{ github.event_name == 'workflow_run' && github.event.workflow_run.head_sha || github.ref }}"
           fetch-depth: 0
@@ -117,7 +117,7 @@ jobs:
           re='^v(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(-([0-9A-Za-z-]+)(\.[0-9A-Za-z-]+)*)?(\+([0-9A-Za-z-]+)(\.[0-9A-Za-z-]+)*)?$'
           [[ "$TAG" =~ $re ]]
 
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
         with:
           ref: ${{ github.event.workflow_run.head_sha }}
           fetch-depth: 0

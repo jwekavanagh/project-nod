@@ -39,7 +39,7 @@ jobs:
     if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 0
       - uses: ./.github/actions/setup-node-npm
@@ -54,7 +54,7 @@ jobs:
       security-events: write
       actions: read
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - uses: ./.github/actions/setup-node-npm
       - name: CodeQL remediation grep invariants
         shell: bash
@@ -99,7 +99,7 @@ jobs:
       # Root `test:ci` does not use website DATABASE_URL / TELEMETRY_DATABASE_URL; keep split off so Vitest defaults match “core-only” unless a test stubs otherwise.
       AGENTSKEPTIC_TELEMETRY_WRITES_TELEMETRY_DB: "0"
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - name: Assert workflow Postgres URLs use localhost only (static scan)
         run: node scripts/assert-ci-workflows-database-url-hosts.mjs
       - uses: ./.github/actions/setup-node-npm
@@ -146,7 +146,7 @@ jobs:
       CRON_SECRET: ci_cron_secret_placeholder_32chars_min
       AGENTSKEPTIC_TELEMETRY: "0"
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - name: Assert workflow Postgres URLs use localhost only (static scan)
         run: node scripts/assert-ci-workflows-database-url-hosts.mjs
       - name: Assert job env Postgres URLs are localhost (runtime; requires core + telemetry)

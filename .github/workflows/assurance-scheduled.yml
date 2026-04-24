@@ -19,7 +19,7 @@ jobs:
     env:
       AGENTSKEPTIC_TELEMETRY: "0"
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - uses: ./.github/actions/setup-node-npm
       - name: Build and assurance run
         run: npm run build && node dist/cli.js assurance run --manifest examples/assurance/manifest.json

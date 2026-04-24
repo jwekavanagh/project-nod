@@ -29,7 +29,7 @@ jobs:
   pytest:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - uses: actions/setup-node@v5
         with:
           node-version: "22"
@@ -48,6 +48,6 @@ jobs:
   docker-timed:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - name: Build python image (runs timed_first_verify in Dockerfile)
         run: docker build -f python/Dockerfile -t agentskeptic-py-verify .

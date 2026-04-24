@@ -30,7 +30,7 @@ jobs:
       VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
       VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - name: Telemetry env (callers that require AGENTSKEPTIC_TELEMETRY=0)
         if: inputs.agentskeptic_telemetry_zero
         run: echo "AGENTSKEPTIC_TELEMETRY=0" >> "$GITHUB_ENV"
