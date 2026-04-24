@@ -23,7 +23,8 @@ const REQUIRED = [
 ];
 
 test("npm pack --dry-run --json lists discovery artifacts", () => {
-  const r = spawnSync("npm pack --dry-run --json", {
+  // --ignore-scripts: root `prepare` (patch-package, husky) must not print to stdout or JSON.parse fails.
+  const r = spawnSync("npm pack --dry-run --json --ignore-scripts", {
     cwd: root,
     encoding: "utf8",
     shell: true,

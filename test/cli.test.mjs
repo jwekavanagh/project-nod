@@ -403,6 +403,8 @@ describe("CLI agentskeptic", () => {
       registryPath,
       "--db",
       dbPath,
+      "--consistency",
+      "strong",
       "--verification-window-ms",
       "100",
     ], { encoding: "utf8", cwd: root });
