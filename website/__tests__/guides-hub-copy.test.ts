@@ -8,7 +8,7 @@ import {
 
 registerMarketingSiteTeardown();
 
-describe("guides hub copy", { timeout: 180_000 }, () => {
+describe("guides hub copy", { timeout: 300_000 }, () => {
   beforeAll(async () => {
     await ensureMarketingSiteRunning();
   });

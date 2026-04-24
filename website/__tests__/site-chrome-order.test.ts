@@ -12,7 +12,7 @@ import {
 
 registerMarketingSiteTeardown();
 
-describe("site chrome header primary order (R1)", { timeout: 180_000 }, () => {
+describe("site chrome header primary order (R1)", { timeout: 300_000 }, () => {
   beforeAll(async () => {
     await ensureMarketingSiteRunning();
   });

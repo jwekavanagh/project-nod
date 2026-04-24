@@ -9,7 +9,7 @@ import {
 
 registerMarketingSiteTeardown();
 
-describe("integrate page markup", { timeout: 180_000 }, () => {
+describe("integrate page markup", { timeout: 300_000 }, () => {
   beforeAll(async () => {
     await ensureMarketingSiteRunning();
   });

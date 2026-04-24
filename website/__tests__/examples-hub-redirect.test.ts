@@ -13,7 +13,7 @@ const { normalize } = require("../../scripts/public-product-anchors.cjs") as {
 
 registerMarketingSiteTeardown();
 
-describe("examples hub redirect", { timeout: 180_000 }, () => {
+describe("examples hub redirect", { timeout: 300_000 }, () => {
   beforeAll(async () => {
     const anchors0 = loadAnchors();
     process.env.NEXT_PUBLIC_APP_URL = normalize(anchors0.productionCanonicalOrigin);

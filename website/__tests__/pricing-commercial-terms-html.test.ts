@@ -19,7 +19,7 @@ const catalog: CommercialPlansFile = JSON.parse(
 ) as CommercialPlansFile;
 const PRICING_COMMERCIAL_TERMS_BULLETS = getPricingCommercialTermsBullets(catalog);
 
-describe("pricing commercial terms HTML", { timeout: 180_000 }, () => {
+describe("pricing commercial terms HTML", { timeout: 300_000 }, () => {
   beforeAll(async () => {
     await ensureMarketingSiteRunning();
   });

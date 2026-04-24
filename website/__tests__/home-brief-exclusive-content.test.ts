@@ -19,7 +19,7 @@ function mainText(html: string): string {
   return normWs($("main").text());
 }
 
-describe("home vs brief exclusive content", { timeout: 180_000 }, () => {
+describe("home vs brief exclusive content", { timeout: 300_000 }, () => {
   beforeAll(async () => {
     await ensureMarketingSiteRunning();
   });

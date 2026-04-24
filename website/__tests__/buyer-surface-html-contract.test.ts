@@ -12,7 +12,7 @@ import {
 
 registerMarketingSiteTeardown();
 
-describe("buyer-surface HTML contracts (R2–R6)", { timeout: 180_000 }, () => {
+describe("buyer-surface HTML contracts (R2–R6)", { timeout: 300_000 }, () => {
   beforeAll(async () => {
     await ensureMarketingSiteRunning();
   });

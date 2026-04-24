@@ -9,7 +9,7 @@ export const GUIDE_CONTRACT_PATH = "/guides/verify-langgraph-workflows";
 
 registerMarketingSiteTeardown();
 
-describe("indexed guide embed contract (R9)", { timeout: 180_000 }, () => {
+describe("indexed guide embed contract (R9)", { timeout: 300_000 }, () => {
   beforeAll(async () => {
     await ensureMarketingSiteRunning();
   });

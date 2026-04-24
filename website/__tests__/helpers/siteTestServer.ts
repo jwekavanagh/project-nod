@@ -20,20 +20,37 @@ function isAbsoluteHttpOrHttps(s: string): boolean {
 }
 
 let child: ChildProcess | undefined;
+/** Last lines of `next start` stderr when stdio is piped — for failed readiness diagnostics. */
+let lastStartStderr = "";
 let startPromise: Promise<void> | null = null;
 let teardownRegistered = false;
 
+/** CI runners often need well over 18s for `next start` to listen after a fresh `next build`. */
+const READY_POLL_MS = 500;
+const READY_ATTEMPTS = 150;
+
 async function waitUntilReady(): Promise<void> {
-  for (let i = 0; i < 90; i++) {
-    await new Promise((r) => setTimeout(r, 200));
+  for (let i = 0; i < READY_ATTEMPTS; i++) {
+    await new Promise((r) => setTimeout(r, READY_POLL_MS));
+    if (child && (child.exitCode !== null || child.signalCode !== null)) {
+      const hint = lastStartStderr.trim() ? `\n${lastStartStderr.trim()}` : "";
+      throw new Error(
+        `siteTestServer: next start exited before ready (code=${child.exitCode} signal=${String(
+          child.signalCode,
+        )})${hint}`,
+      );
+    }
     try {
       const res = await fetch("http://127.0.0.1:34100/");
-      if (res.status === 200) return;
+      if (res.ok) return;
     } catch {
       /* retry */
     }
   }
-  throw new Error("siteTestServer: next start did not become ready on 127.0.0.1:34100");
+  const hint = lastStartStderr.trim() ? `\n${lastStartStderr.trim()}` : "";
+  throw new Error(
+    `siteTestServer: next start did not become ready on 127.0.0.1:34100 within ${(READY_ATTEMPTS * READY_POLL_MS) / 1000}s${hint}`,
+  );
 }
 
 async function startInternal(): Promise<void> {
@@ -85,9 +102,14 @@ async function startInternal(): Promise<void> {
   child = spawn(process.execPath, [nextBin, "start", "-H", "127.0.0.1", "-p", "34100"], {
     cwd: websiteDir,
     env: process.env,
-    stdio: "ignore",
+    stdio: ["ignore", "pipe", "pipe"],
     detached: false,
   });
+  const appendErr = (chunk: Buffer) => {
+    lastStartStderr = (lastStartStderr + chunk.toString("utf8")).slice(-12_000);
+  };
+  child.stderr?.on("data", appendErr);
+  child.stdout?.on("data", appendErr);
 
   await waitUntilReady();
 }

@@ -29,7 +29,7 @@ function collapseWs(s: string): string {
   return s.replace(/\s+/g, " ").trim();
 }
 
-describe("marketing surface parity (HTML includes JSON needles)", { timeout: 180_000 }, () => {
+describe("marketing surface parity (HTML includes JSON needles)", { timeout: 300_000 }, () => {
   let m: M;
 
   beforeAll(async () => {

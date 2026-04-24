@@ -22,7 +22,7 @@ function internalPathHrefs(html: string): string[] {
 
 describe(
   "buyer plane rendered link graph",
-  { timeout: 180_000 },
+  { timeout: 300_000 },
   () => {
     beforeAll(async () => {
       if (!process.env.DATABASE_URL?.trim()) {

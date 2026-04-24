@@ -21,7 +21,7 @@ function mainText(html: string): string {
   return $main.text().replace(/\s+/g, " ").trim();
 }
 
-describe("marketing public route DOM invariants", { timeout: 180_000 }, () => {
+describe("marketing public route DOM invariants", { timeout: 300_000 }, () => {
   beforeAll(async () => {
     await ensureMarketingSiteRunning();
   });

@@ -30,7 +30,7 @@ function countOccurrences(haystack: string, needle: string): number {
   return count;
 }
 
-describe("homepage causality invariant", { timeout: 180_000 }, () => {
+describe("homepage causality invariant", { timeout: 300_000 }, () => {
   beforeAll(async () => {
     await ensureMarketingSiteRunning();
   });
