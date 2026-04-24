@@ -82,6 +82,7 @@ export type SchemaValidatorName =
   | "ci-lock-v1"
   | "assurance-manifest-v1"
   | "assurance-run-report-v1"
+  | "assurance-output-v1"
   | "public-verification-report-v1"
   | "public-verification-report-v2"
   | "outcome-certificate-v1"
@@ -178,6 +179,8 @@ export function loadSchemaValidator(name: SchemaValidatorName): ValidateFunction
       return compileSchemaFile(name, "assurance-manifest-v1.schema.json");
     case "assurance-run-report-v1":
       return compileSchemaFile(name, "assurance-run-report-v1.schema.json");
+    case "assurance-output-v1":
+      return compileSchemaFile(name, "assurance-output-v1.schema.json");
     case "public-verification-report-v1":
       ensureWorkflowEmittedDependencies();
       compileSchemaFile("workflow-result", "workflow-result.schema.json");

@@ -273,7 +273,7 @@ agentskeptic quick --input test/fixtures/quick-verify/pass-line.ndjson --db exam
 
 Use **`--postgres-url`** instead of **`--db`**; **`-`** as **`--input`** reads stdin.
 
-**Assurance** (`assurance run` / `assurance stale`): multi-scenario sweeps and staleness over saved reports—**[Assurance subsystem](docs/agentskeptic.md#assurance-subsystem-normative)**, **[`examples/assurance/manifest.json`](examples/assurance/manifest.json)**.
+**Assurance** (`assurance run` / `assurance stale`): multi-scenario sweeps and staleness over saved reports; success paths emit one **`AssuranceOutputV1`** JSON line on stdout (embedded **`runReport`**)—**[Assurance subsystem](docs/agentskeptic.md#assurance-subsystem-normative)**, **[`examples/assurance/manifest.json`](examples/assurance/manifest.json)**.
 
 ## Sample output (contract demo)
 

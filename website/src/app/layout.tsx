@@ -8,6 +8,7 @@ import type { Metadata } from "next";
 import { headers } from "next/headers";
 import "./globals.css";
 import { Providers } from "./providers";
+import { SiteFunnelAttribution } from "@/components/SiteFunnelAttribution";
 import { SkipToMainContent } from "@/components/SkipToMainContent";
 import { SiteFooter } from "./SiteFooter";
 import { SiteHeader } from "./SiteHeader";
@@ -73,6 +74,7 @@ export default async function RootLayout({
         <SiteHeader />
         <Providers>
           <div id="site-main" className="site-main" tabIndex={-1}>
+            <SiteFunnelAttribution />
             {children}
           </div>
         </Providers>

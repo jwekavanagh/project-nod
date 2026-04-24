@@ -1491,21 +1491,23 @@ Substrings for contract tests: **compare-only**, **batch verify**, **enforce bat
 
 | Exit | stdout | stderr |
 |------|--------|--------|
-| **0** | exactly **one** JSON line (**`AssuranceRunReport`**, `schemas/assurance-run-report-v1.schema.json`) + newline | empty |
-| **1** | same **one** report line (**`issuedAt`** is set after all scenarios finish; **`scenarios[].exitCode`** reflects each spawn) | empty |
+| **0** | exactly **one** JSON line (**`AssuranceOutputV1`**, `schemas/assurance-output-v1.schema.json`, **`kind`**: **`assurance_run`**) embedding **`runReport`** (**`assurance-run-report-v1`**) + **`firstFiveMinutesChecklist`** + **`operatorLine`** + newline | empty |
+| **1** | same envelope shape (**`issuedAt`** on **`runReport`** is set after all scenarios finish; **`runReport.scenarios[].exitCode`** reflects each spawn; timed-out spawns use **`124`**) | empty |
 | **3** | empty | exactly **one** JSON **`execution_truth_layer_error`** line (**`ASSURANCE_*`** or **`INTERNAL_ERROR`**) |
 
-Optional **`--write-report <path>`:** after a successful report build, the same JSON line (UTF-8) is written atomically to **`path`**; operational failures exit **3** before write.
+Scenario wall time is capped by **`AGENTSKEPTIC_ASSURANCE_SCENARIO_TIMEOUT_MS`** (default **900000** ms); exceeded spawns are killed and recorded as **`exitCode` 124** for that scenario id.
+
+Optional **`--write-report <path>`:** after a successful envelope build, the **same** stdout bytes (UTF-8) are written atomically to **`path`**; operational failures exit **3** before write.
 
 ### `agentskeptic assurance stale` I/O (normative)
 
 | Exit | stdout | stderr |
 |------|--------|--------|
-| **0** | empty | empty |
-| **1** | empty | one human line: **`AssuranceRunReport issuedAt is older than --max-age-hours.`** |
+| **0** | exactly **one** JSON line (**`AssuranceOutputV1`**, **`kind`**: **`assurance_stale`**, includes **`fresh`**, **`issuedAt`**, **`ageMs`**, **`maxAgeHours`**, **`operatorLine`**, **`firstFiveMinutesChecklist`**) + newline | empty |
+| **1** | same (**`fresh`**: false) | empty |
 | **3** | empty | one JSON **`execution_truth_layer_error`** line |
 
-**Inputs:** **`--report <path>`** (must validate as **`assurance-run-report-v1`**), **`--max-age-hours <n>`** (non‑negative number). Staleness compares **UTC** **`Date.now()`** to **`Date.parse(issuedAt)`**; invalid **`issuedAt`** is **operational failure** (exit **3**). Missing report file is exit **3** (**`ASSURANCE_REPORT_READ_FAILED`**).
+**Inputs:** **`--report <path>`** (must validate as **`assurance-run-report-v1`**), **`--max-age-hours <n>`** (non‑negative number). Staleness compares **UTC** **`Date.now()`** to **`Date.parse(issuedAt)`**; invalid **`issuedAt`** is **operational failure** (exit **3**). Missing report file is exit **3** (**`ASSURANCE_REPORT_READ_FAILED`**). **`issuedAt`** more than five minutes **in the future** vs runner clock is exit **3** (**`ASSURANCE_REPORT_ISSUED_AT_FUTURE_SKEW`**).
 
 ### Integrator pattern (non-normative suggestion)
 

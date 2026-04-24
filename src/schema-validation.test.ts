@@ -564,4 +564,34 @@ describe("JSON Schemas (SSOT)", () => {
     };
     expect(vr(rep)).toBe(true);
   });
+
+  it("validates assurance-output-v1 envelope (run and stale branches)", () => {
+    const vo = loadSchemaValidator("assurance-output-v1");
+    const vr = loadSchemaValidator("assurance-run-report-v1");
+    const runReport = {
+      schemaVersion: 1,
+      issuedAt: new Date().toISOString(),
+      scenarios: [{ id: "s", exitCode: 0 }],
+    };
+    expect(vr(runReport)).toBe(true);
+    const runOut = {
+      schemaVersion: 1,
+      kind: "assurance_run",
+      firstFiveMinutesChecklist: ["a"],
+      operatorLine: "run: ok",
+      runReport,
+    };
+    expect(vo(runOut)).toBe(true);
+    const staleOut = {
+      schemaVersion: 1,
+      kind: "assurance_stale",
+      firstFiveMinutesChecklist: ["a"],
+      operatorLine: "stale: fresh ageMs=0 maxAgeHours=24",
+      fresh: true,
+      issuedAt: runReport.issuedAt,
+      ageMs: 0,
+      maxAgeHours: 24,
+    };
+    expect(vo(staleOut)).toBe(true);
+  });
 });

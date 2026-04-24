@@ -62,10 +62,12 @@ describe("assurance CLI enforce", () => {
       );
       const r = runAssurance(["run", "--manifest", mpath]);
       assert.equal(r.status, 1);
-      const line = r.stdout.trim().split(/\r?\n/).filter((l) => l.length > 0).pop();
-      const rep = JSON.parse(line);
-      assert.equal(rep.scenarios.length, 1);
-      assert.notEqual(rep.scenarios[0].exitCode, 0);
+      const lines = r.stdout.trim().split(/\r?\n/).filter((l) => l.length > 0);
+      assert.equal(lines.length, 1);
+      const envl = JSON.parse(lines[0]);
+      assert.equal(envl.kind, "assurance_run");
+      assert.equal(envl.runReport.scenarios.length, 1);
+      assert.notEqual(envl.runReport.scenarios[0].exitCode, 0);
     } finally {
       rmSync(dir, { recursive: true, force: true });
     }

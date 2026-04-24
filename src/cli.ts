@@ -58,6 +58,11 @@ import { runQuickVerifyToValidatedReport } from "./quickVerify/runQuickVerify.js
 import type { QuickVerifyReport } from "./quickVerify/runQuickVerify.js";
 import type { QuickContractExport } from "./quickVerify/buildQuickContractEventsNdjson.js";
 import { checkAssuranceReportStale } from "./assurance/checkStale.js";
+import {
+  buildAssuranceRunOutput,
+  buildAssuranceStaleOutput,
+  validateAndSerializeAssuranceOutput,
+} from "./assurance/buildAssuranceOutput.js";
 import { runAssuranceFromManifest } from "./assurance/runAssurance.js";
 import { runLicensePreflightIfNeeded } from "./commercial/licensePreflight.js";
 import { postVerifyOutcomeBeacon } from "./commercial/postVerifyOutcomeBeacon.js";
@@ -375,8 +380,13 @@ function usageAssurance(): string {
 
   assurance run executes each manifest scenario by spawning this CLI (schemas/assurance-manifest-v1.schema.json).
   Path arguments in each scenario argv are resolved relative to the manifest file's directory unless absolute.
+  Successful stdout is a single JSON line: schemas/assurance-output-v1.schema.json (kind assurance_run) with
+  embedded runReport (schemas/assurance-run-report-v1.schema.json). Scenario spawn wall time is capped by
+  AGENTSKEPTIC_ASSURANCE_SCENARIO_TIMEOUT_MS (default 900000 ms); timed-out scenarios record exitCode 124.
 
   assurance stale exits 1 when the report issuedAt is older than max-age-hours (UTC wall clock).
+  Successful stdout is one JSON line (kind assurance_stale). issuedAt more than ~5 minutes in the future
+  is exit 3 (ASSURANCE_REPORT_ISSUED_AT_FUTURE_SKEW). Human stale stderr is not used.
 
 Exit codes (run):
   0  all scenarios exited 0
@@ -413,7 +423,14 @@ function runAssuranceSubcommand(args: string[]): void {
       writeCliError(res.code, res.message);
       process.exit(3);
     }
-    const line = `${JSON.stringify(res.report)}\n`;
+    let line: string;
+    try {
+      line = validateAndSerializeAssuranceOutput(buildAssuranceRunOutput(res.report));
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : String(e);
+      writeCliError(CLI_OPERATIONAL_CODES.INTERNAL_ERROR, formatOperationalMessage(`assurance output: ${msg}`));
+      process.exit(3);
+    }
     try {
       process.stdout.write(line);
     } catch (e) {
@@ -458,11 +475,29 @@ function runAssuranceSubcommand(args: string[]): void {
       writeCliError(st.code, st.message);
       process.exit(3);
     }
-    if (st.kind === "stale") {
-      process.stderr.write("AssuranceRunReport issuedAt is older than --max-age-hours.\n");
-      process.exit(1);
+    let staleLine: string;
+    try {
+      staleLine = validateAndSerializeAssuranceOutput(
+        buildAssuranceStaleOutput({
+          fresh: st.kind === "fresh",
+          issuedAt: st.issuedAt,
+          ageMs: st.ageMs,
+          maxAgeHours: st.maxAgeHours,
+        }),
+      );
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : String(e);
+      writeCliError(CLI_OPERATIONAL_CODES.INTERNAL_ERROR, formatOperationalMessage(`assurance output: ${msg}`));
+      process.exit(3);
     }
-    process.exit(0);
+    try {
+      process.stdout.write(staleLine);
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : String(e);
+      writeCliError(CLI_OPERATIONAL_CODES.INTERNAL_ERROR, formatOperationalMessage(`stdout: ${msg}`));
+      process.exit(3);
+    }
+    process.exit(st.kind === "fresh" ? 0 : 1);
   }
   writeCliError(
     CLI_OPERATIONAL_CODES.ASSURANCE_USAGE,

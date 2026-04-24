@@ -445,6 +445,14 @@ export const OPERATIONAL_DISPOSITION = {
     recommendedAction: "fix_registry_events_or_compare_files",
     automationSafe: false,
   },
+  [CLI_OPERATIONAL_CODES.ASSURANCE_REPORT_ISSUED_AT_FUTURE_SKEW]: {
+    origin: "inputs",
+    summary: "Assurance report issuedAt is too far in the future relative to the runner clock.",
+    actionableCategory: "bad_input",
+    actionableSeverity: "medium",
+    recommendedAction: "fix_registry_events_or_compare_files",
+    automationSafe: false,
+  },
   [CLI_OPERATIONAL_CODES.ASSURANCE_STALE_USAGE]: {
     origin: "inputs",
     summary: "Invalid or incomplete arguments for agentskeptic assurance stale.",

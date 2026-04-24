@@ -10,6 +10,10 @@ Checklist anchors: **PatternComplete**, **AdoptionComplete_PatternComplete**, **
 **Throughput (operator, pointer only):** Metric SQL and ids: [`growth-metrics.md`](growth-metrics.md). Interpretation and proxies: [`epistemic-contract.md`](epistemic-contract.md). User outcome vs telemetry capture: [`funnel-observability.md`](funnel-observability.md). **Decision-ready ProductionComplete:** [`adoption-epistemics.md#decision-ready-productioncomplete-normative`](adoption-epistemics.md#decision-ready-productioncomplete-normative).
 <!-- /epistemic-contract:consumer:first-run-integration -->
 
+## First five minutes (browser, CLI join, verify)
+
+The canonical numbered checklist, privacy summary for anonymous surface impressions, and “telemetry is optional icing” framing are rendered in-app on beacon-eligible pages at **`#agentskeptic-first-five-minutes`** (for example **[integrate](https://agentskeptic.com/integrate#agentskeptic-first-five-minutes)**). Authoritative strings live only in **`src/firstFiveMinutesChecklist.ts`**; CI rejects pasting those lines verbatim into `docs/**/*.md`.
+
 Prerequisite framing: [README wedge](../README.md#buy-vs-build-why-not-only-sql-checks).
 
 ```bash

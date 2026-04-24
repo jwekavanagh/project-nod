@@ -8,6 +8,23 @@ import {
 } from "./assurancePathArgs.js";
 import { findWorkflowVerifierRepoRoot } from "./findRepoRoot.js";
 
+const DEFAULT_ASSURANCE_SCENARIO_TIMEOUT_MS = 900_000;
+
+function resolveAssuranceSpawnTimeoutMs(): number {
+  const raw = process.env.AGENTSKEPTIC_ASSURANCE_SCENARIO_TIMEOUT_MS?.trim();
+  if (!raw) return DEFAULT_ASSURANCE_SCENARIO_TIMEOUT_MS;
+  const n = Number(raw);
+  if (!Number.isFinite(n) || n <= 0) return DEFAULT_ASSURANCE_SCENARIO_TIMEOUT_MS;
+  return Math.min(Math.floor(n), 3_600_000);
+}
+
+function scenarioExitCodeFromSpawn(r: ReturnType<typeof spawnSync>): number {
+  const err = r.error as NodeJS.ErrnoException | undefined;
+  if (err?.code === "ETIMEDOUT") return 124;
+  if (r.status === null) return 3;
+  return r.status;
+}
+
 export type AssuranceRunReportV1 = {
   schemaVersion: 1;
   issuedAt: string;
@@ -87,6 +104,7 @@ export function runAssuranceFromManifest(manifestPath: string): RunAssuranceResu
   }
 
   const scenarioResults: Array<{ id: string; exitCode: number }> = [];
+  const spawnTimeoutMs = resolveAssuranceSpawnTimeoutMs();
 
   for (const sc of manifest.scenarios) {
     const resolvedArgv = resolveSpawnArgvPaths(sc.argv, manifestDir);
@@ -102,13 +120,13 @@ export function runAssuranceFromManifest(manifestPath: string): RunAssuranceResu
       }
     }
 
-    const r = spawnSync(
-      process.execPath,
-      ["--no-warnings", cliJs, ...resolvedArgv],
-      { encoding: "utf8", cwd: repoRoot },
-    );
-    const code = r.status === null ? 3 : r.status;
-    scenarioResults.push({ id: sc.id, exitCode: code });
+    const r = spawnSync(process.execPath, ["--no-warnings", cliJs, ...resolvedArgv], {
+      encoding: "utf8",
+      cwd: repoRoot,
+      timeout: spawnTimeoutMs,
+      killSignal: "SIGTERM",
+    });
+    scenarioResults.push({ id: sc.id, exitCode: scenarioExitCodeFromSpawn(r) });
   }
 
   const issuedAt = new Date().toISOString();

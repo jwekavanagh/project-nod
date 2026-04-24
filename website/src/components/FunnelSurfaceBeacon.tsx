@@ -74,10 +74,13 @@ export function FunnelSurfaceBeacon({
       body.attribution = attribution;
     }
 
+    const useKeepalive = Boolean(stored);
+
     void fetch(url, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       credentials: "same-origin",
+      keepalive: useKeepalive,
       body: JSON.stringify(body),
     })
       .then(async (res) => {

@@ -1,0 +1,31 @@
+.first-five-minutes-callout {
+  margin-top: 1.25rem;
+  padding: 1rem 1.25rem;
+  border: 1px solid color-mix(in srgb, currentColor 18%, transparent);
+  border-radius: 8px;
+  max-width: 42rem;
+}
+
+.first-five-minutes-callout-title {
+  font-size: 1.05rem;
+  margin: 0 0 0.5rem;
+}
+
+.first-five-minutes-lede {
+  margin: 0 0 0.75rem;
+}
+
+.first-five-minutes-sub {
+  margin: 0.75rem 0 0.35rem;
+  font-weight: 600;
+}
+
+.first-five-minutes-list,
+.first-five-minutes-numbered {
+  margin: 0.25rem 0 0.5rem 1.1rem;
+  padding: 0;
+}
+
+.first-five-minutes-numbered li {
+  margin-bottom: 0.35rem;
+}

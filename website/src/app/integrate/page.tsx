@@ -24,6 +24,10 @@ export default function IntegratePage() {
         Run a single verification that compares what your agents and tools claimed against your actual stored state.
       </p>
       <p className="lede">Get a clear, binary verdict before you ship, bill, or hand off to customers.</p>
+      <p className="lede muted">
+        <Link href="#agentskeptic-first-five-minutes">First five minutes</Link> — browser id, CLI join, verify, and
+        optional telemetry (same checklist appears at the top of beacon-eligible pages).
+      </p>
 
       <h2>Cross the boundary (canonical path)</h2>
       <p>
