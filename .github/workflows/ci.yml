@@ -158,5 +158,7 @@ jobs:
           node-version: "22"
       # Build runs on Vercel (not on this runner). `vercel build` in GHA can fail with
       # `spawn sh ENOENT` when running the project Install Command (e.g. `npm install --prefix ..`) locally.
+      # Run from repo root without `--cwd website`: the linked Vercel project’s Root Directory is `website`
+      # in Project Settings; adding `--cwd website` would resolve to `website/website` and fail.
       - name: Deploy to Vercel (production, remote build)
-        run: npx -y vercel@52 deploy --cwd website --prod --yes --logs
+        run: npx -y vercel@52 deploy --prod --yes --logs
