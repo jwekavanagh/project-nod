@@ -89,14 +89,16 @@ jobs:
           COMMERCIAL_LICENSE_API_BASE_URL: ${{ vars.COMMERCIAL_LICENSE_API_BASE_URL }}
         run: npx --no -- semantic-release
 
-  # PyPI: only after tag CI; head_branch is the short tag; RE2 = SemVer 2.0.0 with leading v
+  # PyPI: after tag CI. Job if uses only GHA built-ins; first step enforces SemVer 2.0.0 (v*).
   publish-pypi:
     name: Publish PyPI
     if: |
       github.event_name == 'workflow_run' &&
       github.event.workflow_run.conclusion == 'success' &&
       github.event.workflow_run.event == 'push' &&
-      matches(github.event.workflow_run.head_branch, '^v(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(-([0-9A-Za-z-]+)(\.[0-9A-Za-z-]+)*)?(\+([0-9A-Za-z-]+)(\.[0-9A-Za-z-]+)*)?$')
+      startsWith(github.event.workflow_run.head_branch, 'v') &&
+      !contains(github.event.workflow_run.head_branch, '/') &&
+      contains(github.event.workflow_run.head_branch, '.')
     runs-on: ubuntu-latest
     env:
       AGENTSKEPTIC_TELEMETRY: "0"
@@ -104,6 +106,14 @@ jobs:
       id-token: write
       contents: read
     steps:
+      - name: Assert SemVer 2.0.0 v-tag (head_branch is short tag name for tag push)
+        env:
+          TAG: ${{ github.event.workflow_run.head_branch }}
+        run: |
+          set -euo pipefail
+          re='^v(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(-([0-9A-Za-z-]+)(\.[0-9A-Za-z-]+)*)?(\+([0-9A-Za-z-]+)(\.[0-9A-Za-z-]+)*)?$'
+          [[ "$TAG" =~ $re ]]
+
       - uses: actions/checkout@v5
         with:
           ref: ${{ github.event.workflow_run.head_sha }}
