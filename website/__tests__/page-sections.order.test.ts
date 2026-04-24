@@ -2,10 +2,9 @@ import { HOME_SECTION_ORDER } from "@/app/page.sections";
 import { describe, expect, it } from "vitest";
 
 describe("HOME_SECTION_ORDER", () => {
-  it("matches conversion funnel order (ten sections)", () => {
+  it("matches conversion funnel order (nine sections)", () => {
     expect([...HOME_SECTION_ORDER]).toEqual([
       "hero",
-      "homeFailureExample",
       "tryIt",
       "homeWhatCatches",
       "homeStakes",
@@ -15,12 +14,11 @@ describe("HOME_SECTION_ORDER", () => {
       "homeClosing",
       "commercialSurface",
     ]);
-    expect(HOME_SECTION_ORDER.length).toBe(10);
+    expect(HOME_SECTION_ORDER.length).toBe(9);
   });
 
   it("orders hero through commercialSurface monotonically", () => {
     const he = HOME_SECTION_ORDER.indexOf("hero");
-    const fe = HOME_SECTION_ORDER.indexOf("homeFailureExample");
     const tr = HOME_SECTION_ORDER.indexOf("tryIt");
     const wc = HOME_SECTION_ORDER.indexOf("homeWhatCatches");
     const st = HOME_SECTION_ORDER.indexOf("homeStakes");
@@ -29,8 +27,7 @@ describe("HOME_SECTION_ORDER", () => {
     const g = HOME_SECTION_ORDER.indexOf("homeGuarantees");
     const cl = HOME_SECTION_ORDER.indexOf("homeClosing");
     const cs = HOME_SECTION_ORDER.indexOf("commercialSurface");
-    expect(he).toBeLessThan(fe);
-    expect(fe).toBeLessThan(tr);
+    expect(he).toBeLessThan(tr);
     expect(tr).toBeLessThan(wc);
     expect(wc).toBeLessThan(st);
     expect(st).toBeLessThan(hw);

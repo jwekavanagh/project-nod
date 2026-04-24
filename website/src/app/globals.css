@@ -473,43 +473,51 @@ button.secondary, .btn.secondary {
 }
 .site-nav-learn {
   position: relative;
-}
-.site-nav-learn-summary {
-  list-style: none;
-  font-weight: 500;
-  color: var(--fg);
-  cursor: pointer;
-}
-.site-nav-learn summary::-webkit-details-marker {
-  display: none;
-}
-.site-nav-learn summary::after {
-  content: " \25BE";
-  font-size: 0.65em;
-  color: var(--muted);
-  margin-left: 0.1rem;
-}
-.site-nav-learn[open] summary::after {
-  content: " \25B4";
-}
-.site-nav-learn-panel {
-  position: absolute;
-  top: 100%;
-  right: 0;
-  min-width: 10rem;
-  margin-top: 0.4rem;
-  padding: 0.45rem 0.65rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.4rem;
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  box-shadow: 0 4px 16px color-mix(in srgb, var(--fg) 8%, transparent);
-  z-index: 20;
-  @media (max-width: 700px) {
-    right: auto;
-    left: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 0;
+  &:hover,
+  &:focus-within {
+    .site-nav-learn-primary::after {
+      content: " \25B4";
+    }
+    .site-nav-learn-flyout {
+      display: flex;
+    }
+  }
+  .site-nav-learn-primary {
+    display: inline-flex;
+    align-items: center;
+    font-weight: 500;
+    color: var(--fg);
+    text-decoration: none;
+  }
+  .site-nav-learn-primary::after {
+    content: " \25BE";
+    font-size: 0.65em;
+    color: var(--muted);
+    margin-left: 0.15rem;
+    font-weight: 400;
+  }
+  .site-nav-learn-flyout {
+    display: none;
+    position: absolute;
+    top: 100%;
+    right: 0;
+    min-width: 9rem;
+    margin-top: 0.4rem;
+    padding: 0.45rem 0.65rem;
+    flex-direction: column;
+    gap: 0.4rem;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    box-shadow: 0 4px 16px color-mix(in srgb, var(--fg) 8%, transparent);
+    z-index: 20;
+    @media (max-width: 700px) {
+      right: auto;
+      left: 0;
+    }
   }
 }
 
@@ -1220,27 +1228,6 @@ main {
 .home-hero-tertiary {
   margin: 0.4rem 0 0.75rem;
   font-size: 0.9rem;
-}
-.home-failure-example {
-  margin-top: 0.25rem;
-}
-.home-failure-example-card {
-  border-radius: 10px;
-  border: 1px solid var(--border);
-  background: var(--card);
-  padding: 1rem 1.15rem 1.1rem;
-  max-width: 44rem;
-  box-shadow: 0 1px 0 color-mix(in srgb, var(--border) 40%, transparent);
-}
-.home-failure-verdict {
-  font-weight: 600;
-  color: var(--danger);
-  margin: 0.4rem 0 0.15rem;
-}
-.home-failure-why {
-  margin: 0.35rem 0 0;
-  max-width: 44rem;
-  line-height: 1.45;
 }
 .try-it-verdict-card {
   margin: 0.6rem 0 0.25rem;

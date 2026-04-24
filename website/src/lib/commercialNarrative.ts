@@ -41,7 +41,7 @@ function formatCount(n: number): string {
 
 /**
  * Full in-process vs licensed npm metering clarifier. Used in pricing and policy surfaces; the homepage
- * commercial block uses a shorter lede and `HOME_COMMERCIAL_FOLLOW` instead.
+ * commercial block uses a shorter lede and a linked boundary doc line instead of `getMeteringClarifier()`.
  */
 export function getMeteringClarifier(): string {
   return `In-process library use (createDecisionGate) evaluates read-only SQL without calling the license reserve API. The published npm CLI path—contract verify, quick with lock flags, and enforce—requires an API key and POST /api/v1/usage/reserve. Boundary: ${ssotPath}`;
@@ -51,8 +51,11 @@ export function getMeteringClarifier(): string {
 export const HOME_COMMERCIAL_LEAD =
   "Open-source CLI is unmetered locally. Commercial API and licensed npm support CI and production usage. In-process createDecisionGate stays local and does not call the usage API." as const;
 
-/** Follow-up on the homepage: points to on-site and SSOT commercial detail (row of links in page.tsx). */
-export const HOME_COMMERCIAL_FOLLOW = `See Pricing, Compare, and the commercial SSOT: ${COMMERCIAL_SSOT_PROGRAMMATIC_VS_CLI_HREF}.` as const;
+/** Homepage commercial block: link label + GitHub href (replaces raw URL in the UI). */
+export const HOME_COMMERCIAL_BOUNDARY_DOCS = {
+  href: COMMERCIAL_SSOT_PROGRAMMATIC_VS_CLI_HREF,
+  label: "See the commercial boundary docs.",
+} as const;
 
 /** Security page quick-fact: outcome certificate vs quick verify (index 2 in the four-bullet list). */
 export const outcomeCertificateQuickFactBullet =
@@ -202,7 +205,8 @@ export function getHomeCommercialSection(catalog: CommercialPlansFile): {
   return {
     title: "Open source and commercial",
     lead: HOME_COMMERCIAL_LEAD,
-    strip: HOME_COMMERCIAL_FOLLOW,
+    /** Plain-text metering line removed; use `HOME_COMMERCIAL_BOUNDARY_DOCS` in the page. */
+    strip: "",
   };
 }
 

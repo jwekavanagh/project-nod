@@ -135,23 +135,16 @@ jobs:
     needs: [codeql, test, commercial]
     runs-on: ubuntu-latest
     timeout-minutes: 45
-    # Same defaults as a Vercel cloud build (see website/next.config.ts outputFileTracingRoot).
     env:
-      VERCEL: "1"
       VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
       VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
       VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
     steps:
       - uses: actions/checkout@v5
-      - uses: ./.github/actions/setup-node-npm
-      - name: Install Vercel CLI
-        run: npm install -g vercel@latest
-      - name: Pull Vercel env (production)
-        working-directory: website
-        run: vercel pull --yes --environment=production
-      - name: Build prebuilt output
-        working-directory: website
-        run: vercel build --prod
-      - name: Deploy prebuilt to production
-        working-directory: website
-        run: vercel deploy --prebuilt --prod
+      - uses: actions/setup-node@v5
+        with:
+          node-version: "22"
+      # Build runs on Vercel (not on this runner). `vercel build` in GHA can fail with
+      # `spawn sh ENOENT` when running the project Install Command (e.g. `npm install --prefix ..`) locally.
+      - name: Deploy to Vercel (production, remote build)
+        run: npx -y vercel@52 deploy --cwd website --prod --yes --logs

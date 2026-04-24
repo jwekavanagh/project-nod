@@ -273,13 +273,6 @@ export const homePageHeroSecondaryCta = {
 const homepageDisplay = {
   homeValueProposition:
     "AgentSkeptic compares agent claims with real downstream state — databases, APIs, object stores, and vector stores — and returns a clear verdict. Read-only, deterministic, and CI-friendly.",
-  homeFailureExample: {
-    sectionTitle: "One concrete missing-write",
-    claim: "Agent claimed it updated a CRM contact.",
-    reality: "No matching row exists.",
-    verdict: "FAILED — ROW_ABSENT",
-    whyItMatters: "The workflow looked green, but the customer record was never written.",
-  },
   homeWhatCatches: {
     sectionTitle: "What it catches",
     bullets: [
@@ -296,7 +289,7 @@ const homepageDisplay = {
     stakesBullets: [] as const,
   },
   mechanism: {
-    intro: "No mutating side effects; add this as a gate in minutes:",
+    intro: "Add this as a read-only gate in minutes:",
     items: [
       "Agents emit structured tool activity (JSON/NDJSON) as they work.",
       "You map tool ids to the stores they touch (for example in tools.json).",
@@ -412,7 +405,6 @@ export const productCopy = {
 
   uiTestIds: {
     hero: "home-hero",
-    homeFailureExample: "home-failure-example",
     homeWhatCatches: "home-what-catches",
     homeStakes: "home-stakes",
     howItWorks: "home-how-it-works",
@@ -437,7 +429,6 @@ export const productCopy = {
   /** Homepage hero: one-line mechanism. */
   heroMechanism: marketing.heroMechanism,
   homeValueProposition: homepageDisplay.homeValueProposition,
-  homeFailureExample: homepageDisplay.homeFailureExample,
   /** Muted footnote under hero: read-only, non-causal; pair with on-site `How it works` link in page.tsx. */
   guaranteeFootnote: marketing.guaranteeFootnote,
   /** CTA for internal link on `guaranteeFootnote` (no raw GitHub URLs in hero). */

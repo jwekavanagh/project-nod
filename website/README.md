@@ -36,9 +36,9 @@ Another process is locking `website/.next` (common with **OneDrive** under `OneD
 
 ## Vercel / CI monorepo tracing
 
-**Production** deploys: pushes to `main` no longer auto-deploy (see `vercel.json` `git.deploymentEnabled` for `main`). After the [`.github/workflows/ci.yml`](../.github/workflows/ci.yml) CodeQL, test, and commercial jobs pass, the workflow runs **`vercel pull` / `vercel build --prod` / `vercel deploy --prebuilt --prod`** from `website/`. Add repo secrets **`VERCEL_TOKEN`**, **`VERCEL_ORG_ID`**, and **`VERCEL_PROJECT_ID`** (from [Vercel’s GitHub Actions guide](https://vercel.com/kb/guide/how-can-i-use-github-actions-with-vercel), same as a local `vercel link` in `website`).
+**Production** deploys: pushes to `main` no longer auto-deploy (see `vercel.json` `git.deploymentEnabled` for `main`). After the [`.github/workflows/ci.yml`](../.github/workflows/ci.yml) CodeQL, test, and commercial jobs pass, the workflow runs **`npx -y vercel@52 deploy --cwd website --prod --yes --logs`** from the **repo root** (remote build on Vercel, not `vercel build` on the runner). Add repo secrets **`VERCEL_TOKEN`**, **`VERCEL_ORG_ID`**, and **`VERCEL_PROJECT_ID`** (from [Vercel’s GitHub Actions guide](https://vercel.com/kb/guide/how-can-i-use-github-actions-with-vercel), same as a local `vercel link` in `website`). If the CLI deploy ever mis-packages the monorepo, use a [Deploy Hook](https://vercel.com/kb/guide/set-up-and-use-deploy-hooks-with-vercel-and-headless-cms) (`curl -X POST …`) as the job instead (build then matches a normal Git push).
 
-Set env **`NEXT_CONFIG_TRACE_ROOT=1`** on the **website** build so `outputFileTracingRoot` includes the repo root (not needed for local `npm run dev`). GitHub Actions sets **`VERCEL=1`** for the deploy job so the same tracing behavior applies to `vercel build` there.
+Set env **`NEXT_CONFIG_TRACE_ROOT=1`** on the **website** build so `outputFileTracingRoot` includes the repo root (not needed for local `npm run dev`). Vercel’s production build sets **`VERCEL`/`VERCEL_ENV`** as usual; do not rely on a GitHub `VERCEL=1` for production behavior.
 
 ## Engine build, demo API, and fixtures
 

@@ -2,7 +2,7 @@ import { auth } from "@/auth";
 import { productCopy } from "@/content/productCopy";
 import marketing from "@/lib/marketing";
 import { publicProductAnchors } from "@/lib/publicProductAnchors";
-import { buildSiteHeaderPrimaryLinks, SITE_HEADER_LEARN_SUBLINKS } from "@/lib/siteChrome";
+import { buildSiteHeaderPrimaryLinks, SITE_HEADER_LEARN_FLYOUT_LINKS } from "@/lib/siteChrome";
 import { BrandLockup } from "@/components/BrandLockup";
 import Link from "next/link";
 import { SignOutButton } from "./SignOutButton";
@@ -64,22 +64,22 @@ export async function SiteHeader() {
         <nav className="site-nav" aria-label="Primary">
           {renderTopLevelLink(acq, cliQuickstart)}
           {renderTopLevelLink(started, cliQuickstart)}
-          <details className="site-nav-learn">
-            <summary className="site-nav-learn-summary" aria-label="Learn">
+          <div className="site-nav-learn">
+            <Link href="/guides" className="site-nav-learn-primary">
               Learn
-            </summary>
+            </Link>
             <div
-              className="site-nav-learn-panel"
+              className="site-nav-learn-flyout"
               role="group"
-              aria-label="Guides, problems, and compare"
+              aria-label="Problems and compare"
             >
-              {SITE_HEADER_LEARN_SUBLINKS.map((s) => (
+              {SITE_HEADER_LEARN_FLYOUT_LINKS.map((s) => (
                 <Link key={s.key} href={s.href}>
                   {s.label}
                 </Link>
               ))}
             </div>
-          </details>
+          </div>
           {renderTopLevelLink(price, cliQuickstart)}
           {renderTopLevelLink(cli, cliQuickstart)}
           {signedIn ? (

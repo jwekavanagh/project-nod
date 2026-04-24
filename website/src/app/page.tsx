@@ -6,7 +6,10 @@ import { indexableGuideCanonical } from "@/lib/indexableGuides";
 import { publicProductAnchors } from "@/lib/publicProductAnchors";
 import type { Metadata } from "next";
 import { shareableTerminalFailureJsonOnly } from "@/lib/shareableTerminalFailureExcerpt";
-import { getHomeCommercialSectionFromConfig } from "@/lib/commercialNarrative";
+import {
+  getHomeCommercialSectionFromConfig,
+  HOME_COMMERCIAL_BOUNDARY_DOCS,
+} from "@/lib/commercialNarrative";
 import { buildHomeTrustStripLinks, openapiHrefFromProcessEnv } from "@/lib/siteChrome";
 import { isDemoScenarioId, type DemoScenarioId } from "@/lib/demoScenarios";
 import Link from "next/link";
@@ -61,8 +64,6 @@ export default async function HomePage({
   const heroFailureJson = shareableTerminalFailureJsonOnly(
     marketing.shareableTerminalDemo.transcript,
   );
-
-  const ex = productCopy.homeFailureExample;
 
   const sectionRenderers: Record<HomeSectionId, React.ReactNode> = {
     hero: (
@@ -134,30 +135,6 @@ export default async function HomePage({
               </pre>
             </details>
           </div>
-        </div>
-      </section>
-    ),
-    homeFailureExample: (
-      <section
-        key="homeFailureExample"
-        className="home-section home-failure-example"
-        data-testid={productCopy.uiTestIds.homeFailureExample}
-        aria-labelledby="failure-example-heading"
-      >
-        <h2 id="failure-example-heading">{ex.sectionTitle}</h2>
-        <div className="home-failure-example-card" role="group" aria-label="Concrete missing-write">
-          <p>
-            <strong>Scenario.</strong> {ex.claim}
-          </p>
-          <p>
-            <strong>Reality.</strong> {ex.reality}
-          </p>
-          <p className="home-failure-verdict" data-testid="home-failure-verdict">
-            <strong>Verdict.</strong> {ex.verdict}
-          </p>
-          <p className="muted home-failure-why" data-testid="home-failure-why">
-            {ex.whyItMatters}
-          </p>
         </div>
       </section>
     ),
@@ -306,7 +283,16 @@ export default async function HomePage({
         <p className="muted" data-testid="home-commercial-lead">
           {homeCommercial.lead}
         </p>
-        <p data-testid="home-commercial-metering">{homeCommercial.strip}</p>
+        <p className="muted" data-testid="home-commercial-boundary">
+          <a
+            className="link-tertiary"
+            href={HOME_COMMERCIAL_BOUNDARY_DOCS.href}
+            rel="noreferrer"
+            target="_blank"
+          >
+            {HOME_COMMERCIAL_BOUNDARY_DOCS.label}
+          </a>
+        </p>
         <p className="commercial-links">
           <Link href="/pricing">Pricing</Link>
           {" · "}

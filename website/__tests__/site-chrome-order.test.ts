@@ -2,7 +2,7 @@ import * as cheerio from "cheerio";
 import { describe, expect, beforeAll, it } from "vitest";
 import { productCopy } from "@/content/productCopy";
 import { publicProductAnchors } from "@/lib/publicProductAnchors";
-import { buildSiteHeaderPrimaryLinks, SITE_HEADER_LEARN_SUBLINKS } from "@/lib/siteChrome";
+import { buildSiteHeaderPrimaryLinks, SITE_HEADER_LEARN_FLYOUT_LINKS } from "@/lib/siteChrome";
 import marketing from "@/lib/marketing";
 import {
   ensureMarketingSiteRunning,
@@ -29,7 +29,8 @@ describe("site chrome header primary order (R1)", { timeout: 180_000 }, () => {
     });
     const expected = [
       ...primary.slice(0, 2).map((l) => l.href),
-      ...SITE_HEADER_LEARN_SUBLINKS.map((s) => s.href),
+      "/guides",
+      ...SITE_HEADER_LEARN_FLYOUT_LINKS.map((s) => s.href),
       ...primary.slice(2).map((l) => l.href),
     ];
 

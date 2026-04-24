@@ -32,9 +32,10 @@ export function openapiHrefFromProcessEnv(): string {
   return `${anchorBase}/openapi-commercial-v1.yaml`;
 }
 
-/** Nested under the Learn control in the site header; order is Guides, Problems, Compare. */
-export const SITE_HEADER_LEARN_SUBLINKS = [
-  { key: "guides", href: "/guides", label: "Guides" },
+/**
+ * Shown in the header on hover (Problems and Compare; the Learn label links to /guides, not in this list).
+ */
+export const SITE_HEADER_LEARN_FLYOUT_LINKS = [
   { key: "problems", href: "/problems", label: "Problems" },
   { key: "compare", href: "/compare", label: "Compare" },
 ] as const;
