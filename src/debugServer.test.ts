@@ -1,7 +1,6 @@
 import { readFileSync, mkdirSync, writeFileSync, rmSync, mkdtempSync, copyFileSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
-import { fileURLToPath } from "node:url";
 import { describe, expect, it, vi } from "vitest";
 import {
   DEBUG_SERVER_INTERNAL_STDERR_PREFIX,
@@ -13,8 +12,9 @@ import { buildAgentRunRecordForBundle } from "./agentRunRecord.js";
 import { resetLoadEventsTestThrowInvocationCounter } from "./loadEvents.js";
 import { buildWorkflowVerdictSurface } from "./workflowTruthReport.js";
 import type { WorkflowResult } from "./types.js";
+import { monorepoRootForVitest } from "./vitestMonorepoRoot.js";
 
-const root = join(fileURLToPath(import.meta.url), "..", "..");
+const root = monorepoRootForVitest(import.meta.url);
 const exampleCorpus = join(root, "examples", "debug-corpus");
 const negativeCorpus = join(root, "test", "fixtures", "corpus-negative");
 const compareDebugCorpus = join(root, "test", "fixtures", "debug-ui-compare");

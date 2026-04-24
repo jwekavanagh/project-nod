@@ -1,4 +1,5 @@
 import { createHash } from "node:crypto";
+import assert from "node:assert/strict";
 import { copyFileSync, mkdirSync, readFileSync, writeFileSync, rmSync, mkdtempSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
@@ -13,9 +14,9 @@ import {
   resolveCorpusRootReal,
 } from "./debugCorpus.js";
 import { WORKFLOW_RESULT_RUN_LEVEL_CODES_MISMATCH_MESSAGE } from "./runLevelDriftMessages.js";
-import { fileURLToPath } from "node:url";
+import { monorepoRootForVitest } from "./vitestMonorepoRoot.js";
 
-const root = join(fileURLToPath(import.meta.url), "..", "..");
+const root = monorepoRootForVitest(import.meta.url);
 const negativeRoot = join(root, "test", "fixtures", "corpus-negative");
 const runOkDir = join(root, "examples", "debug-corpus", "run_ok");
 
@@ -23,7 +24,12 @@ describe("debugCorpus", () => {
   it("examples/debug-corpus ships the curated demo library (5 sealed ok runs)", () => {
     const corpus = join(root, "examples", "debug-corpus");
     const outcomes = loadAllCorpusRuns(corpus);
-    expect(outcomes).toHaveLength(5);
+    const runIds = listCorpusRunIds(corpus);
+    assert.equal(
+      outcomes.length,
+      5,
+      `expected 5 runs under ${corpus}; listCorpusRunIds=[${runIds.join(", ")}] cwd=${process.cwd()}`,
+    );
     const ok = outcomes.filter((o) => o.loadStatus === "ok");
     expect(ok).toHaveLength(5);
     const ids = new Set(ok.map((o) => o.runId));
