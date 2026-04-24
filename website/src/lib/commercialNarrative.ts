@@ -40,16 +40,19 @@ function formatCount(n: number): string {
 }
 
 /**
- * Full in-process vs licensed npm metering clarifier. On the homepage it prefixes the home commercial `strip`
- * (the short `HOME_COMMERCIAL_LEAD` is the muted lede above it).
+ * Full in-process vs licensed npm metering clarifier. Used in pricing and policy surfaces; the homepage
+ * commercial block uses a shorter lede and `HOME_COMMERCIAL_FOLLOW` instead.
  */
 export function getMeteringClarifier(): string {
   return `In-process library use (createDecisionGate) evaluates read-only SQL without calling the license reserve API. The published npm CLI path—contract verify, quick with lock flags, and enforce—requires an API key and POST /api/v1/usage/reserve. Boundary: ${ssotPath}`;
 }
 
-/** Short lede for the home commercial block; `getMeteringClarifier()` and quota copy live in `strip`. */
+/** Homepage commercial block lede (short; details on Pricing and GitHub SSOT). */
 export const HOME_COMMERCIAL_LEAD =
-  "Open-source CLI (unmetered locally), in-process createDecisionGate for in-code use, and commercial OpenAPI with licensed npm for CI and production." as const;
+  "Open-source CLI is unmetered locally. Commercial API and licensed npm support CI and production usage. In-process createDecisionGate stays local and does not call the usage API." as const;
+
+/** Follow-up on the homepage: points to on-site and SSOT commercial detail (row of links in page.tsx). */
+export const HOME_COMMERCIAL_FOLLOW = `See Pricing, Compare, and the commercial SSOT: ${COMMERCIAL_SSOT_PROGRAMMATIC_VS_CLI_HREF}.` as const;
 
 /** Security page quick-fact: outcome certificate vs quick verify (index 2 in the four-bullet list). */
 export const outcomeCertificateQuickFactBullet =
@@ -193,16 +196,13 @@ export function getHomeCommercialSection(catalog: CommercialPlansFile): {
   lead: string;
   strip: string;
 } {
-  const cap = catalog.plans.starter.includedMonthly;
-  if (cap == null) {
+  if (catalog.plans.starter.includedMonthly == null) {
     throw new Error("commercialNarrative: starter.includedMonthly is required for home section");
   }
   return {
-    title: "First-run integration",
+    title: "Open source and commercial",
     lead: HOME_COMMERCIAL_LEAD,
-    strip: `${getMeteringClarifier()} Run licensed verification in CI: Starter includes ${formatCount(
-      cap,
-    )} runs per key per month (no overage); higher tiers add more included volume. Local OSS and in-process createDecisionGate stay unmetered. In-process library use never calls the usage API.`,
+    strip: HOME_COMMERCIAL_FOLLOW,
   };
 }
 

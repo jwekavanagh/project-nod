@@ -272,7 +272,7 @@ export const homePageHeroSecondaryCta = {
  */
 const homepageDisplay = {
   homeValueProposition:
-    "AgentSkeptic compares agent claims with real downstream state — databases, APIs, object stores, and vector stores — and returns a deterministic verdict. Read-only, deterministic, and CI-friendly.",
+    "AgentSkeptic compares agent claims with real downstream state — databases, APIs, object stores, and vector stores — and returns a clear verdict. Read-only, deterministic, and CI-friendly.",
   homeFailureExample: {
     sectionTitle: "One concrete missing-write",
     claim: "Agent claimed it updated a CRM contact.",
@@ -284,7 +284,7 @@ const homepageDisplay = {
     sectionTitle: "What it catches",
     bullets: [
       "Logged a successful write, but the row is missing or wrong in the store.",
-      "Green in your trace and green in CI, but the side effect never landed where it matters.",
+      "Green in your trace, but the side effect never landed where it matters.",
       "Revenue, compliance, and support decisions made on a story the database does not back.",
     ] as const,
   },
@@ -302,7 +302,8 @@ const homepageDisplay = {
       "You map tool ids to the stores they touch (for example in tools.json).",
       "Verification re-reads those stores and returns a deterministic outcome you can script in CI and HTTP.",
     ] as const,
-    worksWith: "Postgres, SQLite, MongoDB, S3, HTTP APIs, vector stores, and the rest of your stack — as long as the state is queryable.",
+    worksWith:
+      "Postgres, SQLite, MongoDB, S3, HTTP APIs, vector stores, and other queryable systems.",
     notObservability: "It compares state to claims, not a full APM, distributed tracing, or log aggregation product.",
   },
   homeClosing: {

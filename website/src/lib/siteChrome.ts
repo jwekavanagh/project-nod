@@ -32,6 +32,13 @@ export function openapiHrefFromProcessEnv(): string {
   return `${anchorBase}/openapi-commercial-v1.yaml`;
 }
 
+/** Nested under the Learn control in the site header; order is Guides, Problems, Compare. */
+export const SITE_HEADER_LEARN_SUBLINKS = [
+  { key: "guides", href: "/guides", label: "Guides" },
+  { key: "problems", href: "/problems", label: "Problems" },
+  { key: "compare", href: "/compare", label: "Compare" },
+] as const;
+
 export function buildSiteHeaderPrimaryLinks(args: {
   anchors: SiteChromeAnchors;
   acquisitionHref: string;
@@ -41,10 +48,6 @@ export function buildSiteHeaderPrimaryLinks(args: {
   return [
     { key: "acquisition", href: acquisitionHref, label: acquisitionLabel, external: false },
     { key: "integrate", href: "/integrate", label: "Get started", external: false },
-    { key: "try", href: "/?demo=wf_missing#try-it", label: "Try the demo", external: false },
-    { key: "guides", href: "/guides", label: "Learn", external: false },
-    { key: "problems", href: "/problems", label: "Problems", external: false },
-    { key: "compare", href: "/compare", label: "Compare", external: false },
     { key: "pricing", href: "/pricing", label: "Pricing", external: false },
     {
       key: "cli",
@@ -83,7 +86,7 @@ export function buildHomeTrustStripLinks(args: {
 }): readonly SiteChromeLink[] {
   const { anchors, openapiHref } = args;
   return [
-    { key: "integrate", href: "/integrate", label: "First-run integration", external: false },
+    { key: "integrate", href: "/integrate", label: "Get started", external: false },
     { key: "openapi", href: openapiHref, label: "OpenAPI (commercial v1)", external: false },
     { key: "npm", href: anchors.npmPackageUrl, label: "npm package", external: true },
     { key: "github", href: anchors.gitRepositoryUrl, label: "Source repository", external: true },

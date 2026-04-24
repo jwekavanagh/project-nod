@@ -471,6 +471,47 @@ button.secondary, .btn.secondary {
 .site-nav button.site-nav-signout:hover {
   text-decoration: underline;
 }
+.site-nav-learn {
+  position: relative;
+}
+.site-nav-learn-summary {
+  list-style: none;
+  font-weight: 500;
+  color: var(--fg);
+  cursor: pointer;
+}
+.site-nav-learn summary::-webkit-details-marker {
+  display: none;
+}
+.site-nav-learn summary::after {
+  content: " \25BE";
+  font-size: 0.65em;
+  color: var(--muted);
+  margin-left: 0.1rem;
+}
+.site-nav-learn[open] summary::after {
+  content: " \25B4";
+}
+.site-nav-learn-panel {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  min-width: 10rem;
+  margin-top: 0.4rem;
+  padding: 0.45rem 0.65rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  box-shadow: 0 4px 16px color-mix(in srgb, var(--fg) 8%, transparent);
+  z-index: 20;
+  @media (max-width: 700px) {
+    right: auto;
+    left: 0;
+  }
+}
 
 .site-footer nav a {
   color: var(--muted);

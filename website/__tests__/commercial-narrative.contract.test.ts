@@ -54,7 +54,7 @@ describe("commercialNarrative vs commercial-plans.json", () => {
     const hero = getPricingPageHeroNarrative(catalog);
     expect(hero.subtitle.toLowerCase()).not.toMatch(/local and open-source verification is always free/);
     const home = getHomeCommercialSection(catalog);
-    expect(home.strip).toMatch(/starter includes/i);
+    expect(home.strip.toLowerCase()).toMatch(/pricing|github|commercial/);
   });
 
   it("getNormativePolicySurfaceLines matches first two commercial terms bodies", () => {

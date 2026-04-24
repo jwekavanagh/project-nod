@@ -2,7 +2,7 @@ import * as cheerio from "cheerio";
 import { describe, expect, beforeAll, it } from "vitest";
 import { productCopy } from "@/content/productCopy";
 import { publicProductAnchors } from "@/lib/publicProductAnchors";
-import { buildSiteHeaderPrimaryLinks } from "@/lib/siteChrome";
+import { buildSiteHeaderPrimaryLinks, SITE_HEADER_LEARN_SUBLINKS } from "@/lib/siteChrome";
 import marketing from "@/lib/marketing";
 import {
   ensureMarketingSiteRunning,
@@ -18,7 +18,7 @@ describe("site chrome header primary order (R1)", { timeout: 180_000 }, () => {
   });
 
   it("first-seen primary nav hrefs match buildSiteHeaderPrimaryLinks", async () => {
-    const expected = buildSiteHeaderPrimaryLinks({
+    const primary = buildSiteHeaderPrimaryLinks({
       anchors: {
         gitRepositoryUrl: publicProductAnchors.gitRepositoryUrl,
         npmPackageUrl: publicProductAnchors.npmPackageUrl,
@@ -26,7 +26,12 @@ describe("site chrome header primary order (R1)", { timeout: 180_000 }, () => {
       },
       acquisitionHref: productCopy.homepageAcquisitionCta.href,
       acquisitionLabel: marketing.homepageAcquisitionCtaLabel,
-    }).map((l) => l.href);
+    });
+    const expected = [
+      ...primary.slice(0, 2).map((l) => l.href),
+      ...SITE_HEADER_LEARN_SUBLINKS.map((s) => s.href),
+      ...primary.slice(2).map((l) => l.href),
+    ];
 
     const html = await getSiteHtml("/");
     const $ = cheerio.load(html);

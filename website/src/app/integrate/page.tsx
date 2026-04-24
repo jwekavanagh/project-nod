@@ -108,7 +108,7 @@ export default function IntegratePage() {
         </li>
         <li>Run the command above on your own data</li>
         <li>
-          <Link href="/guides">Follow the full first-run guide in the Learn section</Link> for deeper integration
+          <Link href="/guides">Follow the integration guides in Learn</Link> for deeper setup
         </li>
       </ol>
 
