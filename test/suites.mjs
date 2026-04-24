@@ -1,8 +1,9 @@
 /**
  * Single registry: every test/*.test.mjs is in exactly one of
  * - sqliteNodeTestFiles (default node:test batch, plus guards in verify)
- * - postgresNodeTestFiles (CI postgres batch)
- * - commercialHarnessNodeTestFiles (commercial dist + license mock; scripts/commercial-enforce-test-harness.mjs only)
+ * - postgresNodeTestFiles (CI postgres batch; OSS dist)
+ * - commercialHarnessNodeTestFiles (commercial dist + license mock; commercial-enforce-test-harness.mjs, no --require-postgres)
+ * - commercialPostgresHarnessNodeTestFiles (enforce + postgres; only commercial-enforce-test-harness.mjs --require-postgres)
  * - nodeTestScheduledByVerify (run only in scripts/verify.mjs, not the sqlite batch; ordering contract)
  * @packageDocumentation
  */
@@ -93,7 +94,6 @@ export const postgresNodeTestFiles = [
   "test/decisionGate.postgres.test.mjs",
   "test/ci-workflow-truth-postgres-contract.test.mjs",
   "test/quick-verify.postgres.test.mjs",
-  "test/ci-workflow-truth-postgres-enforce.test.mjs",
 ];
 
 export const commercialHarnessNodeTestFiles = [
@@ -101,6 +101,10 @@ export const commercialHarnessNodeTestFiles = [
   "test/commercial-license-reserve-intent.test.mjs",
   "test/crossing-commercial-smoke.test.mjs",
   "test/enforce-cli.test.mjs",
+];
+
+export const commercialPostgresHarnessNodeTestFiles = [
+  "test/ci-workflow-truth-postgres-enforce.test.mjs",
 ];
 
 /** Not run in the sqlite node --test batch: ordering with validate-adoption stages in verify.mjs. */
