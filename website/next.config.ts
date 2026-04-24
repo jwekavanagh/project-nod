@@ -18,6 +18,14 @@ const vercelLike = process.env.VERCEL === "1" || process.env.VERCEL === "product
 const traceRoot =
   vercelLike || process.env.NEXT_CONFIG_TRACE_ROOT === "1" ? path.join(__dirname, "..") : undefined;
 
+/**
+ * Root `overrides` replace `node-domexception` with `file:./internal-packages/node-domexception-native`.
+ * npm can record that link relative to `fetch-blob` (e.g. `node_modules/fetch-blob/internal-packages/...`),
+ * which does not exist inside the published tarball, so webpack fails with "Can't resolve 'node-domexception'"
+ * when bundling server code that pulls `node-fetch` → `fetch-blob`. Alias to the real package path.
+ */
+const nodeDomExceptionShim = path.join(__dirname, "../internal-packages/node-domexception-native");
+
 const nextConfig: NextConfig = {
   async redirects() {
     return [
@@ -28,6 +36,18 @@ const nextConfig: NextConfig = {
   // Avoid leaking stack info (ZAP: "Server Leaks Information Via X-Powered-By").
   poweredByHeader: false,
   serverExternalPackages: ["nodemailer", "postgres", "agentskeptic"],
+  webpack: (config, { isServer }) => {
+    if (isServer) {
+      config.resolve ??= {};
+      const prev = config.resolve.alias;
+      const merged =
+        prev && typeof prev === "object" && !Array.isArray(prev)
+          ? { ...prev, "node-domexception": nodeDomExceptionShim }
+          : { "node-domexception": nodeDomExceptionShim };
+      config.resolve.alias = merged;
+    }
+    return config;
+  },
   ...(traceRoot ? { outputFileTracingRoot: traceRoot } : {}),
   /**
    * `agentskeptic` loads JSON Schemas and the demo reads `examples/*` via runtime `readFileSync` paths
