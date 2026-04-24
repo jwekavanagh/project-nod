@@ -24,6 +24,7 @@ export function OssClaimClient() {
   const [phase, setPhase] = useState<Phase>("ready");
   const [summary, setSummary] = useState<RedeemOk | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [handoffSupportId, setHandoffSupportId] = useState<string | null>(null);
   const redeemStarted = useRef(false);
   const urlErrorRead = useRef(false);
 
@@ -57,26 +58,37 @@ export function OssClaimClient() {
           credentials: "include",
         });
         const data = (await res.json().catch(() => ({}))) as Record<string, unknown>;
+        const reqId = res.headers.get("x-request-id");
+        const idSuffix = reqId ? ` Request ID: ${reqId}` : "";
         if (res.status === 200) {
           setSummary(data as RedeemOk);
           setPhase("redeemed");
           return;
         }
-        if (res.status === 429 && data.code === "rate_limited") {
-          setErrorMessage(productCopy.ossClaimPage.rateLimitedRedeem);
+        if (
+          res.status === 429 &&
+          (data.code === "RATE_LIMITED" || data.code === "rate_limited")
+        ) {
+          setErrorMessage(`${productCopy.ossClaimPage.rateLimitedRedeem}${idSuffix}`);
           setPhase("error");
           return;
         }
         if (res.status === 409) {
-          setErrorMessage(productCopy.ossClaimPage.alreadyClaimed);
+          setErrorMessage(`${productCopy.ossClaimPage.alreadyClaimed}${idSuffix}`);
           setPhase("error");
           return;
         }
-        if (res.status === 400 && data.code === "claim_failed") {
+        if (
+          res.status === 400 &&
+          (data.code === "CLAIM_FAILED" ||
+            data.code === "CLAIM_EXPIRED" ||
+            data.code === "claim_failed")
+        ) {
+          setHandoffSupportId(reqId);
           setPhase("handoff_failed");
           return;
         }
-        setErrorMessage(productCopy.ossClaimPage.claimFailed);
+        setErrorMessage(`${productCopy.ossClaimPage.claimFailed}${idSuffix}`);
         setPhase("error");
       } catch {
         setErrorMessage(productCopy.ossClaimPage.claimFailed);
@@ -122,6 +134,11 @@ export function OssClaimClient() {
       <div className="card card-narrow-32">
         <h1>{productCopy.ossClaimPage.title}</h1>
         <p>{productCopy.ossClaimPage.pendingHandoffMissing}</p>
+        {handoffSupportId ? (
+          <p className="muted try-it-request-id" data-testid="oss-claim-request-id">
+            Request ID: {handoffSupportId}
+          </p>
+        ) : null}
         <Link className="button-link" href="/auth/signin?callbackUrl=%2Fclaim">
           {productCopy.ossClaimPage.signInCta}
         </Link>

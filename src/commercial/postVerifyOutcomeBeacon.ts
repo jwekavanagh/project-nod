@@ -20,6 +20,8 @@ export async function postVerifyOutcomeBeacon(input: {
   terminal_status: VerifyOutcomeTerminalStatus;
   workload_class: VerifyOutcomeWorkloadClass;
   subcommand: VerifyOutcomeSubcommand;
+  /** Same value as reserve `x-request-id` for this activation run (optional). */
+  xRequestId?: string;
 }): Promise<void> {
   if (!LICENSE_PREFLIGHT_ENABLED || input.runId === null) return;
 
@@ -36,15 +38,19 @@ export async function postVerifyOutcomeBeacon(input: {
     workload_class: input.workload_class,
     subcommand: input.subcommand,
   });
+  const headers: Record<string, string> = {
+    Authorization: `Bearer ${apiKey}`,
+    "Content-Type": "application/json",
+  };
+  if (input.xRequestId?.trim()) {
+    headers["x-request-id"] = input.xRequestId.trim();
+  }
   try {
     await fetchWithTimeout(
       url,
       {
         method: "POST",
-        headers: {
-          Authorization: `Bearer ${apiKey}`,
-          "Content-Type": "application/json",
-        },
+        headers,
         body: JSON.stringify(body),
       },
       400,

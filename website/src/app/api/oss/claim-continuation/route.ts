@@ -3,6 +3,12 @@ import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/db/client";
 import { ossClaimTickets } from "@/db/schema";
 import {
+  ACTIVATION_PROBLEM_BASE,
+  activationNoContent,
+  activationProblem,
+  activationProblemWithId,
+} from "@/lib/activationHttp";
+import {
   PRODUCT_ACTIVATION_CLI_PRODUCT_HEADER,
   PRODUCT_ACTIVATION_CLI_PRODUCT_VALUE,
   PRODUCT_ACTIVATION_CLI_VERSION_HEADER,
@@ -41,14 +47,26 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
   const rawCt = req.headers.get("content-type");
   const ct = rawCt?.toLowerCase() ?? "";
   if (!ct.startsWith("application/json")) {
-    return new NextResponse(null, { status: 400 });
+    return activationProblem(req, {
+      status: 400,
+      type: `${ACTIVATION_PROBLEM_BASE}/bad-request`,
+      title: "Bad request",
+      detail: "Content-Type must be application/json.",
+      code: "UNSUPPORTED_MEDIA_TYPE",
+    });
   }
 
   const contentLength = req.headers.get("content-length");
   if (contentLength !== null) {
     const n = Number(contentLength);
     if (Number.isFinite(n) && n > PRODUCT_ACTIVATION_MAX_BODY_BYTES) {
-      return new NextResponse(null, { status: 413 });
+      return activationProblem(req, {
+        status: 413,
+        type: `${ACTIVATION_PROBLEM_BASE}/payload-too-large`,
+        title: "Payload too large",
+        detail: "Request body exceeds the maximum allowed size.",
+        code: "PAYLOAD_TOO_LARGE",
+      });
     }
   }
 
@@ -56,18 +74,38 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
   try {
     rawText = await req.text();
   } catch {
-    return new NextResponse(null, { status: 400 });
+    return activationProblem(req, {
+      status: 400,
+      type: `${ACTIVATION_PROBLEM_BASE}/bad-request`,
+      title: "Bad request",
+      detail: "Could not read request body.",
+      code: "BAD_REQUEST",
+    });
   }
 
   if (Buffer.byteLength(rawText, "utf8") > PRODUCT_ACTIVATION_MAX_BODY_BYTES) {
-    return new NextResponse(null, { status: 413 });
+    return activationProblem(req, {
+      status: 413,
+      type: `${ACTIVATION_PROBLEM_BASE}/payload-too-large`,
+      title: "Payload too large",
+      detail: "Request body exceeds the maximum allowed size.",
+      code: "PAYLOAD_TOO_LARGE",
+    });
   }
 
   try {
     assertCliHeaders(req);
   } catch (e) {
     const st = (e as Error & { status?: number }).status;
-    if (st === 403) return new NextResponse(null, { status: 403 });
+    if (st === 403) {
+      return activationProblem(req, {
+        status: 403,
+        type: `${ACTIVATION_PROBLEM_BASE}/forbidden`,
+        title: "Forbidden",
+        detail: "This endpoint requires a supported AgentSkeptic CLI client.",
+        code: "FORBIDDEN",
+      });
+    }
     throw e;
   }
 
@@ -75,12 +113,24 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
   try {
     jsonBody = JSON.parse(rawText) as unknown;
   } catch {
-    return new NextResponse(null, { status: 400 });
+    return activationProblem(req, {
+      status: 400,
+      type: `${ACTIVATION_PROBLEM_BASE}/bad-request`,
+      title: "Bad request",
+      detail: "Invalid JSON.",
+      code: "INVALID_JSON",
+    });
   }
 
   const parsed = bodySchema.safeParse(jsonBody);
   if (!parsed.success) {
-    return new NextResponse(null, { status: 400 });
+    return activationProblem(req, {
+      status: 400,
+      type: `${ACTIVATION_PROBLEM_BASE}/bad-request`,
+      title: "Bad request",
+      detail: "Request body failed validation.",
+      code: "VALIDATION_FAILED",
+    });
   }
 
   const secretHash = hashOssClaimSecret(parsed.data.claim_secret);
@@ -96,21 +146,40 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
             .for("update");
 
           if (rows.length === 0) {
-            return NextResponse.json({ code: "claim_failed" }, { status: 400 });
+            return activationProblem(req, {
+              status: 400,
+              type: `${ACTIVATION_PROBLEM_BASE}/claim-failed`,
+              title: "Claim failed",
+              detail: "No claim ticket matches this secret.",
+              code: "CLAIM_FAILED",
+            });
           }
 
           const row = rows[0]!;
+          const rid = row.activationRequestId;
           if (!row.interactiveHumanClaim) {
-            return NextResponse.json({ code: "continuation_not_applicable" }, { status: 403 });
+            return activationProblemWithId(rid, {
+              status: 403,
+              type: `${ACTIVATION_PROBLEM_BASE}/continuation-not-applicable`,
+              title: "Not applicable",
+              detail: "Browser continuation is only recorded for interactive-human claim tickets.",
+              code: "CONTINUATION_NOT_APPLICABLE",
+            });
           }
 
           const now = new Date();
           if (row.expiresAt.getTime() < now.getTime()) {
-            return NextResponse.json({ code: "claim_failed" }, { status: 400 });
+            return activationProblemWithId(rid, {
+              status: 400,
+              type: `${ACTIVATION_PROBLEM_BASE}/claim-failed`,
+              title: "Claim failed",
+              detail: "This claim ticket has expired.",
+              code: "CLAIM_EXPIRED",
+            });
           }
 
           if (row.browserOpenInvokedAt !== null) {
-            return new NextResponse(null, { status: 204 });
+            return activationNoContent(rid);
           }
 
           await tx
@@ -118,13 +187,19 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
             .set({ browserOpenInvokedAt: now })
             .where(eq(ossClaimTickets.secretHash, secretHash));
 
-          return new NextResponse(null, { status: 204 });
+          return activationNoContent(rid);
         },
         { isolationLevel: "serializable" },
       ),
     );
   } catch (e) {
     console.error(e);
-    return new NextResponse(null, { status: 503 });
+    return activationProblem(req, {
+      status: 503,
+      type: `${ACTIVATION_PROBLEM_BASE}/server-error`,
+      title: "Service unavailable",
+      detail: "Could not record continuation. Try again later.",
+      code: "SERVER_ERROR",
+    });
   }
 }

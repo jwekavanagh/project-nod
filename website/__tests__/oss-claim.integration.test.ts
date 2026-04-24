@@ -98,6 +98,7 @@ function pendingCookiePairFromResponse(res: Response): string | null {
 async function expectTicket200(body: object): Promise<{ handoff_url: string }> {
   const res = await postClaimTicket(claimTicketReq(body));
   expect(res.status).toBe(200);
+  expect(res.headers.get("x-request-id")).toBeTruthy();
   const j = (await res.json()) as { schema_version?: number; handoff_url?: string };
   expect(j.schema_version).toBe(2);
   expect(typeof j.handoff_url).toBe("string");
@@ -307,10 +308,13 @@ describe.skipIf(!hasDatabaseUrl)("OSS claim ticket + handoff + redeem", () => {
       ),
     );
     expect(over.status).toBe(429);
-    expect(await over.json()).toEqual({ code: "rate_limited", scope: "claim_ticket_ip" });
+    const overJ = (await over.json()) as Record<string, unknown>;
+    expect(overJ.code).toBe("RATE_LIMITED");
+    expect(overJ.type).toContain("/problems/");
+    expect(over.headers.get("x-request-id")).toBeTruthy();
   });
 
-  it("redeem: 200 twice same user; 409 other user; expired and bogus same 400 body", async () => {
+  it("redeem: 200 twice same user; 409 other user; bogus 400 vs expired 400 problem bodies", async () => {
     const secret = newClaimSecret();
     const body = {
       claim_secret: secret,
@@ -338,12 +342,15 @@ describe.skipIf(!hasDatabaseUrl)("OSS claim ticket + handoff + redeem", () => {
 
     const r1 = await postClaimRedeem(claimRedeemReq({ claim_secret: secret }));
     expect(r1.status).toBe(200);
+    const rid1 = r1.headers.get("x-request-id");
+    expect(rid1).toBeTruthy();
     const j1 = (await r1.json()) as Record<string, string>;
     expect(j1.run_id).toBe("run-redeem-1");
     expect(j1.terminal_status).toBe("incomplete");
 
     const r2 = await postClaimRedeem(claimRedeemReq({ claim_secret: secret }));
     expect(r2.status).toBe(200);
+    expect(r2.headers.get("x-request-id")).toBe(rid1);
     const j2 = (await r2.json()) as Record<string, string>;
     expect(j2.run_id).toBe("run-redeem-1");
     expect(j2.claimed_at).toBe(j1.claimed_at);
@@ -353,11 +360,14 @@ describe.skipIf(!hasDatabaseUrl)("OSS claim ticket + handoff + redeem", () => {
     });
     const r3 = await postClaimRedeem(claimRedeemReq({ claim_secret: secret }));
     expect(r3.status).toBe(409);
-    expect(await r3.json()).toEqual({ code: "already_claimed" });
+    const r3j = (await r3.json()) as Record<string, unknown>;
+    expect(r3j.code).toBe("ALREADY_CLAIMED");
+    expect(r3.headers.get("x-request-id")).toBe(rid1);
 
     const bogus = await postClaimRedeem(claimRedeemReq({ claim_secret: newClaimSecret() }));
     expect(bogus.status).toBe(400);
-    const bogusJson = JSON.stringify(await bogus.json());
+    const bogusJ = (await bogus.json()) as Record<string, unknown>;
+    expect(bogusJ.code).toBe("CLAIM_FAILED");
 
     const secretExpired = newClaimSecret();
     await expectTicket200({
@@ -380,7 +390,9 @@ describe.skipIf(!hasDatabaseUrl)("OSS claim ticket + handoff + redeem", () => {
     });
     const expRes = await postClaimRedeem(claimRedeemReq({ claim_secret: secretExpired }));
     expect(expRes.status).toBe(400);
-    expect(JSON.stringify(await expRes.json())).toBe(bogusJson);
+    const expJ = (await expRes.json()) as Record<string, unknown>;
+    expect(expJ.code).toBe("CLAIM_EXPIRED");
+    expect(expRes.headers.get("x-request-id")).toBeTruthy();
 
     const fe = await db.select().from(funnelEvents).where(eq(funnelEvents.event, "oss_claim_redeemed"));
     expect(fe).toHaveLength(1);
@@ -467,6 +479,7 @@ describe.skipIf(!hasDatabaseUrl)("OSS claim ticket + handoff + redeem", () => {
     const dup = await postClaimTicket(claimTicketReq(body));
     expect(dup.status).toBe(204);
     expect((await dup.text()).trim()).toBe("");
+    expect(dup.headers.get("x-request-id")).toBeTruthy();
   });
 
   it("GET handoff: mint cookie + consumed; second GET same h is handoff_used; unknown h is handoff_invalid", async () => {
@@ -543,7 +556,9 @@ describe.skipIf(!hasDatabaseUrl)("OSS claim ticket + handoff + redeem", () => {
     }
     const over = await getVerifyLink(claimVerifyLinkReq("one-more-invalid", ip));
     expect(over.status).toBe(429);
-    expect(await over.json()).toEqual({ code: "rate_limited", scope: "claim_handoff_ip" });
+    const hj = (await over.json()) as Record<string, unknown>;
+    expect(hj.code).toBe("RATE_LIMITED");
+    expect(over.headers.get("x-request-id")).toBeTruthy();
   });
 
   it("redeem succeeds with pending cookie from GET /verify/link", async () => {

@@ -45,7 +45,8 @@ const stages = {
     run(
       "node scripts/assert-dependency-security-pins.mjs && " +
         "node scripts/assert-no-legacy-verify-surface.mjs && " +
-        "node scripts/assert-no-withWorkflowVerification-surface.mjs",
+        "node scripts/assert-no-withWorkflowVerification-surface.mjs && " +
+        "node scripts/assert-openapi-covers-activation-routes.mjs",
     ),
   nodeTestSqlite: () => {
     const files = sqliteNodeTestFiles.map((f) => f.replace(/\\/g, "/")).join(" ");

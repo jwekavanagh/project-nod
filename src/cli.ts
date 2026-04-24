@@ -64,6 +64,7 @@ import {
   validateAndSerializeAssuranceOutput,
 } from "./assurance/buildAssuranceOutput.js";
 import { runAssuranceFromManifest } from "./assurance/runAssurance.js";
+import { newActivationHttpCorrelationId } from "./commercial/activationCorrelation.js";
 import { runLicensePreflightIfNeeded } from "./commercial/licensePreflight.js";
 import { postVerifyOutcomeBeacon } from "./commercial/postVerifyOutcomeBeacon.js";
 import { quickVerifyVerdictToTerminalStatus } from "./commercial/quickVerifyFunnelTerminalStatus.js";
@@ -550,9 +551,13 @@ async function runQuickSubcommand(args: string[]): Promise<void> {
     process.env.AGENTSKEPTIC_RUN_ID?.trim() ||
     process.env.WORKFLOW_VERIFIER_RUN_ID?.trim() ||
     randomUUID();
+  const quickHttpCorrelationId = newActivationHttpCorrelationId();
   let quickPreflight: { runId: string | null };
   try {
-    quickPreflight = await runLicensePreflightIfNeeded("verify", { runId: activationRunId });
+    quickPreflight = await runLicensePreflightIfNeeded("verify", {
+      runId: activationRunId,
+      xRequestId: quickHttpCorrelationId,
+    });
   } catch (e) {
     if (e instanceof TruthLayerError) {
       writeCliError(e.code, e.message);
@@ -684,6 +689,7 @@ async function runQuickSubcommand(args: string[]): Promise<void> {
     workload_class: quickWorkloadClass,
     subcommand: "quick_verify",
     build_profile: quickBuildProfile,
+    xRequestId: quickHttpCorrelationId,
   });
   await postVerifyOutcomeBeacon({
     runId: quickPreflight.runId,
@@ -691,6 +697,7 @@ async function runQuickSubcommand(args: string[]): Promise<void> {
     terminal_status: quickVerifyVerdictToTerminalStatus(report.verdict),
     workload_class: quickWorkloadClass,
     subcommand: "quick_verify",
+    xRequestId: quickHttpCorrelationId,
   });
   if (report.verdict === "pass") process.exit(0);
   if (report.verdict === "fail") process.exit(1);

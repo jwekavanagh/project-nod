@@ -8,6 +8,8 @@ This document is the **narrative SSOT** for the thin commercial layer (website, 
 
 **Related (integrator, not duplicated here):** [first-run-integration.md](first-run-integration.md) — run verification against your own SQL database; rendered on the site as **`/integrate`**.
 
+**HTTP activation (correlation IDs, Problem Details errors, OpenAPI coverage):** [commercial-http-activation.md](commercial-http-activation.md).
+
 <!-- buyer-surface-commercial-boundary:begin -->
 
 ## Commercial boundary

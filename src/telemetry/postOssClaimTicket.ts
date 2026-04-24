@@ -26,12 +26,22 @@ export type PostOssClaimTicketInput = {
   build_profile: "oss" | "commercial";
   /** Mint-time interactive human cohort (`D_ihm`); must match CLI TTY rule in journey SSOT. */
   interactive_human?: boolean;
+  /** Echoed as `x-request-id` (match claim-continuation for the same ticket). */
+  xRequestId?: string;
 };
 
 export type PostOssClaimTicketResult =
   | { outcome: "ok"; handoff_url: string }
   | { outcome: "already_claimed" }
+  | { outcome: "rate_limited" }
+  | { outcome: "forbidden" }
+  | { outcome: "bad_request" }
   | { outcome: "failed" };
+
+function readProblemCode(j: Record<string, unknown> | null): string | undefined {
+  if (!j || typeof j.code !== "string") return undefined;
+  return j.code;
+}
 
 async function postOssClaimTicketOnce(input: PostOssClaimTicketInput): Promise<PostOssClaimTicketResult> {
   if (process.env.AGENTSKEPTIC_TELEMETRY?.trim() === "0") return { outcome: "failed" };
@@ -39,16 +49,20 @@ async function postOssClaimTicketOnce(input: PostOssClaimTicketInput): Promise<P
   const base = resolveOssClaimApiOrigin();
   const url = `${base}/api/oss/claim-ticket`;
   const telemetry_source = resolveTelemetrySource();
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+    [PRODUCT_ACTIVATION_CLI_PRODUCT_HEADER]: PRODUCT_ACTIVATION_CLI_PRODUCT_VALUE,
+    [PRODUCT_ACTIVATION_CLI_VERSION_HEADER]: AGENTSKEPTIC_CLI_SEMVER,
+  };
+  if (input.xRequestId?.trim()) {
+    headers["x-request-id"] = input.xRequestId.trim();
+  }
   try {
     const res = await fetchWithTimeout(
       url,
       {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          [PRODUCT_ACTIVATION_CLI_PRODUCT_HEADER]: PRODUCT_ACTIVATION_CLI_PRODUCT_VALUE,
-          [PRODUCT_ACTIVATION_CLI_VERSION_HEADER]: AGENTSKEPTIC_CLI_SEMVER,
-        },
+        headers,
         body: JSON.stringify({
           schema_version: 2 as const,
           telemetry_source,
@@ -80,6 +94,19 @@ async function postOssClaimTicketOnce(input: PostOssClaimTicketInput): Promise<P
     if (res.status === 204) {
       return { outcome: "already_claimed" };
     }
+    if (res.status === 429) {
+      return { outcome: "rate_limited" };
+    }
+    if (res.status === 403) {
+      return { outcome: "forbidden" };
+    }
+    if (res.status === 400 || res.status === 413) {
+      const j = (await res.json().catch(() => null)) as Record<string, unknown> | null;
+      const c = readProblemCode(j);
+      if (c === "RATE_LIMITED") return { outcome: "rate_limited" };
+      if (c === "FORBIDDEN") return { outcome: "forbidden" };
+      return { outcome: "bad_request" };
+    }
     return { outcome: "failed" };
   } catch {
     return { outcome: "failed" };
@@ -93,6 +120,7 @@ export async function postOssClaimTicket(input: PostOssClaimTicketInput): Promis
   for (let attempt = 0; attempt <= RETRY_MS.length; attempt++) {
     const r = await postOssClaimTicketOnce(input);
     if (r.outcome === "ok" || r.outcome === "already_claimed") return r;
+    if (r.outcome === "rate_limited" || r.outcome === "forbidden" || r.outcome === "bad_request") return r;
     if (attempt < RETRY_MS.length) {
       await sleep(RETRY_MS[attempt]!);
     }

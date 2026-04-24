@@ -1,4 +1,10 @@
+import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
+import {
+  ACTIVATION_PROBLEM_BASE,
+  activationJson,
+  activationProblem,
+} from "@/lib/activationHttp";
 import type { PlanId } from "@/lib/plans";
 import { loadCommercialPlans } from "@/lib/plans";
 
@@ -19,7 +25,7 @@ type PublicPlan = {
 /**
  * Public plan catalog for humans and machine clients (no Stripe env key names).
  */
-export async function GET(): Promise<NextResponse> {
+export async function GET(req: NextRequest): Promise<NextResponse> {
   try {
     const raw = loadCommercialPlans();
     const order: PlanId[] = ["starter", "individual", "team", "business", "enterprise"];
@@ -40,12 +46,15 @@ export async function GET(): Promise<NextResponse> {
         valueUnlock: p.valueUnlock,
       };
     }
-    return NextResponse.json({ schemaVersion: raw.schemaVersion, plans });
+    return activationJson(req, { schemaVersion: raw.schemaVersion, plans }, 200);
   } catch (e) {
     console.error(e);
-    return NextResponse.json(
-      { error: "PLANS_UNAVAILABLE", message: "Could not load commercial plans configuration." },
-      { status: 503 },
-    );
+    return activationProblem(req, {
+      status: 503,
+      type: `${ACTIVATION_PROBLEM_BASE}/plans-unavailable`,
+      title: "Plans unavailable",
+      detail: "Could not load commercial plans configuration.",
+      code: "PLANS_UNAVAILABLE",
+    });
   }
 }

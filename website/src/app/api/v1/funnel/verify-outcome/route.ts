@@ -1,6 +1,12 @@
 import { db } from "@/db/client";
 import { apiKeys, usageReservations, users, verifyOutcomeBeacons } from "@/db/schema";
 import { sha256HexApiKeyLookupFingerprint, verifyApiKey } from "@/lib/apiKeyCrypto";
+import {
+  ACTIVATION_PROBLEM_BASE,
+  activationNoContent,
+  activationProblem,
+  resolveActivationRequestId,
+} from "@/lib/activationHttp";
 import { buildLicensedVerifyOutcomeMetadata } from "@/lib/funnelCommercialMetadata";
 import { VERIFY_OUTCOME_BEACON_MAX_RESERVATION_AGE_MS } from "@/lib/funnelVerifyOutcomeConstants";
 import { verifyOutcomeRequestSchema } from "@/lib/funnelVerifyOutcome.contract";
@@ -11,9 +17,16 @@ import { NextRequest, NextResponse } from "next/server";
 export const runtime = "nodejs";
 
 export async function POST(req: NextRequest): Promise<NextResponse> {
+  const rid = resolveActivationRequestId(req);
   const auth = req.headers.get("authorization");
   if (!auth?.startsWith("Bearer ")) {
-    return new NextResponse(null, { status: 401 });
+    return activationProblem(req, {
+      status: 401,
+      type: `${ACTIVATION_PROBLEM_BASE}/unauthorized`,
+      title: "Unauthorized",
+      detail: "Missing or invalid Authorization Bearer token.",
+      code: "UNAUTHORIZED",
+    });
   }
   const rawKey = auth.slice(7).trim();
 
@@ -21,12 +34,24 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
   try {
     jsonBody = await req.json();
   } catch {
-    return new NextResponse(null, { status: 400 });
+    return activationProblem(req, {
+      status: 400,
+      type: `${ACTIVATION_PROBLEM_BASE}/bad-request`,
+      title: "Bad request",
+      detail: "Invalid JSON body.",
+      code: "INVALID_JSON",
+    });
   }
 
   const parsed = verifyOutcomeRequestSchema.safeParse(jsonBody);
   if (!parsed.success) {
-    return new NextResponse(null, { status: 400 });
+    return activationProblem(req, {
+      status: 400,
+      type: `${ACTIVATION_PROBLEM_BASE}/bad-request`,
+      title: "Bad request",
+      detail: "Request body failed validation.",
+      code: "VALIDATION_FAILED",
+    });
   }
 
   const {
@@ -52,11 +77,23 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
 
   const row = keyRows[0];
   if (!row) {
-    return new NextResponse(null, { status: 401 });
+    return activationProblem(req, {
+      status: 401,
+      type: `${ACTIVATION_PROBLEM_BASE}/unauthorized`,
+      title: "Unauthorized",
+      detail: "Unknown or revoked API key.",
+      code: "INVALID_KEY",
+    });
   }
 
   if (!verifyApiKey(rawKey, row.key.keyHash)) {
-    return new NextResponse(null, { status: 401 });
+    return activationProblem(req, {
+      status: 401,
+      type: `${ACTIVATION_PROBLEM_BASE}/unauthorized`,
+      title: "Unauthorized",
+      detail: "Invalid API key.",
+      code: "INVALID_KEY",
+    });
   }
 
   const resvRows = await db
@@ -68,13 +105,25 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     .limit(1);
 
   if (resvRows.length === 0) {
-    return new NextResponse(null, { status: 404 });
+    return activationProblem(req, {
+      status: 404,
+      type: `${ACTIVATION_PROBLEM_BASE}/not-found`,
+      title: "Not found",
+      detail: "No usage reservation matches this run_id for this API key.",
+      code: "RESERVATION_NOT_FOUND",
+    });
   }
 
   const createdAt = resvRows[0]!.createdAt;
   const ageMs = Date.now() - createdAt.getTime();
   if (ageMs > VERIFY_OUTCOME_BEACON_MAX_RESERVATION_AGE_MS) {
-    return new NextResponse(null, { status: 410 });
+    return activationProblem(req, {
+      status: 410,
+      type: `${ACTIVATION_PROBLEM_BASE}/gone`,
+      title: "Gone",
+      detail: "Reservation is too old to accept a verify-outcome beacon.",
+      code: "RESERVATION_EXPIRED",
+    });
   }
 
   try {
@@ -110,8 +159,14 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     });
   } catch (e) {
     console.error(e);
-    return new NextResponse(null, { status: 503 });
+    return activationProblem(req, {
+      status: 503,
+      type: `${ACTIVATION_PROBLEM_BASE}/server-error`,
+      title: "Service unavailable",
+      detail: "Could not record verify-outcome beacon.",
+      code: "SERVER_ERROR",
+    });
   }
 
-  return new NextResponse(null, { status: 204 });
+  return activationNoContent(rid);
 }

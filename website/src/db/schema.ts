@@ -187,6 +187,8 @@ export const ossClaimTickets = pgTable("oss_claim_ticket", {
   interactiveHumanClaim: boolean("interactive_human_claim").notNull().default(false),
   /** Set once when CLI POSTs `claim-continuation` after successful browser spawn. */
   browserOpenInvokedAt: timestamp("browser_open_invoked_at", { withTimezone: true, mode: "date" }),
+  /** Stable `x-request-id` for this ticket; echoed on claim-redeem without browser threading. */
+  activationRequestId: text("activation_request_id").notNull(),
 }, (t) => ({
   pk: primaryKey({ columns: [t.secretHash] }),
 }));

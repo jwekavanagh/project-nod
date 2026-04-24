@@ -61,14 +61,20 @@ describe("openapi-commercial contract", () => {
     assertDerivedOpenApiCommercialDistribution(docDerived, { anchors, normalize });
   });
 
-  it("lists reserve, plans, and public verification-report paths matching implemented routes", () => {
+  it("lists activation paths matching implemented routes (see assert-openapi-covers-activation-routes.mjs)", () => {
     const t = readFileSync(derivedPath, "utf8");
     expect(t).toContain("/api/v1/usage/reserve");
     expect(t).toContain("/api/v1/commercial/plans");
+    expect(t).toContain("/api/v1/funnel/verify-outcome");
     expect(t).toContain("/api/public/verification-reports");
+    expect(t).toContain("/api/oss/claim-ticket");
+    expect(t).toContain("/api/oss/claim-redeem");
+    expect(t).toContain("/api/oss/claim-continuation");
+    expect(t).toContain("/api/oss/claim-handoff");
     expect(t).toContain("createPublicVerificationReport");
     expect(t).toContain("reserveUsage");
     expect(t).toContain("getCommercialPlans");
+    expect(t).toContain("postVerifyOutcomeBeacon");
     expect(t).toContain("included_monthly");
     expect(t).toContain("BILLING_PRICE_UNMAPPED");
     expect(t).toMatch(/enum:\s*\[starter,\s*individual,\s*team,\s*business,\s*enterprise\]/);

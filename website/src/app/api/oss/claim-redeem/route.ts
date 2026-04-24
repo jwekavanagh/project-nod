@@ -3,6 +3,13 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { db } from "@/db/client";
 import { ossClaimTickets } from "@/db/schema";
+import {
+  ACTIVATION_PROBLEM_BASE,
+  activationJsonWithId,
+  activationProblem,
+  activationProblemWithId,
+  resolveActivationRequestId,
+} from "@/lib/activationHttp";
 import { logFunnelEvent } from "@/lib/funnelEvent";
 import {
   buildClearCookiePendingHeader,
@@ -41,28 +48,46 @@ function withClearPendingCookie(res: NextResponse): NextResponse {
   return res;
 }
 
+function claimFailed(req: NextRequest, detail: string): NextResponse {
+  return withClearPendingCookie(
+    activationProblem(req, {
+      status: 400,
+      type: `${ACTIVATION_PROBLEM_BASE}/claim-failed`,
+      title: "Claim failed",
+      detail,
+      code: "CLAIM_FAILED",
+    }),
+  );
+}
+
 export async function POST(req: NextRequest): Promise<NextResponse> {
   const session = await auth();
   if (!session?.user?.id) {
-    return new NextResponse(null, { status: 401 });
+    return activationProblem(req, {
+      status: 401,
+      type: `${ACTIVATION_PROBLEM_BASE}/unauthorized`,
+      title: "Unauthorized",
+      detail: "Sign in to redeem this claim.",
+      code: "UNAUTHORIZED",
+    });
   }
 
   const rawCt = req.headers.get("content-type");
   const ct = rawCt?.toLowerCase() ?? "";
   if (!ct.startsWith("application/json")) {
-    return withClearPendingCookie(NextResponse.json({ code: "claim_failed" }, { status: 400 }));
+    return claimFailed(req, "Content-Type must be application/json.");
   }
 
   let jsonBody: unknown;
   try {
     jsonBody = await req.json();
   } catch {
-    return withClearPendingCookie(NextResponse.json({ code: "claim_failed" }, { status: 400 }));
+    return claimFailed(req, "Invalid JSON.");
   }
 
   const parsed = ossClaimRedeemRequestSchema.safeParse(jsonBody);
   if (!parsed.success) {
-    return withClearPendingCookie(NextResponse.json({ code: "claim_failed" }, { status: 400 }));
+    return claimFailed(req, "Request body failed validation.");
   }
 
   const rawPending = req.cookies.get(OSS_PENDING_CLAIM_COOKIE_NAME)?.value ?? null;
@@ -75,7 +100,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
   }
   if (!secretHash) {
     if (!parsed.data.claim_secret) {
-      return withClearPendingCookie(NextResponse.json({ code: "claim_failed" }, { status: 400 }));
+      return claimFailed(req, "Missing pending claim cookie or claim_secret in body.");
     }
     secretHash = hashOssClaimSecret(parsed.data.claim_secret);
   }
@@ -93,22 +118,40 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
             .for("update");
 
           if (rows.length === 0) {
-            return withClearPendingCookie(NextResponse.json({ code: "claim_failed" }, { status: 400 }));
+            return claimFailed(req, "No claim ticket matches this secret.");
           }
 
           const row = rows[0]!;
+          const rid = row.activationRequestId;
           const now = new Date();
           if (row.expiresAt.getTime() < now.getTime()) {
-            return withClearPendingCookie(NextResponse.json({ code: "claim_failed" }, { status: 400 }));
+            return withClearPendingCookie(
+              activationProblemWithId(rid, {
+                status: 400,
+                type: `${ACTIVATION_PROBLEM_BASE}/claim-failed`,
+                title: "Claim failed",
+                detail: "This claim ticket has expired.",
+                code: "CLAIM_EXPIRED",
+              }),
+            );
           }
 
           if (row.userId !== null && row.userId !== userId) {
-            return withClearPendingCookie(NextResponse.json({ code: "already_claimed" }, { status: 409 }));
+            return withClearPendingCookie(
+              activationProblemWithId(rid, {
+                status: 409,
+                type: `${ACTIVATION_PROBLEM_BASE}/already-claimed`,
+                title: "Already claimed",
+                detail: "This verification run is linked to a different account.",
+                code: "ALREADY_CLAIMED",
+              }),
+            );
           }
 
           if (row.userId === userId && row.claimedAt !== null) {
             return withClearPendingCookie(
-              NextResponse.json(
+              activationJsonWithId(
+                rid,
                 redeemJson({
                   runId: row.runId,
                   terminalStatus: row.terminalStatus,
@@ -117,7 +160,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
                   buildProfile: row.buildProfile,
                   claimedAt: row.claimedAt,
                 }),
-                { status: 200 },
+                200,
               ),
             );
           }
@@ -143,7 +186,8 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
           );
 
           return withClearPendingCookie(
-            NextResponse.json(
+            activationJsonWithId(
+              rid,
               redeemJson({
                 runId: row.runId,
                 terminalStatus: row.terminalStatus,
@@ -152,7 +196,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
                 buildProfile: row.buildProfile,
                 claimedAt,
               }),
-              { status: 200 },
+              200,
             ),
           );
         },
@@ -162,10 +206,24 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
   } catch (e) {
     if (e instanceof RateLimitedClaimRedeemUser) {
       return withClearPendingCookie(
-        NextResponse.json({ code: "rate_limited", scope: "claim_redeem_user" }, { status: 429 }),
+        activationProblem(req, {
+          status: 429,
+          type: `${ACTIVATION_PROBLEM_BASE}/rate-limited`,
+          title: "Too many requests",
+          detail: "Claim redeem rate limit exceeded for this user.",
+          code: "RATE_LIMITED",
+        }),
       );
     }
     console.error(e);
-    return withClearPendingCookie(new NextResponse(null, { status: 503 }));
+    return withClearPendingCookie(
+      activationProblem(req, {
+        status: 503,
+        type: `${ACTIVATION_PROBLEM_BASE}/server-error`,
+        title: "Service unavailable",
+        detail: "Could not complete claim redeem. Try again later.",
+        code: "SERVER_ERROR",
+      }),
+    );
   }
 }

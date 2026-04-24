@@ -10,6 +10,7 @@ import {
   formatOperationalMessage,
 } from "../failureCatalog.js";
 import { TruthLayerError } from "../truthLayerError.js";
+import { newActivationHttpCorrelationId } from "../commercial/activationCorrelation.js";
 import { runLicensePreflightIfNeeded } from "../commercial/licensePreflight.js";
 import { postVerifyOutcomeBeacon } from "../commercial/postVerifyOutcomeBeacon.js";
 import { quickVerifyVerdictToTerminalStatus } from "../commercial/quickVerifyFunnelTerminalStatus.js";
@@ -143,6 +144,7 @@ async function maybePostVerifyOutcomeAndBeaconBatch(input: {
   workloadClass: "bundled_examples" | "non_bundled";
   workflowId: string | undefined;
   activationRunId: string;
+  activationHttpRequestId: string;
   buildProfile: "oss" | "commercial";
   suppressOssClaim: boolean;
 }): Promise<void> {
@@ -170,6 +172,7 @@ async function maybePostVerifyOutcomeAndBeaconBatch(input: {
       workload_class: input.workloadClass,
       subcommand: "batch_verify",
       build_profile: input.buildProfile,
+      xRequestId: input.activationHttpRequestId,
     });
   }
   if (LICENSE_PREFLIGHT_ENABLED && input.runId !== null) {
@@ -180,6 +183,7 @@ async function maybePostVerifyOutcomeAndBeaconBatch(input: {
       terminal_status: ts,
       workload_class: input.workloadClass,
       subcommand: "batch_verify",
+      xRequestId: input.activationHttpRequestId,
     });
   }
 }
@@ -191,6 +195,7 @@ async function maybePostVerifyOutcomeAndBeaconQuick(input: {
   verdict: QuickVerifyReport["verdict"];
   workloadClass: "bundled_examples" | "non_bundled";
   activationRunId: string;
+  activationHttpRequestId: string;
   buildProfile: "oss" | "commercial";
   suppressOssClaim: boolean;
 }): Promise<void> {
@@ -217,6 +222,7 @@ async function maybePostVerifyOutcomeAndBeaconQuick(input: {
       workload_class: input.workloadClass,
       subcommand: "quick_verify",
       build_profile: input.buildProfile,
+      xRequestId: input.activationHttpRequestId,
     });
   }
   if (LICENSE_PREFLIGHT_ENABLED && input.runId !== null) {
@@ -226,6 +232,7 @@ async function maybePostVerifyOutcomeAndBeaconQuick(input: {
       terminal_status: ts,
       workload_class: input.workloadClass,
       subcommand: "quick_verify",
+      xRequestId: input.activationHttpRequestId,
     });
   }
 }
@@ -251,11 +258,15 @@ export async function orchestrateVerifyBatchLockRun(restArgs: string[]): Promise
   }
 
   const activationRunId = activationRunIdFromEnv();
+  const activationHttpRequestId = newActivationHttpCorrelationId();
   let preflight = { runId: null as string | null };
   if (LICENSE_PREFLIGHT_ENABLED) {
     const intent = route.lockKind === "output" ? ("verify" as const) : ("enforce" as const);
     try {
-      preflight = await runLicensePreflightIfNeeded(intent, { runId: activationRunId });
+      preflight = await runLicensePreflightIfNeeded(intent, {
+        runId: activationRunId,
+        xRequestId: activationHttpRequestId,
+      });
     } catch (e) {
       if (e instanceof TruthLayerError) {
         writeCliError(e.code, e.message);
@@ -320,6 +331,7 @@ export async function orchestrateVerifyBatchLockRun(restArgs: string[]): Promise
       workloadClass,
       workflowId: route.parsed.workflowId,
       activationRunId,
+      activationHttpRequestId,
       buildProfile,
       suppressOssClaim,
     });
@@ -372,9 +384,13 @@ export async function orchestrateEnforceBatchLockRun(restArgs: string[]): Promis
   }
 
   const activationRunId = activationRunIdFromEnv();
+  const activationHttpRequestId = newActivationHttpCorrelationId();
   let preflight = { runId: null as string | null };
   try {
-    preflight = await runLicensePreflightIfNeeded("enforce", { runId: activationRunId });
+    preflight = await runLicensePreflightIfNeeded("enforce", {
+      runId: activationRunId,
+      xRequestId: activationHttpRequestId,
+    });
   } catch (e) {
     if (e instanceof TruthLayerError) {
       writeCliError(e.code, e.message);
@@ -437,6 +453,7 @@ export async function orchestrateEnforceBatchLockRun(restArgs: string[]): Promis
       workloadClass,
       workflowId: route.parsed.workflowId,
       activationRunId,
+      activationHttpRequestId,
       buildProfile: "commercial",
       suppressOssClaim,
     });
@@ -492,11 +509,15 @@ export async function orchestrateVerifyQuickLockRun(restArgs: string[]): Promise
   }
 
   const activationRunId = activationRunIdFromEnv();
+  const activationHttpRequestId = newActivationHttpCorrelationId();
   let preflight = { runId: null as string | null };
   if (LICENSE_PREFLIGHT_ENABLED) {
     const intent = route.lockKind === "output" ? ("verify" as const) : ("enforce" as const);
     try {
-      preflight = await runLicensePreflightIfNeeded(intent, { runId: activationRunId });
+      preflight = await runLicensePreflightIfNeeded(intent, {
+        runId: activationRunId,
+        xRequestId: activationHttpRequestId,
+      });
     } catch (e) {
       if (e instanceof TruthLayerError) {
         writeCliError(e.code, e.message);
@@ -555,6 +576,7 @@ export async function orchestrateVerifyQuickLockRun(restArgs: string[]): Promise
       verdict,
       workloadClass,
       activationRunId,
+      activationHttpRequestId,
       buildProfile,
       suppressOssClaim,
     });
@@ -612,9 +634,13 @@ export async function orchestrateEnforceQuickLockRun(restArgs: string[]): Promis
   }
 
   const activationRunId = activationRunIdFromEnv();
+  const activationHttpRequestId = newActivationHttpCorrelationId();
   let preflight = { runId: null as string | null };
   try {
-    preflight = await runLicensePreflightIfNeeded("enforce", { runId: activationRunId });
+    preflight = await runLicensePreflightIfNeeded("enforce", {
+      runId: activationRunId,
+      xRequestId: activationHttpRequestId,
+    });
   } catch (e) {
     if (e instanceof TruthLayerError) {
       writeCliError(e.code, e.message);
@@ -671,6 +697,7 @@ export async function orchestrateEnforceQuickLockRun(restArgs: string[]): Promis
       verdict,
       workloadClass,
       activationRunId,
+      activationHttpRequestId,
       buildProfile: "commercial",
       suppressOssClaim,
     });

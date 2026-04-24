@@ -16,6 +16,7 @@ import { verifyWorkflow } from "../pipeline.js";
 import { TruthLayerError } from "../truthLayerError.js";
 import type { LoadEventsResult, WorkflowResult } from "../types.js";
 import { writeRunBundleCli } from "../writeRunBundleCli.js";
+import { newActivationHttpCorrelationId } from "../commercial/activationCorrelation.js";
 import { runLicensePreflightIfNeeded } from "../commercial/licensePreflight.js";
 import { postVerifyOutcomeBeacon } from "../commercial/postVerifyOutcomeBeacon.js";
 import { classifyBatchVerifyWorkload } from "../commercial/verifyWorkloadClassify.js";
@@ -86,9 +87,13 @@ export async function runBatchVerifyWithTelemetrySubcommand(
     process.env.AGENTSKEPTIC_RUN_ID?.trim() ||
     process.env.WORKFLOW_VERIFIER_RUN_ID?.trim() ||
     randomUUID();
+  const batchHttpCorrelationId = newActivationHttpCorrelationId();
   let batchPreflight: { runId: string | null };
   try {
-    batchPreflight = await runLicensePreflightIfNeeded("verify", { runId: batchActivationRunId });
+    batchPreflight = await runLicensePreflightIfNeeded("verify", {
+      runId: batchActivationRunId,
+      xRequestId: batchHttpCorrelationId,
+    });
   } catch (e) {
     if (e instanceof TruthLayerError) {
       writeCliError(e.code, e.message);
@@ -188,6 +193,7 @@ export async function runBatchVerifyWithTelemetrySubcommand(
         workload_class: batchWorkloadClass,
         subcommand: opts.telemetrySubcommand,
         build_profile: batchBuildProfile,
+        xRequestId: batchHttpCorrelationId,
       });
     }
     await postVerifyOutcomeBeacon({
@@ -196,6 +202,7 @@ export async function runBatchVerifyWithTelemetrySubcommand(
       terminal_status: terminalStatus,
       workload_class: batchWorkloadClass,
       subcommand: opts.telemetrySubcommand,
+      xRequestId: batchHttpCorrelationId,
     });
     if (workflowResultForStderrHook !== undefined) {
       opts.stderrAppendBeforeStdout?.(workflowResultForStderrHook);

@@ -106,7 +106,10 @@ describe("OssClaimClient flow", () => {
     mockUseSearchParams.mockReturnValue(sp);
 
     const fetchMock = vi.fn().mockResolvedValueOnce(
-      new Response(JSON.stringify({ code: "claim_failed" }), { status: 400 }),
+      new Response(JSON.stringify({ code: "CLAIM_FAILED", type: "https://agentskeptic.com/problems/x" }), {
+        status: 400,
+        headers: { "x-request-id": "test-req-handoff" },
+      }),
     );
     vi.stubGlobal("fetch", fetchMock);
 

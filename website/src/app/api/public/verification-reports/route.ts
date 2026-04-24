@@ -1,5 +1,10 @@
 import { getCanonicalSiteOrigin } from "@/lib/canonicalSiteOrigin";
 import {
+  ACTIVATION_PROBLEM_BASE,
+  activationJson,
+  activationProblem,
+} from "@/lib/activationHttp";
+import {
   assertBodySizeWithinLimit,
   insertPublicVerificationReport,
   parseAndValidateEnvelope,
@@ -15,19 +20,37 @@ function publicReportsEnabled(): boolean {
 
 export async function POST(req: NextRequest): Promise<NextResponse> {
   if (!publicReportsEnabled()) {
-    return new NextResponse(null, { status: 503 });
+    return activationProblem(req, {
+      status: 503,
+      type: `${ACTIVATION_PROBLEM_BASE}/service-unavailable`,
+      title: "Service unavailable",
+      detail: "Public verification report ingestion is disabled in this deployment.",
+      code: "INGESTION_DISABLED",
+    });
   }
   let rawText: string;
   try {
     rawText = await req.text();
   } catch {
-    return NextResponse.json({ error: "invalid_body" }, { status: 400 });
+    return activationProblem(req, {
+      status: 400,
+      type: `${ACTIVATION_PROBLEM_BASE}/bad-request`,
+      title: "Bad request",
+      detail: "Could not read request body.",
+      code: "INVALID_BODY",
+    });
   }
   try {
     assertBodySizeWithinLimit(rawText);
   } catch (e) {
     if ((e as Error & { status?: number }).status === 413) {
-      return NextResponse.json({ error: "payload_too_large" }, { status: 413 });
+      return activationProblem(req, {
+        status: 413,
+        type: `${ACTIVATION_PROBLEM_BASE}/payload-too-large`,
+        title: "Payload too large",
+        detail: "Request body exceeds the maximum allowed size.",
+        code: "PAYLOAD_TOO_LARGE",
+      });
     }
     throw e;
   }
@@ -35,7 +58,13 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
   try {
     parsed = JSON.parse(rawText) as unknown;
   } catch {
-    return NextResponse.json({ error: "invalid_json" }, { status: 400 });
+    return activationProblem(req, {
+      status: 400,
+      type: `${ACTIVATION_PROBLEM_BASE}/bad-request`,
+      title: "Bad request",
+      detail: "Invalid JSON.",
+      code: "INVALID_JSON",
+    });
   }
   try {
     const envelope = parseAndValidateEnvelope(parsed);
@@ -45,13 +74,25 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     const kind =
       "schemaVersion" in envelope && envelope.schemaVersion === 2 ? "outcome_certificate_v2" : envelope.kind;
     await logFunnelEvent({ event: "report_share_created", metadata: { id, kind } });
-    return NextResponse.json({ schemaVersion: 2, id, url }, { status: 201 });
+    return activationJson(req, { schemaVersion: 2, id, url }, 201);
   } catch (e) {
     const status = (e as Error & { status?: number }).status;
     if (status === 400) {
-      return NextResponse.json({ error: "validation_failed" }, { status: 400 });
+      return activationProblem(req, {
+        status: 400,
+        type: `${ACTIVATION_PROBLEM_BASE}/validation-failed`,
+        title: "Validation failed",
+        detail: "Envelope failed schema validation.",
+        code: "VALIDATION_FAILED",
+      });
     }
     console.error(e);
-    return NextResponse.json({ error: "server_error" }, { status: 500 });
+    return activationProblem(req, {
+      status: 500,
+      type: `${ACTIVATION_PROBLEM_BASE}/server-error`,
+      title: "Server error",
+      detail: "Could not store verification report.",
+      code: "SERVER_ERROR",
+    });
   }
 }

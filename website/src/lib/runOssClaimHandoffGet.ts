@@ -2,6 +2,11 @@ import { eq } from "drizzle-orm";
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/db/client";
 import { ossClaimTickets } from "@/db/schema";
+import {
+  ACTIVATION_PROBLEM_BASE,
+  activationProblem,
+  activationRedirect,
+} from "@/lib/activationHttp";
 import { extractClientIpKey } from "@/lib/magicLinkSendGate";
 import {
   claimHandoffErrorRedirect,
@@ -15,14 +20,14 @@ export class RateLimitedClaimHandoffIp extends Error {}
 
 const MAX_HANDOFF_QUERY_LEN = 256;
 
-function redirectWithClearCookie(url: string): NextResponse {
-  const res = NextResponse.redirect(url, 302);
+function redirectWithClearCookie(req: NextRequest, url: string): NextResponse {
+  const res = activationRedirect(req, url, 302);
   res.headers.append("Set-Cookie", buildClearCookiePendingHeader());
   return res;
 }
 
-function redirectWithSetCookie(url: string, setCookie: string): NextResponse {
-  const res = NextResponse.redirect(url, 302);
+function redirectWithSetCookie(req: NextRequest, url: string, setCookie: string): NextResponse {
+  const res = activationRedirect(req, url, 302);
   res.headers.append("Set-Cookie", setCookie);
   return res;
 }
@@ -35,7 +40,7 @@ export async function runOssClaimHandoffGet(req: NextRequest): Promise<NextRespo
   const hRaw = req.nextUrl.searchParams.get("h");
   const h = hRaw?.trim() ?? "";
   if (h.length === 0 || h.length > MAX_HANDOFF_QUERY_LEN) {
-    return redirectWithClearCookie(claimHandoffErrorRedirect("handoff_invalid"));
+    return redirectWithClearCookie(req, claimHandoffErrorRedirect("handoff_invalid"));
   }
 
   try {
@@ -55,17 +60,17 @@ export async function runOssClaimHandoffGet(req: NextRequest): Promise<NextRespo
             .for("update");
 
           if (rows.length === 0) {
-            return redirectWithClearCookie(claimHandoffErrorRedirect("handoff_invalid"));
+            return redirectWithClearCookie(req, claimHandoffErrorRedirect("handoff_invalid"));
           }
 
           const row = rows[0]!;
           const now = new Date();
           if (row.expiresAt.getTime() < now.getTime() || row.claimedAt !== null) {
-            return redirectWithClearCookie(claimHandoffErrorRedirect("handoff_invalid"));
+            return redirectWithClearCookie(req, claimHandoffErrorRedirect("handoff_invalid"));
           }
 
           if (row.handoffConsumedAt !== null) {
-            return redirectWithClearCookie(claimHandoffErrorRedirect("handoff_used"));
+            return redirectWithClearCookie(req, claimHandoffErrorRedirect("handoff_used"));
           }
 
           const setCookie = mintOssClaimPendingSetCookieHeader({
@@ -74,7 +79,7 @@ export async function runOssClaimHandoffGet(req: NextRequest): Promise<NextRespo
             claimedAt: row.claimedAt,
           });
           if (!setCookie) {
-            return redirectWithClearCookie(claimHandoffErrorRedirect("handoff_invalid"));
+            return redirectWithClearCookie(req, claimHandoffErrorRedirect("handoff_invalid"));
           }
 
           await tx
@@ -82,16 +87,22 @@ export async function runOssClaimHandoffGet(req: NextRequest): Promise<NextRespo
             .set({ handoffConsumedAt: now })
             .where(eq(ossClaimTickets.secretHash, row.secretHash));
 
-          return redirectWithSetCookie(claimHandoffSigninRedirect(), setCookie);
+          return redirectWithSetCookie(req, claimHandoffSigninRedirect(), setCookie);
         },
         { isolationLevel: "serializable" },
       ),
     );
   } catch (e) {
     if (e instanceof RateLimitedClaimHandoffIp) {
-      return NextResponse.json({ code: "rate_limited", scope: "claim_handoff_ip" }, { status: 429 });
+      return activationProblem(req, {
+        status: 429,
+        type: `${ACTIVATION_PROBLEM_BASE}/rate-limited`,
+        title: "Too many requests",
+        detail: "Claim handoff rate limit exceeded for this IP.",
+        code: "RATE_LIMITED",
+      });
     }
     console.error(e);
-    return redirectWithClearCookie(claimHandoffErrorRedirect("handoff_invalid"));
+    return redirectWithClearCookie(req, claimHandoffErrorRedirect("handoff_invalid"));
   }
 }

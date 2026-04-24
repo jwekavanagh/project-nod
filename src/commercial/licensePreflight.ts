@@ -33,13 +33,18 @@ type ReserveBody = ReserveOk | ReserveDeny;
 
 export type LicensePreflightResult = { runId: string | null };
 
+function requestIdSuffix(res: Response): string {
+  const rid = res.headers.get("x-request-id")?.trim();
+  return rid ? ` [x-request-id=${rid}]` : "";
+}
+
 /**
  * Before contract-mode verification (commercial npm build), contact license API.
  * Returns `{ runId: null }` when LICENSE_PREFLIGHT_ENABLED is false (OSS profile).
  */
 export async function runLicensePreflightIfNeeded(
   intent: LicensePreflightIntent = "verify",
-  opts?: { runId?: string },
+  opts?: { runId?: string; xRequestId?: string },
 ): Promise<LicensePreflightResult> {
   if (!LICENSE_PREFLIGHT_ENABLED) return { runId: null };
 
@@ -58,6 +63,7 @@ export async function runLicensePreflightIfNeeded(
     process.env.AGENTSKEPTIC_RUN_ID?.trim() ||
     process.env.WORKFLOW_VERIFIER_RUN_ID?.trim() ||
     crypto.randomUUID();
+  const xRequestId = opts?.xRequestId?.trim() || crypto.randomUUID();
   const issuedAt = new Date().toISOString();
   const url = `${LICENSE_API_BASE_URL.replace(/\/$/, "")}/api/v1/usage/reserve`;
 
@@ -69,6 +75,7 @@ export async function runLicensePreflightIfNeeded(
         headers: {
           Authorization: `Bearer ${apiKey}`,
           "Content-Type": "application/json",
+          "x-request-id": xRequestId,
         },
         body: JSON.stringify({ run_id: runId, issued_at: issuedAt, intent }),
       });
@@ -81,13 +88,15 @@ export async function runLicensePreflightIfNeeded(
         body = null;
       }
 
+      const rid = requestIdSuffix(res);
+
       if (
         res.status === 429 ||
         res.status === 502 ||
         res.status === 503 ||
         res.status === 504
       ) {
-        lastErr = new Error(`HTTP ${res.status}`);
+        lastErr = new Error(`HTTP ${res.status}${rid}`);
         if (attempt < RETRY_MS.length) await sleep(RETRY_MS[attempt]!);
         continue;
       }
@@ -100,7 +109,7 @@ export async function runLicensePreflightIfNeeded(
               : "";
             throw new TruthLayerError(
               CLI_OPERATIONAL_CODES.ENFORCEMENT_REQUIRES_PAID_PLAN,
-              `${body.message || "Enforcement requires a paid plan."}${suffix}`,
+              `${body.message || "Enforcement requires a paid plan."}${suffix}${rid}`,
             );
           }
           if (body.code === "VERIFICATION_REQUIRES_SUBSCRIPTION") {
@@ -109,38 +118,38 @@ export async function runLicensePreflightIfNeeded(
               : "";
             throw new TruthLayerError(
               CLI_OPERATIONAL_CODES.VERIFICATION_REQUIRES_SUBSCRIPTION,
-              `${body.message || "Licensed verification requires an active subscription."}${suffix}`,
+              `${body.message || "Licensed verification requires an active subscription."}${suffix}${rid}`,
             );
           }
           if (body.code === "SUBSCRIPTION_INACTIVE") {
             const suffix = body.upgrade_url ? ` ${body.upgrade_url}` : "";
             throw new TruthLayerError(
               CLI_OPERATIONAL_CODES.LICENSE_DENIED,
-              `${body.message || "Subscription is not active for licensed verification or CI enforcement."}${suffix}`,
+              `${body.message || "Subscription is not active for licensed verification or CI enforcement."}${suffix}${rid}`,
             );
           }
           if (body.code === "BILLING_PRICE_UNMAPPED") {
             const suffix = body.upgrade_url ? ` ${body.upgrade_url}` : "";
             throw new TruthLayerError(
               CLI_OPERATIONAL_CODES.LICENSE_DENIED,
-              `${body.message || "Stripe price is not mapped in this deployment."}${suffix}`,
+              `${body.message || "Stripe price is not mapped in this deployment."}${suffix}${rid}`,
             );
           }
           throw new TruthLayerError(
             CLI_OPERATIONAL_CODES.LICENSE_DENIED,
-            body.message || `License check failed (${body.code}).`,
+            `${body.message || `License check failed (${body.code}).`}${rid}`,
           );
         }
         throw new TruthLayerError(
           CLI_OPERATIONAL_CODES.LICENSE_DENIED,
-          `License check failed with HTTP ${res.status}.`,
+          `License check failed with HTTP ${res.status}.${rid}`,
         );
       }
 
       if (!body || body.allowed !== true) {
         throw new TruthLayerError(
           CLI_OPERATIONAL_CODES.LICENSE_DENIED,
-          "License server returned an unexpected response.",
+          `License server returned an unexpected response.${rid}`,
         );
       }
       return { runId };

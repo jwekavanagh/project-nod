@@ -8,7 +8,7 @@ info:
     repository: https://github.com/jwekavanagh/agentskeptic
     npmPackage: https://www.npmjs.com/package/agentskeptic
     openApi: https://agentskeptic.com/openapi-commercial-v1.yaml
-  description: "Read-only checks at verify time—not color.\n\nMachine-readable contract for license preflight used by the published npm CLI.\nBase URL is your deployed app origin (same as NEXT_PUBLIC_APP_URL).\n"
+  description: "Read-only checks at verify time—not color.\n\nMachine-readable contract for license preflight used by the published npm CLI.\nBase URL is your deployed app origin (same as NEXT_PUBLIC_APP_URL).\n\nEvery path in this document returns an `x-request-id` response header on all status codes (echo a valid client `x-request-id` when supplied; otherwise server-generated). Non-2xx JSON bodies follow RFC 7807-style Problem Details (`type`, `title`, `status`, `detail`, optional `code`, `instance`) unless noted; `POST /api/v1/usage/reserve` denials additionally include legacy `allowed`, `code`, `message`, and optional `upgrade_url` for backward compatibility.\n"
 externalDocs:
   description: "First-run integration guide"
   url: https://agentskeptic.com/integrate
@@ -73,6 +73,12 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/CommercialPlansResponse"
+        "503":
+          description: Plans configuration unavailable
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
   /api/public/verification-reports:
     post:
       operationId: createPublicVerificationReport
@@ -94,10 +100,226 @@ paths:
                 $ref: "#/components/schemas/PublicVerificationReportCreated"
         "400":
           description: Invalid JSON or failed schema validation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
         "413":
           description: Request body exceeds maximum allowed size
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+        "500":
+          description: Server error storing report
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
         "503":
           description: Public report ingestion disabled or server unavailable
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+  /api/v1/funnel/verify-outcome:
+    post:
+      operationId: postVerifyOutcomeBeacon
+      summary: Licensed verify-outcome beacon (idempotent per API key + run_id)
+      description: >
+        POST after a successful `POST /api/v1/usage/reserve` for the same `run_id`. Success is HTTP 204 with an empty body.
+        Requires Bearer API key. Body schemaVersion must be 2.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/VerifyOutcomeRequestV2"
+      responses:
+        "204":
+          description: Beacon accepted (or duplicate ignored)
+        "400":
+          description: Invalid JSON or validation failure
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+        "401":
+          description: Invalid API key
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+        "404":
+          description: No reservation for this run_id
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+        "410":
+          description: Reservation too old
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+        "503":
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+  /api/oss/claim-ticket:
+    post:
+      operationId: postOssClaimTicket
+      summary: Mint OSS claim ticket (CLI only; product activation headers required)
+      description: >
+        Creates or returns a handoff URL for linking a verification run to a web account.
+        Requires `X-AgentSkeptic-Cli-Product` and `X-AgentSkeptic-Cli-Version` headers (see website/src/lib/funnelProductActivationConstants.ts).
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/OssClaimTicketRequest"
+      responses:
+        "200":
+          description: Handoff URL returned
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OssClaimTicketHandoffResponse"
+        "204":
+          description: Ticket already claimed (idempotent)
+        "400":
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+        "403":
+          description: Forbidden (unsupported CLI client)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+        "413":
+          description: Payload too large
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+        "429":
+          description: Rate limited
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+        "503":
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+  /api/oss/claim-redeem:
+    post:
+      operationId: postOssClaimRedeem
+      summary: Redeem OSS claim ticket (browser session; optional claim_secret in body)
+      description: Requires an authenticated session; prefers pending cookie from GET /verify/link.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/OssClaimRedeemRequest"
+      responses:
+        "200":
+          description: Redeemed; returns run summary
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OssClaimRedeemOk"
+        "400":
+          description: Claim failed or expired
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+        "401":
+          description: Not signed in
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+        "409":
+          description: Already linked to another account
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+        "429":
+          description: Rate limited
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+        "503":
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+  /api/oss/claim-continuation:
+    post:
+      operationId: postOssClaimContinuation
+      summary: Record browser-open acknowledgement for interactive-human tickets (CLI only)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/OssClaimContinuationRequest"
+      responses:
+        "204":
+          description: Recorded or already recorded
+        "400":
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+        "403":
+          description: Not applicable or forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+        "413":
+          description: Payload too large
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+        "503":
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+  /api/oss/claim-handoff:
+    get:
+      operationId: getOssClaimHandoffLegacy
+      summary: Legacy handoff redirect (308 to /verify/link)
+      parameters:
+        - name: h
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        "308":
+          description: Redirect to /verify/link?h=…
 components:
   securitySchemes:
     bearerAuth:
@@ -105,6 +327,117 @@ components:
       scheme: bearer
       bearerFormat: API key
   schemas:
+    ProblemDetails:
+      type: object
+      required: [type, title, status, detail]
+      properties:
+        type:
+          type: string
+          format: uri
+        title:
+          type: string
+        status:
+          type: integer
+        detail:
+          type: string
+        instance:
+          type: string
+        code:
+          type: string
+    VerifyOutcomeRequestV2:
+      type: object
+      required:
+        - schema_version
+        - run_id
+        - workflow_id
+        - trust_decision
+        - reason_codes
+        - terminal_status
+        - workload_class
+        - subcommand
+      properties:
+        schema_version:
+          type: integer
+          const: 2
+        run_id:
+          type: string
+          maxLength: 256
+        workflow_id:
+          type: string
+          maxLength: 512
+        trust_decision:
+          type: string
+          enum: [safe, unsafe, unknown]
+        reason_codes:
+          type: array
+          maxItems: 8
+          items:
+            type: string
+        terminal_status:
+          type: string
+          enum: [complete, inconsistent, incomplete]
+        workload_class:
+          type: string
+          enum: [bundled_examples, non_bundled]
+        subcommand:
+          type: string
+          enum: [batch_verify, quick_verify, verify_integrator_owned]
+    OssClaimTicketRequest:
+      type: object
+      description: v1 or v2 OSS claim ticket wire shape (see website/src/lib/ossClaimTicketPayload.ts).
+      additionalProperties: true
+    OssClaimTicketHandoffResponse:
+      type: object
+      required: [schema_version, handoff_url]
+      properties:
+        schema_version:
+          type: integer
+          const: 2
+        handoff_url:
+          type: string
+          format: uri
+    OssClaimRedeemRequest:
+      type: object
+      properties:
+        claim_secret:
+          type: string
+          pattern: "^[0-9a-f]{64}$"
+      additionalProperties: true
+    OssClaimRedeemOk:
+      type: object
+      required:
+        - schema_version
+        - run_id
+        - terminal_status
+        - workload_class
+        - subcommand
+        - build_profile
+        - claimed_at
+      properties:
+        schema_version:
+          type: integer
+          const: 1
+        run_id:
+          type: string
+        terminal_status:
+          type: string
+        workload_class:
+          type: string
+        subcommand:
+          type: string
+        build_profile:
+          type: string
+        claimed_at:
+          type: string
+          format: date-time
+    OssClaimContinuationRequest:
+      type: object
+      required: [claim_secret]
+      properties:
+        claim_secret:
+          type: string
+          pattern: "^[0-9a-f]{64}$"
+      additionalProperties: false
     PublicVerificationReportCreate:
       description: >
         POST accepts schemaVersion 2 only: { "schemaVersion": 2, "certificate": <OutcomeCertificateV1> } per
@@ -181,22 +514,25 @@ components:
           type: integer
           description: max(0, used - included_monthly) when the plan has a finite cap
     ReserveError:
-      type: object
-      properties:
-        allowed:
-          type: boolean
-          enum: [false]
-        code:
-          type: string
-          description: >
-            Examples BAD_REQUEST, INVALID_KEY, QUOTA_EXCEEDED, ENFORCEMENT_REQUIRES_PAID_PLAN,
-            SUBSCRIPTION_INACTIVE, BILLING_PRICE_UNMAPPED, SERVER_ERROR
-        message:
-          type: string
-        upgrade_url:
-          type: string
-          format: uri
-          description: Present for some 403 entitlement responses
+      allOf:
+        - $ref: "#/components/schemas/ProblemDetails"
+        - type: object
+          required: [allowed, code, message]
+          properties:
+            allowed:
+              type: boolean
+              enum: [false]
+            code:
+              type: string
+              description: >
+                Examples BAD_REQUEST, INVALID_KEY, QUOTA_EXCEEDED, ENFORCEMENT_REQUIRES_PAID_PLAN,
+                VERIFICATION_REQUIRES_SUBSCRIPTION, SUBSCRIPTION_INACTIVE, BILLING_PRICE_UNMAPPED, SERVER_ERROR
+            message:
+              type: string
+            upgrade_url:
+              type: string
+              format: uri
+              description: Present for some 403 entitlement responses
     CommercialPlansResponse:
       type: object
       required:

@@ -3,6 +3,13 @@ import { eq } from "drizzle-orm";
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/db/client";
 import { ossClaimTickets } from "@/db/schema";
+import {
+  ACTIVATION_PROBLEM_BASE,
+  activationJsonWithId,
+  activationNoContent,
+  activationProblem,
+  resolveActivationRequestId,
+} from "@/lib/activationHttp";
 import { extractClientIpKey } from "@/lib/magicLinkSendGate";
 import {
   buildOssClaimHandoffUrlCanonical,
@@ -30,12 +37,42 @@ function newHandoffToken(): string {
   return randomBytes(32).toString("base64url");
 }
 
-function jsonHandoff(handoffToken: string): NextResponse {
+function jsonHandoff(requestId: string, handoffToken: string): NextResponse {
   const body: OssClaimTicketHandoffResponseBody = {
     schema_version: OSS_CLAIM_HANDOFF_RESPONSE_SCHEMA_VERSION,
     handoff_url: buildOssClaimHandoffUrlCanonical(handoffToken),
   };
-  return NextResponse.json(body, { status: 200 });
+  return activationJsonWithId(requestId, body, 200);
+}
+
+function problemBadRequest(req: NextRequest, detail: string, code = "BAD_REQUEST"): NextResponse {
+  return activationProblem(req, {
+    status: 400,
+    type: `${ACTIVATION_PROBLEM_BASE}/bad-request`,
+    title: "Bad request",
+    detail,
+    code,
+  });
+}
+
+function problemForbidden(req: NextRequest): NextResponse {
+  return activationProblem(req, {
+    status: 403,
+    type: `${ACTIVATION_PROBLEM_BASE}/forbidden`,
+    title: "Forbidden",
+    detail: "This endpoint requires a supported AgentSkeptic CLI client.",
+    code: "FORBIDDEN",
+  });
+}
+
+function problemPayloadTooLarge(req: NextRequest): NextResponse {
+  return activationProblem(req, {
+    status: 413,
+    type: `${ACTIVATION_PROBLEM_BASE}/payload-too-large`,
+    title: "Payload too large",
+    detail: "Request body exceeds the maximum allowed size.",
+    code: "PAYLOAD_TOO_LARGE",
+  });
 }
 
 function assertProductActivationBodySize(rawUtf8: string): void {
@@ -73,14 +110,14 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
   const rawCt = req.headers.get("content-type");
   const ct = rawCt?.toLowerCase() ?? "";
   if (!ct.startsWith("application/json")) {
-    return new NextResponse(null, { status: 400 });
+    return problemBadRequest(req, "Content-Type must be application/json.", "UNSUPPORTED_MEDIA_TYPE");
   }
 
   const contentLength = req.headers.get("content-length");
   if (contentLength !== null) {
     const n = Number(contentLength);
     if (Number.isFinite(n) && n > PRODUCT_ACTIVATION_MAX_BODY_BYTES) {
-      return new NextResponse(null, { status: 413 });
+      return problemPayloadTooLarge(req);
     }
   }
 
@@ -88,44 +125,45 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
   try {
     rawText = await req.text();
   } catch {
-    return new NextResponse(null, { status: 400 });
+    return problemBadRequest(req, "Could not read request body.");
   }
 
   try {
     assertProductActivationBodySize(rawText);
   } catch (e) {
     if ((e as Error & { status?: number }).status === 413) {
-      return new NextResponse(null, { status: 413 });
+      return problemPayloadTooLarge(req);
     }
     throw e;
   }
 
   try {
     assertCliHeaders(req);
-  } catch (e) {
-    const st = (e as Error & { status?: number }).status;
-    if (st === 403) return new NextResponse(null, { status: 403 });
-    throw e;
+  } catch (err) {
+    const st = (err as Error & { status?: number }).status;
+    if (st === 403) return problemForbidden(req);
+    throw err;
   }
 
   let jsonBody: unknown;
   try {
     jsonBody = JSON.parse(rawText) as unknown;
   } catch {
-    return new NextResponse(null, { status: 400 });
+    return problemBadRequest(req, "Invalid JSON.");
   }
 
   const parsed = ossClaimTicketRequestSchema.safeParse(jsonBody);
   if (!parsed.success) {
-    return new NextResponse(null, { status: 400 });
+    return problemBadRequest(req, "Request body failed validation.", "VALIDATION_FAILED");
   }
 
   const body = parsed.data;
   if (!validateIssuedAtSkew(body.issued_at)) {
-    return new NextResponse(null, { status: 400 });
+    return problemBadRequest(req, "issued_at is missing, invalid, or skewed too far from server time.", "ISSUED_AT_INVALID");
   }
 
   const secretHash = hashOssClaimSecret(body.claim_secret);
+  const mintRequestId = resolveActivationRequestId(req);
 
   try {
     return await withSerializableRetry(async () =>
@@ -139,8 +177,9 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
 
           if (existing.length > 0) {
             const row = existing[0]!;
+            const rid = row.activationRequestId;
             if (row.claimedAt !== null) {
-              return new NextResponse(null, { status: 204 });
+              return activationNoContent(rid);
             }
 
             if (row.handoffConsumedAt === null) {
@@ -152,7 +191,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
                   .set({ handoffToken: tok, handoffConsumedAt: null })
                   .where(eq(ossClaimTickets.secretHash, secretHash));
               }
-              return jsonHandoff(tok);
+              return jsonHandoff(rid, tok);
             }
 
             const rotated = newHandoffToken();
@@ -163,7 +202,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
                 handoffConsumedAt: null,
               })
               .where(eq(ossClaimTickets.secretHash, secretHash));
-            return jsonHandoff(rotated);
+            return jsonHandoff(rid, rotated);
           }
 
           const ipKey = extractClientIpKey(req);
@@ -197,8 +236,9 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
                 handoffConsumedAt: null,
                 interactiveHumanClaim,
                 browserOpenInvokedAt: null,
+                activationRequestId: mintRequestId,
               });
-              return jsonHandoff(handoffToken);
+              return jsonHandoff(mintRequestId, handoffToken);
             } catch (e) {
               const code = (e as { code?: string }).code;
               if (code === "23505") {
@@ -215,12 +255,21 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     );
   } catch (e) {
     if (e instanceof RateLimitedClaimTicketIp) {
-      return NextResponse.json(
-        { code: "rate_limited", scope: "claim_ticket_ip" },
-        { status: 429 },
-      );
+      return activationProblem(req, {
+        status: 429,
+        type: `${ACTIVATION_PROBLEM_BASE}/rate-limited`,
+        title: "Too many requests",
+        detail: "Claim ticket rate limit exceeded for this IP.",
+        code: "RATE_LIMITED",
+      });
     }
     console.error(e);
-    return new NextResponse(null, { status: 503 });
+    return activationProblem(req, {
+      status: 503,
+      type: `${ACTIVATION_PROBLEM_BASE}/server-error`,
+      title: "Service unavailable",
+      detail: "Could not complete claim ticket. Try again later.",
+      code: "SERVER_ERROR",
+    });
   }
 }

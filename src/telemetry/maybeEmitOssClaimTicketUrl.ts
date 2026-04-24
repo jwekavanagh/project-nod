@@ -1,5 +1,6 @@
 import { randomBytes } from "node:crypto";
 import { LICENSE_PREFLIGHT_ENABLED } from "../generated/commercialBuildFlags.js";
+import { newActivationHttpCorrelationId } from "../commercial/activationCorrelation.js";
 import { openHandoffUrlInOsBrowser } from "./openHandoffUrlInOsBrowser.js";
 import { postOssClaimContinuation } from "./postOssClaimContinuation.js";
 import { postOssClaimTicket } from "./postOssClaimTicket.js";
@@ -10,6 +11,8 @@ export async function maybeEmitOssClaimTicketUrlToStderr(input: {
   workload_class: "bundled_examples" | "non_bundled";
   subcommand: "batch_verify" | "quick_verify" | "verify_integrator_owned";
   build_profile: "oss" | "commercial";
+  /** When set, reused for claim-ticket + claim-continuation HTTP `x-request-id`. */
+  xRequestId?: string;
 }): Promise<void> {
   if (LICENSE_PREFLIGHT_ENABLED) return;
   if (process.env.AGENTSKEPTIC_OSS_CLAIM_STDERR?.trim() === "0") return;
@@ -22,17 +25,20 @@ export async function maybeEmitOssClaimTicketUrlToStderr(input: {
     Boolean(process.stderr.isTTY) &&
     String(process.env.CI).toLowerCase() !== "true";
 
+  const xRequestId = input.xRequestId?.trim() || newActivationHttpCorrelationId();
+
   const r = await postOssClaimTicket({
     claim_secret,
     issued_at,
     ...input,
     interactive_human: interactiveHuman ? true : undefined,
+    xRequestId,
   });
   if (r.outcome === "ok") {
     if (interactiveHuman) {
       const { ok } = await openHandoffUrlInOsBrowser(r.handoff_url);
       if (ok) {
-        await postOssClaimContinuation(claim_secret);
+        await postOssClaimContinuation(claim_secret, xRequestId);
       }
     }
     console.error(
@@ -46,7 +52,19 @@ export async function maybeEmitOssClaimTicketUrlToStderr(input: {
     );
     return;
   }
+  if (r.outcome === "rate_limited") {
+    console.error(
+      `[agentskeptic] Could not register a claim link (rate limited). x-request-id=${xRequestId}`,
+    );
+    return;
+  }
+  if (r.outcome === "forbidden" || r.outcome === "bad_request") {
+    console.error(
+      `[agentskeptic] Could not register a claim link (${r.outcome}). x-request-id=${xRequestId}`,
+    );
+    return;
+  }
   console.error(
-    "[agentskeptic] Could not register a claim link (network). When you are online, run verify again to get a new link, or sign in at the product site without this shortcut.",
+    `[agentskeptic] Could not register a claim link (network). x-request-id=${xRequestId} When you are online, run verify again to get a new link, or sign in at the product site without this shortcut.`,
   );
 }

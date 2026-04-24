@@ -1,5 +1,6 @@
 import { and, eq, isNull } from "drizzle-orm";
 import { NextRequest, NextResponse } from "next/server";
+import { activationJson, activationReserveDeny } from "@/lib/activationHttp";
 import { db } from "@/db/client";
 import { apiKeys, usageCounters, usageReservations, users } from "@/db/schema";
 import { sha256HexApiKeyLookupFingerprint, verifyApiKey } from "@/lib/apiKeyCrypto";
@@ -77,54 +78,61 @@ function normalizeSubscriptionStatus(
 export async function POST(req: NextRequest): Promise<NextResponse> {
   const auth = req.headers.get("authorization");
   if (!auth?.startsWith("Bearer ")) {
-    return NextResponse.json(
-      { allowed: false, code: "BAD_REQUEST", message: "Missing Authorization Bearer token." },
-      { status: 400 },
-    );
+    return activationReserveDeny(req, {
+      status: 400,
+      code: "BAD_REQUEST",
+      message: "Missing Authorization Bearer token.",
+    });
   }
   const rawKey = auth.slice(7).trim();
   let body: { run_id?: string; issued_at?: string; intent?: unknown };
   try {
     body = (await req.json()) as { run_id?: string; issued_at?: string; intent?: unknown };
   } catch {
-    return NextResponse.json(
-      { allowed: false, code: "BAD_REQUEST", message: "Invalid JSON body." },
-      { status: 400 },
-    );
+    return activationReserveDeny(req, {
+      status: 400,
+      code: "BAD_REQUEST",
+      message: "Invalid JSON body.",
+    });
   }
   const intent = parseIntent(body.intent);
   if (intent === null) {
-    return NextResponse.json(
-      { allowed: false, code: "BAD_REQUEST", message: "Invalid intent." },
-      { status: 400 },
-    );
+    return activationReserveDeny(req, {
+      status: 400,
+      code: "BAD_REQUEST",
+      message: "Invalid intent.",
+    });
   }
   const runId = body.run_id?.trim();
   const issuedAt = body.issued_at;
   if (!runId || runId.length > 256) {
-    return NextResponse.json(
-      { allowed: false, code: "BAD_REQUEST", message: "Invalid run_id." },
-      { status: 400 },
-    );
+    return activationReserveDeny(req, {
+      status: 400,
+      code: "BAD_REQUEST",
+      message: "Invalid run_id.",
+    });
   }
   if (!issuedAt) {
-    return NextResponse.json(
-      { allowed: false, code: "BAD_REQUEST", message: "Missing issued_at." },
-      { status: 400 },
-    );
+    return activationReserveDeny(req, {
+      status: 400,
+      code: "BAD_REQUEST",
+      message: "Missing issued_at.",
+    });
   }
   const t = Date.parse(issuedAt);
   if (Number.isNaN(t)) {
-    return NextResponse.json(
-      { allowed: false, code: "BAD_REQUEST", message: "Invalid issued_at." },
-      { status: 400 },
-    );
+    return activationReserveDeny(req, {
+      status: 400,
+      code: "BAD_REQUEST",
+      message: "Invalid issued_at.",
+    });
   }
   if (Math.abs(Date.now() - t) > 300_000) {
-    return NextResponse.json(
-      { allowed: false, code: "BAD_REQUEST", message: "issued_at skew too large." },
-      { status: 400 },
-    );
+    return activationReserveDeny(req, {
+      status: 400,
+      code: "BAD_REQUEST",
+      message: "issued_at skew too large.",
+    });
   }
 
   const lookup = sha256HexApiKeyLookupFingerprint(rawKey);
@@ -140,40 +148,40 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
 
   const row = keyRows[0];
   if (!row) {
-    return NextResponse.json(
-      { allowed: false, code: "INVALID_KEY", message: "Unknown or revoked API key." },
-      { status: 401 },
-    );
+    return activationReserveDeny(req, {
+      status: 401,
+      code: "INVALID_KEY",
+      message: "Unknown or revoked API key.",
+    });
   }
 
   const ok = verifyApiKey(rawKey, row.key.keyHash);
   if (!ok) {
-    return NextResponse.json(
-      { allowed: false, code: "INVALID_KEY", message: "Invalid API key." },
-      { status: 401 },
-    );
+    return activationReserveDeny(req, {
+      status: 401,
+      code: "INVALID_KEY",
+      message: "Invalid API key.",
+    });
   }
 
   const plans = loadCommercialPlans();
   const planId = row.user.plan as PlanId;
   const planDef = plans.plans[planId];
   if (!planDef) {
-    return NextResponse.json(
-      { allowed: false, code: "SUBSCRIPTION_INACTIVE", message: "Invalid plan configuration." },
-      { status: 403 },
-    );
+    return activationReserveDeny(req, {
+      status: 403,
+      code: "SUBSCRIPTION_INACTIVE",
+      message: "Invalid plan configuration.",
+    });
   }
 
   const subNorm = normalizeSubscriptionStatus(row.user.subscriptionStatus);
   if (subNorm === null) {
-    return NextResponse.json(
-      {
-        allowed: false,
-        code: "SERVER_ERROR",
-        message: "Invalid subscription_status in database.",
-      },
-      { status: 500 },
-    );
+    return activationReserveDeny(req, {
+      status: 500,
+      code: "SERVER_ERROR",
+      message: "Invalid subscription_status in database.",
+    });
   }
 
   const stripePriceIdRaw = row.user.stripePriceId?.trim();
@@ -188,15 +196,12 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
         subscriptionStatus: subNorm,
       }),
     );
-    return NextResponse.json(
-      {
-        allowed: false,
-        code: "BILLING_PRICE_UNMAPPED",
-        message: billingPriceUnmappedMessage(stripePriceIdRaw),
-        upgrade_url,
-      },
-      { status: 403 },
-    );
+    return activationReserveDeny(req, {
+      status: 403,
+      code: "BILLING_PRICE_UNMAPPED",
+      message: billingPriceUnmappedMessage(stripePriceIdRaw),
+      upgrade_url,
+    });
   }
 
   const emergencyAllow = process.env.RESERVE_EMERGENCY_ALLOW === "1";
@@ -222,15 +227,12 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
         code: ent.denyCode,
       }),
     );
-    return NextResponse.json(
-      {
-        allowed: false,
-        code: ent.denyCode,
-        message,
-        upgrade_url,
-      },
-      { status: 403 },
-    );
+    return activationReserveDeny(req, {
+      status: 403,
+      code: ent.denyCode,
+      message,
+      upgrade_url,
+    });
   }
 
   const includedCap =
@@ -342,17 +344,19 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     });
 
     if ("denied" in result && result.denied) {
-      return NextResponse.json(
-        { allowed: false, code: result.code, message: result.message },
-        { status: 403 },
-      );
+      return activationReserveDeny(req, {
+        status: 403,
+        code: result.code,
+        message: result.message,
+      });
     }
 
     if (!("ok" in result) || !result.ok) {
-      return NextResponse.json(
-        { allowed: false, code: "SERVER_ERROR", message: "Reservation failed." },
-        { status: 503 },
-      );
+      return activationReserveDeny(req, {
+        status: 503,
+        code: "SERVER_ERROR",
+        message: "Reservation failed.",
+      });
     }
 
     const body = reserveAllowedPayload(planId, result.usedTotal, includedCap);
@@ -363,12 +367,13 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       metadata: buildReserveAllowedMetadata(intent),
     });
 
-    return NextResponse.json(body);
+    return activationJson(req, body, 200);
   } catch (e) {
     console.error(e);
-    return NextResponse.json(
-      { allowed: false, code: "SERVER_ERROR", message: "Reservation failed." },
-      { status: 503 },
-    );
+    return activationReserveDeny(req, {
+      status: 503,
+      code: "SERVER_ERROR",
+      message: "Reservation failed.",
+    });
   }
 }
