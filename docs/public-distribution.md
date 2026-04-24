@@ -56,11 +56,7 @@ From **repository root** only:
 
 The prescribed entrypoint is **`npm run emit-primary-marketing`** (root `package.json`); a thin `scripts/public-product-anchors.cjs` shim may remain for legacy requires only.
 
-The website **`prebuild`** must be exactly:
-
-`npm --prefix .. run sync:public-product-anchors && node ../scripts/sync-integrator-docs-embedded.mjs` (prebuild still invokes the `sync:public-product-anchors` script name, which runs **`emit-primary-marketing`**.)
-
-**`--prefix` is a global npm option** and must appear **immediately after `npm`**, before `run` — not after the script name.
+The website **`prebuild`** runs **`node scripts/sync-website-ssot.mjs`** from the **repo root** (via `website/package.json`), which in order runs integrate-shell generation, **`sync:public-product-anchors`**, `sync-integrator-docs-embedded.mjs`, `sync-epistemic-contract-website.mjs`, and `sync-buyer-authority-surfaces.mjs` (the same chain as **`npm run sync:website-ssot`** at the root).
 
 ### Website tests that touch OpenAPI / `npm pack`
 

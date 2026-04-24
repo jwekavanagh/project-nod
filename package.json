@@ -60,6 +60,7 @@
     "build:website": "npm run build && npm run build -w agentskeptic-web",
     "check:web-demo-prereqs": "node scripts/check-web-demo-prereqs.mjs",
     "generate:partner-quickstart-commands": "node scripts/generate-partner-quickstart-commands.mjs",
+    "sync-website-ssot": "node scripts/sync-website-ssot.mjs",
     "sync-integrator-docs-embedded": "node scripts/sync-integrator-docs-embedded.mjs",
     "sync-epistemic-contract-website": "node scripts/sync-epistemic-contract-website.mjs",
     "check:epistemic-contract-structure": "node scripts/validate-epistemic-contract-structure.mjs",

@@ -7,7 +7,8 @@ import Link from "next/link";
 import { PricingClient } from "./PricingClient";
 import { PricingCompareTable } from "./PricingCompareTable";
 
-export const dynamic = "force-dynamic";
+/** Plans and copy come from `config/commercial-plans.json` (build-time); ISR keeps TTFB low. */
+export const revalidate = 3600;
 
 export async function generateMetadata(): Promise<Metadata> {
   const vm = getPricingPageViewModelFromConfig();

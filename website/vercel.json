@@ -1,10 +1,6 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "build": {
-    "env": {
-      "NEXT_IGNORE_INCORRECT_LOCKFILE": "1"
-    }
-  },
+  "installCommand": "cd .. && npm ci",
   "git": {
     "deploymentEnabled": {
       "main": false

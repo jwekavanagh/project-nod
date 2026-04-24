@@ -26,7 +26,7 @@ Drives [`/problems`](../website/src/app/problems/page.tsx) row order and the `ll
 | `buyer-surface-ci-enforcement-metering` | `/guides/buyer-ci-enforcement-metering` | `website/content/surfaces/guides/buyer-ci-enforcement-metering.md` |
 | `buyer-surface-trust-production-implications` | `/guides/buyer-trust-production-implications` | `website/content/surfaces/guides/buyer-trust-production-implications.md` |
 
-Sync: [`scripts/sync-buyer-authority-surfaces.mjs`](../scripts/sync-buyer-authority-surfaces.mjs) (repo root). Wired in [`website/package.json`](../website/package.json) `prebuild` after epistemic contract sync.
+Sync: [`scripts/sync-buyer-authority-surfaces.mjs`](../scripts/sync-buyer-authority-surfaces.mjs) (repo root). Wired via [`scripts/sync-website-ssot.mjs`](../scripts/sync-website-ssot.mjs) (invoked from [`website/package.json`](../website/package.json) `prebuild` and `test:vitest`).
 
 Fence bodies must include the exact `##` headings required by [`website/__tests__/buyer-authority-surfaces.contract.test.ts`](../website/__tests__/buyer-authority-surfaces.contract.test.ts) once that test exists.
 

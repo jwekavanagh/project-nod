@@ -17,7 +17,19 @@ Open **http://127.0.0.1:3000** (not only `localhost` if your env binds oddly).
 
 **Security, env, webhooks, CSP, and canonical origin contracts:** see **[`docs/website-security-and-operations.md`](../docs/website-security-and-operations.md)**.
 
-Use **`npm run dev`** for day-to-day work. Use **`npm run build` + `npm run start`** only when you need a production-like run.
+Use **`npm run dev`** for day-to-day work. It runs the **Turbopack** dev server (`next dev --turbopack`) for faster cold starts and HMR than the default dev bundler. Production builds use **Webpack** (`next build`, no `--webpack` flag) for stable, predictable serverless output on Vercel.
+
+Use **`npm run build` + `npm run start`** only when you need a production-like run.
+
+## Which CI runs when
+
+| Scenario | Workflow | What runs |
+| -------- | -------- | --------- |
+| **Push/PR changes only under `website/`** (and not ignored paths) | [`.github/workflows/website.yml`](../.github/workflows/website.yml) | Website trust gates: doc claim URLs, `validate-commercial` (Postgres, engine build, website Vitest, pack-smoke, etc.), then `verify:web-marketing-copy` (discovery checks, Next build, Vitest reuse, Playwright + **LHCI**). **No** CodeQL, **no** core `npm run test:ci` / adoption chain. |
+| **Push/PR changes outside the `ci.yml` ignore list** (e.g. `src/`, `test/`, root scripts — but not `website/**`-only) | [`.github/workflows/ci.yml`](../.github/workflows/ci.yml) | CodeQL, core tests + Postgres, **same** commercial + `verify:web-marketing-copy` block as above, then Vercel production on `main`. |
+| **Mixed commit** (e.g. `website/` + `src/`) | Both workflows can run: **`ci.yml`** (full stack + Vercel on `main`) and **`website.yml`** (paths include `website/`) | The **`website.yml` `scope` job** detects non-`website/` files and **skips** the heavy `gates` job (no duplicate `validate-commercial` / `verify:web-marketing-copy`). `ci.yml`’s `commercial` job still runs the same gates. Production deploy: **`ci.yml`** Vercel when `main` is mixed; **`website.yml`** Vercel only when the push is **only** `website/*` and gates pass. |
+
+Production still **does not** auto-deploy on push: `website/vercel.json` keeps `git.deploymentEnabled.main: false`; GitHub Actions promotes with `vercel deploy` after gates pass.
 
 ## If `next build` fails with `EBUSY` (Windows)
 
@@ -36,7 +48,9 @@ Another process is locking `website/.next` (common with **OneDrive** under `OneD
 
 ## Vercel / CI monorepo tracing
 
-**Production** deploys: pushes to `main` no longer auto-deploy (see `vercel.json` `git.deploymentEnabled` for `main`). After the [`.github/workflows/ci.yml`](../.github/workflows/ci.yml) CodeQL, test, and commercial jobs pass, the workflow runs **`npx -y vercel@52 deploy --prod --yes --logs`** from the **repo root** (remote build on Vercel, not `vercel build` on the runner). Do not add `--cwd website` when the Vercel project’s Root Directory is already `website`, or the CLI path becomes `website/website`. Add repo secrets **`VERCEL_TOKEN`**, **`VERCEL_ORG_ID`**, and **`VERCEL_PROJECT_ID`** (from [Vercel’s GitHub Actions guide](https://vercel.com/kb/guide/how-can-i-use-github-actions-with-vercel), same as a local `vercel link` in `website`). If the CLI deploy ever mis-packages the monorepo, use a [Deploy Hook](https://vercel.com/kb/guide/set-up-and-use-deploy-hooks-with-vercel-and-headless-cms) (`curl -X POST …`) as the job instead (build then matches a normal Git push).
+**Install + lockfile:** The Vercel project should use **Root Directory = `website`**. `website/vercel.json` sets **`installCommand`: `cd .. && npm ci`** so installs use the **monorepo root** `package-lock.json` (npm workspaces). That removes the need for `NEXT_IGNORE_INCORRECT_LOCKFILE`. If the Vercel project root is the **repository root** instead, change or remove `installCommand` in the dashboard so installs are not `cd ..` from the wrong place.
+
+**Production** deploys: pushes to `main` no longer auto-deploy (see `vercel.json` `git.deploymentEnabled` for `main`). After the [`.github/workflows/ci.yml`](../.github/workflows/ci.yml) or [`.github/workflows/website.yml`](../.github/workflows/website.yml) trust gates pass, the workflow runs **`npx -y vercel@52 deploy --prod --yes --logs`** from the **repo root** (remote build on Vercel, not `vercel build` on the runner). Do not add `--cwd website` when the Vercel project’s Root Directory is already `website`, or the CLI path becomes `website/website`. Add repo secrets **`VERCEL_TOKEN`**, **`VERCEL_ORG_ID`**, and **`VERCEL_PROJECT_ID`** (from [Vercel’s GitHub Actions guide](https://vercel.com/kb/guide/how-can-i-use-github-actions-with-vercel), same as a local `vercel link` in `website`). If the CLI deploy ever mis-packages the monorepo, use a [Deploy Hook](https://vercel.com/kb/guide/set-up-and-use-deploy-hooks-with-vercel-and-headless-cms) (`curl -X POST …`) as the job instead (build then matches a normal Git push).
 
 Set env **`NEXT_CONFIG_TRACE_ROOT=1`** on the **website** build so `outputFileTracingRoot` includes the repo root (not needed for local `npm run dev`). Vercel’s production build sets **`VERCEL`/`VERCEL_ENV`** as usual; do not rely on a GitHub `VERCEL=1` for production behavior.
 

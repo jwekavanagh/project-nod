@@ -11,6 +11,7 @@ import { loadAccountPageVerificationActivity } from "@/lib/funnelObservabilityQu
 import { loadReliabilitySignalsForUser } from "@/lib/reliabilitySignals";
 import { ReliabilitySignalsView } from "./ReliabilitySignalsView";
 
+/** User session, DB, and Stripe state — must stay fresh per request. */
 export const dynamic = "force-dynamic";
 
 export default async function AccountPage() {

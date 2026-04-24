@@ -5,6 +5,7 @@ import { logFunnelEvent } from "@/lib/funnelEvent";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
+/** Public report by id; DB-backed and noindex — not cacheable as static. */
 export const dynamic = "force-dynamic";
 
 function publicReportsEnabled(): boolean {

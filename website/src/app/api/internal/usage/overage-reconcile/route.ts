@@ -6,6 +6,7 @@ import { getStripe } from "@/lib/stripeServer";
 import { and, eq, inArray, isNotNull, sum } from "drizzle-orm";
 import { NextRequest, NextResponse } from "next/server";
 
+/** Cron-invoked; must not be statically prerendered. */
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
 

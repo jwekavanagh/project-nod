@@ -47,8 +47,9 @@ describe("GitHub Actions AGENTSKEPTIC_TELEMETRY env", () => {
     const doc = loadWorkflow("website.yml");
     const jobs = doc.jobs;
     const ids = Object.keys(jobs).sort();
-    assert.deepEqual(ids, ["build", "should_publish_vercel", "vercel_production"]);
-    assert.equal(jobs.build.env.AGENTSKEPTIC_TELEMETRY, "0");
+    assert.deepEqual(ids, ["gates", "scope", "should_publish_vercel", "vercel_production"]);
+    assert.equal("AGENTSKEPTIC_TELEMETRY" in (jobs.scope.env ?? {}), false);
+    assert.equal(jobs.gates.env.AGENTSKEPTIC_TELEMETRY, "0");
     assert.equal("AGENTSKEPTIC_TELEMETRY" in (jobs.should_publish_vercel.env ?? {}), false);
     assert.equal(jobs.vercel_production.uses, "./.github/workflows/deploy-vercel.yml");
     assert.equal(jobs.vercel_production.with?.agentskeptic_telemetry_zero, true);
