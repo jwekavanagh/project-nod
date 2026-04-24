@@ -1,9 +1,5 @@
 import { describe, expect, it } from "vitest";
-import {
-  DEMO_SCENARIO_IDS,
-  DEMO_SCENARIO_PRESENTATION,
-  type DemoScenarioId,
-} from "@/lib/demoScenarioIds";
+import { DEMO_SCENARIO_IDS, DEMO_SCENARIO_PRESENTATION } from "@/lib/demoScenarios";
 
 describe("DEMO_SCENARIO_PRESENTATION", () => {
   it("has exactly one entry per scenario id with non-empty label and oneLiner", () => {

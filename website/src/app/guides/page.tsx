@@ -121,7 +121,7 @@ export default function GuidesHubPage() {
             </Link>
           </li>
           <li>
-            <Link href="/#try-it" className="guide-hub-link">
+            <Link href="/?demo=wf_missing#try-it" className="guide-hub-link">
               <span className="guide-hub-link-title">{learnHub.tryDemoCtaLabel}</span>
             </Link>
           </li>

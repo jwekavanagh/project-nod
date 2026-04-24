@@ -5,7 +5,7 @@ export type SurfacePrimaryCta = "integrate" | "demo" | "pricing";
 
 const primaryHref: Record<SurfacePrimaryCta, string> = {
   integrate: "/integrate",
-  demo: "/#try-it",
+  demo: "/?demo=wf_missing#try-it",
   pricing: "/pricing",
 };
 
@@ -18,7 +18,7 @@ export function SurfaceProgression({ primaryCta }: Props) {
   const markedHref = primaryHref[primaryCta];
   const items: { href: string; label: string }[] = [
     { href: "/integrate", label: "Integrate" },
-    { href: "/#try-it", label: "Try demo" },
+    { href: "/?demo=wf_missing#try-it", label: "Try demo" },
     { href: "/pricing", label: "Pricing" },
     { href: acquisitionPath, label: "How it works" },
     { href: "/security", label: "Security & Trust" },

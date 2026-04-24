@@ -41,7 +41,7 @@ export function buildSiteHeaderPrimaryLinks(args: {
   return [
     { key: "acquisition", href: acquisitionHref, label: acquisitionLabel, external: false },
     { key: "integrate", href: "/integrate", label: "Get started", external: false },
-    { key: "try", href: "/#try-it", label: "Try the demo", external: false },
+    { key: "try", href: "/?demo=wf_missing#try-it", label: "Try the demo", external: false },
     { key: "guides", href: "/guides", label: "Learn", external: false },
     { key: "problems", href: "/problems", label: "Problems", external: false },
     { key: "compare", href: "/compare", label: "Compare", external: false },

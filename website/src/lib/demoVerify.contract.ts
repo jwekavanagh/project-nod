@@ -1,9 +1,10 @@
 import { z } from "zod";
 import { loadSchemaValidator } from "agentskeptic/schemaLoad";
 import { demoVerifySuccessResponseSchema as demoVerifySuccessResponseShape } from "./demoVerifySuccessResponse.client";
-import { DEMO_SCENARIO_IDS, type DemoScenarioId } from "./demoScenarioIds";
+import { DEMO_SCENARIO_IDS, type DemoScenarioId } from "./demoScenarios";
+import { DEMO_ERROR_CODES } from "./demoVerifyErrorCodes";
 
-export { DEMO_SCENARIO_IDS, type DemoScenarioId };
+export { DEMO_ERROR_CODES, DEMO_SCENARIO_IDS, type DemoScenarioId };
 
 export const demoVerifyRequestSchema = z.object({
   scenarioId: z.enum(DEMO_SCENARIO_IDS),
@@ -32,15 +33,3 @@ export const demoVerifyErrorResponseSchema = z.object({
 });
 
 export type DemoVerifyErrorResponse = z.infer<typeof demoVerifyErrorResponseSchema>;
-
-export const DEMO_ERROR_CODES = {
-  METHOD_NOT_ALLOWED: "DEMO_METHOD_NOT_ALLOWED",
-  UNSUPPORTED_MEDIA_TYPE: "DEMO_UNSUPPORTED_MEDIA_TYPE",
-  INVALID_JSON: "DEMO_INVALID_JSON",
-  VALIDATION_FAILED: "DEMO_VALIDATION_FAILED",
-  FIXTURES_MISSING: "DEMO_FIXTURES_MISSING",
-  /** Temporary maintenance (telemetry write freeze). */
-  UNAVAILABLE: "DEMO_UNAVAILABLE",
-  ENGINE_FAILED: "DEMO_ENGINE_FAILED",
-  RESULT_SCHEMA_MISMATCH: "DEMO_RESULT_SCHEMA_MISMATCH",
-} as const;

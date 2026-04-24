@@ -600,6 +600,8 @@ export const productCopy = {
     scenarioLabel: "Scenario",
     /** Live region (polite) after a successful demo verification run. */
     a11ySuccessAnnouncement: "Verification finished. Human report and JSON are shown below.",
+    copyScenarioLinkButton: "Copy link to this scenario",
+    shareReportButton: "Share report",
   },
 
   /** Account client: activation copy and a11y announcements (keep in sync with AccountClient UI). */

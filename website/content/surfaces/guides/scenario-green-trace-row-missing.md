@@ -17,7 +17,7 @@ When your LangGraph trace lists every step as successful yet the Postgres row yo
 
 ## What to do next
 
-- Scroll the homepage demo at [`/#try-it`](/#try-it) to see the failure-shaped transcript.
+- Scroll the homepage demo at [`/?demo=wf_missing#try-it`](/?demo=wf_missing#try-it) to see the failure-shaped transcript.
 - Run first-run commands on [`/integrate`](/integrate) against your own SQLite or Postgres file.
 - Compare bundled envelopes at [`/examples/wf-missing`](/examples/wf-missing).
 - Read trust boundaries on [`/security`](/security).

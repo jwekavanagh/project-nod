@@ -3,7 +3,7 @@ import {
   loadSchemaValidator,
   buildOutcomeCertificateFromWorkflowResult,
 } from "agentskeptic";
-import type { DemoScenarioId } from "./demoScenarioIds";
+import type { DemoScenarioId } from "./demoScenarios";
 import { DemoFixturesMissingError, resolveRepoExamplesPaths } from "./resolveRepoExamples";
 
 const validateCertificate = loadSchemaValidator("outcome-certificate-v1");
@@ -42,7 +42,8 @@ export async function runDemoVerifyScenario(scenarioId: DemoScenarioId): Promise
       logStep: () => {},
       truthReport: () => {},
     });
-  } catch {
+  } catch (e) {
+    console.error("[demoVerify]", { scenarioId, err: e });
     throw new DemoEngineFailedError();
   }
 

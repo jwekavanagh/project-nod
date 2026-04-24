@@ -11,18 +11,22 @@ import { describe, expect, it } from "vitest";
 const validateCert = loadSchemaValidator("outcome-certificate-v1");
 
 function assertScenarioMatrix(scenarioId: string, c: Record<string, unknown>) {
-  if (scenarioId === "wf_complete") {
-    expect(c.stateRelation).toBe("matches_expectations");
-    expect(c.highStakesReliance).toBe("permitted");
+  const matrix: Record<string, { stateRelation: string; highStakesReliance: string }> = {
+    wf_complete: { stateRelation: "matches_expectations", highStakesReliance: "permitted" },
+    wf_missing: { stateRelation: "does_not_match", highStakesReliance: "prohibited" },
+    wf_partial: { stateRelation: "does_not_match", highStakesReliance: "prohibited" },
+    wf_inconsistent: { stateRelation: "does_not_match", highStakesReliance: "prohibited" },
+    wf_duplicate_rows: { stateRelation: "does_not_match", highStakesReliance: "prohibited" },
+    wf_unknown_tool: { stateRelation: "not_established", highStakesReliance: "prohibited" },
+    wf_dup_seq: { stateRelation: "matches_expectations", highStakesReliance: "permitted" },
+    wf_divergent_retry: { stateRelation: "not_established", highStakesReliance: "prohibited" },
+  };
+  const expected = matrix[scenarioId];
+  if (!expected) {
+    throw new Error(`unhandled scenario in matrix: ${scenarioId}`);
   }
-  if (scenarioId === "wf_missing") {
-    expect(c.stateRelation).toBe("does_not_match");
-    expect(c.highStakesReliance).toBe("prohibited");
-  }
-  if (scenarioId === "wf_inconsistent") {
-    expect(c.stateRelation).toBe("does_not_match");
-    expect(c.highStakesReliance).toBe("prohibited");
-  }
+  expect(c.stateRelation).toBe(expected.stateRelation);
+  expect(c.highStakesReliance).toBe(expected.highStakesReliance);
 }
 
 describe("POST /api/demo/verify", () => {
@@ -53,11 +57,39 @@ describe("POST /api/demo/verify", () => {
     });
   }
 
-  it("GET returns 405", async () => {
-    const res = await GET();
+  it("GET returns 405 with x-request-id", async () => {
+    const res = await GET(
+      new NextRequest("http://localhost/api/demo/verify", { headers: { "x-vercel-id": "vercel-get-1" } }),
+    );
     expect(res.status).toBe(405);
+    expect(res.headers.get("x-request-id")).toBe("vercel-get-1");
     const j = (await res.json()) as { ok: boolean; error: string };
     expect(j).toEqual({ ok: false, error: "DEMO_METHOD_NOT_ALLOWED" });
+  });
+
+  it("sets x-request-id on 200 and echoes x-vercel-id when present", async () => {
+    const req = new NextRequest("http://localhost/api/demo/verify", {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        "x-vercel-id": "vercel-post-xyz",
+      },
+      body: JSON.stringify({ scenarioId: "wf_complete" }),
+    });
+    const res = await POST(req);
+    expect(res.status).toBe(200);
+    expect(res.headers.get("x-request-id")).toBe("vercel-post-xyz");
+  });
+
+  it("sets x-request-id on 400", async () => {
+    const req = new NextRequest("http://localhost/api/demo/verify", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: "{}",
+    });
+    const res = await POST(req);
+    expect(res.status).toBe(400);
+    expect(res.headers.get("x-request-id")).toBeTruthy();
   });
 
   it("rejects non-JSON Content-Type with 415", async () => {

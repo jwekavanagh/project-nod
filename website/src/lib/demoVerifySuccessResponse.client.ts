@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { DEMO_SCENARIO_IDS } from "./demoScenarioIds";
+import { DEMO_SCENARIO_IDS } from "./demoScenarios";
 
 /**
  * Client-safe success body for POST /api/demo/verify (no JSON Schema / fs).

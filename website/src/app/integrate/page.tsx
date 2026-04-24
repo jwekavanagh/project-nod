@@ -104,7 +104,7 @@ export default function IntegratePage() {
       <h2>Next steps</h2>
       <ol>
         <li>
-          <Link href="/#try-it">Try the interactive demo on the homepage</Link> (no account required)
+          <Link href="/?demo=wf_missing#try-it">Try the interactive demo on the homepage</Link> (no account required)
         </li>
         <li>Run the command above on your own data</li>
         <li>

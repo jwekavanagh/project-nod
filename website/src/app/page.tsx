@@ -11,10 +11,17 @@ import {
 } from "@/lib/shareableTerminalFailureExcerpt";
 import { getHomeCommercialSectionFromConfig } from "@/lib/commercialNarrative";
 import { buildHomeTrustStripLinks, openapiHrefFromProcessEnv } from "@/lib/siteChrome";
+import { isDemoScenarioId, type DemoScenarioId } from "@/lib/demoScenarios";
 import Link from "next/link";
-import { Fragment } from "react";
+import { Fragment, Suspense } from "react";
 import { TryItSection } from "./home/TryItSection";
 import { HOME_SECTION_ORDER, type HomeSectionId } from "./page.sections";
+
+function resolveInitialTryItDemo(demo: string | string[] | undefined): DemoScenarioId {
+  const s = Array.isArray(demo) ? demo[0] : demo;
+  if (s && isDemoScenarioId(s)) return s;
+  return "wf_missing";
+}
 
 export const metadata: Metadata = {
   title: marketing.siteDefaultMetadata.title,
@@ -41,7 +48,13 @@ const anchors = {
   bugsUrl: publicProductAnchors.bugsUrl,
 };
 
-export default function HomePage() {
+export default async function HomePage({
+  searchParams,
+}: {
+  searchParams: Promise<{ demo?: string | string[] }>;
+}) {
+  const sp = await searchParams;
+  const tryItInitial = resolveInitialTryItDemo(sp.demo);
   const homeCommercial = getHomeCommercialSectionFromConfig();
   const trustLinks = buildHomeTrustStripLinks({
     anchors,
@@ -72,7 +85,7 @@ export default function HomePage() {
               {productCopy.homeHero.valuePropositionAfterEm}
             </p>
             <p className="home-cta-row" data-testid="home-hero-cta-row">
-              <a className="btn" href="#try-it" data-testid="home-hero-demo-cta">
+              <a className="btn" href="/?demo=wf_missing#try-it" data-testid="home-hero-demo-cta">
                 {productCopy.homeHeroCtaLabels.demo}
               </a>
               <Link
@@ -121,7 +134,9 @@ export default function HomePage() {
             </details>
           </div>
         </div>
-        <TryItSection variant="heroEmbedded" />
+        <Suspense fallback={null}>
+          <TryItSection variant="heroEmbedded" initialScenarioId={tryItInitial} />
+        </Suspense>
       </section>
     ),
     homeWhatCatches: (

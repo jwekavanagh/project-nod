@@ -163,7 +163,7 @@ export default function DatabaseTruthVsTracesPage() {
         <Link className="btn" href={productCopy.homeHeroSecondaryCta.href}>
           {productCopy.homeHeroSecondaryCta.label}
         </Link>{" "}
-        <a className="btn secondary" href="/#try-it" data-testid="acquisition-try-home-demo-cta">
+        <a className="btn secondary" href="/?demo=wf_missing#try-it" data-testid="acquisition-try-home-demo-cta">
           {productCopy.homeHeroCtaLabels.demo}
         </a>
       </div>

@@ -61,7 +61,7 @@ export default function CompareHubPage() {
       <section className="home-section" aria-labelledby="compare-hub-cta-heading">
         <h2 id="compare-hub-cta-heading">Ready to see it in action?</h2>
         <div className="home-cta-row" role="group" aria-label="Try the demo or get started">
-          <a className="btn secondary" href="/#try-it">
+          <a className="btn secondary" href="/?demo=wf_missing#try-it">
             {productCopy.homeHeroCtaLabels.demo}
           </a>
           <Link className="btn" href={productCopy.homeHeroSecondaryCta.href}>

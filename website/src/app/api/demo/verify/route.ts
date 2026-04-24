@@ -10,84 +10,71 @@ import {
 import { logFunnelEvent } from "@/lib/funnelEvent";
 import { DemoFixturesMissingError } from "@/lib/resolveRepoExamples";
 import { telemetryCoreWriteFreezeActive } from "@/lib/telemetryWritesConfig";
+import { randomUUID } from "node:crypto";
 import { NextRequest, NextResponse } from "next/server";
 
 export const runtime = "nodejs";
 
-export async function GET(): Promise<NextResponse> {
-  return NextResponse.json(
-    { ok: false, error: DEMO_ERROR_CODES.METHOD_NOT_ALLOWED },
-    { status: 405 },
-  );
+function requestIdFrom(req: NextRequest): string {
+  return req.headers.get("x-vercel-id") ?? randomUUID();
+}
+
+function jsonWithId(
+  req: NextRequest,
+  data: unknown,
+  status: number,
+): NextResponse {
+  const id = requestIdFrom(req);
+  return NextResponse.json(data, { status, headers: { "x-request-id": id } });
+}
+
+export async function GET(req: NextRequest): Promise<NextResponse> {
+  return jsonWithId(req, { ok: false, error: DEMO_ERROR_CODES.METHOD_NOT_ALLOWED }, 405);
 }
 
 export async function POST(req: NextRequest): Promise<NextResponse> {
   if (telemetryCoreWriteFreezeActive()) {
-    return NextResponse.json(
-      { ok: false, error: DEMO_ERROR_CODES.UNAVAILABLE },
-      { status: 503 },
-    );
+    return jsonWithId(req, { ok: false, error: DEMO_ERROR_CODES.UNAVAILABLE }, 503);
   }
 
   const rawCt = req.headers.get("content-type");
   const ct = rawCt?.toLowerCase() ?? "";
   if (!ct.startsWith("application/json")) {
-    return NextResponse.json(
-      { ok: false, error: DEMO_ERROR_CODES.UNSUPPORTED_MEDIA_TYPE },
-      { status: 415 },
-    );
+    return jsonWithId(req, { ok: false, error: DEMO_ERROR_CODES.UNSUPPORTED_MEDIA_TYPE }, 415);
   }
 
   let jsonBody: unknown;
   try {
     jsonBody = await req.json();
   } catch {
-    return NextResponse.json(
-      { ok: false, error: DEMO_ERROR_CODES.INVALID_JSON },
-      { status: 400 },
-    );
+    return jsonWithId(req, { ok: false, error: DEMO_ERROR_CODES.INVALID_JSON }, 400);
   }
 
   const parsed = demoVerifyRequestSchema.safeParse(jsonBody);
   if (!parsed.success) {
-    return NextResponse.json(
-      { ok: false, error: DEMO_ERROR_CODES.VALIDATION_FAILED },
-      { status: 400 },
-    );
+    return jsonWithId(req, { ok: false, error: DEMO_ERROR_CODES.VALIDATION_FAILED }, 400);
   }
 
   try {
     const out = await runDemoVerifyScenario(parsed.data.scenarioId);
     await logFunnelEvent({ event: "demo_verify_ok" });
-    return NextResponse.json({
+    return jsonWithId(req, {
       ok: true as const,
       scenarioId: out.scenarioId,
       certificate: out.certificate,
       humanReport: out.humanReport,
-    });
+    }, 200);
   } catch (e) {
     if (e instanceof DemoFixturesMissingError) {
-      return NextResponse.json(
-        { ok: false, error: DEMO_ERROR_CODES.FIXTURES_MISSING },
-        { status: 503 },
-      );
+      return jsonWithId(req, { ok: false, error: DEMO_ERROR_CODES.FIXTURES_MISSING }, 503);
     }
     if (e instanceof DemoEngineFailedError) {
-      return NextResponse.json(
-        { ok: false, error: DEMO_ERROR_CODES.ENGINE_FAILED },
-        { status: 500 },
-      );
+      return jsonWithId(req, { ok: false, error: DEMO_ERROR_CODES.ENGINE_FAILED }, 500);
     }
     if (e instanceof DemoResultSchemaMismatchError) {
-      return NextResponse.json(
-        { ok: false, error: DEMO_ERROR_CODES.RESULT_SCHEMA_MISMATCH },
-        { status: 500 },
-      );
+      return jsonWithId(req, { ok: false, error: DEMO_ERROR_CODES.RESULT_SCHEMA_MISMATCH }, 500);
     }
     console.error("[api/demo/verify] unexpected error", e);
-    return NextResponse.json(
-      { ok: false, error: DEMO_ERROR_CODES.ENGINE_FAILED },
-      { status: 500 },
-    );
+    return jsonWithId(req, { ok: false, error: DEMO_ERROR_CODES.ENGINE_FAILED }, 500);
   }
 }
