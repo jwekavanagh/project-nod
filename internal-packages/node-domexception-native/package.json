@@ -1,0 +1,17 @@
+{
+  "name": "node-domexception-native",
+  "version": "0.0.0",
+  "description": "Re-exports the platform DOMException. Used in overrides to avoid the deprecated `node-domexception` npm package.",
+  "type": "module",
+  "exports": {
+    ".": {
+      "import": "./index.mjs",
+      "require": "./index.cjs"
+    }
+  },
+  "main": "./index.cjs",
+  "license": "MIT",
+  "engines": {
+    "node": ">=18"
+  }
+}
