@@ -110,9 +110,15 @@ async function startInternal(): Promise<void> {
       stdio: "inherit",
       shell: true,
     });
+    // `next build` sets NODE_ENV=production while loading `next.config.ts`, which calls
+    // `assertNextPublicOriginParity()`. Any drift vs `config/marketing.json` (or Vitest env)
+    // then fails the build with exit 1 and no useful Vitest capture under stdio:inherit.
+    // Vercel preview skips that assert (see `public-origin-parity.test.ts`); use the same
+    // for this subprocess only. `next start` below still uses `process.env` with VERCEL_ENV=production.
+    const buildPeWebsite = { ...buildPe, VERCEL_ENV: "preview" };
     execSync("npm run build", {
       cwd: websiteDir,
-      env: buildPe,
+      env: buildPeWebsite,
       stdio: "inherit",
       shell: true,
     });
