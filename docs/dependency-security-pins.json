@@ -28,7 +28,11 @@
       "lockfile": "root",
       "package": "esbuild",
       "match": "lockKeysExact",
-      "lockKeys": ["node_modules/esbuild", "website/node_modules/esbuild"],
+      "lockKeys": [
+        "node_modules/esbuild",
+        "website/node_modules/esbuild",
+        "node_modules/@esbuild-kit/core-utils/node_modules/esbuild"
+      ],
       "exactVersion": "0.25.12"
     },
     { "lockfile": "root", "package": "tmp", "match": "everyInstanceExact", "exactVersion": "0.2.4" },

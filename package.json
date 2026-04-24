@@ -69,7 +69,8 @@
     "first-run-verify": "node scripts/partner-quickstart-verify.mjs",
     "generate:langgraph-guide-embed": "node scripts/embed/generate-langgraph-guide-embed.mjs",
     "release:dry": "semantic-release --dry-run",
-    "prepare": "husky"
+    "lock:align-esbuild-nested": "node scripts/align-esbuild-kit-lock-nested.mjs",
+    "prepare": "npx --yes patch-package@8.0.1 && husky"
   },
   "engines": {
     "node": "22.x"

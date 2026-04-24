@@ -1,2 +1,7 @@
-# Use the repo devDependency: bare `commitlint` resolves a different top-level package on the registry.
-npx --no -- @commitlint/cli --no-color --edit "$1"
+# Use the repo devDependency. Resolve repo root: IDEs may run this hook with a cwd that is
+# not the project root, so npx would not see node_modules and `npx --no` would fail without a YES option.
+root="$(git rev-parse --show-toplevel)" || exit 1
+cd "$root" || exit 1
+cli="$root/node_modules/@commitlint/cli/cli.js"
+[ -f "$cli" ] || { echo "commit-msg: $cli missing — run npm install at repo root" >&2; exit 1; }
+exec node "$cli" --no-color --edit "$1"

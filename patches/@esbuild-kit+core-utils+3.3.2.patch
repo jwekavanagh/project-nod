@@ -1,0 +1,12 @@
+diff --git a/node_modules/@esbuild-kit/core-utils/package.json b/node_modules/@esbuild-kit/core-utils/package.json
+index 0000000..0000000 100644
+--- a/node_modules/@esbuild-kit/core-utils/package.json
++++ b/node_modules/@esbuild-kit/core-utils/package.json
+@@ -27,6 +27,6 @@
+   },
+   "dependencies": {
+-    "esbuild": "~0.18.20",
++    "esbuild": "0.25.12",
+     "source-map-support": "^0.5.21"
+   }
+ }
