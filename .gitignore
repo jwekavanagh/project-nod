@@ -2,6 +2,7 @@ node_modules/
 dist/
 src/generated/
 website/.next/
+website/.vercel/
 
 # Playwright default output directory (local/CI)
 test-results/

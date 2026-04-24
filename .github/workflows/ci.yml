@@ -126,3 +126,32 @@ jobs:
         run: npx playwright install chromium
       - name: Verify web marketing copy contract
         run: npm run verify:web-marketing-copy
+
+  # After CodeQL, core tests, and commercial gates are green, promote to Vercel production.
+  # `website/vercel.json` disables auto-deploys for `main` so a push alone does not ship.
+  vercel_production:
+    name: Vercel production
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: [codeql, test, commercial]
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    # Same defaults as a Vercel cloud build (see website/next.config.ts outputFileTracingRoot).
+    env:
+      VERCEL: "1"
+      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+    steps:
+      - uses: actions/checkout@v5
+      - uses: ./.github/actions/setup-node-npm
+      - name: Install Vercel CLI
+        run: npm install -g vercel@latest
+      - name: Pull Vercel env (production)
+        working-directory: website
+        run: vercel pull --yes --environment=production
+      - name: Build prebuilt output
+        working-directory: website
+        run: vercel build --prod
+      - name: Deploy prebuilt to production
+        working-directory: website
+        run: vercel deploy --prebuilt --prod

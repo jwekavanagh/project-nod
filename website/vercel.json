@@ -1,7 +1,13 @@
 {
+  "$schema": "https://openapi.vercel.sh/vercel.json",
   "build": {
     "env": {
       "NEXT_IGNORE_INCORRECT_LOCKFILE": "1"
+    }
+  },
+  "git": {
+    "deploymentEnabled": {
+      "main": false
     }
   },
   "crons": [

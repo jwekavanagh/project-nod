@@ -36,7 +36,9 @@ Another process is locking `website/.next` (common with **OneDrive** under `OneD
 
 ## Vercel / CI monorepo tracing
 
-Set env **`NEXT_CONFIG_TRACE_ROOT=1`** on the **website** build so `outputFileTracingRoot` includes the repo root (not needed for local `npm run dev`).
+**Production** deploys: pushes to `main` no longer auto-deploy (see `vercel.json` `git.deploymentEnabled` for `main`). After the [`.github/workflows/ci.yml`](../.github/workflows/ci.yml) CodeQL, test, and commercial jobs pass, the workflow runs **`vercel pull` / `vercel build --prod` / `vercel deploy --prebuilt --prod`** from `website/`. Add repo secrets **`VERCEL_TOKEN`**, **`VERCEL_ORG_ID`**, and **`VERCEL_PROJECT_ID`** (from [Vercel’s GitHub Actions guide](https://vercel.com/kb/guide/how-can-i-use-github-actions-with-vercel), same as a local `vercel link` in `website`).
+
+Set env **`NEXT_CONFIG_TRACE_ROOT=1`** on the **website** build so `outputFileTracingRoot` includes the repo root (not needed for local `npm run dev`). GitHub Actions sets **`VERCEL=1`** for the deploy job so the same tracing behavior applies to `vercel build` there.
 
 ## Engine build, demo API, and fixtures
 
