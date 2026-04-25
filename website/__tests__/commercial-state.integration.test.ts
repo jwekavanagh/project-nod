@@ -2,10 +2,9 @@ import { GET as getCommercialState } from "@/app/api/account/commercial-state/ro
 import { db } from "@/db/client";
 import { users } from "@/db/schema";
 import type { CommercialAccountStatePayload } from "@/lib/commercialAccountState";
-import { eq, sql } from "drizzle-orm";
 import { NextRequest } from "next/server";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { assertPostgresUrlsSafeForTruncate } from "./helpers/assertDestructivePostgresUrlsForTests";
+import { truncateCoreCommercialDb } from "./helpers/truncateCommercialFixture";
 
 vi.mock("@/auth", () => ({
   auth: vi.fn(),
@@ -28,11 +27,8 @@ const hasDatabaseUrl = Boolean(process.env.DATABASE_URL?.trim());
 
 describe.skipIf(!hasDatabaseUrl)("GET /api/account/commercial-state", () => {
   beforeEach(async () => {
-    assertPostgresUrlsSafeForTruncate("commercial-state.integration");
     authMock.mockReset();
-    await db.execute(sql`
-      TRUNCATE oss_claim_ticket, oss_claim_rate_limit_counter, verify_outcome_beacon, funnel_event, stripe_event, usage_reservation, usage_counter, api_key, session, account, "verificationToken", "user" RESTART IDENTITY CASCADE
-    `);
+    await truncateCoreCommercialDb("commercial-state.integration");
   });
 
   afterEach(() => {

@@ -2,11 +2,11 @@ import { POST as postStripeWebhook } from "@/app/api/webhooks/stripe/route";
 import { db } from "@/db/client";
 import { stripeEvents, users } from "@/db/schema";
 import * as webhookSide from "@/lib/applyStripeWebhookDbSide";
-import { eq, sql } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import { NextRequest } from "next/server";
 import type Stripe from "stripe";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { assertPostgresUrlsSafeForTruncate } from "./helpers/assertDestructivePostgresUrlsForTests";
+import { truncateCoreCommercialDb } from "./helpers/truncateCommercialFixture";
 
 vi.mock("@/lib/stripeServer", () => ({
   getStripe: vi.fn(),
@@ -18,10 +18,7 @@ const hasDatabaseUrl = Boolean(process.env.DATABASE_URL?.trim());
 
 describe.skipIf(!hasDatabaseUrl)("stripe webhook integration", () => {
   async function truncateStripeAndUsers(): Promise<void> {
-    assertPostgresUrlsSafeForTruncate("stripe-webhook.integration");
-    await db.execute(sql`
-      TRUNCATE stripe_event, funnel_event, "user" RESTART IDENTITY CASCADE
-    `);
+    await truncateCoreCommercialDb("stripe-webhook.integration");
   }
 
   beforeEach(async () => {

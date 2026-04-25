@@ -1,4 +1,4 @@
-import { and, eq } from "drizzle-orm";
+import { and, eq, isNull } from "drizzle-orm";
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { db } from "@/db/client";
@@ -13,7 +13,7 @@ export async function POST(): Promise<NextResponse> {
   const updated = await db
     .update(apiKeys)
     .set({ revokedAt: new Date() })
-    .where(and(eq(apiKeys.userId, session.user.id), eq(apiKeys.revokedAt, null)))
+    .where(and(eq(apiKeys.userId, session.user.id), isNull(apiKeys.revokedAt)))
     .returning({ id: apiKeys.id });
 
   return NextResponse.json({

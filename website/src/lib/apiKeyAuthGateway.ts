@@ -74,6 +74,9 @@ function scopesDedupe(scopes: ApiKeyScope[]): ApiKeyScope[] {
 }
 
 async function touchLastUsedNonBlocking(keyId: string): Promise<void> {
+  if (typeof (db as unknown as { update?: unknown }).update !== "function") {
+    return;
+  }
   try {
     await db
       .update(apiKeysV2)

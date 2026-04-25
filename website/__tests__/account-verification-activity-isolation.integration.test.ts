@@ -2,18 +2,14 @@ import { db } from "@/db/client";
 import { funnelEvents, users } from "@/db/schema";
 import { buildLicensedVerifyOutcomeMetadata } from "@/lib/funnelCommercialMetadata";
 import { loadAccountPageVerificationActivity } from "@/lib/funnelObservabilityQueries";
-import { sql } from "drizzle-orm";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { assertPostgresUrlsSafeForTruncate } from "./helpers/assertDestructivePostgresUrlsForTests";
+import { truncateCoreCommercialDb } from "./helpers/truncateCommercialFixture";
 
 const hasDatabaseUrl = Boolean(process.env.DATABASE_URL?.trim());
 
 describe.skipIf(!hasDatabaseUrl)("loadAccountPageVerificationActivity (integration)", () => {
   beforeEach(async () => {
-    assertPostgresUrlsSafeForTruncate("account-verification-activity-isolation.integration");
-    await db.execute(sql`
-      TRUNCATE oss_claim_ticket, oss_claim_rate_limit_counter, verify_outcome_beacon, funnel_event, stripe_event, usage_reservation, usage_counter, api_key, session, account, "verificationToken", "user" RESTART IDENTITY CASCADE
-    `);
+    await truncateCoreCommercialDb("account-verification-activity-isolation.integration");
   });
 
   afterEach(() => {

@@ -5,9 +5,9 @@ import {
   STRIPE_CUSTOMER_MISSING_ERROR,
   STRIPE_CUSTOMER_MISSING_MESSAGE,
 } from "@/lib/billingPortalConstants";
-import { eq, sql } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { assertPostgresUrlsSafeForTruncate } from "./helpers/assertDestructivePostgresUrlsForTests";
+import { truncateCoreCommercialDb } from "./helpers/truncateCommercialFixture";
 
 const { portalCreate } = vi.hoisted(() => ({
   portalCreate: vi.fn(),
@@ -36,12 +36,9 @@ const hasDatabaseUrl = Boolean(process.env.DATABASE_URL?.trim());
 
 describe.skipIf(!hasDatabaseUrl)("POST /api/account/billing-portal", () => {
   beforeEach(async () => {
-    assertPostgresUrlsSafeForTruncate("billing-portal.route.integration");
     authMock.mockReset();
     portalCreate.mockReset();
-    await db.execute(sql`
-      TRUNCATE oss_claim_ticket, oss_claim_rate_limit_counter, verify_outcome_beacon, funnel_event, stripe_event, usage_reservation, usage_counter, api_key, session, account, "verificationToken", "user" RESTART IDENTITY CASCADE
-    `);
+    await truncateCoreCommercialDb("billing-portal.route.integration");
   });
 
   afterEach(() => {

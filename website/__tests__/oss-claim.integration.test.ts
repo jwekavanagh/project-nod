@@ -18,14 +18,14 @@ import {
   OSS_CLAIM_TICKET_IP_CAP,
 } from "@/lib/ossClaimRateLimits";
 import { OSS_CLAIM_TICKET_TTL_MS } from "@/lib/ossClaimTicketTtl";
-import { eq, sql } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import { randomBytes } from "node:crypto";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { NextRequest } from "next/server";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { assertPostgresUrlsSafeForTruncate } from "./helpers/assertDestructivePostgresUrlsForTests";
+import { truncateCoreCommercialDb } from "./helpers/truncateCommercialFixture";
 
 vi.mock("@/auth", () => ({
   auth: vi.fn(),
@@ -124,10 +124,7 @@ function newClaimSecret(): string {
 describe.skipIf(!hasDatabaseUrl)("OSS claim ticket + handoff + redeem", () => {
   beforeEach(async () => {
     vi.stubEnv("NEXT_PUBLIC_APP_URL", "http://127.0.0.1:3000");
-    assertPostgresUrlsSafeForTruncate("oss-claim.integration");
-    await db.execute(sql`
-      TRUNCATE oss_claim_ticket, oss_claim_rate_limit_counter, verify_outcome_beacon, funnel_event, stripe_event, usage_reservation, usage_counter, api_key, session, account, "verificationToken", "user" RESTART IDENTITY CASCADE
-    `);
+    await truncateCoreCommercialDb("oss-claim.integration");
     authMock.mockReset();
   });
 

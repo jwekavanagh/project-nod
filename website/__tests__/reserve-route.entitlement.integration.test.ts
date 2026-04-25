@@ -56,6 +56,11 @@ vi.mock("@/db/client", () => ({
     insert: () => ({
       values: () => Promise.resolve(undefined),
     }),
+    update: () => ({
+      set: () => ({
+        where: () => Promise.resolve(undefined),
+      }),
+    }),
     select: () => ({
       from: () => ({
         innerJoin: () => ({

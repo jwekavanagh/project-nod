@@ -5,10 +5,10 @@ import { db } from "@/db/client";
 import { funnelEvents, users } from "@/db/schema";
 import { buildReserveAllowedMetadata } from "@/lib/funnelCommercialMetadata";
 import { countDistinctReserveDaysForUser } from "@/lib/funnelObservabilityQueries";
-import { eq, sql } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import { NextRequest } from "next/server";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { assertPostgresUrlsSafeForTruncate } from "./helpers/assertDestructivePostgresUrlsForTests";
+import { truncateCoreCommercialDb } from "./helpers/truncateCommercialFixture";
 
 vi.mock("@/auth", () => ({
   auth: vi.fn(),
@@ -35,15 +35,8 @@ const authMock = auth as unknown as AuthMock;
 const hasDatabaseUrl = Boolean(process.env.DATABASE_URL?.trim());
 
 describe.skipIf(!hasDatabaseUrl)("funnel observability chain", () => {
-  async function truncateAll(): Promise<void> {
-    assertPostgresUrlsSafeForTruncate("funnel-observability-chain.integration");
-    await db.execute(sql`
-    TRUNCATE oss_claim_ticket, oss_claim_rate_limit_counter, verify_outcome_beacon, funnel_event, stripe_event, usage_reservation, usage_counter, api_key, session, account, "verificationToken", "user" RESTART IDENTITY CASCADE
-  `);
-  }
-
   beforeEach(async () => {
-    await truncateAll();
+    await truncateCoreCommercialDb("funnel-observability-chain.integration");
     authMock.mockReset();
     vi.mocked(getStripe).mockReset();
   });

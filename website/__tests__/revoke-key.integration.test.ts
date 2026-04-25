@@ -3,10 +3,9 @@ import { POST as postRevokeKey } from "@/app/api/account/revoke-key/route";
 import { POST as postReserve } from "@/app/api/v1/usage/reserve/route";
 import { db } from "@/db/client";
 import { users } from "@/db/schema";
-import { eq, sql } from "drizzle-orm";
 import { NextRequest } from "next/server";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { assertPostgresUrlsSafeForTruncate } from "./helpers/assertDestructivePostgresUrlsForTests";
+import { truncateCoreCommercialDb } from "./helpers/truncateCommercialFixture";
 
 vi.mock("@/auth", () => ({
   auth: vi.fn(),
@@ -21,10 +20,7 @@ const hasDatabaseUrl = Boolean(process.env.DATABASE_URL?.trim());
 
 describe.skipIf(!hasDatabaseUrl)("revoke-key integration", () => {
   beforeEach(async () => {
-    assertPostgresUrlsSafeForTruncate("revoke-key.integration");
-    await db.execute(sql`
-      TRUNCATE oss_claim_ticket, oss_claim_rate_limit_counter, verify_outcome_beacon, funnel_event, stripe_event, usage_reservation, usage_counter, api_key, session, account, "verificationToken", "user" RESTART IDENTITY CASCADE
-    `);
+    await truncateCoreCommercialDb("revoke-key.integration");
     authMock.mockReset();
   });
 
