@@ -80,7 +80,7 @@
     "docs:check:capabilities": "node scripts/generate-capability-docs.mjs --check",
     "release:dry": "semantic-release --dry-run",
     "lock:align-esbuild-nested": "node scripts/align-esbuild-kit-lock-nested.mjs",
-    "prepare": "npx --yes patch-package@8.0.1 && husky"
+    "prepare": "npx --yes patch-package@8.0.1 && node scripts/patch-lhci-punycode.mjs && husky"
   },
   "engines": {
     "node": "22.x || 24.x"
