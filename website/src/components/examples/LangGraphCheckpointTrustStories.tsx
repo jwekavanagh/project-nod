@@ -8,14 +8,16 @@ import dCert from "@/content/embeddedReports/langgraph-lct-d-incomplete.v1.json"
 import { VerificationReportView } from "@/components/VerificationReportView";
 import type { PublicReportEnvelope } from "@/lib/publicVerificationReportService";
 
-const STORIES: { id: "a2" | "b" | "c" | "d"; label: string; cert: typeof bCert; testId: string }[] = [
-  { id: "a2", label: "A2 Ineligible", cert: a2Cert as typeof bCert, testId: "langgraph-lct-tab-a2" },
-  { id: "b", label: "B Verified", cert: bCert as typeof bCert, testId: "langgraph-lct-tab-b" },
-  { id: "c", label: "C Mismatch", cert: cCert as typeof bCert, testId: "langgraph-lct-tab-c" },
-  { id: "d", label: "D Incomplete", cert: dCert as typeof bCert, testId: "langgraph-lct-tab-d" },
+type LctCert = typeof a2Cert | typeof bCert | typeof cCert | typeof dCert;
+
+const STORIES: { id: "a2" | "b" | "c" | "d"; label: string; cert: LctCert; testId: string }[] = [
+  { id: "a2", label: "A2 Ineligible", cert: a2Cert, testId: "langgraph-lct-tab-a2" },
+  { id: "b", label: "B Verified", cert: bCert, testId: "langgraph-lct-tab-b" },
+  { id: "c", label: "C Mismatch", cert: cCert, testId: "langgraph-lct-tab-c" },
+  { id: "d", label: "D Incomplete", cert: dCert, testId: "langgraph-lct-tab-d" },
 ];
 
-function toV2Envelope(cert: typeof bCert): PublicReportEnvelope {
+function toV2Envelope(cert: LctCert): PublicReportEnvelope {
   return {
     schemaVersion: 2,
     certificate: cert as unknown as Record<string, unknown>,
@@ -25,7 +27,7 @@ function toV2Envelope(cert: typeof bCert): PublicReportEnvelope {
 export function LangGraphCheckpointTrustStories() {
   const [active, setActive] = useState<(typeof STORIES)[0]["id"]>("a2");
   const story = STORIES.find((s) => s.id === active) ?? STORIES[0]!;
-  const humanText = typeof story.cert.humanReport === "string" ? story.cert.humanReport : "";
+  const humanText = "humanReport" in story.cert && typeof story.cert.humanReport === "string" ? story.cert.humanReport : "";
 
   return (
     <div className="home-section" data-testid="langgraph-lct-stories">

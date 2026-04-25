@@ -2,10 +2,11 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
-from typing import Any, cast
+from typing import Any, TYPE_CHECKING, cast
 
 import jsonschema
-import psycopg  # type: ignore[import-untyped]
+if TYPE_CHECKING:
+    import psycopg
 
 from agentskeptic.kernel.aggregate import aggregate_workflow
 from agentskeptic.kernel.event_sequence import analyze_event_sequence_integrity
@@ -41,7 +42,7 @@ def _verify_tool_observed_step_postgres(
     workflow_id: str,
     ev: ToolObservedEvent,
     registry: dict[str, dict[str, Any]],
-    conn: psycopg.Connection,
+    conn: "psycopg.Connection",
     verification_policy: dict[str, Any],
     repeat_observation_count: int = 1,
 ) -> dict[str, Any]:
@@ -105,7 +106,7 @@ def _run_logical_steps_verification_postgres(
     workflow_id: str,
     events: list[ToolObservedEvent],
     registry: dict[str, dict[str, Any]],
-    conn: psycopg.Connection,
+    conn: "psycopg.Connection",
     verification_policy: dict[str, Any],
 ) -> list[dict[str, Any]]:
     plans = plan_logical_steps(events)
@@ -137,6 +138,11 @@ def verify_run_state_from_buffered_events_postgres(
     run_level_reasons: list[dict[str, Any]],
     project_root: str | Path | None = None,
 ) -> dict[str, Any]:
+    try:
+        import psycopg  # type: ignore[import-untyped]
+    except ImportError as e:  # pragma: no cover
+        raise ImportError("PostgreSQL support requires: pip install 'agentskeptic[postgres]'") from e
+
     _ = project_root
     reg_path = Path(registry_path)
     raw = json.loads(reg_path.read_text(encoding="utf8"))

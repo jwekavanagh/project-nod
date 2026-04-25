@@ -26,10 +26,9 @@ def build_select_by_identity_sql_postgres(req: VerificationRequestSqlRow) -> tup
     table = _quote_ident(req["table"])
     conds: list[str] = []
     values: list[str] = []
-    p = 1
     for pair in req["identityEq"]:
-        conds.append(f"{table}.{_quote_ident(pair['column'])} = ${p}")
-        p += 1
+        # psycopg uses `%s` placeholders (not `$1`, `$2`).
+        conds.append(f"{table}.{_quote_ident(pair['column'])} = %s")
         values.append(str(pair["value"]))
     text = f"SELECT * FROM {table} WHERE {' AND '.join(conds)} LIMIT 2"
     return text, values
