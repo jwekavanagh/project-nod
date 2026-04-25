@@ -54,6 +54,12 @@ export const SQL_VERIFICATION_PHRASES: Record<
   HTTP_WITNESS_NETWORK_ERROR: "HTTP witness request failed (network, TLS, or timeout).",
   MONGO_DOCUMENT_MISSING: "No MongoDB document matched the declared filter.",
   MONGO_VALUE_MISMATCH: "A required field on the MongoDB document did not match.",
+  BOUNDED_WINDOW_EXPIRED_WITHOUT_OBSERVATION:
+    "No sufficiently fresh observation was found before the bounded verification window expired.",
+  BOUNDED_MODE_UNSUPPORTED_FOR_CONNECTOR:
+    "Bounded consistency mode is not supported for this connector due to missing timestamp evidence.",
+  CONNECTOR_UNSUPPORTED_IN_SCOPE:
+    "This connector behavior is intentionally out of supported scope in the current release.",
 };
 
 /** Registry resolver failures — short explanations for operators. */

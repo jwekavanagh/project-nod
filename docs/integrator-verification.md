@@ -87,10 +87,37 @@ Otherwise the run is **ineligible**: **no SQL** and **no database connection** (
 
 - **Engineer / integrator:** start with **`examples/python-verification/`**, **`python/README.md`**, and **`python/FRAMEWORK_LOCK.md`**.  
 - **Operator:** partner automation remains **`npm run partner-quickstart`** (see generated commands doc).  
-- **Reviewer / security:** grep gates — no **`subprocess`** in `python/src/agentskeptic/**`; parity goldens under **`python/tests/parity_vectors/`**; kernel port map **`python/KERNEL_PORT_MAP.md`**.
+- **Reviewer / security:** grep gates — no **`subprocess`** in `python/src/agentskeptic/**`; cross-runtime conformance artifacts under **`artifacts/conformance/`**; kernel port map **`python/KERNEL_PORT_MAP.md`**.
 
 ## Related SSOT
 
 - LangGraph **documentation** boundaries (authority matrix): [`langgraph-reference-boundaries.md`](langgraph-reference-boundaries.md)  
 - Decision gate vs batch: [`decision-gate.md`](decision-gate.md)  
 - Outcome Certificate fields: [`outcome-certificate-normative.md`](outcome-certificate-normative.md)
+
+<!-- GENERATED_CAPABILITY_MATRIX_START -->
+
+## Generated Capability Matrix
+
+| Behavior | Capability | TS | Python |
+| --- | --- | --- | --- |
+| `bigquery.sql_row.strong` | `unsupported` | `supported` | `supported` |
+| `http_witness.strong` | `supported` | `supported` | `supported` |
+| `mongo_document.strong` | `supported` | `supported` | `supported` |
+| `mysql.sql_row.strong` | `unsupported` | `supported` | `supported` |
+| `object_storage_object.strong` | `supported` | `supported` | `supported` |
+| `postgres.sql_effects.eventual` | `supported` | `supported` | `supported` |
+| `postgres.sql_effects.strong` | `supported` | `supported` | `supported` |
+| `postgres.sql_relational.strong` | `supported` | `supported` | `supported` |
+| `postgres.sql_row_absent.strong` | `supported` | `supported` | `supported` |
+| `postgres.sql_row.bounded` | `supported` | `supported` | `supported` |
+| `postgres.sql_row.eventual` | `supported` | `supported` | `supported` |
+| `postgres.sql_row.strong` | `supported` | `supported` | `supported` |
+| `sqlite.sql_row_absent.strong` | `supported` | `supported` | `supported` |
+| `sqlite.sql_row.bounded` | `unsupported` | `supported` | `supported` |
+| `sqlite.sql_row.eventual` | `supported` | `supported` | `supported` |
+| `sqlite.sql_row.strong` | `supported` | `supported` | `supported` |
+| `sqlserver.sql_row.strong` | `unsupported` | `supported` | `supported` |
+| `vector_document.strong` | `supported` | `supported` | `supported` |
+
+<!-- GENERATED_CAPABILITY_MATRIX_END -->

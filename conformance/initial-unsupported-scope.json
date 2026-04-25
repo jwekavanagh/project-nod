@@ -1,0 +1,19 @@
+{
+  "unsupportedBehaviorIds": [
+    "sqlite.sql_row.bounded",
+    "sqlite.sql_row_absent.eventual",
+    "sqlite.sql_row_absent.bounded",
+    "postgres.sql_row_absent.eventual",
+    "postgres.sql_row_absent.bounded",
+    "postgres.sql_effects.bounded",
+    "postgres.sql_relational.eventual",
+    "postgres.sql_relational.bounded",
+    "http_witness.eventual",
+    "vector_document.eventual",
+    "mongo_document.eventual",
+    "object_storage_object.eventual",
+    "mysql.sql_row.strong",
+    "sqlserver.sql_row.strong",
+    "bigquery.sql_row.strong"
+  ]
+}

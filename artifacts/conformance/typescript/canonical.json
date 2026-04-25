@@ -1,0 +1,852 @@
+{
+  "runtime": "typescript",
+  "results": [
+    {
+      "scenarioId": "sql.sqlite.sql_row.strong.verified.basic",
+      "connector": "sqlite",
+      "mode": "strong",
+      "supportedBehaviorId": "sqlite.sql_row.strong",
+      "outcome": {
+        "status": "verified",
+        "reasonCodes": [],
+        "failureDiagnostic": null,
+        "evidence": {
+          "attempts": 1
+        }
+      },
+      "parityHash": "66d629e9da1e51039f7220017b6720fb1c80b3426e4ee119d0d083c7c8f47e7b"
+    },
+    {
+      "scenarioId": "sql.sqlite.sql_row.strong.missing.basic",
+      "connector": "sqlite",
+      "mode": "strong",
+      "supportedBehaviorId": "sqlite.sql_row.strong",
+      "outcome": {
+        "status": "missing",
+        "reasonCodes": [
+          "ROW_ABSENT"
+        ],
+        "failureDiagnostic": "verification_setup",
+        "evidence": {
+          "attempts": 1
+        }
+      },
+      "parityHash": "51659e0a886032cbe37c37f39dceeae1b049ae504ddcdb36306105058c834f32"
+    },
+    {
+      "scenarioId": "sql.sqlite.sql_row.strong.inconsistent.value_mismatch",
+      "connector": "sqlite",
+      "mode": "strong",
+      "supportedBehaviorId": "sqlite.sql_row.strong",
+      "outcome": {
+        "status": "inconsistent",
+        "reasonCodes": [
+          "VALUE_MISMATCH"
+        ],
+        "failureDiagnostic": "verification_setup",
+        "evidence": {
+          "field": "status"
+        }
+      },
+      "parityHash": "730509440ad9aaa44e82e7042f5b37d69fe2573269448ce212a65e2336f6c4e0"
+    },
+    {
+      "scenarioId": "sql.sqlite.sql_row.strong.degraded.connector_error",
+      "connector": "sqlite",
+      "mode": "strong",
+      "supportedBehaviorId": "sqlite.sql_row.strong",
+      "outcome": {
+        "status": "incomplete_verification",
+        "reasonCodes": [
+          "CONNECTOR_ERROR"
+        ],
+        "failureDiagnostic": "verification_setup",
+        "evidence": {
+          "error": true
+        }
+      },
+      "parityHash": "6fb9e3a8d56c42f9346fa74f015ad1ce7a3b0f6c466840463449b874e75dabbf"
+    },
+    {
+      "scenarioId": "sql.sqlite.sql_row.eventual.verified.after_retry",
+      "connector": "sqlite",
+      "mode": "eventual",
+      "supportedBehaviorId": "sqlite.sql_row.eventual",
+      "outcome": {
+        "status": "verified",
+        "reasonCodes": [],
+        "failureDiagnostic": null,
+        "evidence": {
+          "attempts": 2
+        }
+      },
+      "parityHash": "68fc97fc400e48d7b214160a1932ec201c6c39a1f4ebc313a61577e928121bc0"
+    },
+    {
+      "scenarioId": "sql.sqlite.sql_row.eventual.inconsistent.after_retry",
+      "connector": "sqlite",
+      "mode": "eventual",
+      "supportedBehaviorId": "sqlite.sql_row.eventual",
+      "outcome": {
+        "status": "inconsistent",
+        "reasonCodes": [
+          "VALUE_MISMATCH"
+        ],
+        "failureDiagnostic": "verification_setup",
+        "evidence": {
+          "attempts": 2
+        }
+      },
+      "parityHash": "9c4813678f244f9630c5cb288b1b7f607d39bb5cfb6c20a49a3d5f62dc60bcc4"
+    },
+    {
+      "scenarioId": "sql.sqlite.sql_row.eventual.uncertain.timeout_missing",
+      "connector": "sqlite",
+      "mode": "eventual",
+      "supportedBehaviorId": "sqlite.sql_row.eventual",
+      "outcome": {
+        "status": "uncertain",
+        "reasonCodes": [
+          "ROW_NOT_OBSERVED_WITHIN_WINDOW"
+        ],
+        "failureDiagnostic": "verification_setup",
+        "evidence": {
+          "attempts": 2,
+          "verificationWindowMs": 200,
+          "pollIntervalMs": 50
+        }
+      },
+      "parityHash": "38423a0ea43b411bae5a062415dc307d649cb9c311edad68307ef21a17153431"
+    },
+    {
+      "scenarioId": "sql.sqlite.sql_row_absent.strong.verified.absent",
+      "connector": "sqlite",
+      "mode": "strong",
+      "supportedBehaviorId": "sqlite.sql_row_absent.strong",
+      "outcome": {
+        "status": "verified",
+        "reasonCodes": [],
+        "failureDiagnostic": null,
+        "evidence": {
+          "matchedRowCount": 0
+        }
+      },
+      "parityHash": "b32972d40818805136425bb7cb988985cdbcd6292a0167ad8f8df73191f52b72"
+    },
+    {
+      "scenarioId": "sql.sqlite.sql_row_absent.strong.inconsistent.present",
+      "connector": "sqlite",
+      "mode": "strong",
+      "supportedBehaviorId": "sqlite.sql_row_absent.strong",
+      "outcome": {
+        "status": "inconsistent",
+        "reasonCodes": [
+          "ROW_PRESENT_WHEN_FORBIDDEN"
+        ],
+        "failureDiagnostic": "verification_setup",
+        "evidence": {
+          "matchedRowCount": 1
+        }
+      },
+      "parityHash": "7788bed591e992b1c7ba19cdcc7f862b2c40cd3005cd419add3e1837c55a3cb1"
+    },
+    {
+      "scenarioId": "sql.sqlite.sql_row_absent.strong.degraded.connector_error",
+      "connector": "sqlite",
+      "mode": "strong",
+      "supportedBehaviorId": "sqlite.sql_row_absent.strong",
+      "outcome": {
+        "status": "incomplete_verification",
+        "reasonCodes": [
+          "CONNECTOR_ERROR"
+        ],
+        "failureDiagnostic": "verification_setup",
+        "evidence": {
+          "error": true
+        }
+      },
+      "parityHash": "9b70d3b063d3c01a4da3165cc79e3efbe761f10de237a0ef88087b48cdc97177"
+    },
+    {
+      "scenarioId": "sql.postgres.sql_row.strong.verified.basic",
+      "connector": "postgres",
+      "mode": "strong",
+      "supportedBehaviorId": "postgres.sql_row.strong",
+      "outcome": {
+        "status": "verified",
+        "reasonCodes": [],
+        "failureDiagnostic": null,
+        "evidence": {
+          "attempts": 1
+        }
+      },
+      "parityHash": "46e4a4204500e92fc780fcce0798187da5c724725ef628450a944118df8b3ceb"
+    },
+    {
+      "scenarioId": "sql.postgres.sql_row.strong.missing.basic",
+      "connector": "postgres",
+      "mode": "strong",
+      "supportedBehaviorId": "postgres.sql_row.strong",
+      "outcome": {
+        "status": "missing",
+        "reasonCodes": [
+          "ROW_ABSENT"
+        ],
+        "failureDiagnostic": "verification_setup",
+        "evidence": {
+          "attempts": 1
+        }
+      },
+      "parityHash": "119ae0c1b9255ad521691661e8ba039a02185e24d0af9ed5e1d1737848b2c9d1"
+    },
+    {
+      "scenarioId": "sql.postgres.sql_row.strong.degraded.connector_error",
+      "connector": "postgres",
+      "mode": "strong",
+      "supportedBehaviorId": "postgres.sql_row.strong",
+      "outcome": {
+        "status": "incomplete_verification",
+        "reasonCodes": [
+          "CONNECTOR_ERROR"
+        ],
+        "failureDiagnostic": "verification_setup",
+        "evidence": {
+          "error": true
+        }
+      },
+      "parityHash": "93ebb280404e686c6d94cb25fa7acfb01e09589f6c0c93d7108cf6e1fba2ccf8"
+    },
+    {
+      "scenarioId": "sql.postgres.sql_row.eventual.verified.after_retry",
+      "connector": "postgres",
+      "mode": "eventual",
+      "supportedBehaviorId": "postgres.sql_row.eventual",
+      "outcome": {
+        "status": "verified",
+        "reasonCodes": [],
+        "failureDiagnostic": null,
+        "evidence": {
+          "attempts": 2
+        }
+      },
+      "parityHash": "ace6082dd478f457be142d34286b94b8cbac4689d645a894af52aad94ef3c8d3"
+    },
+    {
+      "scenarioId": "sql.postgres.sql_row.eventual.inconsistent.after_retry",
+      "connector": "postgres",
+      "mode": "eventual",
+      "supportedBehaviorId": "postgres.sql_row.eventual",
+      "outcome": {
+        "status": "inconsistent",
+        "reasonCodes": [
+          "VALUE_MISMATCH"
+        ],
+        "failureDiagnostic": "verification_setup",
+        "evidence": {
+          "attempts": 2
+        }
+      },
+      "parityHash": "a20b27751369effc91467e0219517b59012e0abbbd35b45078b0f434d9c0ecf6"
+    },
+    {
+      "scenarioId": "sql.postgres.sql_row.eventual.uncertain.timeout_missing",
+      "connector": "postgres",
+      "mode": "eventual",
+      "supportedBehaviorId": "postgres.sql_row.eventual",
+      "outcome": {
+        "status": "uncertain",
+        "reasonCodes": [
+          "ROW_NOT_OBSERVED_WITHIN_WINDOW"
+        ],
+        "failureDiagnostic": "verification_setup",
+        "evidence": {
+          "verificationWindowMs": 300,
+          "pollIntervalMs": 100
+        }
+      },
+      "parityHash": "728720e504aa4bd1fb53695c4db3a0c7b1ba671fc98f1adc59b196ad43cd2c07"
+    },
+    {
+      "scenarioId": "sql.postgres.sql_row.bounded.verified.fresh",
+      "connector": "postgres",
+      "mode": "bounded",
+      "supportedBehaviorId": "postgres.sql_row.bounded",
+      "outcome": {
+        "status": "verified",
+        "reasonCodes": [],
+        "failureDiagnostic": null,
+        "evidence": {
+          "latestObservedAgeMs": 300,
+          "staleObservationCount": 0
+        }
+      },
+      "parityHash": "010c780a955803ca56a0f5876e81714f024fd5c1a15e8c284afe30e60dfb0998"
+    },
+    {
+      "scenarioId": "sql.postgres.sql_row.bounded.inconsistent.fresh_mismatch",
+      "connector": "postgres",
+      "mode": "bounded",
+      "supportedBehaviorId": "postgres.sql_row.bounded",
+      "outcome": {
+        "status": "inconsistent",
+        "reasonCodes": [
+          "VALUE_MISMATCH"
+        ],
+        "failureDiagnostic": "verification_setup",
+        "evidence": {
+          "latestObservedAgeMs": 300
+        }
+      },
+      "parityHash": "7649325f1c42dc68f7ef89deb3d83bb02497d951a9f1bb383a76c91f631dfe4a"
+    },
+    {
+      "scenarioId": "sql.postgres.sql_row.bounded.uncertain.timeout_stale_or_missing",
+      "connector": "postgres",
+      "mode": "bounded",
+      "supportedBehaviorId": "postgres.sql_row.bounded",
+      "outcome": {
+        "status": "uncertain",
+        "reasonCodes": [
+          "BOUNDED_WINDOW_EXPIRED_WITHOUT_OBSERVATION"
+        ],
+        "failureDiagnostic": "verification_setup",
+        "evidence": {
+          "staleObservationCount": 1,
+          "verificationWindowMs": 500,
+          "pollIntervalMs": 100
+        }
+      },
+      "parityHash": "a2832b9caf72ba1a01a7db0f03000bb23016490a78a95838906dc8dd272afc33"
+    },
+    {
+      "scenarioId": "sql.postgres.sql_row_absent.strong.verified.absent",
+      "connector": "postgres",
+      "mode": "strong",
+      "supportedBehaviorId": "postgres.sql_row_absent.strong",
+      "outcome": {
+        "status": "verified",
+        "reasonCodes": [],
+        "failureDiagnostic": null,
+        "evidence": {
+          "matchedRowCount": 0
+        }
+      },
+      "parityHash": "27233bbc04be21847c513fd12fcd2ec3f2be24e7c6e5f00eee0c30f236286bf2"
+    },
+    {
+      "scenarioId": "sql.postgres.sql_row_absent.strong.inconsistent.present",
+      "connector": "postgres",
+      "mode": "strong",
+      "supportedBehaviorId": "postgres.sql_row_absent.strong",
+      "outcome": {
+        "status": "inconsistent",
+        "reasonCodes": [
+          "ROW_PRESENT_WHEN_FORBIDDEN"
+        ],
+        "failureDiagnostic": "verification_setup",
+        "evidence": {
+          "matchedRowCount": 1
+        }
+      },
+      "parityHash": "4552d9bb39c5e611649b0795787e12bb38d1628b8269d6cde1d7ca9f1f3ab205"
+    },
+    {
+      "scenarioId": "sql.postgres.sql_row_absent.strong.degraded.connector_error",
+      "connector": "postgres",
+      "mode": "strong",
+      "supportedBehaviorId": "postgres.sql_row_absent.strong",
+      "outcome": {
+        "status": "incomplete_verification",
+        "reasonCodes": [
+          "CONNECTOR_ERROR"
+        ],
+        "failureDiagnostic": "verification_setup",
+        "evidence": {
+          "error": true
+        }
+      },
+      "parityHash": "aebf8c646f997da9aeac73bae546276f2df52ad83db34069b67e357484148bef"
+    },
+    {
+      "scenarioId": "sql.postgres.sql_effects.strong.verified.all",
+      "connector": "postgres",
+      "mode": "strong",
+      "supportedBehaviorId": "postgres.sql_effects.strong",
+      "outcome": {
+        "status": "verified",
+        "reasonCodes": [],
+        "failureDiagnostic": null,
+        "evidence": {
+          "effectCount": 2
+        }
+      },
+      "parityHash": "569b46aed95ed8db69e5ccef9d2fa9f3de8008d1e4a961629e249262b6b9a9d4"
+    },
+    {
+      "scenarioId": "sql.postgres.sql_effects.strong.partial",
+      "connector": "postgres",
+      "mode": "strong",
+      "supportedBehaviorId": "postgres.sql_effects.strong",
+      "outcome": {
+        "status": "partially_verified",
+        "reasonCodes": [
+          "MULTI_EFFECT_PARTIAL_FAILURE"
+        ],
+        "failureDiagnostic": "verification_setup",
+        "evidence": {
+          "effectCount": 2
+        }
+      },
+      "parityHash": "00250a3b220df0b4de8d7a7aa1910f459e68b71de328030d61ccaa37abc66bc7"
+    },
+    {
+      "scenarioId": "sql.postgres.sql_effects.strong.degraded.connector_error",
+      "connector": "postgres",
+      "mode": "strong",
+      "supportedBehaviorId": "postgres.sql_effects.strong",
+      "outcome": {
+        "status": "incomplete_verification",
+        "reasonCodes": [
+          "CONNECTOR_ERROR"
+        ],
+        "failureDiagnostic": "verification_setup",
+        "evidence": {
+          "error": true
+        }
+      },
+      "parityHash": "886b32953a4c5bed5c9a210f3c6301e14c4abd3e3d53b370102b2d945f10ed95"
+    },
+    {
+      "scenarioId": "sql.postgres.sql_effects.eventual.verified.after_retry",
+      "connector": "postgres",
+      "mode": "eventual",
+      "supportedBehaviorId": "postgres.sql_effects.eventual",
+      "outcome": {
+        "status": "verified",
+        "reasonCodes": [],
+        "failureDiagnostic": null,
+        "evidence": {
+          "effectCount": 2,
+          "attempts": 2
+        }
+      },
+      "parityHash": "8e2fae6a32fbafe054816535b3f13c156baceb4c37f76539145fd89fb96a2302"
+    },
+    {
+      "scenarioId": "sql.postgres.sql_effects.eventual.partial.timeout",
+      "connector": "postgres",
+      "mode": "eventual",
+      "supportedBehaviorId": "postgres.sql_effects.eventual",
+      "outcome": {
+        "status": "partially_verified",
+        "reasonCodes": [
+          "MULTI_EFFECT_PARTIAL_FAILURE"
+        ],
+        "failureDiagnostic": "verification_setup",
+        "evidence": {
+          "effectCount": 2
+        }
+      },
+      "parityHash": "cfca17e653332f577a1252121bac8722cf76be2d29784fc0b1f2bfcc40b6884c"
+    },
+    {
+      "scenarioId": "sql.postgres.sql_effects.eventual.uncertain.timeout",
+      "connector": "postgres",
+      "mode": "eventual",
+      "supportedBehaviorId": "postgres.sql_effects.eventual",
+      "outcome": {
+        "status": "uncertain",
+        "reasonCodes": [
+          "MULTI_EFFECT_UNCERTAIN_WITHIN_WINDOW"
+        ],
+        "failureDiagnostic": "verification_setup",
+        "evidence": {
+          "verificationWindowMs": 300,
+          "pollIntervalMs": 100
+        }
+      },
+      "parityHash": "086ead3f9f948a0bd1622256cf334eae48c5400b55a2f3af226fd8bf3109f1f6"
+    },
+    {
+      "scenarioId": "sql.postgres.sql_relational.strong.verified.aggregate_match",
+      "connector": "postgres",
+      "mode": "strong",
+      "supportedBehaviorId": "postgres.sql_relational.strong",
+      "outcome": {
+        "status": "verified",
+        "reasonCodes": [],
+        "failureDiagnostic": null,
+        "evidence": {
+          "effectCount": 1
+        }
+      },
+      "parityHash": "030190c78b0540fe1a21c746feec1f6851c7554738a96db03c531b295565b1d9"
+    },
+    {
+      "scenarioId": "sql.postgres.sql_relational.strong.inconsistent.aggregate_mismatch",
+      "connector": "postgres",
+      "mode": "strong",
+      "supportedBehaviorId": "postgres.sql_relational.strong",
+      "outcome": {
+        "status": "inconsistent",
+        "reasonCodes": [
+          "RELATIONAL_EXPECTATION_MISMATCH"
+        ],
+        "failureDiagnostic": "verification_setup",
+        "evidence": {
+          "effectCount": 1
+        }
+      },
+      "parityHash": "1fe211003e945f7b7ddb64139ee84567e817505b817e7793bb8b664257beafb4"
+    },
+    {
+      "scenarioId": "sql.postgres.sql_relational.strong.degraded.connector_error",
+      "connector": "postgres",
+      "mode": "strong",
+      "supportedBehaviorId": "postgres.sql_relational.strong",
+      "outcome": {
+        "status": "incomplete_verification",
+        "reasonCodes": [
+          "CONNECTOR_ERROR"
+        ],
+        "failureDiagnostic": "verification_setup",
+        "evidence": {
+          "error": true
+        }
+      },
+      "parityHash": "bdee6e9bede9a07f5579a1b95d53247297f7fa16d34417a7e67e33dc983c8b2d"
+    },
+    {
+      "scenarioId": "http.strong.verified.match",
+      "connector": "http_witness",
+      "mode": "strong",
+      "supportedBehaviorId": "http_witness.strong",
+      "outcome": {
+        "status": "verified",
+        "reasonCodes": [],
+        "failureDiagnostic": null,
+        "evidence": {
+          "http": true
+        }
+      },
+      "parityHash": "6fff398b314ec8548f040c5e37f839bf65dfdf07555c62f74047ec725f4e0343"
+    },
+    {
+      "scenarioId": "http.strong.status_mismatch",
+      "connector": "http_witness",
+      "mode": "strong",
+      "supportedBehaviorId": "http_witness.strong",
+      "outcome": {
+        "status": "inconsistent",
+        "reasonCodes": [
+          "HTTP_WITNESS_STATUS_MISMATCH"
+        ],
+        "failureDiagnostic": "verification_setup",
+        "evidence": {
+          "httpStatus": 500
+        }
+      },
+      "parityHash": "7562d98c95412093924541dd677be800109e565b0c9d831de9d4045b66b70a24"
+    },
+    {
+      "scenarioId": "http.strong.assertion_mismatch",
+      "connector": "http_witness",
+      "mode": "strong",
+      "supportedBehaviorId": "http_witness.strong",
+      "outcome": {
+        "status": "inconsistent",
+        "reasonCodes": [
+          "HTTP_WITNESS_ASSERTION_MISMATCH"
+        ],
+        "failureDiagnostic": "verification_setup",
+        "evidence": {
+          "jsonPointer": "/ok"
+        }
+      },
+      "parityHash": "4fea7a3033bddf0169970bdd0549ebe6f553e79059b71cb5ebcf167158bd8707"
+    },
+    {
+      "scenarioId": "http.strong.network_error",
+      "connector": "http_witness",
+      "mode": "strong",
+      "supportedBehaviorId": "http_witness.strong",
+      "outcome": {
+        "status": "incomplete_verification",
+        "reasonCodes": [
+          "HTTP_WITNESS_NETWORK_ERROR"
+        ],
+        "failureDiagnostic": "verification_setup",
+        "evidence": {
+          "error": true
+        }
+      },
+      "parityHash": "84dd9cf29ccd3f3afe666523671011a48cd30317a19f7c067c9eb6737363e2c7"
+    },
+    {
+      "scenarioId": "vector.strong.verified.metadata_match",
+      "connector": "vector_document",
+      "mode": "strong",
+      "supportedBehaviorId": "vector_document.strong",
+      "outcome": {
+        "status": "verified",
+        "reasonCodes": [],
+        "failureDiagnostic": null,
+        "evidence": {
+          "provider": "pinecone"
+        }
+      },
+      "parityHash": "187cd5beb00913199a41a4cb538f0793ff155e06ff9356c7fe6aa1d328b8e57c"
+    },
+    {
+      "scenarioId": "vector.strong.missing",
+      "connector": "vector_document",
+      "mode": "strong",
+      "supportedBehaviorId": "vector_document.strong",
+      "outcome": {
+        "status": "missing",
+        "reasonCodes": [
+          "VECTOR_NOT_FOUND"
+        ],
+        "failureDiagnostic": "verification_setup",
+        "evidence": {
+          "provider": "pinecone"
+        }
+      },
+      "parityHash": "5c278c23328912afc07bdb44dbe715932afde25898783fe3cb981617f7895508"
+    },
+    {
+      "scenarioId": "vector.strong.metadata_mismatch",
+      "connector": "vector_document",
+      "mode": "strong",
+      "supportedBehaviorId": "vector_document.strong",
+      "outcome": {
+        "status": "inconsistent",
+        "reasonCodes": [
+          "VECTOR_METADATA_MISMATCH"
+        ],
+        "failureDiagnostic": "verification_setup",
+        "evidence": {
+          "field": "tier"
+        }
+      },
+      "parityHash": "a9669a10bc8f464e4f807baa2cee57c16be4282ae0deb820462f7cd4c4962962"
+    },
+    {
+      "scenarioId": "vector.strong.degraded.provider_error",
+      "connector": "vector_document",
+      "mode": "strong",
+      "supportedBehaviorId": "vector_document.strong",
+      "outcome": {
+        "status": "incomplete_verification",
+        "reasonCodes": [
+          "VECTOR_PROVIDER_ERROR"
+        ],
+        "failureDiagnostic": "verification_setup",
+        "evidence": {
+          "error": true
+        }
+      },
+      "parityHash": "f2f97a27f7481af62d4b6bb6d33c8fe9505982548d16f0ecbfa218a42119ae64"
+    },
+    {
+      "scenarioId": "mongo.strong.verified.match",
+      "connector": "mongo_document",
+      "mode": "strong",
+      "supportedBehaviorId": "mongo_document.strong",
+      "outcome": {
+        "status": "verified",
+        "reasonCodes": [],
+        "failureDiagnostic": null,
+        "evidence": {
+          "mongo": true
+        }
+      },
+      "parityHash": "1598a9e9e105de002affc3ad2000cc032ec90384e12c81b09188ee98fa3c6147"
+    },
+    {
+      "scenarioId": "mongo.strong.value_mismatch",
+      "connector": "mongo_document",
+      "mode": "strong",
+      "supportedBehaviorId": "mongo_document.strong",
+      "outcome": {
+        "status": "inconsistent",
+        "reasonCodes": [
+          "MONGO_VALUE_MISMATCH"
+        ],
+        "failureDiagnostic": "verification_setup",
+        "evidence": {
+          "field": "status"
+        }
+      },
+      "parityHash": "eb41fd452f204db4f1a228854260c33430752f7685da532c1f62be980161ec1b"
+    },
+    {
+      "scenarioId": "mongo.strong.degraded.setup_error",
+      "connector": "mongo_document",
+      "mode": "strong",
+      "supportedBehaviorId": "mongo_document.strong",
+      "outcome": {
+        "status": "incomplete_verification",
+        "reasonCodes": [
+          "STATE_WITNESS_SETUP_ERROR"
+        ],
+        "failureDiagnostic": "verification_setup",
+        "evidence": {
+          "error": true
+        }
+      },
+      "parityHash": "016e2ed00df35a966422767a40a40cf58c40097dcb272fc292ebde0c95a63774"
+    },
+    {
+      "scenarioId": "object_storage.strong.verified.match",
+      "connector": "object_storage_object",
+      "mode": "strong",
+      "supportedBehaviorId": "object_storage_object.strong",
+      "outcome": {
+        "status": "verified",
+        "reasonCodes": [],
+        "failureDiagnostic": null,
+        "evidence": {
+          "s3": true
+        }
+      },
+      "parityHash": "4e5a101b8499e55bf4ba027a5a721161b5e356b205c6e8b590c1521338ebc069"
+    },
+    {
+      "scenarioId": "object_storage.strong.degraded.missing",
+      "connector": "object_storage_object",
+      "mode": "strong",
+      "supportedBehaviorId": "object_storage_object.strong",
+      "outcome": {
+        "status": "missing",
+        "reasonCodes": [
+          "OBJECT_MISSING"
+        ],
+        "failureDiagnostic": "verification_setup",
+        "evidence": {
+          "s3": true
+        }
+      },
+      "parityHash": "b17b1337e0d2dd698060a27190b474f6ebcdbbaa32f0ad9e89bef0a0587790da"
+    },
+    {
+      "scenarioId": "object_storage.strong.digest_mismatch",
+      "connector": "object_storage_object",
+      "mode": "strong",
+      "supportedBehaviorId": "object_storage_object.strong",
+      "outcome": {
+        "status": "inconsistent",
+        "reasonCodes": [
+          "OBJECT_DIGEST_MISMATCH"
+        ],
+        "failureDiagnostic": "verification_setup",
+        "evidence": {
+          "ok": true
+        }
+      },
+      "parityHash": "5a39bae4a74453a0b34771aa79524eeef85a5f57f71542b2b1a8bbc045ceb41b"
+    },
+    {
+      "scenarioId": "object_storage.strong.too_large_for_hash",
+      "connector": "object_storage_object",
+      "mode": "strong",
+      "supportedBehaviorId": "object_storage_object.strong",
+      "outcome": {
+        "status": "inconsistent",
+        "reasonCodes": [
+          "OBJECT_TOO_LARGE_FOR_HASH"
+        ],
+        "failureDiagnostic": "verification_setup",
+        "evidence": {
+          "ok": true
+        }
+      },
+      "parityHash": "d988da25216efef9e23417c0327fe53fc558d7aa0cb7a974e3a563c50154f15c"
+    },
+    {
+      "scenarioId": "object_storage.strong.degraded.setup_error",
+      "connector": "object_storage_object",
+      "mode": "strong",
+      "supportedBehaviorId": "object_storage_object.strong",
+      "outcome": {
+        "status": "incomplete_verification",
+        "reasonCodes": [
+          "STATE_WITNESS_SETUP_ERROR"
+        ],
+        "failureDiagnostic": "verification_setup",
+        "evidence": {
+          "error": true
+        }
+      },
+      "parityHash": "6872992625def4290e48afb93ae06ca36534f108e82c3e16e5197c529feb3ad2"
+    },
+    {
+      "scenarioId": "scope.mysql.strong.unsupported",
+      "connector": "mysql",
+      "mode": "strong",
+      "supportedBehaviorId": "mysql.sql_row.strong",
+      "outcome": {
+        "status": "incomplete_verification",
+        "reasonCodes": [
+          "CONNECTOR_UNSUPPORTED_IN_SCOPE"
+        ],
+        "failureDiagnostic": "verification_setup",
+        "evidence": {
+          "scopeState": "unsupported"
+        }
+      },
+      "parityHash": "e73803735f92b6f80ba6b19e3b945ecaa5f009731f6411f442f6e62de462b305"
+    },
+    {
+      "scenarioId": "scope.sqlserver.strong.unsupported",
+      "connector": "sqlserver",
+      "mode": "strong",
+      "supportedBehaviorId": "sqlserver.sql_row.strong",
+      "outcome": {
+        "status": "incomplete_verification",
+        "reasonCodes": [
+          "CONNECTOR_UNSUPPORTED_IN_SCOPE"
+        ],
+        "failureDiagnostic": "verification_setup",
+        "evidence": {
+          "scopeState": "unsupported"
+        }
+      },
+      "parityHash": "1c09041508ca571a4e679321704103e2989e9161a6ac5a1af2bb9874312de6ef"
+    },
+    {
+      "scenarioId": "scope.bigquery.strong.unsupported",
+      "connector": "bigquery",
+      "mode": "strong",
+      "supportedBehaviorId": "bigquery.sql_row.strong",
+      "outcome": {
+        "status": "incomplete_verification",
+        "reasonCodes": [
+          "CONNECTOR_UNSUPPORTED_IN_SCOPE"
+        ],
+        "failureDiagnostic": "verification_setup",
+        "evidence": {
+          "scopeState": "unsupported"
+        }
+      },
+      "parityHash": "313ec87ebed77f1802d4b0c0d56afaea6b1b55d5e757d2e7f3db2d461a9ef017"
+    },
+    {
+      "scenarioId": "sql.sqlite.sql_row.bounded.unsupported",
+      "connector": "sqlite",
+      "mode": "bounded",
+      "supportedBehaviorId": "sqlite.sql_row.bounded",
+      "outcome": {
+        "status": "incomplete_verification",
+        "reasonCodes": [
+          "BOUNDED_MODE_UNSUPPORTED_FOR_CONNECTOR"
+        ],
+        "failureDiagnostic": "verification_setup",
+        "evidence": {
+          "maxStalenessMs": 100
+        }
+      },
+      "parityHash": "9857f2cd2223b8cba463d19076910aa627e47ac43d427a43a2fdc6f2a2fb75a4"
+    }
+  ]
+}

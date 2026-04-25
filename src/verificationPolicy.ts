@@ -76,6 +76,14 @@ export function normalizeVerificationPolicy(policy: VerificationPolicy): Verific
       pollIntervalMs: 0,
     };
   }
+  if (policy.consistencyMode === "bounded") {
+    return {
+      consistencyMode: "bounded",
+      verificationWindowMs: policy.verificationWindowMs,
+      pollIntervalMs: policy.pollIntervalMs,
+      maxStalenessMs: policy.maxStalenessMs,
+    };
+  }
   return {
     consistencyMode: "eventual",
     verificationWindowMs: policy.verificationWindowMs,
@@ -104,6 +112,14 @@ export function assertValidVerificationPolicy(policy: VerificationPolicy): void 
       CLI_OPERATIONAL_CODES.VERIFICATION_POLICY_INVALID,
       "pollIntervalMs must be <= verificationWindowMs",
     );
+  }
+  if (policy.consistencyMode === "bounded") {
+    if (!Number.isInteger(policy.maxStalenessMs) || policy.maxStalenessMs < 1) {
+      throw new TruthLayerError(
+        CLI_OPERATIONAL_CODES.VERIFICATION_POLICY_INVALID,
+        "bounded mode requires integer maxStalenessMs >= 1",
+      );
+    }
   }
 }
 

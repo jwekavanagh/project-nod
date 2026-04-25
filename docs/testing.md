@@ -12,6 +12,9 @@ All default and full-CI test ordering lives in [`scripts/verify.mjs`](../scripts
 | `npm run test:node:sqlite` | `node scripts/verify.mjs --stages=nodeGuards,nodeTestSqlite` (compatibility) |
 | `npm run test:postgres` | `node scripts/verify.mjs --stages=nodeTestPostgres` (compatibility) |
 | `npm run test:workflow-truth-contract` | `node scripts/verify.mjs --stages=ciWorkflowTruthSingle` |
+| `npm run conformance:all` | Build TS/Python conformance artifacts, canonicalize, parity-check, and compute capability states |
+| `npm run conformance:gate` | Enforce supported-scope 100% behavior + scenario-shape gates |
+| `npm run docs:check:capabilities` | Assert generated capability matrix is up to date in docs |
 
 `node --test` file membership is the single registry in [`test/suites.mjs`](../test/suites.mjs). Website Vitest file lists for the CI gate and decision-readiness are JSON next to the website tests: `website/__tests__/ci-website-gate.modules.json`, `website/__tests__/decision-readiness-gate.modules.json` (arg lists are read by `verify.mjs`).
 

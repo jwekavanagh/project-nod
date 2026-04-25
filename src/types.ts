@@ -394,11 +394,23 @@ export type StepStatus =
   | "uncertain";
 
 /** Active verification timing/consistency contract (emitted on WorkflowResult). */
-export type VerificationPolicy = {
-  consistencyMode: "strong" | "eventual";
-  verificationWindowMs: number;
-  pollIntervalMs: number;
-};
+export type VerificationPolicy =
+  | {
+      consistencyMode: "strong";
+      verificationWindowMs: number;
+      pollIntervalMs: number;
+    }
+  | {
+      consistencyMode: "eventual";
+      verificationWindowMs: number;
+      pollIntervalMs: number;
+    }
+  | {
+      consistencyMode: "bounded";
+      verificationWindowMs: number;
+      pollIntervalMs: number;
+      maxStalenessMs: number;
+    };
 
 export type Reason = { code: string; message: string; field?: string };
 

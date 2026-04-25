@@ -1,0 +1,236 @@
+{
+  "generatedAt": "2026-04-25T04:33:14.219Z",
+  "behaviors": [
+    {
+      "supportedBehaviorId": "bigquery.sql_row.strong",
+      "capabilityState": "unsupported",
+      "runtimeStates": {
+        "typescript": "supported",
+        "python": "supported"
+      },
+      "scenarioIds": [
+        "scope.bigquery.strong.unsupported"
+      ]
+    },
+    {
+      "supportedBehaviorId": "http_witness.strong",
+      "capabilityState": "supported",
+      "runtimeStates": {
+        "typescript": "supported",
+        "python": "supported"
+      },
+      "scenarioIds": [
+        "http.strong.verified.match",
+        "http.strong.status_mismatch",
+        "http.strong.assertion_mismatch",
+        "http.strong.network_error"
+      ]
+    },
+    {
+      "supportedBehaviorId": "mongo_document.strong",
+      "capabilityState": "supported",
+      "runtimeStates": {
+        "typescript": "supported",
+        "python": "supported"
+      },
+      "scenarioIds": [
+        "mongo.strong.verified.match",
+        "mongo.strong.value_mismatch",
+        "mongo.strong.degraded.setup_error"
+      ]
+    },
+    {
+      "supportedBehaviorId": "mysql.sql_row.strong",
+      "capabilityState": "unsupported",
+      "runtimeStates": {
+        "typescript": "supported",
+        "python": "supported"
+      },
+      "scenarioIds": [
+        "scope.mysql.strong.unsupported"
+      ]
+    },
+    {
+      "supportedBehaviorId": "object_storage_object.strong",
+      "capabilityState": "supported",
+      "runtimeStates": {
+        "typescript": "supported",
+        "python": "supported"
+      },
+      "scenarioIds": [
+        "object_storage.strong.verified.match",
+        "object_storage.strong.degraded.missing",
+        "object_storage.strong.digest_mismatch",
+        "object_storage.strong.too_large_for_hash",
+        "object_storage.strong.degraded.setup_error"
+      ]
+    },
+    {
+      "supportedBehaviorId": "postgres.sql_effects.eventual",
+      "capabilityState": "supported",
+      "runtimeStates": {
+        "typescript": "supported",
+        "python": "supported"
+      },
+      "scenarioIds": [
+        "sql.postgres.sql_effects.eventual.verified.after_retry",
+        "sql.postgres.sql_effects.eventual.partial.timeout",
+        "sql.postgres.sql_effects.eventual.uncertain.timeout"
+      ]
+    },
+    {
+      "supportedBehaviorId": "postgres.sql_effects.strong",
+      "capabilityState": "supported",
+      "runtimeStates": {
+        "typescript": "supported",
+        "python": "supported"
+      },
+      "scenarioIds": [
+        "sql.postgres.sql_effects.strong.verified.all",
+        "sql.postgres.sql_effects.strong.partial",
+        "sql.postgres.sql_effects.strong.degraded.connector_error"
+      ]
+    },
+    {
+      "supportedBehaviorId": "postgres.sql_relational.strong",
+      "capabilityState": "supported",
+      "runtimeStates": {
+        "typescript": "supported",
+        "python": "supported"
+      },
+      "scenarioIds": [
+        "sql.postgres.sql_relational.strong.verified.aggregate_match",
+        "sql.postgres.sql_relational.strong.inconsistent.aggregate_mismatch",
+        "sql.postgres.sql_relational.strong.degraded.connector_error"
+      ]
+    },
+    {
+      "supportedBehaviorId": "postgres.sql_row.bounded",
+      "capabilityState": "supported",
+      "runtimeStates": {
+        "typescript": "supported",
+        "python": "supported"
+      },
+      "scenarioIds": [
+        "sql.postgres.sql_row.bounded.verified.fresh",
+        "sql.postgres.sql_row.bounded.inconsistent.fresh_mismatch",
+        "sql.postgres.sql_row.bounded.uncertain.timeout_stale_or_missing"
+      ]
+    },
+    {
+      "supportedBehaviorId": "postgres.sql_row.eventual",
+      "capabilityState": "supported",
+      "runtimeStates": {
+        "typescript": "supported",
+        "python": "supported"
+      },
+      "scenarioIds": [
+        "sql.postgres.sql_row.eventual.verified.after_retry",
+        "sql.postgres.sql_row.eventual.inconsistent.after_retry",
+        "sql.postgres.sql_row.eventual.uncertain.timeout_missing"
+      ]
+    },
+    {
+      "supportedBehaviorId": "postgres.sql_row.strong",
+      "capabilityState": "supported",
+      "runtimeStates": {
+        "typescript": "supported",
+        "python": "supported"
+      },
+      "scenarioIds": [
+        "sql.postgres.sql_row.strong.verified.basic",
+        "sql.postgres.sql_row.strong.missing.basic",
+        "sql.postgres.sql_row.strong.degraded.connector_error"
+      ]
+    },
+    {
+      "supportedBehaviorId": "postgres.sql_row_absent.strong",
+      "capabilityState": "supported",
+      "runtimeStates": {
+        "typescript": "supported",
+        "python": "supported"
+      },
+      "scenarioIds": [
+        "sql.postgres.sql_row_absent.strong.verified.absent",
+        "sql.postgres.sql_row_absent.strong.inconsistent.present",
+        "sql.postgres.sql_row_absent.strong.degraded.connector_error"
+      ]
+    },
+    {
+      "supportedBehaviorId": "sqlite.sql_row.bounded",
+      "capabilityState": "unsupported",
+      "runtimeStates": {
+        "typescript": "supported",
+        "python": "supported"
+      },
+      "scenarioIds": [
+        "sql.sqlite.sql_row.bounded.unsupported"
+      ]
+    },
+    {
+      "supportedBehaviorId": "sqlite.sql_row.eventual",
+      "capabilityState": "supported",
+      "runtimeStates": {
+        "typescript": "supported",
+        "python": "supported"
+      },
+      "scenarioIds": [
+        "sql.sqlite.sql_row.eventual.verified.after_retry",
+        "sql.sqlite.sql_row.eventual.inconsistent.after_retry",
+        "sql.sqlite.sql_row.eventual.uncertain.timeout_missing"
+      ]
+    },
+    {
+      "supportedBehaviorId": "sqlite.sql_row.strong",
+      "capabilityState": "supported",
+      "runtimeStates": {
+        "typescript": "supported",
+        "python": "supported"
+      },
+      "scenarioIds": [
+        "sql.sqlite.sql_row.strong.verified.basic",
+        "sql.sqlite.sql_row.strong.missing.basic",
+        "sql.sqlite.sql_row.strong.inconsistent.value_mismatch",
+        "sql.sqlite.sql_row.strong.degraded.connector_error"
+      ]
+    },
+    {
+      "supportedBehaviorId": "sqlite.sql_row_absent.strong",
+      "capabilityState": "supported",
+      "runtimeStates": {
+        "typescript": "supported",
+        "python": "supported"
+      },
+      "scenarioIds": [
+        "sql.sqlite.sql_row_absent.strong.verified.absent",
+        "sql.sqlite.sql_row_absent.strong.inconsistent.present",
+        "sql.sqlite.sql_row_absent.strong.degraded.connector_error"
+      ]
+    },
+    {
+      "supportedBehaviorId": "sqlserver.sql_row.strong",
+      "capabilityState": "unsupported",
+      "runtimeStates": {
+        "typescript": "supported",
+        "python": "supported"
+      },
+      "scenarioIds": [
+        "scope.sqlserver.strong.unsupported"
+      ]
+    },
+    {
+      "supportedBehaviorId": "vector_document.strong",
+      "capabilityState": "supported",
+      "runtimeStates": {
+        "typescript": "supported",
+        "python": "supported"
+      },
+      "scenarioIds": [
+        "vector.strong.verified.metadata_match",
+        "vector.strong.missing",
+        "vector.strong.metadata_mismatch",
+        "vector.strong.degraded.provider_error"
+      ]
+    }
+  ]
+}

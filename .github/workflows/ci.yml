@@ -109,6 +109,8 @@ jobs:
         run: npm ci --prefix test/fixtures/langgraph-node-oracle
       - name: Build, tests, and adoption chain (CI / Postgres)
         run: npm run test:ci
+      - name: Conformance gates
+        run: npm run conformance:all && npm run conformance:gate && node conformance/assert-bigquery-excluded.mjs && npm run docs:check:capabilities
 
   commercial:
     runs-on: ubuntu-latest

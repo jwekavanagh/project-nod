@@ -1,0 +1,73 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://agentskeptic.com/schemas/conformance-normalized-result.schema.json",
+  "title": "ConformanceNormalizedResult",
+  "type": "object",
+  "required": [
+    "scenarioId",
+    "runtime",
+    "connector",
+    "mode",
+    "supportedBehaviorId",
+    "outcome",
+    "normalizedHash"
+  ],
+  "properties": {
+    "scenarioId": { "type": "string", "minLength": 1 },
+    "runtime": { "type": "string", "enum": ["typescript", "python"] },
+    "connector": {
+      "type": "string",
+      "enum": [
+        "sqlite",
+        "postgres",
+        "mysql",
+        "sqlserver",
+        "bigquery",
+        "vector_document",
+        "http_witness",
+        "mongo_document",
+        "object_storage_object"
+      ]
+    },
+    "mode": { "type": "string", "enum": ["strong", "eventual", "bounded"] },
+    "supportedBehaviorId": { "type": "string", "minLength": 1 },
+    "outcome": {
+      "type": "object",
+      "required": ["status", "reasonCodes", "failureDiagnostic", "evidence"],
+      "properties": {
+        "status": {
+          "type": "string",
+          "enum": [
+            "verified",
+            "missing",
+            "inconsistent",
+            "incomplete_verification",
+            "partially_verified",
+            "uncertain"
+          ]
+        },
+        "reasonCodes": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 },
+          "uniqueItems": true
+        },
+        "failureDiagnostic": {
+          "type": ["string", "null"],
+          "enum": [
+            "workflow_execution",
+            "verification_setup",
+            "observation_uncertainty",
+            null
+          ]
+        },
+        "evidence": {
+          "type": "object",
+          "additionalProperties": true
+        }
+      },
+      "additionalProperties": false
+    },
+    "normalizedHash": { "type": "string", "pattern": "^[a-f0-9]{64}$" }
+  },
+  "additionalProperties": false
+}

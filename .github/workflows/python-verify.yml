@@ -62,6 +62,8 @@ jobs:
         env:
           TIMED_VERIFY_BUDGET_S: "900"
         run: cd python && python scripts/timed_first_verify.py
+      - name: Cross-runtime conformance parity gates
+        run: npm run conformance:all && npm run conformance:gate && node conformance/assert-bigquery-excluded.mjs
 
   docker-timed:
     runs-on: ubuntu-latest

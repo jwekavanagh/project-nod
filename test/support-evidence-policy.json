@@ -1,0 +1,16 @@
+{
+  "policyVersion": 1,
+  "nonEvidenceTests": [
+    "test/pipeline.postgres.test.mjs",
+    "test/pipeline.sqlite.test.mjs",
+    "src/stateWitness.test.ts"
+  ],
+  "supportEvidenceSources": [
+    "conformance/scenarios/expected-outcomes.json",
+    "artifacts/conformance/typescript/all.json",
+    "artifacts/conformance/python/all.json",
+    "artifacts/parity/runtime-parity.json",
+    "artifacts/capabilities/connector-capabilities.json"
+  ]
+}
+

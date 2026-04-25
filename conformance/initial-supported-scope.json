@@ -1,0 +1,18 @@
+{
+  "supportedBehaviorIds": [
+    "sqlite.sql_row.strong",
+    "sqlite.sql_row.eventual",
+    "sqlite.sql_row_absent.strong",
+    "postgres.sql_row.strong",
+    "postgres.sql_row.eventual",
+    "postgres.sql_row.bounded",
+    "postgres.sql_row_absent.strong",
+    "postgres.sql_effects.strong",
+    "postgres.sql_effects.eventual",
+    "postgres.sql_relational.strong",
+    "http_witness.strong",
+    "mongo_document.strong",
+    "object_storage_object.strong",
+    "vector_document.strong"
+  ]
+}

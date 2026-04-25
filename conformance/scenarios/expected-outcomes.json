@@ -1,0 +1,518 @@
+{
+  "scenarios": [
+    {
+      "scenarioId": "sql.sqlite.sql_row.strong.verified.basic",
+      "connector": "sqlite",
+      "mode": "strong",
+      "supportedBehaviorId": "sqlite.sql_row.strong",
+      "expectedStatus": "verified",
+      "expectedReasonCodes": [],
+      "requiredEvidencePredicates": ["attempts==1"],
+      "mustMatchRuntime": true
+    },
+    {
+      "scenarioId": "sql.sqlite.sql_row.strong.missing.basic",
+      "connector": "sqlite",
+      "mode": "strong",
+      "supportedBehaviorId": "sqlite.sql_row.strong",
+      "expectedStatus": "missing",
+      "expectedReasonCodes": ["ROW_ABSENT"],
+      "requiredEvidencePredicates": ["attempts==1"],
+      "mustMatchRuntime": true
+    },
+    {
+      "scenarioId": "sql.sqlite.sql_row.strong.inconsistent.value_mismatch",
+      "connector": "sqlite",
+      "mode": "strong",
+      "supportedBehaviorId": "sqlite.sql_row.strong",
+      "expectedStatus": "inconsistent",
+      "expectedReasonCodes": ["VALUE_MISMATCH"],
+      "requiredEvidencePredicates": ["field==status"],
+      "mustMatchRuntime": true
+    },
+    {
+      "scenarioId": "sql.sqlite.sql_row.strong.degraded.connector_error",
+      "connector": "sqlite",
+      "mode": "strong",
+      "supportedBehaviorId": "sqlite.sql_row.strong",
+      "expectedStatus": "incomplete_verification",
+      "expectedReasonCodes": ["CONNECTOR_ERROR"],
+      "requiredEvidencePredicates": ["error==true"],
+      "mustMatchRuntime": true
+    },
+    {
+      "scenarioId": "sql.sqlite.sql_row.eventual.verified.after_retry",
+      "connector": "sqlite",
+      "mode": "eventual",
+      "supportedBehaviorId": "sqlite.sql_row.eventual",
+      "expectedStatus": "verified",
+      "expectedReasonCodes": [],
+      "requiredEvidencePredicates": ["attempts>=2"],
+      "mustMatchRuntime": true
+    },
+    {
+      "scenarioId": "sql.sqlite.sql_row.eventual.inconsistent.after_retry",
+      "connector": "sqlite",
+      "mode": "eventual",
+      "supportedBehaviorId": "sqlite.sql_row.eventual",
+      "expectedStatus": "inconsistent",
+      "expectedReasonCodes": ["VALUE_MISMATCH"],
+      "requiredEvidencePredicates": ["attempts>=2"],
+      "mustMatchRuntime": true
+    },
+    {
+      "scenarioId": "sql.sqlite.sql_row.eventual.uncertain.timeout_missing",
+      "connector": "sqlite",
+      "mode": "eventual",
+      "supportedBehaviorId": "sqlite.sql_row.eventual",
+      "expectedStatus": "uncertain",
+      "expectedReasonCodes": ["ROW_NOT_OBSERVED_WITHIN_WINDOW"],
+      "requiredEvidencePredicates": [
+        "attempts>=2",
+        "verificationWindowMs==200",
+        "pollIntervalMs==50"
+      ],
+      "mustMatchRuntime": true
+    },
+    {
+      "scenarioId": "sql.sqlite.sql_row_absent.strong.verified.absent",
+      "connector": "sqlite",
+      "mode": "strong",
+      "supportedBehaviorId": "sqlite.sql_row_absent.strong",
+      "expectedStatus": "verified",
+      "expectedReasonCodes": [],
+      "requiredEvidencePredicates": ["matchedRowCount==0"],
+      "mustMatchRuntime": true
+    },
+    {
+      "scenarioId": "sql.sqlite.sql_row_absent.strong.inconsistent.present",
+      "connector": "sqlite",
+      "mode": "strong",
+      "supportedBehaviorId": "sqlite.sql_row_absent.strong",
+      "expectedStatus": "inconsistent",
+      "expectedReasonCodes": ["ROW_PRESENT_WHEN_FORBIDDEN"],
+      "requiredEvidencePredicates": ["matchedRowCount>=1"],
+      "mustMatchRuntime": true
+    },
+    {
+      "scenarioId": "sql.sqlite.sql_row_absent.strong.degraded.connector_error",
+      "connector": "sqlite",
+      "mode": "strong",
+      "supportedBehaviorId": "sqlite.sql_row_absent.strong",
+      "expectedStatus": "incomplete_verification",
+      "expectedReasonCodes": ["CONNECTOR_ERROR"],
+      "requiredEvidencePredicates": ["error==true"],
+      "mustMatchRuntime": true
+    },
+    {
+      "scenarioId": "sql.postgres.sql_row.strong.verified.basic",
+      "connector": "postgres",
+      "mode": "strong",
+      "supportedBehaviorId": "postgres.sql_row.strong",
+      "expectedStatus": "verified",
+      "expectedReasonCodes": [],
+      "requiredEvidencePredicates": ["attempts==1"],
+      "mustMatchRuntime": true
+    },
+    {
+      "scenarioId": "sql.postgres.sql_row.strong.missing.basic",
+      "connector": "postgres",
+      "mode": "strong",
+      "supportedBehaviorId": "postgres.sql_row.strong",
+      "expectedStatus": "missing",
+      "expectedReasonCodes": ["ROW_ABSENT"],
+      "requiredEvidencePredicates": ["attempts==1"],
+      "mustMatchRuntime": true
+    },
+    {
+      "scenarioId": "sql.postgres.sql_row.strong.degraded.connector_error",
+      "connector": "postgres",
+      "mode": "strong",
+      "supportedBehaviorId": "postgres.sql_row.strong",
+      "expectedStatus": "incomplete_verification",
+      "expectedReasonCodes": ["CONNECTOR_ERROR"],
+      "requiredEvidencePredicates": ["error==true"],
+      "mustMatchRuntime": true
+    },
+    {
+      "scenarioId": "sql.postgres.sql_row.eventual.verified.after_retry",
+      "connector": "postgres",
+      "mode": "eventual",
+      "supportedBehaviorId": "postgres.sql_row.eventual",
+      "expectedStatus": "verified",
+      "expectedReasonCodes": [],
+      "requiredEvidencePredicates": ["attempts>=2"],
+      "mustMatchRuntime": true
+    },
+    {
+      "scenarioId": "sql.postgres.sql_row.eventual.inconsistent.after_retry",
+      "connector": "postgres",
+      "mode": "eventual",
+      "supportedBehaviorId": "postgres.sql_row.eventual",
+      "expectedStatus": "inconsistent",
+      "expectedReasonCodes": ["VALUE_MISMATCH"],
+      "requiredEvidencePredicates": ["attempts>=2"],
+      "mustMatchRuntime": true
+    },
+    {
+      "scenarioId": "sql.postgres.sql_row.eventual.uncertain.timeout_missing",
+      "connector": "postgres",
+      "mode": "eventual",
+      "supportedBehaviorId": "postgres.sql_row.eventual",
+      "expectedStatus": "uncertain",
+      "expectedReasonCodes": ["ROW_NOT_OBSERVED_WITHIN_WINDOW"],
+      "requiredEvidencePredicates": ["verificationWindowMs==300", "pollIntervalMs==100"],
+      "mustMatchRuntime": true
+    },
+    {
+      "scenarioId": "sql.postgres.sql_row.bounded.verified.fresh",
+      "connector": "postgres",
+      "mode": "bounded",
+      "supportedBehaviorId": "postgres.sql_row.bounded",
+      "expectedStatus": "verified",
+      "expectedReasonCodes": [],
+      "requiredEvidencePredicates": ["latestObservedAgeMs<=300", "staleObservationCount==0"],
+      "mustMatchRuntime": true
+    },
+    {
+      "scenarioId": "sql.postgres.sql_row.bounded.inconsistent.fresh_mismatch",
+      "connector": "postgres",
+      "mode": "bounded",
+      "supportedBehaviorId": "postgres.sql_row.bounded",
+      "expectedStatus": "inconsistent",
+      "expectedReasonCodes": ["VALUE_MISMATCH"],
+      "requiredEvidencePredicates": ["latestObservedAgeMs<=300"],
+      "mustMatchRuntime": true
+    },
+    {
+      "scenarioId": "sql.postgres.sql_row.bounded.uncertain.timeout_stale_or_missing",
+      "connector": "postgres",
+      "mode": "bounded",
+      "supportedBehaviorId": "postgres.sql_row.bounded",
+      "expectedStatus": "uncertain",
+      "expectedReasonCodes": ["BOUNDED_WINDOW_EXPIRED_WITHOUT_OBSERVATION"],
+      "requiredEvidencePredicates": ["staleObservationCount>=1", "verificationWindowMs==500", "pollIntervalMs==100"],
+      "mustMatchRuntime": true
+    },
+    {
+      "scenarioId": "sql.postgres.sql_row_absent.strong.verified.absent",
+      "connector": "postgres",
+      "mode": "strong",
+      "supportedBehaviorId": "postgres.sql_row_absent.strong",
+      "expectedStatus": "verified",
+      "expectedReasonCodes": [],
+      "requiredEvidencePredicates": ["matchedRowCount==0"],
+      "mustMatchRuntime": true
+    },
+    {
+      "scenarioId": "sql.postgres.sql_row_absent.strong.inconsistent.present",
+      "connector": "postgres",
+      "mode": "strong",
+      "supportedBehaviorId": "postgres.sql_row_absent.strong",
+      "expectedStatus": "inconsistent",
+      "expectedReasonCodes": ["ROW_PRESENT_WHEN_FORBIDDEN"],
+      "requiredEvidencePredicates": ["matchedRowCount>=1"],
+      "mustMatchRuntime": true
+    },
+    {
+      "scenarioId": "sql.postgres.sql_row_absent.strong.degraded.connector_error",
+      "connector": "postgres",
+      "mode": "strong",
+      "supportedBehaviorId": "postgres.sql_row_absent.strong",
+      "expectedStatus": "incomplete_verification",
+      "expectedReasonCodes": ["CONNECTOR_ERROR"],
+      "requiredEvidencePredicates": ["error==true"],
+      "mustMatchRuntime": true
+    },
+    {
+      "scenarioId": "sql.postgres.sql_effects.strong.verified.all",
+      "connector": "postgres",
+      "mode": "strong",
+      "supportedBehaviorId": "postgres.sql_effects.strong",
+      "expectedStatus": "verified",
+      "expectedReasonCodes": [],
+      "requiredEvidencePredicates": ["effectCount==2"],
+      "mustMatchRuntime": true
+    },
+    {
+      "scenarioId": "sql.postgres.sql_effects.strong.partial",
+      "connector": "postgres",
+      "mode": "strong",
+      "supportedBehaviorId": "postgres.sql_effects.strong",
+      "expectedStatus": "partially_verified",
+      "expectedReasonCodes": ["MULTI_EFFECT_PARTIAL_FAILURE"],
+      "requiredEvidencePredicates": ["effectCount==2"],
+      "mustMatchRuntime": true
+    },
+    {
+      "scenarioId": "sql.postgres.sql_effects.strong.degraded.connector_error",
+      "connector": "postgres",
+      "mode": "strong",
+      "supportedBehaviorId": "postgres.sql_effects.strong",
+      "expectedStatus": "incomplete_verification",
+      "expectedReasonCodes": ["CONNECTOR_ERROR"],
+      "requiredEvidencePredicates": ["error==true"],
+      "mustMatchRuntime": true
+    },
+    {
+      "scenarioId": "sql.postgres.sql_effects.eventual.verified.after_retry",
+      "connector": "postgres",
+      "mode": "eventual",
+      "supportedBehaviorId": "postgres.sql_effects.eventual",
+      "expectedStatus": "verified",
+      "expectedReasonCodes": [],
+      "requiredEvidencePredicates": ["effectCount==2", "attempts>=2"],
+      "mustMatchRuntime": true
+    },
+    {
+      "scenarioId": "sql.postgres.sql_effects.eventual.partial.timeout",
+      "connector": "postgres",
+      "mode": "eventual",
+      "supportedBehaviorId": "postgres.sql_effects.eventual",
+      "expectedStatus": "partially_verified",
+      "expectedReasonCodes": ["MULTI_EFFECT_PARTIAL_FAILURE"],
+      "requiredEvidencePredicates": ["effectCount==2"],
+      "mustMatchRuntime": true
+    },
+    {
+      "scenarioId": "sql.postgres.sql_effects.eventual.uncertain.timeout",
+      "connector": "postgres",
+      "mode": "eventual",
+      "supportedBehaviorId": "postgres.sql_effects.eventual",
+      "expectedStatus": "uncertain",
+      "expectedReasonCodes": ["MULTI_EFFECT_UNCERTAIN_WITHIN_WINDOW"],
+      "requiredEvidencePredicates": ["verificationWindowMs==300", "pollIntervalMs==100"],
+      "mustMatchRuntime": true
+    },
+    {
+      "scenarioId": "sql.postgres.sql_relational.strong.verified.aggregate_match",
+      "connector": "postgres",
+      "mode": "strong",
+      "supportedBehaviorId": "postgres.sql_relational.strong",
+      "expectedStatus": "verified",
+      "expectedReasonCodes": [],
+      "requiredEvidencePredicates": ["effectCount==1"],
+      "mustMatchRuntime": true
+    },
+    {
+      "scenarioId": "sql.postgres.sql_relational.strong.inconsistent.aggregate_mismatch",
+      "connector": "postgres",
+      "mode": "strong",
+      "supportedBehaviorId": "postgres.sql_relational.strong",
+      "expectedStatus": "inconsistent",
+      "expectedReasonCodes": ["RELATIONAL_EXPECTATION_MISMATCH"],
+      "requiredEvidencePredicates": ["effectCount==1"],
+      "mustMatchRuntime": true
+    },
+    {
+      "scenarioId": "sql.postgres.sql_relational.strong.degraded.connector_error",
+      "connector": "postgres",
+      "mode": "strong",
+      "supportedBehaviorId": "postgres.sql_relational.strong",
+      "expectedStatus": "incomplete_verification",
+      "expectedReasonCodes": ["CONNECTOR_ERROR"],
+      "requiredEvidencePredicates": ["error==true"],
+      "mustMatchRuntime": true
+    },
+    {
+      "scenarioId": "http.strong.verified.match",
+      "connector": "http_witness",
+      "mode": "strong",
+      "supportedBehaviorId": "http_witness.strong",
+      "expectedStatus": "verified",
+      "expectedReasonCodes": [],
+      "requiredEvidencePredicates": ["http==true"],
+      "mustMatchRuntime": true
+    },
+    {
+      "scenarioId": "http.strong.status_mismatch",
+      "connector": "http_witness",
+      "mode": "strong",
+      "supportedBehaviorId": "http_witness.strong",
+      "expectedStatus": "inconsistent",
+      "expectedReasonCodes": ["HTTP_WITNESS_STATUS_MISMATCH"],
+      "requiredEvidencePredicates": ["httpStatus==500"],
+      "mustMatchRuntime": true
+    },
+    {
+      "scenarioId": "http.strong.assertion_mismatch",
+      "connector": "http_witness",
+      "mode": "strong",
+      "supportedBehaviorId": "http_witness.strong",
+      "expectedStatus": "inconsistent",
+      "expectedReasonCodes": ["HTTP_WITNESS_ASSERTION_MISMATCH"],
+      "requiredEvidencePredicates": ["jsonPointer==/ok"],
+      "mustMatchRuntime": true
+    },
+    {
+      "scenarioId": "http.strong.network_error",
+      "connector": "http_witness",
+      "mode": "strong",
+      "supportedBehaviorId": "http_witness.strong",
+      "expectedStatus": "incomplete_verification",
+      "expectedReasonCodes": ["HTTP_WITNESS_NETWORK_ERROR"],
+      "requiredEvidencePredicates": ["error==true"],
+      "mustMatchRuntime": true
+    },
+    {
+      "scenarioId": "vector.strong.verified.metadata_match",
+      "connector": "vector_document",
+      "mode": "strong",
+      "supportedBehaviorId": "vector_document.strong",
+      "expectedStatus": "verified",
+      "expectedReasonCodes": [],
+      "requiredEvidencePredicates": ["provider==pinecone"],
+      "mustMatchRuntime": true
+    },
+    {
+      "scenarioId": "vector.strong.missing",
+      "connector": "vector_document",
+      "mode": "strong",
+      "supportedBehaviorId": "vector_document.strong",
+      "expectedStatus": "missing",
+      "expectedReasonCodes": ["VECTOR_NOT_FOUND"],
+      "requiredEvidencePredicates": ["provider==pinecone"],
+      "mustMatchRuntime": true
+    },
+    {
+      "scenarioId": "vector.strong.metadata_mismatch",
+      "connector": "vector_document",
+      "mode": "strong",
+      "supportedBehaviorId": "vector_document.strong",
+      "expectedStatus": "inconsistent",
+      "expectedReasonCodes": ["VECTOR_METADATA_MISMATCH"],
+      "requiredEvidencePredicates": ["field==tier"],
+      "mustMatchRuntime": true
+    },
+    {
+      "scenarioId": "vector.strong.degraded.provider_error",
+      "connector": "vector_document",
+      "mode": "strong",
+      "supportedBehaviorId": "vector_document.strong",
+      "expectedStatus": "incomplete_verification",
+      "expectedReasonCodes": ["VECTOR_PROVIDER_ERROR"],
+      "requiredEvidencePredicates": ["error==true"],
+      "mustMatchRuntime": true
+    },
+    {
+      "scenarioId": "mongo.strong.verified.match",
+      "connector": "mongo_document",
+      "mode": "strong",
+      "supportedBehaviorId": "mongo_document.strong",
+      "expectedStatus": "verified",
+      "expectedReasonCodes": [],
+      "requiredEvidencePredicates": ["mongo==true"],
+      "mustMatchRuntime": true
+    },
+    {
+      "scenarioId": "mongo.strong.value_mismatch",
+      "connector": "mongo_document",
+      "mode": "strong",
+      "supportedBehaviorId": "mongo_document.strong",
+      "expectedStatus": "inconsistent",
+      "expectedReasonCodes": ["MONGO_VALUE_MISMATCH"],
+      "requiredEvidencePredicates": ["field==status"],
+      "mustMatchRuntime": true
+    },
+    {
+      "scenarioId": "mongo.strong.degraded.setup_error",
+      "connector": "mongo_document",
+      "mode": "strong",
+      "supportedBehaviorId": "mongo_document.strong",
+      "expectedStatus": "incomplete_verification",
+      "expectedReasonCodes": ["STATE_WITNESS_SETUP_ERROR"],
+      "requiredEvidencePredicates": ["error==true"],
+      "mustMatchRuntime": true
+    },
+    {
+      "scenarioId": "object_storage.strong.verified.match",
+      "connector": "object_storage_object",
+      "mode": "strong",
+      "supportedBehaviorId": "object_storage_object.strong",
+      "expectedStatus": "verified",
+      "expectedReasonCodes": [],
+      "requiredEvidencePredicates": ["s3==true"],
+      "mustMatchRuntime": true
+    },
+    {
+      "scenarioId": "object_storage.strong.degraded.missing",
+      "connector": "object_storage_object",
+      "mode": "strong",
+      "supportedBehaviorId": "object_storage_object.strong",
+      "expectedStatus": "missing",
+      "expectedReasonCodes": ["OBJECT_MISSING"],
+      "requiredEvidencePredicates": ["s3==true"],
+      "mustMatchRuntime": true
+    },
+    {
+      "scenarioId": "object_storage.strong.digest_mismatch",
+      "connector": "object_storage_object",
+      "mode": "strong",
+      "supportedBehaviorId": "object_storage_object.strong",
+      "expectedStatus": "inconsistent",
+      "expectedReasonCodes": ["OBJECT_DIGEST_MISMATCH"],
+      "requiredEvidencePredicates": ["contentLength>0"],
+      "mustMatchRuntime": true
+    },
+    {
+      "scenarioId": "object_storage.strong.too_large_for_hash",
+      "connector": "object_storage_object",
+      "mode": "strong",
+      "supportedBehaviorId": "object_storage_object.strong",
+      "expectedStatus": "inconsistent",
+      "expectedReasonCodes": ["OBJECT_TOO_LARGE_FOR_HASH"],
+      "requiredEvidencePredicates": ["contentLength>10485760"],
+      "mustMatchRuntime": true
+    },
+    {
+      "scenarioId": "object_storage.strong.degraded.setup_error",
+      "connector": "object_storage_object",
+      "mode": "strong",
+      "supportedBehaviorId": "object_storage_object.strong",
+      "expectedStatus": "incomplete_verification",
+      "expectedReasonCodes": ["STATE_WITNESS_SETUP_ERROR"],
+      "requiredEvidencePredicates": ["error==true"],
+      "mustMatchRuntime": true
+    },
+    {
+      "scenarioId": "scope.mysql.strong.unsupported",
+      "connector": "mysql",
+      "mode": "strong",
+      "supportedBehaviorId": "mysql.sql_row.strong",
+      "expectedStatus": "incomplete_verification",
+      "expectedReasonCodes": ["CONNECTOR_UNSUPPORTED_IN_SCOPE"],
+      "requiredEvidencePredicates": ["scopeState==unsupported"],
+      "mustMatchRuntime": false
+    },
+    {
+      "scenarioId": "scope.sqlserver.strong.unsupported",
+      "connector": "sqlserver",
+      "mode": "strong",
+      "supportedBehaviorId": "sqlserver.sql_row.strong",
+      "expectedStatus": "incomplete_verification",
+      "expectedReasonCodes": ["CONNECTOR_UNSUPPORTED_IN_SCOPE"],
+      "requiredEvidencePredicates": ["scopeState==unsupported"],
+      "mustMatchRuntime": false
+    },
+    {
+      "scenarioId": "scope.bigquery.strong.unsupported",
+      "connector": "bigquery",
+      "mode": "strong",
+      "supportedBehaviorId": "bigquery.sql_row.strong",
+      "expectedStatus": "incomplete_verification",
+      "expectedReasonCodes": ["CONNECTOR_UNSUPPORTED_IN_SCOPE"],
+      "requiredEvidencePredicates": ["scopeState==unsupported"],
+      "mustMatchRuntime": false
+    },
+    {
+      "scenarioId": "sql.sqlite.sql_row.bounded.unsupported",
+      "connector": "sqlite",
+      "mode": "bounded",
+      "supportedBehaviorId": "sqlite.sql_row.bounded",
+      "expectedStatus": "incomplete_verification",
+      "expectedReasonCodes": ["BOUNDED_MODE_UNSUPPORTED_FOR_CONNECTOR"],
+      "requiredEvidencePredicates": ["maxStalenessMs==100"],
+      "mustMatchRuntime": false
+    }
+  ]
+}

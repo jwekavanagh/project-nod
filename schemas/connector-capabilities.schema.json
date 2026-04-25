@@ -1,0 +1,38 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://agentskeptic.com/schemas/connector-capabilities.schema.json",
+  "title": "ConnectorCapabilities",
+  "type": "object",
+  "required": ["generatedAt", "behaviors"],
+  "properties": {
+    "generatedAt": { "type": "string", "minLength": 1 },
+    "behaviors": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["supportedBehaviorId", "capabilityState", "runtimeStates", "scenarioIds"],
+        "properties": {
+          "supportedBehaviorId": { "type": "string", "minLength": 1 },
+          "capabilityState": { "type": "string", "enum": ["supported", "unsupported"] },
+          "runtimeStates": {
+            "type": "object",
+            "required": ["typescript", "python"],
+            "properties": {
+              "typescript": { "type": "string", "enum": ["supported", "unsupported"] },
+              "python": { "type": "string", "enum": ["supported", "unsupported"] }
+            },
+            "additionalProperties": false
+          },
+          "scenarioIds": {
+            "type": "array",
+            "items": { "type": "string", "minLength": 1 },
+            "uniqueItems": true
+          },
+          "notes": { "type": "array", "items": { "type": "string" } }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}
