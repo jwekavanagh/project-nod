@@ -1,9 +1,10 @@
 import { describe, expect, it } from "vitest";
+import { NextRequest } from "next/server";
 import { GET } from "@/app/api/v1/commercial/plans/route";
 
 describe("GET /api/v1/commercial/plans", () => {
   it("returns schemaVersion and public plan fields without stripe env keys", async () => {
-    const res = await GET();
+    const res = await GET(new NextRequest("http://localhost/api/v1/commercial/plans"));
     expect(res.status).toBe(200);
     const j = (await res.json()) as {
       schemaVersion: number;

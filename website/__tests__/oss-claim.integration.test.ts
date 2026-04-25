@@ -453,7 +453,10 @@ describe.skipIf(!hasDatabaseUrl)("OSS claim ticket + handoff + redeem", () => {
 
     const over = await postClaimRedeem(claimRedeemReq({ claim_secret: extraSecret }));
     expect(over.status).toBe(429);
-    expect(await over.json()).toEqual({ code: "rate_limited", scope: "claim_redeem_user" });
+    const overJ = (await over.json()) as Record<string, unknown>;
+    expect(overJ.code).toBe("RATE_LIMITED");
+    expect(overJ.type).toContain("/problems/");
+    expect(over.headers.get("x-request-id")).toBeTruthy();
   });
 
   it("duplicate POST after claimed returns 204", async () => {
