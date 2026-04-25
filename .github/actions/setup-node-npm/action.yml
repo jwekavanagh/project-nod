@@ -6,9 +6,18 @@ description: "Node 22 (LTS), npm cache, and npm ci (no checkout; compose after a
 runs:
   using: "composite"
   steps:
+    # npm/setup-node still touch code paths that load Node's legacy `punycode` (DEP0040).
+    # Suppress only that code so other deprecations remain visible.
     - uses: actions/setup-node@v5
+      env:
+        NODE_OPTIONS: "--disable-warning=DEP0040"
       with:
         node-version: "22"
         cache: npm
+    # drizzle-kit still pulls deprecated @esbuild-kit/* (registry metadata); harmless until Drizzle drops it.
+    # loglevel=error hides only npm WARN lines (including transitive deprecations), not install errors.
     - run: npm ci
       shell: bash
+      env:
+        NODE_OPTIONS: "--disable-warning=DEP0040"
+        npm_config_loglevel: "error"
