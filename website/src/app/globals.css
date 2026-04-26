@@ -489,6 +489,11 @@ button.secondary, .btn.secondary {
   margin: 0 auto;
   padding: 2rem 1rem;
 }
+.site-callout-wrap {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 0 1rem;
+}
 .site-footer {
   border-top: 1px solid var(--border);
   margin-top: 2rem;
