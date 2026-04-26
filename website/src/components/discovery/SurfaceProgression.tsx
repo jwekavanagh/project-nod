@@ -18,8 +18,8 @@ export function SurfaceProgression({ primaryCta }: Props) {
   const acquisitionPath = marketing.slug;
   const markedHref = primaryHref[primaryCta];
   const items: { href: string; label: string }[] = [
-    { href: "/integrate", label: "Get started" },
-    { href: "/?demo=wf_missing#try-it", label: "Try demo" },
+    { href: "/integrate", label: "Run first verification" },
+    { href: "/?demo=wf_missing#try-it", label: "Try interactive demo" },
     { href: "/pricing", label: "Pricing" },
     { href: acquisitionPath, label: "How it works" },
     { href: "/security", label: "Security & Trust" },

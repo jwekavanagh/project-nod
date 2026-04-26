@@ -6,7 +6,7 @@ import { loadLegalMetadata } from "@/lib/plans";
 import { indexableGuideCanonical } from "@/lib/indexableGuides";
 import type { Metadata } from "next";
 import Link from "next/link";
-import { conversionSpine } from "@/content/productCopy";
+import { conversionSpine, productCopy } from "@/content/productCopy";
 
 export const metadata: Metadata = {
   title: "Privacy Policy — AgentSkeptic",
@@ -31,7 +31,7 @@ export default function PrivacyPage() {
           href="/integrate"
           data-cta-priority={conversionSpine.ctaPriorityPrimaryValue}
         >
-          Get started
+          {productCopy.ctaTaxonomy.decision}
         </Link>
       </p>
       <article className="integrate-prose">

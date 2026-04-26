@@ -1,4 +1,5 @@
 import { conversionSpine, productCopy } from "@/content/productCopy";
+import { ValuePropTriptych } from "@/components/marketing/ValuePropTriptych";
 import { indexableGuideCanonical } from "@/lib/indexableGuides";
 import type { Metadata } from "next";
 import Link from "next/link";
@@ -45,6 +46,11 @@ export default function CompareHubPage() {
       <p className="lede">
         See how read-only verification differs from — and improves upon — common alternatives.
       </p>
+      <ValuePropTriptych
+        problem={productCopy.coreValuePropTriptych.problem}
+        solution={productCopy.coreValuePropTriptych.solution}
+        outcome={productCopy.coreValuePropTriptych.outcome}
+      />
 
       {SECTIONS.map((s) => (
         <section key={s.href} className="home-section" aria-labelledby={s.id}>
@@ -60,20 +66,20 @@ export default function CompareHubPage() {
 
       <section className="home-section" aria-labelledby="compare-hub-cta-heading">
         <h2 id="compare-hub-cta-heading">Ready to see it in action?</h2>
-        <div className="home-cta-row" role="group" aria-label="Get started or try the demo">
+        <div className="home-cta-row" role="group" aria-label="Run verification or try interactive demo">
           <Link
             className="btn"
             href={productCopy.homeHeroSecondaryCta.href}
             data-cta-priority={conversionSpine.ctaPriorityPrimaryValue}
           >
-            {productCopy.homeHeroSecondaryCta.label}
+            {productCopy.ctaTaxonomy.consideration}
           </Link>
           <a
             className="btn secondary"
             href="/?demo=wf_missing#try-it"
             data-cta-priority={conversionSpine.ctaPrioritySecondaryValue}
           >
-            {productCopy.homeHeroCtaLabels.demo}
+            {productCopy.ctaTaxonomy.topOfFunnel}
           </a>
         </div>
       </section>

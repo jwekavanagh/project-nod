@@ -158,7 +158,7 @@ export default function DatabaseTruthVsTracesPage() {
         className="product-brief-cta-wrap"
         data-testid={pb.testIds.cta}
         role="group"
-        aria-label="Get started; try the demo (no account) on the homepage"
+        aria-label="Run first verification or see failed versus passed run"
       >
         <a
           className="btn"
@@ -166,14 +166,14 @@ export default function DatabaseTruthVsTracesPage() {
           data-testid="acquisition-try-home-demo-cta"
           data-cta-priority={conversionSpine.ctaPriorityPrimaryValue}
         >
-          {productCopy.homeHeroCtaLabels.demo}
+          {productCopy.ctaTaxonomy.awareness}
         </a>{" "}
         <Link
           className="btn secondary"
           href={productCopy.homeHeroSecondaryCta.href}
           data-cta-priority={conversionSpine.ctaPrioritySecondaryValue}
         >
-          {productCopy.homeHeroSecondaryCta.label}
+          {productCopy.ctaTaxonomy.decision}
         </Link>
       </div>
     </main>

@@ -1,4 +1,5 @@
 import { conversionSpine, learnHub, productCopy } from "@/content/productCopy";
+import { MiniCaseStudies } from "@/components/marketing/MiniCaseStudies";
 import { indexableGuideCanonical } from "@/lib/indexableGuides";
 import { listAllSurfaces } from "@/lib/surfaceMarkdown";
 import type { Metadata } from "next";
@@ -122,17 +123,18 @@ export default function GuidesHubPage() {
             className="btn"
             data-cta-priority={conversionSpine.ctaPriorityPrimaryValue}
           >
-            {learnHub.getStartedCtaLabel}
+            {productCopy.ctaTaxonomy.decision}
           </Link>
           <Link
             href="/?demo=wf_missing#try-it"
             className="btn secondary"
             data-cta-priority={conversionSpine.ctaPrioritySecondaryValue}
           >
-            {learnHub.tryDemoCtaLabel}
+            {productCopy.ctaTaxonomy.topOfFunnel}
           </Link>
         </p>
       </section>
+      <MiniCaseStudies studies={productCopy.miniCaseStudies} />
     </main>
   );
 }

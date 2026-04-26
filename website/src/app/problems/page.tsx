@@ -55,7 +55,7 @@ export default function ProblemsPage() {
           className="btn"
           data-cta-priority={conversionSpine.ctaPriorityPrimaryValue}
         >
-          Get started
+          {productCopy.ctaTaxonomy.decision}
         </Link>
       </p>
       <ol className="mechanism-list">

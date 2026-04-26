@@ -31,7 +31,7 @@ export default function IntegratePage() {
           href="#integrate-crossing-commands"
           data-cta-priority={conversionSpine.ctaPriorityPrimaryValue}
         >
-          Run your first verification
+          {conversionSpine.dominantByRoute["/integrate"]}
         </a>
       </p>
       <p className="lede muted">

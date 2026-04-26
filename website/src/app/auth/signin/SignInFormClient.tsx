@@ -46,14 +46,6 @@ export function SignInFormClient({ meteringClarifier }: { meteringClarifier: str
     <>
       <h1>{productCopy.signInPurpose.title}</h1>
       <p className="muted">{productCopy.signInPurpose.intro}</p>
-      <ul className="signin-benefits">
-        {productCopy.signInPurpose.benefits.map((b) => (
-          <li key={b}>{b}</li>
-        ))}
-      </ul>
-      <p className="muted u-mt-1" data-testid="signin-metering-clarifier">
-        {meteringClarifier}
-      </p>
       <form onSubmit={onSubmit} className="card card-narrow-24 u-mt-1">
         <label htmlFor="email">Email</label>
         <input
@@ -69,6 +61,17 @@ export function SignInFormClient({ meteringClarifier }: { meteringClarifier: str
           Send magic link
         </button>
       </form>
+      <details className="signin-details u-mt-1">
+        <summary>Details</summary>
+        <ul className="signin-benefits">
+          {productCopy.signInPurpose.benefits.map((b) => (
+            <li key={b}>{b}</li>
+          ))}
+        </ul>
+        <p className="muted u-mt-1" data-testid="signin-metering-clarifier">
+          {meteringClarifier}
+        </p>
+      </details>
       {notice && (
         <LiveStatus mode={notice.mode}>
           <p className="u-mt-1">{notice.text}</p>

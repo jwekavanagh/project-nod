@@ -25,7 +25,7 @@ function paidCheckoutCtaLabel(plan: PlanId): string {
 function paidSignInCtaLabel(plan: PlanId): string {
   if (plan === "team") return "Sign in to continue";
   const ctas = productCopy.pricingPlanCtas;
-  if (plan === "individual") return ctas.individual.signInLabel;
+  if (plan === "individual") return "Start free";
   if (plan === "business") return ctas.business.signInLabel;
   return "Get started";
 }

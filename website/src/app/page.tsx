@@ -1,4 +1,10 @@
 import { HeroTerminalHighlighted } from "@/components/HeroTerminalHighlighted";
+import { FunnelRouteCards } from "@/components/marketing/FunnelRouteCards";
+import { MiniCaseStudies } from "@/components/marketing/MiniCaseStudies";
+import { ProofStack } from "@/components/marketing/ProofStack";
+import { TrustPills } from "@/components/marketing/TrustPills";
+import { ValuePropTriptych } from "@/components/marketing/ValuePropTriptych";
+import { WhenToUseDecisionBox } from "@/components/marketing/WhenToUseDecisionBox";
 import { productCopy } from "@/content/productCopy";
 import { siteMetadata } from "@/content/siteMetadata";
 import marketing from "@/lib/marketing";
@@ -77,7 +83,10 @@ export default async function HomePage({
           <div className="home-hero-copy">
             <h1 id="hero-heading">{productCopy.hero.title}</h1>
             <p className="lede">{productCopy.heroOutcome}</p>
-            <p className="lede">{productCopy.heroMechanism}</p>
+            <p className="lede home-hero-supporting-outcome">
+              Catch missing DB writes before release with read-only verification against your actual
+              stores.
+            </p>
             <p className="home-cta-row" data-testid="home-hero-cta-row">
               <a
                 className="btn"
@@ -85,24 +94,18 @@ export default async function HomePage({
                 data-testid="home-hero-demo-cta"
                 data-cta-priority="primary"
               >
-                {productCopy.homeHeroCtaLabels.demo}
+                {productCopy.ctaTaxonomy.topOfFunnel}
               </a>
-            </p>
-            <p className="muted home-hero-tertiary">
               <Link
-                className="link-tertiary"
-                href={productCopy.homePageHeroSecondaryCta.href}
-                data-testid={productCopy.homePageHeroSecondaryCta.testId}
+                className="btn secondary"
+                href={productCopy.homeHeroSecondaryCta.href}
+                data-testid={productCopy.homeHeroSecondaryCta.testId}
                 data-cta-priority="secondary"
               >
-                {productCopy.homePageHeroSecondaryCta.label}
+                {productCopy.ctaTaxonomy.decision}
               </Link>
-              <span> · </span>
-              <Link className="link-tertiary" href={productCopy.homeHeroSecondaryCta.href}>
-                {productCopy.homeHeroSecondaryCta.label}
-              </Link>
-              <span> — npm, CI, and your own data.</span>
             </p>
+            <TrustPills items={productCopy.trustStripPills} />
             <p className="muted" data-testid="home-guarantee-footnote">
               {productCopy.guaranteeFootnote}{" "}
               <Link href={marketing.slug} data-testid="home-guarantee-product-brief-link">
@@ -156,6 +159,11 @@ export default async function HomePage({
         aria-labelledby="what-catches-heading"
       >
         <h2 id="what-catches-heading">{productCopy.homeWhatCatches.sectionTitle}</h2>
+        <ValuePropTriptych
+          problem={productCopy.coreValuePropTriptych.problem}
+          solution={productCopy.coreValuePropTriptych.solution}
+          outcome={productCopy.coreValuePropTriptych.outcome}
+        />
         <ul>
           {productCopy.homeWhatCatches.bullets.map((t) => (
             <li key={t}>{t}</li>
@@ -212,19 +220,16 @@ export default async function HomePage({
         data-testid={productCopy.uiTestIds.homeWhoFor}
         aria-labelledby="who-for-heading"
       >
-        <h2 id="who-for-heading">{productCopy.fitAndLimits.sectionTitle}</h2>
-        <h3>{productCopy.fitAndLimits.forYouHeading}</h3>
-        <ul>
-          {productCopy.forYou.map((t) => (
-            <li key={t}>{t}</li>
-          ))}
-        </ul>
-        <h3>{productCopy.fitAndLimits.notForYouHeading}</h3>
-        <ul>
-          {productCopy.notForYou.map((t) => (
-            <li key={t}>{t}</li>
-          ))}
-        </ul>
+        <div id="who-for-heading">
+          <WhenToUseDecisionBox
+            id="home-when-to-use-heading"
+            title={productCopy.whenToUseDecisionBox.title}
+            strongFitHeading={productCopy.whenToUseDecisionBox.strongFitHeading}
+            notDesignedHeading={productCopy.whenToUseDecisionBox.notDesignedHeading}
+            strongFitBullets={productCopy.whenToUseDecisionBox.strongFitBullets}
+            notDesignedBullets={productCopy.whenToUseDecisionBox.notDesignedBullets}
+          />
+        </div>
       </section>
     ),
     homeGuarantees: (
@@ -262,6 +267,14 @@ export default async function HomePage({
           {marketing.r2.frameworkMaturity}
         </p>
         <p className="muted home-closing-links-caption">{productCopy.homeClosing.integratorLinksCaption}</p>
+        <FunnelRouteCards />
+        <ProofStack
+          logosTitle={productCopy.proofStack.logosTitle}
+          logos={productCopy.proofStack.logos}
+          testimonials={productCopy.proofStack.testimonials}
+          metrics={productCopy.proofStack.metrics}
+        />
+        <MiniCaseStudies studies={productCopy.miniCaseStudies} />
         <ul className="home-trust-strip-list">
           {trustLinks.map((item) => (
             <li key={item.key} data-testid={`home-trust-strip-${item.key}`}>

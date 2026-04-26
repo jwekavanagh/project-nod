@@ -14,13 +14,19 @@ export function SiteFooter() {
   };
   const openapiHref = openapiHrefFromProcessEnv();
   const productLinks = buildSiteFooterProductLinks({ anchors, openapiHref });
+  const primaryProductLinks = productLinks.filter(
+    (link) => link.key === "github" || link.key === "npm" || link.key === "openapi",
+  );
+  const secondaryProductLinks = productLinks.filter(
+    (link) => link.key !== "github" && link.key !== "npm" && link.key !== "openapi",
+  );
   const legalLinks = buildSiteFooterLegalLinks();
 
   return (
     <footer className="site-footer">
       <div className="site-footer-inner">
         <nav aria-label="Product links">
-          {productLinks.map((link, i) => (
+          {primaryProductLinks.map((link, i) => (
             <span key={link.key}>
               {i > 0 ? <span className="site-footer-sep"> · </span> : null}
               {link.external ? (
@@ -33,6 +39,23 @@ export function SiteFooter() {
             </span>
           ))}
         </nav>
+        <details className="site-footer-resources">
+          <summary>Resources</summary>
+          <nav aria-label="More product links">
+            {secondaryProductLinks.map((link, i) => (
+              <span key={link.key}>
+                {i > 0 ? <span className="site-footer-sep"> · </span> : null}
+                {link.external ? (
+                  <a href={link.href} rel="noreferrer">
+                    {link.label}
+                  </a>
+                ) : (
+                  <Link href={link.href}>{link.label}</Link>
+                )}
+              </span>
+            ))}
+          </nav>
+        </details>
         <nav aria-label="Trust and legal">
           {legalLinks.map((link, i) => (
             <span key={link.key}>

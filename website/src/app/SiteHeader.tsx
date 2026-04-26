@@ -9,20 +9,12 @@ import { SignOutButton } from "./SignOutButton";
 
 function renderTopLevelLink(
   link: { key: string; href: string; label: string; external: boolean },
-  cliQuickstartHref: string,
 ) {
   if (link.key === "acquisition") {
     return (
       <Link key={link.key} href={productCopy.homepageAcquisitionCta.href}>
         {marketing.homepageAcquisitionCtaLabel}
       </Link>
-    );
-  }
-  if (link.key === "cli") {
-    return (
-      <a key={link.key} href={cliQuickstartHref} rel="noreferrer">
-        {link.label}
-      </a>
     );
   }
   if (link.external) {
@@ -54,21 +46,17 @@ export async function SiteHeader() {
     acquisitionHref: productCopy.homepageAcquisitionCta.href,
     acquisitionLabel: marketing.homepageAcquisitionCtaLabel,
   });
-  const cliQuickstart = productCopy.links.cliQuickstart;
-  const [acq, started, price, cli] = primaryLinks;
+  const [acq, started, price] = primaryLinks;
 
   return (
     <header className="site-header">
       <div className="site-header-inner">
         <BrandLockup />
         <nav className="site-nav" aria-label="Primary">
-          {renderTopLevelLink(acq, cliQuickstart)}
-          {renderTopLevelLink(started, cliQuickstart)}
-          <Link href="/guides">Learn</Link>
-          <Link href="/problems">Problems</Link>
-          <Link href="/compare">{productCopy.homeCommercialCompareApproachesLabel}</Link>
-          {renderTopLevelLink(price, cliQuickstart)}
-          {renderTopLevelLink(cli, cliQuickstart)}
+          {renderTopLevelLink(acq)}
+          {renderTopLevelLink(started)}
+          {renderTopLevelLink(price)}
+          <Link href="/guides">Docs</Link>
           {signedIn ? (
             <>
               <Link href="/account">Account</Link>

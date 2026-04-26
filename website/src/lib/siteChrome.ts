@@ -40,7 +40,7 @@ export function buildSiteHeaderPrimaryLinks(args: {
   const { anchors, acquisitionHref, acquisitionLabel } = args;
   return [
     { key: "acquisition", href: acquisitionHref, label: acquisitionLabel, external: false },
-    { key: "integrate", href: "/integrate", label: "Get started", external: false },
+    { key: "integrate", href: "/integrate", label: "Run first verification", external: false },
     { key: "pricing", href: "/pricing", label: "Pricing", external: false },
     {
       key: "cli",
@@ -79,7 +79,7 @@ export function buildHomeTrustStripLinks(args: {
 }): readonly SiteChromeLink[] {
   const { anchors, openapiHref } = args;
   return [
-    { key: "integrate", href: "/integrate", label: "Get started", external: false },
+    { key: "integrate", href: "/integrate", label: "Run first verification", external: false },
     { key: "openapi", href: openapiHref, label: "OpenAPI (commercial v1)", external: false },
     { key: "npm", href: anchors.npmPackageUrl, label: "npm package", external: true },
     { key: "github", href: anchors.gitRepositoryUrl, label: "Source repository", external: true },

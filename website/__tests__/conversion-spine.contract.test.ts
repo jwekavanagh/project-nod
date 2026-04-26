@@ -13,7 +13,7 @@ describe("conversion spine contract", () => {
     expect(s).toContain('"/guides/[slug]"');
     expect(s).toContain('"/examples/[slug]"');
     expect(s).toContain('"/compare/[slug]"');
-    expect(s).toContain('"/pricing": "Continue to checkout"');
+    expect(s).toContain('"/pricing": "Start free"');
     expect(s).toContain('"/claim": "Continue with email"');
   });
 
@@ -48,11 +48,11 @@ describe("conversion spine contract", () => {
     expect(chrome).not.toContain("SITE_HEADER_LEARN_FLYOUT_LINKS");
   });
 
-  it("forces dynamic discovery routes to get-started as dominant CTA", () => {
+  it("forces dynamic discovery routes to integrate as dominant CTA", () => {
     const surface = src("components/discovery/DiscoverySurfacePage.tsx");
     const progression = src("components/discovery/SurfaceProgression.tsx");
     expect(surface).toContain('<SurfaceProgression primaryCta="integrate" />');
-    expect(progression).toContain('{ href: "/integrate", label: "Get started" }');
+    expect(progression).toContain('{ href: "/integrate", label: "Run first verification" }');
     expect(progression).toContain('data-cta-priority');
     expect(progression).toContain("ctaPriorityPrimaryValue");
   });

@@ -25,7 +25,7 @@ export default function SecurityPage() {
           className="btn"
           data-cta-priority={conversionSpine.ctaPriorityPrimaryValue}
         >
-          Get started
+          {productCopy.ctaTaxonomy.decision}
         </Link>
       </p>
       <ul className="mechanism-list" data-testid="security-buyer-authority-nav">

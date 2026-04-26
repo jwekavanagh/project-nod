@@ -499,24 +499,38 @@ button.secondary, .btn.secondary {
   margin: 0 auto;
   padding: 1rem 1rem 2rem;
 }
+.site-footer-resources {
+  margin: 0.35rem 0 0.45rem;
+}
+.site-footer-resources summary {
+  cursor: pointer;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+.site-footer-resources nav {
+  margin-top: 0.35rem;
+}
 .site-footer-sep {
   color: var(--muted);
 }
 
 .home-section {
-  margin-bottom: 2.5rem;
+  margin-bottom: 3.5rem;
 }
 .home-section h1 {
-  font-size: 1.75rem;
+  font-size: clamp(2rem, 4.8vw, 3.25rem);
   line-height: 1.2;
   margin-top: 0;
+  letter-spacing: -0.02em;
 }
 .home-section h2 {
-  font-size: 1.35rem;
+  font-size: clamp(1.35rem, 2.2vw, 1.75rem);
   margin-top: 0;
 }
 .lede {
   max-width: 40rem;
+  font-size: 1.05rem;
+  line-height: 1.6;
 }
 .muted {
   color: var(--muted);
@@ -1048,7 +1062,7 @@ main {
 }
 
 .home-hero {
-  margin-bottom: 2rem;
+  margin-bottom: 2.5rem;
 }
 .home-hero-grid {
   display: grid;
@@ -1066,6 +1080,10 @@ main {
   align-items: center;
   gap: 0.75rem 1rem;
   margin-top: 1.25rem;
+}
+.home-hero-supporting-outcome {
+  font-weight: 600;
+  color: var(--brand-navy-ink);
 }
 .home-hero-terminal-label {
   font-size: 0.85rem;
@@ -1184,6 +1202,150 @@ main {
 .home-hero-tertiary {
   margin: 0.4rem 0 0.75rem;
   font-size: 0.9rem;
+}
+
+.trust-pills {
+  list-style: none;
+  padding: 0;
+  margin: 0.8rem 0 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem 0.65rem;
+}
+.trust-pills li {
+  padding: 0.3rem 0.65rem;
+  border-radius: 9999px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  font-size: 0.84rem;
+  color: var(--brand-navy-ink);
+}
+
+.value-triptych {
+  display: grid;
+  gap: 0.85rem;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  margin: 0.9rem 0 1.25rem;
+}
+.value-card {
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--card);
+  padding: 0.9rem;
+}
+.value-card p {
+  margin: 0;
+}
+.value-card-kicker {
+  font-size: 0.82rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--accent-on-card);
+  margin-bottom: 0.35rem !important;
+}
+
+.decision-box {
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--card);
+  padding: 1rem 1rem 0.75rem;
+}
+.decision-box-grid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+}
+.decision-box h3 {
+  font-size: 1rem;
+  margin: 0.35rem 0 0.35rem;
+}
+.decision-box ul {
+  margin-top: 0.4rem;
+}
+
+.proof-stack {
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--card);
+  padding: 1rem;
+  margin-top: 1rem;
+}
+.proof-stack-title {
+  margin: 0;
+}
+.proof-stack-logos,
+.proof-stack-testimonials,
+.proof-stack-metrics {
+  display: flex;
+  flex-wrap: wrap;
+  list-style: none;
+  margin: 0.6rem 0 0;
+  padding: 0;
+  gap: 0.45rem 0.65rem;
+}
+.proof-stack-logos li {
+  padding: 0.25rem 0.55rem;
+  border-radius: 9999px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  font-size: 0.84rem;
+}
+.proof-stack-testimonials li,
+.proof-stack-metrics li {
+  width: 100%;
+  font-size: 0.93rem;
+}
+
+.mini-case-studies {
+  margin-top: 1.4rem;
+}
+.mini-case-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 0.85rem;
+}
+.mini-case-card {
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--card);
+  padding: 0.85rem;
+}
+.mini-case-card h3 {
+  margin-top: 0;
+  font-size: 1rem;
+}
+.mini-case-card p {
+  margin: 0.45rem 0;
+  font-size: 0.93rem;
+  line-height: 1.45;
+}
+
+.funnel-route-cards {
+  margin-top: 1.25rem;
+}
+.funnel-route-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 0.8rem;
+}
+.funnel-route-card {
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--card);
+  padding: 0.8rem;
+}
+.funnel-route-card h3 {
+  margin: 0 0 0.25rem;
+  font-size: 1rem;
+}
+
+.signin-details {
+  max-width: 32rem;
+}
+.signin-details summary {
+  cursor: pointer;
+  font-weight: 600;
 }
 .try-it-verdict-card {
   margin: 0.6rem 0 0.25rem;
