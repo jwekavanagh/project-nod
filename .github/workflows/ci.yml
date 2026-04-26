@@ -79,6 +79,7 @@ jobs:
         run: node scripts/assert-codeql-remediation-sarif.mjs "${{ steps.codeql_analyze.outputs['sarif-output'] }}"
 
   test:
+    name: test
     runs-on: ubuntu-latest
     services:
       postgres:
@@ -113,6 +114,7 @@ jobs:
         run: npm run conformance:all && npm run conformance:gate && node conformance/assert-bigquery-excluded.mjs && npm run docs:check:capabilities
 
   commercial:
+    name: commercial
     runs-on: ubuntu-latest
     services:
       postgres:
@@ -162,6 +164,23 @@ jobs:
         run: npx playwright install chromium
       - name: Verify web marketing copy contract
         run: npm run verify:web-marketing-copy
+
+  release-preview:
+    name: Release preview
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+      - uses: ./.github/actions/setup-node-npm
+      - name: Install dependencies
+        env:
+          NODE_OPTIONS: "--disable-warning=DEP0040"
+          npm_config_loglevel: "error"
+        run: npm ci
+      - name: Release preview (squash message vs allowlist)
+        run: node scripts/release-preview.mjs --event "$GITHUB_EVENT_PATH"
 
   # After CodeQL, core tests, and commercial gates are green, promote to Vercel production.
   vercel_production:
