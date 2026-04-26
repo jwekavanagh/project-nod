@@ -3,11 +3,15 @@ import {
   OPERATIONAL_MESSAGE_MAX_CHARS,
   formatOperationalMessage,
 } from "./failureCatalog.js";
-import { compareUtf16Id } from "./resolveExpectation.js";
 import { RESOLVE_FAILURE_CODES } from "./resolveFailureCodes.js";
 import type { FailureDiagnostic, Reason, StepOutcome, StepVerificationRequest } from "./types.js";
 
 export { RESOLVE_FAILURE_CODES };
+
+/** Local UTF-16 comparator to avoid runtime coupling on resolveExpectation exports. */
+function compareUtf16Id(a: string, b: string): number {
+  return a < b ? -1 : a > b ? 1 : 0;
+}
 
 /** Reason codes that produce effect `incomplete_verification` in reconciler.ts (connector + row read). */
 export const RECONCILER_INCOMPLETE_VERIFICATION_CODES: ReadonlySet<string> = new Set([
