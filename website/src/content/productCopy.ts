@@ -373,45 +373,6 @@ export const trustStripPills = [
   "Audit-friendly outputs",
 ] as const;
 
-export const proofStack = {
-  logosTitle: "Trusted by teams shipping agent workflows",
-  logos: ["Northline AI", "DataPulse", "LedgerPath", "StackOps", "Helio Labs", "OpsHarbor"],
-  testimonials: [
-    "“We caught missing CRM writes before a customer escalation.”",
-    "“The gate gave us confidence to ship weekly automation changes.”",
-    "“We replaced false green traces with deterministic release checks.”",
-  ],
-  metrics: [
-    "Median first verification setup: under 10 minutes",
-    "Weekly verification runs across production teams",
-    "Pre-release catches before customer-visible regressions",
-  ],
-} as const;
-
-export const miniCaseStudies = [
-  {
-    title: "CRM write missing after “success” trace",
-    before: "Support automation marked a ticket resolved, but the CRM row stayed stale.",
-    after: "Added read-only verification gate and blocked release before handoff.",
-    outcome: "Prevented incorrect status syncs from reaching customers.",
-    architecture: "LangGraph + Postgres + CRM API webhook",
-  },
-  {
-    title: "Webhook 200, ledger mismatch",
-    before: "Payment callback returned 200 while internal ledger rows were inconsistent.",
-    after: "Verification compared callback claims with persisted rows before settlement.",
-    outcome: "Reduced reconciliation incidents and manual finance follow-up.",
-    architecture: "Stripe webhook + Postgres ledger + CI gate",
-  },
-  {
-    title: "CI green, side effect missing",
-    before: "Build passed despite missing database side effects after tool loop.",
-    after: "Pre-prod read-only gate failed on ROW_ABSENT and stopped deploy.",
-    outcome: "Stopped false-green deployments from entering production.",
-    architecture: "Agent tool loop + SQLite/Postgres + CI pipeline",
-  },
-] as const;
-
 /**
  * Primary homepage copy (canonical for `/`). Stubs for the same topics remain in
  * `config/marketing.json` for the prose budget; the site renders this object instead.
@@ -890,8 +851,6 @@ export const productCopy = {
   coreValuePropTriptych,
   whenToUseDecisionBox,
   trustStripPills,
-  proofStack,
-  miniCaseStudies,
   pricingBillingAndQuestionsBand,
   learnBundledProofLedes,
   learnBundledProofIntegrateLede,

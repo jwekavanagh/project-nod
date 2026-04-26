@@ -1,5 +1,4 @@
 import { conversionSpine, learnHub, productCopy } from "@/content/productCopy";
-import { MiniCaseStudies } from "@/components/marketing/MiniCaseStudies";
 import { indexableGuideCanonical } from "@/lib/indexableGuides";
 import { listAllSurfaces } from "@/lib/surfaceMarkdown";
 import type { Metadata } from "next";
@@ -134,7 +133,6 @@ export default function GuidesHubPage() {
           </Link>
         </p>
       </section>
-      <MiniCaseStudies studies={productCopy.miniCaseStudies} />
     </main>
   );
 }

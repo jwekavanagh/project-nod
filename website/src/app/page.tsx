@@ -1,7 +1,5 @@
 import { HeroTerminalHighlighted } from "@/components/HeroTerminalHighlighted";
 import { FunnelRouteCards } from "@/components/marketing/FunnelRouteCards";
-import { MiniCaseStudies } from "@/components/marketing/MiniCaseStudies";
-import { ProofStack } from "@/components/marketing/ProofStack";
 import { TrustPills } from "@/components/marketing/TrustPills";
 import { ValuePropTriptych } from "@/components/marketing/ValuePropTriptych";
 import { WhenToUseDecisionBox } from "@/components/marketing/WhenToUseDecisionBox";
@@ -268,13 +266,6 @@ export default async function HomePage({
         </p>
         <p className="muted home-closing-links-caption">{productCopy.homeClosing.integratorLinksCaption}</p>
         <FunnelRouteCards />
-        <ProofStack
-          logosTitle={productCopy.proofStack.logosTitle}
-          logos={productCopy.proofStack.logos}
-          testimonials={productCopy.proofStack.testimonials}
-          metrics={productCopy.proofStack.metrics}
-        />
-        <MiniCaseStudies studies={productCopy.miniCaseStudies} />
         <ul className="home-trust-strip-list">
           {trustLinks.map((item) => (
             <li key={item.key} data-testid={`home-trust-strip-${item.key}`}>

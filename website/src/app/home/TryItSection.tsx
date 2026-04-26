@@ -151,9 +151,7 @@ export function TryItSection({ initialScenarioId }: TryItSectionProps) {
     >
       <h2 id="try-it-heading">{productCopy.tryIt.title}</h2>
       <p className="muted">{productCopy.tryIt.intro}</p>
-      <p className="muted">
-        Flow: choose scenario -> run verification -> inspect verdict -> continue with your own data.
-      </p>
+      <p className="muted">Flow: choose scenario, run verification, inspect verdict, then continue with your own data.</p>
       <p className="muted try-it-pre-frame" data-testid="try-it-pre-button-framing">
         {productCopy.tryIt.preButtonFraming}
       </p>

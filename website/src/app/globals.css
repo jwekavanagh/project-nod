@@ -1264,63 +1264,6 @@ main {
   margin-top: 0.4rem;
 }
 
-.proof-stack {
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  background: var(--card);
-  padding: 1rem;
-  margin-top: 1rem;
-}
-.proof-stack-title {
-  margin: 0;
-}
-.proof-stack-logos,
-.proof-stack-testimonials,
-.proof-stack-metrics {
-  display: flex;
-  flex-wrap: wrap;
-  list-style: none;
-  margin: 0.6rem 0 0;
-  padding: 0;
-  gap: 0.45rem 0.65rem;
-}
-.proof-stack-logos li {
-  padding: 0.25rem 0.55rem;
-  border-radius: 9999px;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  font-size: 0.84rem;
-}
-.proof-stack-testimonials li,
-.proof-stack-metrics li {
-  width: 100%;
-  font-size: 0.93rem;
-}
-
-.mini-case-studies {
-  margin-top: 1.4rem;
-}
-.mini-case-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 0.85rem;
-}
-.mini-case-card {
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  background: var(--card);
-  padding: 0.85rem;
-}
-.mini-case-card h3 {
-  margin-top: 0;
-  font-size: 1rem;
-}
-.mini-case-card p {
-  margin: 0.45rem 0;
-  font-size: 0.93rem;
-  line-height: 1.45;
-}
-
 .funnel-route-cards {
   margin-top: 1.25rem;
 }

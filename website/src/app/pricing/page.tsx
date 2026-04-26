@@ -1,5 +1,4 @@
 import { productCopy } from "@/content/productCopy";
-import { ProofStack } from "@/components/marketing/ProofStack";
 import { TrustPills } from "@/components/marketing/TrustPills";
 import { ValuePropTriptych } from "@/components/marketing/ValuePropTriptych";
 import { WhenToUseDecisionBox } from "@/components/marketing/WhenToUseDecisionBox";
@@ -71,13 +70,6 @@ export default function PricingPage() {
         strongFitBullets={productCopy.whenToUseDecisionBox.strongFitBullets}
         notDesignedBullets={productCopy.whenToUseDecisionBox.notDesignedBullets}
       />
-      <ProofStack
-        logosTitle={productCopy.proofStack.logosTitle}
-        logos={productCopy.proofStack.logos}
-        testimonials={productCopy.proofStack.testimonials}
-        metrics={productCopy.proofStack.metrics}
-      />
-
       <h2 className="pricing-plans-heading">{productCopy.pricingPlansSectionTitle}</h2>
       <PricingClient plans={vm.planRows} enterpriseMailto={enterpriseMailto} />
 
