@@ -52,4 +52,11 @@ describe("release workflow contract", () => {
     const src = readFileSync(join(root, "scripts", "release-outcome-summarize.mjs"), "utf8");
     assert.ok(src.includes("RELEASE_OUTCOME="));
   });
+
+  it("publish-pypi has Verify distribution step (T6)", () => {
+    const yml = readFileSync(join(root, ".github", "workflows", "release.yml"), "utf8");
+    assert.ok(yml.includes("node scripts/verify-release-distribution.mjs"));
+    assert.ok(yml.includes("GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}"));
+    assert.ok(yml.includes("Verify distribution"));
+  });
 });
