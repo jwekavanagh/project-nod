@@ -1,3 +1,10 @@
+## [1.1.1](https://github.com/jwekavanagh/agentskeptic/compare/v1.1.0...v1.1.1) (2026-04-27)
+
+
+### Bug Fixes
+
+* **release:** publish 1.1.1 after npm blocked duplicate 1.1.0 ([#17](https://github.com/jwekavanagh/agentskeptic/issues/17)) ([9f5ffbf](https://github.com/jwekavanagh/agentskeptic/commit/9f5ffbf6c1896f0a0fa649fc79ba18e6c2e08bf3))
+
 # [1.1.0](https://github.com/jwekavanagh/agentskeptic/compare/v1.0.1...v1.1.0) (2026-04-27)
 
 
