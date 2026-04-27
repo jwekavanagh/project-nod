@@ -17,7 +17,7 @@ describe("buyer-surface HTML contracts (R2–R6)", { timeout: 300_000 }, () => {
     await ensureMarketingSiteRunning();
   });
 
-  it("footer product row order github → npm → openapi → issues → support (R2)", async () => {
+  it("footer product row order github → npm → openapi → issues → support → contact (R2)", async () => {
     const html = await getSiteHtml("/");
     const $ = cheerio.load(html);
     const hrefs = $("footer nav[aria-label='Product links'] a")
@@ -28,7 +28,8 @@ describe("buyer-surface HTML contracts (R2–R6)", { timeout: 300_000 }, () => {
     expect(hrefs[2]).toMatch(/openapi-commercial-v1\.yaml$/);
     expect(hrefs[3]).toBe(publicProductAnchors.bugsUrl);
     expect(hrefs[4]).toBe("/support");
-    expect(hrefs).toHaveLength(5);
+    expect(hrefs[5]).toBe("/contact");
+    expect(hrefs).toHaveLength(6);
   });
 
   it("footer legal row security → privacy → terms (R2)", async () => {

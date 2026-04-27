@@ -1,15 +1,20 @@
 import { conversionSpine, productCopy } from "@/content/productCopy";
 import { enterpriseMailtoHref } from "@/lib/contactSalesEmail";
 import { indexableGuideCanonical } from "@/lib/indexableGuides";
+import { marketingOpenGraphAndTwitter } from "@/lib/marketingSocialMetadata";
 import type { Metadata } from "next";
 import Link from "next/link";
 
+const contactTitle = "Contact — AgentSkeptic";
+const contactDescription =
+  "Reach Enterprise sales for procurement, custom limits, and contract terms. Other questions route through Support.";
+
 export const metadata: Metadata = {
-  title: "Contact — AgentSkeptic",
-  description:
-    "Reach Enterprise sales for procurement, custom limits, and contract terms. Other questions route through Support.",
+  title: contactTitle,
+  description: contactDescription,
   alternates: { canonical: indexableGuideCanonical("/contact") },
   robots: { index: true, follow: true },
+  ...marketingOpenGraphAndTwitter({ title: contactTitle, description: contactDescription }),
 };
 
 export default function ContactPage() {

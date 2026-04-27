@@ -4,15 +4,20 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { loadLegalMetadata } from "@/lib/plans";
 import { indexableGuideCanonical } from "@/lib/indexableGuides";
+import { marketingOpenGraphAndTwitter } from "@/lib/marketingSocialMetadata";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { conversionSpine, productCopy } from "@/content/productCopy";
 
+const termsTitle = "Terms of Service — AgentSkeptic";
+const termsDescription = "Terms governing use of the AgentSkeptic website, commercial services, and related offerings.";
+
 export const metadata: Metadata = {
-  title: "Terms of Service — AgentSkeptic",
-  description: "Terms governing use of the AgentSkeptic website, commercial services, and related offerings.",
+  title: termsTitle,
+  description: termsDescription,
   alternates: { canonical: indexableGuideCanonical("/terms") },
   robots: { index: true, follow: true },
+  ...marketingOpenGraphAndTwitter({ title: termsTitle, description: termsDescription }),
 };
 
 export default function TermsPage() {

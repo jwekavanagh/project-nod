@@ -1,15 +1,19 @@
 import { conversionSpine, learnHub, productCopy } from "@/content/productCopy";
 import { indexableGuideCanonical } from "@/lib/indexableGuides";
+import { marketingOpenGraphAndTwitter } from "@/lib/marketingSocialMetadata";
 import { listAllSurfaces } from "@/lib/surfaceMarkdown";
 import type { Metadata } from "next";
 import Link from "next/link";
 import type { ReactNode } from "react";
 
+const guidesTitle = "Learn — AgentSkeptic";
+
 export const metadata: Metadata = {
-  title: "Learn — AgentSkeptic",
+  title: guidesTitle,
   description: productCopy.learnHubIndexDescription,
   robots: { index: true, follow: true },
   alternates: { canonical: indexableGuideCanonical("/guides") },
+  ...marketingOpenGraphAndTwitter({ title: guidesTitle, description: productCopy.learnHubIndexDescription }),
 };
 
 function bundledExampleLabel(route: string, fallbackTitle: string): ReactNode {

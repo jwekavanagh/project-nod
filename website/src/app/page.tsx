@@ -4,7 +4,6 @@ import { TrustPills } from "@/components/marketing/TrustPills";
 import { ValuePropTriptych } from "@/components/marketing/ValuePropTriptych";
 import { WhenToUseDecisionBox } from "@/components/marketing/WhenToUseDecisionBox";
 import { productCopy } from "@/content/productCopy";
-import { siteMetadata } from "@/content/siteMetadata";
 import marketing from "@/lib/marketing";
 import { indexableGuideCanonical } from "@/lib/indexableGuides";
 import { publicProductAnchors } from "@/lib/publicProductAnchors";
@@ -14,6 +13,7 @@ import {
   getHomeCommercialSectionFromConfig,
   HOME_COMMERCIAL_BOUNDARY_DOCS,
 } from "@/lib/commercialNarrative";
+import { homePageTitleFromMarketing, marketingOpenGraphAndTwitter } from "@/lib/marketingSocialMetadata";
 import { buildHomeTrustStripLinks, openapiHrefFromProcessEnv } from "@/lib/siteChrome";
 import { isDemoScenarioId, type DemoScenarioId } from "@/lib/demoScenarios";
 import Link from "next/link";
@@ -27,23 +27,17 @@ function resolveInitialTryItDemo(demo: string | string[] | undefined): DemoScena
   return "wf_missing";
 }
 
+const homePageTitle = homePageTitleFromMarketing(marketing.heroTitle);
+
 export const metadata: Metadata = {
-  title: marketing.siteDefaultMetadata.title,
+  title: homePageTitle,
   description: marketing.siteDefaultMetadata.description,
   alternates: { canonical: indexableGuideCanonical("/") },
-  openGraph: {
-    title: marketing.heroTitle,
+  ...marketingOpenGraphAndTwitter({
+    title: homePageTitle,
     description: marketing.siteDefaultMetadata.description,
-    type: "website",
-    images: [
-      {
-        url: siteMetadata.openGraphImage.path,
-        width: siteMetadata.openGraphImage.width,
-        height: siteMetadata.openGraphImage.height,
-        alt: siteMetadata.openGraphImage.alt,
-      },
-    ],
-  },
+    openGraphType: "website",
+  }),
 };
 
 const anchors = {

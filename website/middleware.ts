@@ -4,6 +4,7 @@ import {
   buildCommercialSiteContentSecurityPolicy,
   COMMERCIAL_SITE_CSP_NONCE_HEADER,
 } from "./src/lib/httpSecurityHeaders";
+import { xRobotsTagValueForVercelPreview } from "./src/lib/previewVercelNoindexHeader";
 
 function generateNonce(): string {
   const bytes = new Uint8Array(16);
@@ -28,6 +29,10 @@ export function middleware(request: NextRequest) {
     request: { headers: requestHeaders },
   });
   response.headers.set("Content-Security-Policy", csp);
+  const previewRobots = xRobotsTagValueForVercelPreview();
+  if (previewRobots) {
+    response.headers.set("X-Robots-Tag", previewRobots);
+  }
   return response;
 }
 

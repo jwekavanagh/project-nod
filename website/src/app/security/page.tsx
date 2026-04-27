@@ -2,14 +2,18 @@ import { conversionSpine, productCopy } from "@/content/productCopy";
 import { siteMetadata } from "@/content/siteMetadata";
 import { getSecurityQuickFacts } from "@/lib/commercialNarrative";
 import { indexableGuideCanonical } from "@/lib/indexableGuides";
+import { marketingOpenGraphAndTwitter } from "@/lib/marketingSocialMetadata";
 import type { Metadata } from "next";
 import Link from "next/link";
 
+const securityDescription = siteMetadata.security.description;
+
 export const metadata: Metadata = {
   title: siteMetadata.security.title,
-  description: siteMetadata.security.description,
+  description: securityDescription,
   alternates: { canonical: indexableGuideCanonical("/security") },
   robots: { index: true, follow: true },
+  ...marketingOpenGraphAndTwitter({ title: siteMetadata.security.title, description: securityDescription }),
 };
 
 export default function SecurityPage() {

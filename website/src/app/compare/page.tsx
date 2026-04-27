@@ -1,15 +1,20 @@
 import { ValuePropTriptych } from "@/components/marketing/ValuePropTriptych";
 import { conversionSpine, productCopy } from "@/content/productCopy";
 import { indexableGuideCanonical } from "@/lib/indexableGuides";
+import { marketingOpenGraphAndTwitter } from "@/lib/marketingSocialMetadata";
 import type { Metadata } from "next";
 import Link from "next/link";
 
+const compareTitle = "Compare approaches — AgentSkeptic";
+const compareDescription =
+  "Choose the right reliability layer: how read-only verification differs from offline evals, observability dashboards, and trace-only review—grounded in your stores before you ship.";
+
 export const metadata: Metadata = {
-  title: "Compare approaches — AgentSkeptic",
-  description:
-    "Choose the right reliability layer: how read-only verification differs from offline evals, observability dashboards, and trace-only review—grounded in your stores before you ship.",
+  title: compareTitle,
+  description: compareDescription,
   robots: { index: true, follow: true },
   alternates: { canonical: indexableGuideCanonical("/compare") },
+  ...marketingOpenGraphAndTwitter({ title: compareTitle, description: compareDescription }),
 };
 
 const SECTIONS = [

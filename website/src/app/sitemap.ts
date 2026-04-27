@@ -1,4 +1,5 @@
 import marketing from "@/lib/marketing";
+import { lastModifiedForSitemapPath } from "@/lib/sitemapPathLastModified";
 import { listDiscoveryRoutes } from "@/lib/surfaceMarkdown";
 import { publicProductAnchors } from "@/lib/publicProductAnchors";
 import type { MetadataRoute } from "next";
@@ -27,9 +28,11 @@ export default function sitemap(): MetadataRoute.Sitemap {
     "/openapi-commercial-v1.yaml",
     "/llms.txt",
   ];
-  const now = new Date();
-  return paths.map((p) => ({
-    url: abs(p),
-    lastModified: now,
-  }));
+  return paths.map((p) => {
+    const lastModified = lastModifiedForSitemapPath(p);
+    if (lastModified) {
+      return { url: abs(p), lastModified };
+    }
+    return { url: abs(p) };
+  });
 }

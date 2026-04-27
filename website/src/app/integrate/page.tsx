@@ -3,14 +3,21 @@ import marketing from "@/lib/marketing";
 import { conversionSpine } from "@/content/productCopy";
 import { siteMetadata } from "@/content/siteMetadata";
 import { indexableGuideCanonical } from "@/lib/indexableGuides";
+import { marketingOpenGraphAndTwitter } from "@/lib/marketingSocialMetadata";
 import type { Metadata } from "next";
 import Link from "next/link";
+
+const integrateSocialTitle = `${siteMetadata.integrate.title} — AgentSkeptic`;
 
 export const metadata: Metadata = {
   title: siteMetadata.integrate.title,
   description: siteMetadata.integrate.description,
   alternates: { canonical: indexableGuideCanonical("/integrate") },
   robots: { index: true, follow: true },
+  ...marketingOpenGraphAndTwitter({
+    title: integrateSocialTitle,
+    description: siteMetadata.integrate.description,
+  }),
 };
 
 export default function IntegratePage() {

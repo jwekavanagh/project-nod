@@ -2,15 +2,22 @@ import { DiscoveryArticleJsonLd } from "@/components/discovery/DiscoveryArticleJ
 import { conversionSpine, productCopy } from "@/content/productCopy";
 import marketing from "@/lib/marketing";
 import { indexableGuideCanonical } from "@/lib/indexableGuides";
+import { marketingOpenGraphAndTwitter } from "@/lib/marketingSocialMetadata";
 import { readSurfaceFile } from "@/lib/surfaceMarkdown";
 import type { Metadata } from "next";
 import Link from "next/link";
 
+const problemsDescription = productCopy.problemsPageMetadata.description;
+
 export const metadata: Metadata = {
   title: productCopy.problemsPageMetadata.title,
-  description: productCopy.problemsPageMetadata.description,
+  description: problemsDescription,
   alternates: { canonical: indexableGuideCanonical("/problems") },
   robots: { index: true, follow: true },
+  ...marketingOpenGraphAndTwitter({
+    title: productCopy.problemsPageMetadata.title,
+    description: problemsDescription,
+  }),
 };
 
 const routeLinkLabels: Record<string, string> = {
