@@ -47,7 +47,7 @@ jobs:
       AGENTSKEPTIC_TELEMETRY: "0"
     steps:
       - name: Create GitHub App token
-        uses: actions/create-github-app-token@v1
+        uses: actions/create-github-app-token@v3
         id: app-token
         with:
           app-id: ${{ vars.RELEASE_APP_ID }}
