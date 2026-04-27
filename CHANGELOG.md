@@ -1,3 +1,10 @@
+## [1.1.2](https://github.com/jwekavanagh/agentskeptic/compare/v1.1.1...v1.1.2) (2026-04-27)
+
+
+### Bug Fixes
+
+* **ci:** register GitHub deployment after vercel --prod for environments UI ([#18](https://github.com/jwekavanagh/agentskeptic/issues/18)) ([2dc3eb7](https://github.com/jwekavanagh/agentskeptic/commit/2dc3eb75ab03efb3b7445745e5a5a383b6c1914f))
+
 ## [1.1.1](https://github.com/jwekavanagh/agentskeptic/compare/v1.1.0...v1.1.1) (2026-04-27)
 
 
