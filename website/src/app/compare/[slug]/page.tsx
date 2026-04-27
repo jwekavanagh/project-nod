@@ -1,6 +1,10 @@
 import { DiscoverySurfacePage } from "@/components/discovery/DiscoverySurfacePage";
 import { indexableGuideCanonical } from "@/lib/indexableGuides";
-import { brandedMarketingTitle, marketingOpenGraphAndTwitter } from "@/lib/marketingSocialMetadata";
+import {
+  brandedMarketingTitle,
+  marketingOpenGraphAndTwitter,
+  surfaceTitleSegmentForTemplate,
+} from "@/lib/marketingSocialMetadata";
 import { listSlugsForSegment, readSurfaceFile, type SurfaceSegment } from "@/lib/surfaceMarkdown";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
@@ -19,13 +23,14 @@ export async function generateMetadata({
   const { slug } = await params;
   try {
     const s = readSurfaceFile(segment, slug);
+    const titleSegment = surfaceTitleSegmentForTemplate(s.title);
     return {
-      title: s.title,
+      title: titleSegment,
       description: s.description,
       robots: { index: true, follow: true },
       alternates: { canonical: indexableGuideCanonical(s.route) },
       ...marketingOpenGraphAndTwitter({
-        title: brandedMarketingTitle(s.title),
+        title: brandedMarketingTitle(titleSegment),
         description: s.description,
       }),
     };

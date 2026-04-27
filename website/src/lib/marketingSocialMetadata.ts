@@ -41,10 +41,25 @@ export function homePageTitleFromMarketing(heroTitle: string): string {
   return `${withoutTrailingPeriod} — AgentSkeptic`;
 }
 
+const BRAND_TITLE_SUFFIX = / — AgentSkeptic$/;
+
+/**
+ * Surface markdown `title` fields sometimes already end with " — AgentSkeptic". Strip that so
+ * the root `title.template` adds the suffix once for {@link Metadata} `title`.
+ */
+export function surfaceTitleSegmentForTemplate(surfaceTitle: string): string {
+  return surfaceTitle.replace(BRAND_TITLE_SUFFIX, "").trim();
+}
+
 /**
  * Full public document/social title when the root layout uses `title.template: "%s — AgentSkeptic"`
  * and the page exports only the **segment** in `metadata.title`.
+ * Idempotent if the segment already includes the brand suffix.
  */
 export function brandedMarketingTitle(shortPageSegment: string): string {
-  return `${shortPageSegment} — AgentSkeptic`;
+  const t = shortPageSegment.trim();
+  if (BRAND_TITLE_SUFFIX.test(t)) {
+    return t;
+  }
+  return `${t} — AgentSkeptic`;
 }
