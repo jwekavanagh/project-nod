@@ -66,7 +66,7 @@ describe("readme adoption + wedge", () => {
 
   it("O5 first-run-integration: README wedge link before first bash block containing npm start", () => {
     const p = join(root, "docs", "first-run-integration.md");
-    const s = readFileSync(p, "utf8");
+    const s = readFileSync(p, "utf8").replace(/\r\n/g, "\n");
     const iLink = s.indexOf(`README.md#${WEDGE_FRAGMENT}`);
     assert.ok(iLink >= 0, "README.md#wedge fragment link missing");
     const iNpmStartBlock = s.indexOf("```bash\nnpm start\n");

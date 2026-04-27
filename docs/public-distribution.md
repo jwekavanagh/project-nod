@@ -34,8 +34,8 @@ Single place for **public identity**, **anchor sync**, **CI / Vitest public orig
 | `llms.txt` (repo root) | Committed agent surface; byte-synced with `website/public/llms.txt` after sync | No |
 | `docs/ambient-ci-distribution.md` | Ambient GitHub Actions contract (sizes, upsert, permissions) | Yes |
 | `scripts/validate-discovery-acquisition.mjs` | CLI: run validation only (`npm run check:discovery-acquisition`) | No |
-| `schemas/openapi-commercial-v1.in.yaml` | OpenAPI source with sync tokens only (no hardcoded distribution URLs); includes **`POST /api/public/verification-reports`** (`createPublicVerificationReport`) | Yes |
-| `schemas/openapi-commercial-v1.yaml` | Derived from sync | No |
+| `schemas/openapi-commercial-v1.in.yaml` | OpenAPI source: sync tokens only; **`__PRODUCT_VERSION__` once**; includes **`POST /api/public/verification-reports`** (`createPublicVerificationReport`); do **not** hand-edit a numeric `info.version` in the template—`emit-primary-marketing` injects the root `package.json` `version` | Yes |
+| `schemas/openapi-commercial-v1.yaml` | Derived: `info.version` equals product semver from the same `package.json` (via the template token) | No |
 | `schemas/public-verification-report-v1.schema.json` | Public share POST envelope (`workflow` \| `quick`) | Yes |
 | `docs/shareable-verification-reports.md` | SSOT for `/r/{id}`, POST body cap (**393216** bytes), **`PUBLIC_VERIFICATION_REPORTS_ENABLED`**, CLI **`--share-report-origin`** | Yes |
 | `docs/discovery-surfaces.md` | SSOT for indexable discovery URLs, markdown surfaces under `website/content/surfaces/`, sitemap/`llms.txt` policy, metadata merge gate, migration goldens | Yes |

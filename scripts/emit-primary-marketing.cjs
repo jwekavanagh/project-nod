@@ -47,6 +47,8 @@ function countOccurrences(haystack, needle) {
   return n;
 }
 
+const PRODUCT_VERSION_TOKEN = "__PRODUCT_VERSION__";
+
 function validateOpenapiTemplate() {
   const template = readFileSync(OPENAPI_IN, "utf8");
   for (const tok of TOKENS) {
@@ -54,6 +56,10 @@ function validateOpenapiTemplate() {
     if (c !== 1) {
       throw new Error(`openapi template: token ${tok} must appear exactly once, found ${c}`);
     }
+  }
+  const vTok = countOccurrences(template, PRODUCT_VERSION_TOKEN);
+  if (vTok !== 1) {
+    throw new Error(`openapi template: token ${PRODUCT_VERSION_TOKEN} must appear exactly once, found ${vTok}`);
   }
 }
 
@@ -178,7 +184,13 @@ function syncPrimaryMarketing() {
   const integrateUrl = `${canonicalOrigin}/integrate`;
 
   const template = readFileSync(OPENAPI_IN, "utf8");
+  const pkgForVersion = JSON.parse(readFileSync(PKG_PATH, "utf8"));
+  const productSemver = String(pkgForVersion.version ?? "").trim();
+  if (!productSemver) {
+    throw new Error("emit-primary-marketing: package.json missing version (OpenAPI __PRODUCT_VERSION__)");
+  }
   let mid = template;
+  mid = mid.replace(PRODUCT_VERSION_TOKEN, JSON.stringify(productSemver));
   mid = mid.replace("__IDENTITY_ONE_LINER__", escaped);
   mid = mid.replace("__DISTRIBUTION_CONTACT_URL__", canonicalOrigin);
   mid = mid.replace("__DISTRIBUTION_INTEGRATE_URL__", integrateUrl);
