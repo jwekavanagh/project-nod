@@ -4,16 +4,22 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { loadLegalMetadata } from "@/lib/plans";
 import { indexableGuideCanonical } from "@/lib/indexableGuides";
+import { brandedMarketingTitle, marketingOpenGraphAndTwitter } from "@/lib/marketingSocialMetadata";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { conversionSpine, productCopy } from "@/content/productCopy";
 
+const privacySegmentTitle = "Privacy Policy";
+const privacyPublicTitle = brandedMarketingTitle(privacySegmentTitle);
+const privacyDescription =
+  "How AgentSkeptic processes account email, billing metadata via Stripe, and usage counters required to enforce plan limits.";
+
 export const metadata: Metadata = {
-  title: "Privacy Policy — AgentSkeptic",
-  description:
-    "How AgentSkeptic processes account email, billing metadata via Stripe, and usage counters required to enforce plan limits.",
+  title: privacySegmentTitle,
+  description: privacyDescription,
   alternates: { canonical: indexableGuideCanonical("/privacy") },
   robots: { index: true, follow: true },
+  ...marketingOpenGraphAndTwitter({ title: privacyPublicTitle, description: privacyDescription }),
 };
 
 export default function PrivacyPage() {

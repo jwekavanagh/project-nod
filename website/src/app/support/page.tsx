@@ -1,15 +1,21 @@
 import { conversionSpine, productCopy } from "@/content/productCopy";
 import { siteMetadata } from "@/content/siteMetadata";
 import { indexableGuideCanonical } from "@/lib/indexableGuides";
+import { brandedMarketingTitle, marketingOpenGraphAndTwitter } from "@/lib/marketingSocialMetadata";
 import { publicProductAnchors } from "@/lib/publicProductAnchors";
 import type { Metadata } from "next";
 import Link from "next/link";
 
+const supportDescription = siteMetadata.support.description;
+const supportSegmentTitle = "Support and procurement";
+const supportPublicTitle = brandedMarketingTitle(supportSegmentTitle);
+
 export const metadata: Metadata = {
-  title: siteMetadata.support.title,
-  description: siteMetadata.support.description,
+  title: supportSegmentTitle,
+  description: supportDescription,
   alternates: { canonical: indexableGuideCanonical("/support") },
   robots: { index: true, follow: true },
+  ...marketingOpenGraphAndTwitter({ title: supportPublicTitle, description: supportDescription }),
 };
 
 export default function SupportPage() {

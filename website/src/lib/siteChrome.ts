@@ -62,6 +62,7 @@ export function buildSiteFooterProductLinks(args: {
     { key: "openapi", href: openapiHref, label: "OpenAPI", external: false },
     { key: "issues", href: anchors.bugsUrl, label: "GitHub issues", external: true },
     { key: "support", href: "/support", label: "Support", external: false },
+    { key: "contact", href: "/contact", label: "Contact", external: false },
   ] as const;
 }
 

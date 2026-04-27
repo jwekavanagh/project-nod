@@ -22,7 +22,13 @@ import { listAllSurfaces } from "@/lib/surfaceMarkdown";
 function metadataTitle(m: Metadata): string {
   const t = m.title;
   if (typeof t === "string") return t;
-  if (t && typeof t === "object" && "default" in t) return String((t as { default: string }).default);
+  if (t && typeof t === "object") {
+    if ("absolute" in t) {
+      const a = (t as { absolute?: string }).absolute;
+      if (typeof a === "string") return a;
+    }
+    if ("default" in t) return String((t as { default: string }).default);
+  }
   return String(t ?? "");
 }
 

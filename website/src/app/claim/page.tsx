@@ -4,8 +4,10 @@ import { indexableGuideCanonical } from "@/lib/indexableGuides";
 import type { Metadata } from "next";
 import { Suspense } from "react";
 
+const claimSegmentTitle = "Claim verification run";
+
 export const metadata: Metadata = {
-  title: siteMetadata.claim.title,
+  title: claimSegmentTitle,
   description: siteMetadata.claim.description,
   alternates: { canonical: indexableGuideCanonical("/claim") },
   robots: { index: false, follow: false },

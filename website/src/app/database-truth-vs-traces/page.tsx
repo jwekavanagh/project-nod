@@ -2,21 +2,23 @@ import { DiscoveryArticleJsonLd } from "@/components/discovery/DiscoveryArticleJ
 import { conversionSpine, productBriefPage, productCopy } from "@/content/productCopy";
 import marketing from "@/lib/marketing";
 import { indexableGuideCanonical } from "@/lib/indexableGuides";
+import { marketingOpenGraphAndTwitter } from "@/lib/marketingSocialMetadata";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { type ReactNode, Fragment } from "react";
 
+const acquisitionSegmentTitle = productBriefPage.metadata.title;
 const metaTitle = `${productBriefPage.metadata.title} — ${productBriefPage.metadata.titleSuffix}`;
 
 export const metadata: Metadata = {
-  title: metaTitle,
+  title: acquisitionSegmentTitle,
   description: productBriefPage.metadata.description,
   alternates: { canonical: indexableGuideCanonical(marketing.slug) },
-  openGraph: {
+  ...marketingOpenGraphAndTwitter({
     title: metaTitle,
     description: productBriefPage.metadata.description,
-    type: "article",
-  },
+    openGraphType: "article",
+  }),
   robots: { index: true, follow: true },
 };
 
