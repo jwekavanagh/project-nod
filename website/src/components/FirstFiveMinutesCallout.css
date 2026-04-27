@@ -35,3 +35,12 @@
 .first-five-minutes-numbered li {
   margin-bottom: 0.35rem;
 }
+
+.first-five-minutes-details {
+  margin-top: 0.5rem;
+}
+
+.first-five-minutes-details > summary {
+  cursor: pointer;
+  font-weight: 600;
+}

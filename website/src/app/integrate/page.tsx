@@ -1,5 +1,6 @@
 import { INTEGRATE_ACTIVATION_SHELL_BODY } from "@/generated/integrateActivationShellStatic";
 import marketing from "@/lib/marketing";
+import { conversionSpine } from "@/content/productCopy";
 import { siteMetadata } from "@/content/siteMetadata";
 import { indexableGuideCanonical } from "@/lib/indexableGuides";
 import type { Metadata } from "next";
@@ -24,6 +25,15 @@ export default function IntegratePage() {
         Run a single verification that compares what your agents and tools claimed against your actual stored state.
       </p>
       <p className="lede">Get a clear, binary verdict before you ship, bill, or hand off to customers.</p>
+      <p className="home-cta-row">
+        <a
+          className="btn"
+          href="#integrate-crossing-commands"
+          data-cta-priority={conversionSpine.ctaPriorityPrimaryValue}
+        >
+          {conversionSpine.dominantByRoute["/integrate"]}
+        </a>
+      </p>
       <p className="lede muted">
         <Link href="#agentskeptic-first-five-minutes">First five minutes</Link> — browser id, CLI join, verify, and
         optional telemetry (same checklist appears at the top of beacon-eligible pages).
@@ -34,7 +44,7 @@ export default function IntegratePage() {
         <code>agentskeptic crossing</code> is the one-shot pack-led entry: NDJSON tool lines, a registry, and
         read-only state in one pass. Normative behavior is documented in the crossing contract below.
       </p>
-      <pre className="integrate-pack-command" data-testid="integrate-crossing-commands">
+      <pre id="integrate-crossing-commands" className="integrate-pack-command" data-testid="integrate-crossing-commands">
         {p.packLedCommand}
       </pre>
       <p>

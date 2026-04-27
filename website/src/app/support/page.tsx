@@ -1,4 +1,4 @@
-import { productCopy } from "@/content/productCopy";
+import { conversionSpine, productCopy } from "@/content/productCopy";
 import { siteMetadata } from "@/content/siteMetadata";
 import { indexableGuideCanonical } from "@/lib/indexableGuides";
 import { publicProductAnchors } from "@/lib/publicProductAnchors";
@@ -19,6 +19,15 @@ export default function SupportPage() {
     <main className="integrate-main">
       <h1>{page.h1}</h1>
       <p className="lede">{page.intro}</p>
+      <p className="home-cta-row">
+        <Link
+          href="/pricing"
+          className="btn"
+          data-cta-priority={conversionSpine.ctaPriorityPrimaryValue}
+        >
+          View pricing
+        </Link>
+      </p>
       {page.sections.map((s) => {
         if (s.kind === "supportIssues") {
           return (
@@ -44,7 +53,9 @@ export default function SupportPage() {
               <h2>{s.h2}</h2>
               <p>{s.paragraph}</p>
               <p>
-                <Link href={s.cta.href}>{s.cta.label}</Link>
+                <Link href={s.cta.href} data-cta-priority={conversionSpine.ctaPrioritySecondaryValue}>
+                  {s.cta.label}
+                </Link>
               </p>
             </section>
           );

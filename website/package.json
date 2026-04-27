@@ -18,7 +18,7 @@
     "sql:eval-to-account-staging-gates": "node ./scripts/sql-eval-to-account-staging-gates.mjs",
     "verify:eval-to-account-gate:mechanical": "npm run check:docs-claim-urls && npm run sql:eval-to-account-staging-gates -- --gate-set=rr",
     "verify:eval-to-account-gate": "npx vitest run __tests__/oss-claim.integration.test.ts && npm run verify:eval-to-account-gate:mechanical",
-    "test:vitest": "node ../scripts/sync-website-ssot.mjs && vitest run"
+    "test:vitest": "node ../scripts/sync-website-ssot.mjs && node ./scripts/prepare-vitest-databases.mjs && vitest run"
   },
   "dependencies": {
     "@auth/core": "0.41.1",

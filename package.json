@@ -28,7 +28,7 @@
     "dev": "npm run dev -w agentskeptic-web",
     "test:vitest": "vitest run",
     "verify:decision-readiness": "node scripts/verify.mjs --profile=decision-readiness",
-    "test:node:sqlite": "node scripts/verify.mjs --stages=nodeGuards,nodeTestSqlite",
+    "test:node:sqlite": "node scripts/verify.mjs --stages=build,nodeGuards,nodeTestSqlite",
     "test:postgres": "node scripts/verify.mjs --stages=nodeTestPostgres",
     "test:workflow-truth-contract": "node scripts/verify.mjs --stages=ciWorkflowTruthSingle",
     "validate-ttfv": "node scripts/validate-ttfv.mjs",

@@ -77,7 +77,9 @@ export default async function RootLayout({
           <div id="site-main" className="site-main" tabIndex={-1}>
             {children}
           </div>
-          <FirstFiveMinutesAfterMain />
+          <div className="site-callout-wrap">
+            <FirstFiveMinutesAfterMain />
+          </div>
         </Providers>
         <SiteFooter />
         <Analytics />

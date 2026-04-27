@@ -68,22 +68,45 @@ This section is the **normative** single source of truth for CI and release work
 - **[`ci.yml`](.github/workflows/ci.yml)** and **[`assurance-scheduled.yml`](.github/workflows/assurance-scheduled.yml)** declare workflow-level `permissions: contents: read` so the default `GITHUB_TOKEN` scope does not depend on repository or organization defaults.
 - **[`release.yml`](.github/workflows/release.yml)** uses `permissions: contents: write`, `id-token: write`, and `issues: write` / `pull-requests: write` (for GitHub Releases). It does not use a long‑lived **npm** token: **`npm publish`** uses **Trusted Publishing (OIDC)**. Do not add `NPM_TOKEN` or `NODE_AUTH_TOKEN` to replace OIDC.
 
+### Releases (canonical)
+
+**Merge policy for `main`:** use **squash merge only**. Disable merge commits and rebase merges in repository settings so the squash commit subject line is always the PR title. semantic-release reads that single commit message on `main`; the PR body carries `BREAKING CHANGE:` when you need a major bump.
+
+**Release eligibility on every PR:** [`ci.yml`](.github/workflows/ci.yml) job **`release-preview`** (**check name `CI / Release preview`**) runs [`scripts/release-preview.mjs`](scripts/release-preview.mjs) with the GitHub event payload. If `git diff` from the PR base to the PR head touches any path in [`release/preview-enforcement.paths.json`](release/preview-enforcement.paths.json), the synthetic message **`PR title + two newlines + PR body`** must be releasable under the same `@semantic-release/commit-analyzer` rules as production (shared config: [`release/commit-analyzer-rules.cjs`](release/commit-analyzer-rules.cjs)). There is **no** repository label or workflow to bypass this check; emergencies use GitHub **administrator bypass of branch protection** only.
+
+**Required status checks on `refs/heads/main`:** after the implementing workflow ships, configure a ruleset (or classic branch protection) with **Require status checks to pass before merging** and **Require branches to be up to date before merging**, and register **exactly** these five required check names (format `CI / <Job name>` from workflow name `CI` in [`ci.yml`](.github/workflows/ci.yml)):
+
+| Job key | `name:` in YAML | Required status check string |
+|---------|-----------------|------------------------------|
+| `commitlint` | `Conventional Commits` | `CI / Conventional Commits` |
+| `codeql` | `CodeQL (javascript-typescript)` | `CI / CodeQL (javascript-typescript)` |
+| `test` | `test` | `CI / test` |
+| `commercial` | `commercial` | `CI / commercial` |
+| `release-preview` | `Release preview` | `CI / Release preview` |
+
+Verify with `gh pr checks <PR> --json name,state` on a green PR: the five `name` values must match the table character-for-character.
+
+**Release outcome visibility:** every full and dry-run `semantic-release` step in [`release.yml`](.github/workflows/release.yml) pipes logs through [`scripts/release-outcome-summarize.mjs`](scripts/release-outcome-summarize.mjs), which appends `## Release outcome` and a machine line `RELEASE_OUTCOME=<CREATED|SKIPPED_NO_RELEASABLE_COMMITS|SKIPPED_ALREADY_AT_VERSION|FAILED>` to the GitHub Actions job summary.
+
+**First successful release bootstrap (maintainer, in order):** (1) set repository variable **`COMMERCIAL_LICENSE_API_BASE_URL`**. (2) On `main`, force-align the baseline tag to the current root [`package.json`](package.json) version: `V=$(node -p "require('./package.json').version") && git fetch origin main && git checkout main && git pull && git tag -fa "v$V" -m "release: baseline tag for semantic-release" && git push -f origin "v$V"`. (3) Merge one squash PR titled **`fix: publish release visibility and preview enforcement`** that touches an allowlisted path. (4) Confirm the `semantic-release` job summary contains **`RELEASE_OUTCOME=CREATED`**, then `git pull` on `main` and confirm `npm view agentskeptic version` matches `package.json`. (5) **Mandatory follow-up:** open a second squash PR titled **`fix: add release bootstrap verification log`** that fills in [`release/VERIFICATION.md`](release/VERIFICATION.md) with the UTC time, merge SHA, GitHub Release URL, successful `Release` workflow run link, and `npm view agentskeptic version` output (this file lives under allowlisted `release/` so CI always runs).
+
+**Configuration:** semantic-release reads [`.releaserc.cjs`](.releaserc.cjs) at the repository root (not `.releaserc.json`).
+
 ### Automated release (single repo version: npm + PyPI + changelog)
 
-- **When:** on every **push to `main`** that contains at least one **releasable** Conventional Commit since the last [`v*.*.*`](https://github.com/semver/semver) tag (see semantic-release’s rules), [**`release.yml`**](.github/workflows/release.yml) runs **semantic-release**.
-- **What it does:** updates **[`CHANGELOG.md`](CHANGELOG.md)**, bumps the **one** shared semver in root **[`package.json`](package.json)** and [`python/pyproject.toml`](python/pyproject.toml), syncs the workspace and distribution artifacts via **`node scripts/sync-release-artifacts.mjs`** (including **`node scripts/emit-primary-marketing.cjs`** and lockfile refresh), **commits** those files, **tags** `vX.Y.Z`, creates a **GitHub Release**, and **`npm publish`** the **commercial** CLI (same as today: `prepublishOnly` → `scripts/build-commercial.mjs` with `COMMERCIAL_LICENSE_API_BASE_URL` set from your repository).
-- **PyPI:** when semantic-release **pushes** the `vX.Y.Z` tag, a **second job** in the same workflow (triggered by the tag) builds the wheel from [`python/`](python/) and publishes to PyPI with **Trusted Publishing (OIDC)** via `pypa/gh-action-pypi-publish`. The **old** `py-v*` tag path was **removed**; PyPI is only published from a **`v*.*.*`** tag created by the Release workflow. Register this workflow as a **trusted publisher** for the `agentskeptic` project on [PyPI](https://pypi.org) (and remove or update any publisher entry that only referenced the previous tag-based job).
+- **When:** on every **push to `main`** that completes [**`CI`**](.github/workflows/ci.yml) successfully, [**`release.yml`**](.github/workflows/release.yml) runs **semantic-release** via `workflow_run` on that same commit when semantic-release determines a new version is needed (releasable Conventional Commit since the last [`v*.*.*`](https://github.com/semver/semver) tag).
+- **What it does:** updates **[`CHANGELOG.md`](CHANGELOG.md)**, bumps the **one** shared semver in root **[`package.json`](package.json)** and [`python/pyproject.toml`](python/pyproject.toml), syncs the workspace and distribution artifacts via **`node scripts/sync-release-artifacts.mjs`** (including **`node scripts/emit-primary-marketing.cjs`** and lockfile refresh), **commits** those files, **tags** `vX.Y.Z`, creates a **GitHub Release**, and **`npm publish`** the **commercial** CLI (`prepublishOnly` → `scripts/build-commercial.mjs` with `COMMERCIAL_LICENSE_API_BASE_URL` set from the repository).
+- **PyPI:** when semantic-release **pushes** the `vX.Y.Z` tag, the **`publish-pypi`** job in the same workflow file builds the wheel from [`python/`](python/) and publishes to PyPI with **Trusted Publishing (OIDC)** via `pypa/gh-action-pypi-publish`. Register this workflow as a **trusted publisher** for the `agentskeptic` project on [PyPI](https://pypi.org).
 
 ### One-time and ongoing repository settings
 
 - **Variable (required for releases):** set [**`COMMERCIAL_LICENSE_API_BASE_URL`**](https://docs.github.com/en/actions/concepts/workflows-and-actions/variables) on the **repository** to your **production** app origin (no trailing slash, e.g. `https://app.example.com`). The Release job fails fast if it is empty when a real publish runs.
-- **npm Trusted Publishing:** in the package settings on [npmjs.com](https://www.npmjs.com), the trusted GitHub Actions workflow must be **[`.github/workflows/release.yml`](.github/workflows/release.yml)** for this repository (the previous manual `commercial-publish.yml` workflow was removed). See [npm: Trusted publishers](https://docs.npmjs.com/trusted-publishers).
+- **npm Trusted Publishing:** in the package settings on [npmjs.com](https://www.npmjs.com), the trusted GitHub Actions workflow must be **[`.github/workflows/release.yml`](.github/workflows/release.yml)** for this repository. See [npm: Trusted publishers](https://docs.npmjs.com/trusted-publishers).
 - **Optional secret:** if **branch protection** on `main` blocks the default **`GITHUB_TOKEN`** from pushing the release commit and tag, add a **fine-grained or classic PAT** with `contents: write` to the `main` branch as the repository secret **`SEMANTIC_RELEASE_GITHUB_TOKEN`**. The workflow uses `secrets.SEMANTIC_RELEASE_GITHUB_TOKEN || secrets.GITHUB_TOKEN` for `checkout` and for semantic-release. If pushes still fail, adjust your ruleset to allow the **`github-actions[bot]`** app to push to `main`, or use the PAT.
-- **First-time git tags:** if no **`v*.*.*`** tag yet exists, semantic-release will infer from history; to align the next automated release with the current npm `latest` line, ensure a tag **`v<current version>`** exists on `main` (one-time) or accept that the first run may normalize the baseline.
 
 ### Dry-run
 
-- Run [**Actions → Release → Run workflow**](.github/workflows/release.yml) with **dry_run** set to the default (true) to run `semantic-release --dry-run` (no version bump, tag, or publish). This does not require `COMMERCIAL_LICENSE_API_BASE_URL`. Alternatively: `npm run release:dry` locally (needs a clean git state and the same `origin` you expect in CI).
+- Run [**Actions → Release → Run workflow**](.github/workflows/release.yml) with **dry_run** set to the default (true) to run `semantic-release --dry-run` (no version bump, tag, or publish). The job summary still receives **`RELEASE_OUTCOME=…`** from [`scripts/release-outcome-summarize.mjs`](scripts/release-outcome-summarize.mjs). This dry-run path does not require `COMMERCIAL_LICENSE_API_BASE_URL`. Alternatively: `npm run release:dry` locally (needs a clean git state and the same `origin` you expect in CI).
 
 **Post-release validation (recommended):** run [`assurance-scheduled`](.github/workflows/assurance-scheduled.yml) after a major release, and `npm view agentskeptic version` to confirm the registry.
 

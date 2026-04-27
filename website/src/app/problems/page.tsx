@@ -1,5 +1,5 @@
 import { DiscoveryArticleJsonLd } from "@/components/discovery/DiscoveryArticleJsonLd";
-import { productCopy } from "@/content/productCopy";
+import { conversionSpine, productCopy } from "@/content/productCopy";
 import marketing from "@/lib/marketing";
 import { indexableGuideCanonical } from "@/lib/indexableGuides";
 import { readSurfaceFile } from "@/lib/surfaceMarkdown";
@@ -48,6 +48,15 @@ export default function ProblemsPage() {
         {productCopy.problemsHubIntroLead}{" "}
         <Link href="/compare">{productCopy.homeCommercialCompareApproachesLabel}</Link>
         {productCopy.problemsHubIntroTrail}
+      </p>
+      <p className="home-cta-row">
+        <Link
+          href="/integrate"
+          className="btn"
+          data-cta-priority={conversionSpine.ctaPriorityPrimaryValue}
+        >
+          {productCopy.ctaTaxonomy.decision}
+        </Link>
       </p>
       <ol className="mechanism-list">
         {rows.map((row, i) => (

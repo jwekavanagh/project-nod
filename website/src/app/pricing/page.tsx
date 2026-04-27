@@ -1,4 +1,7 @@
 import { productCopy } from "@/content/productCopy";
+import { TrustPills } from "@/components/marketing/TrustPills";
+import { ValuePropTriptych } from "@/components/marketing/ValuePropTriptych";
+import { WhenToUseDecisionBox } from "@/components/marketing/WhenToUseDecisionBox";
 import { enterpriseMailtoHref } from "@/lib/contactSalesEmail";
 import { getPricingPageViewModelFromConfig } from "@/lib/commercialNarrative";
 import { indexableGuideCanonical } from "@/lib/indexableGuides";
@@ -39,8 +42,34 @@ export default function PricingPage() {
             {vm.heroSubtitleSecondary}
           </p>
         ) : null}
+        <TrustPills items={productCopy.trustStripPills} />
       </section>
 
+      <ValuePropTriptych
+        problem={productCopy.coreValuePropTriptych.problem}
+        solution={productCopy.coreValuePropTriptych.solution}
+        outcome={productCopy.coreValuePropTriptych.outcome}
+      />
+
+      <section className="pricing-example" aria-labelledby="what-paid-plans-enable">
+        <h2 id="what-paid-plans-enable" className="pricing-example-heading">
+          What paid plans enable
+        </h2>
+        <ul>
+          <li>Prevent false-green releases before they reach customers or compliance workflows.</li>
+          <li>Catch missing side effects early, reducing incident cleanup and support churn.</li>
+          <li>Turn verification into a repeatable CI gate with deterministic artifacts.</li>
+        </ul>
+      </section>
+
+      <WhenToUseDecisionBox
+        id="pricing-when-to-use-heading"
+        title={productCopy.whenToUseDecisionBox.title}
+        strongFitHeading={productCopy.whenToUseDecisionBox.strongFitHeading}
+        notDesignedHeading={productCopy.whenToUseDecisionBox.notDesignedHeading}
+        strongFitBullets={productCopy.whenToUseDecisionBox.strongFitBullets}
+        notDesignedBullets={productCopy.whenToUseDecisionBox.notDesignedBullets}
+      />
       <h2 className="pricing-plans-heading">{productCopy.pricingPlansSectionTitle}</h2>
       <PricingClient plans={vm.planRows} enterpriseMailto={enterpriseMailto} />
 

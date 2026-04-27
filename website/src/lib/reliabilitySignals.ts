@@ -37,16 +37,22 @@ type LicensedMeta = z.infer<typeof licensedVerifyOutcomeMetadataSchema>;
  * Last 30 UTC days of licensed_verify_outcome rows (Postgres window).
  */
 export async function loadReliabilitySignalsForUser(userId: string): Promise<ReliabilitySignalsData> {
-  const rows = await db
-    .select({ metadata: funnelEvents.metadata })
-    .from(funnelEvents)
-    .where(
-      and(
-        eq(funnelEvents.userId, userId),
-        eq(funnelEvents.event, "licensed_verify_outcome"),
-        gte(funnelEvents.createdAt, sql<Date>`(now() AT TIME ZONE 'utc') - interval '30 days'`),
-      ),
-    );
+  let rows: Array<{ metadata: unknown }>;
+  try {
+    rows = await db
+      .select({ metadata: funnelEvents.metadata })
+      .from(funnelEvents)
+      .where(
+        and(
+          eq(funnelEvents.userId, userId),
+          eq(funnelEvents.event, "licensed_verify_outcome"),
+          gte(funnelEvents.createdAt, sql<Date>`(now() AT TIME ZONE 'utc') - interval '30 days'`),
+        ),
+      );
+  } catch {
+    console.error(JSON.stringify({ kind: "account_reliability_signals_failed", userId }));
+    return { kind: "empty", message: "No licensed verification completions in the last 30 days." };
+  }
 
   const parsedRows: LicensedMeta[] = [];
   for (const r of rows) {

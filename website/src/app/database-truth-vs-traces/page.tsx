@@ -1,5 +1,5 @@
 import { DiscoveryArticleJsonLd } from "@/components/discovery/DiscoveryArticleJsonLd";
-import { productBriefPage, productCopy } from "@/content/productCopy";
+import { conversionSpine, productBriefPage, productCopy } from "@/content/productCopy";
 import marketing from "@/lib/marketing";
 import { indexableGuideCanonical } from "@/lib/indexableGuides";
 import type { Metadata } from "next";
@@ -158,14 +158,23 @@ export default function DatabaseTruthVsTracesPage() {
         className="product-brief-cta-wrap"
         data-testid={pb.testIds.cta}
         role="group"
-        aria-label="Get started; try the demo (no account) on the homepage"
+        aria-label="Run first verification or see failed versus passed run"
       >
-        <Link className="btn" href={productCopy.homeHeroSecondaryCta.href}>
-          {productCopy.homeHeroSecondaryCta.label}
-        </Link>{" "}
-        <a className="btn secondary" href="/?demo=wf_missing#try-it" data-testid="acquisition-try-home-demo-cta">
-          {productCopy.homeHeroCtaLabels.demo}
-        </a>
+        <a
+          className="btn"
+          href="/?demo=wf_missing#try-it"
+          data-testid="acquisition-try-home-demo-cta"
+          data-cta-priority={conversionSpine.ctaPriorityPrimaryValue}
+        >
+          {productCopy.ctaTaxonomy.awareness}
+        </a>{" "}
+        <Link
+          className="btn secondary"
+          href={productCopy.homeHeroSecondaryCta.href}
+          data-cta-priority={conversionSpine.ctaPrioritySecondaryValue}
+        >
+          {productCopy.ctaTaxonomy.decision}
+        </Link>
       </div>
     </main>
   );

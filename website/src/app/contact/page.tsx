@@ -1,4 +1,4 @@
-import { productCopy } from "@/content/productCopy";
+import { conversionSpine, productCopy } from "@/content/productCopy";
 import { enterpriseMailtoHref } from "@/lib/contactSalesEmail";
 import { indexableGuideCanonical } from "@/lib/indexableGuides";
 import type { Metadata } from "next";
@@ -22,7 +22,20 @@ export default function ContactPage() {
         For Enterprise procurement, tailored limits, on-prem options, or custom contract terms, reach sales directly.
       </p>
       <p>
-        <a className="btn" href={salesMailto}>
+        <Link
+          className="btn"
+          href="/pricing"
+          data-cta-priority={conversionSpine.ctaPriorityPrimaryValue}
+        >
+          View pricing
+        </Link>
+      </p>
+      <p>
+        <a
+          className="btn secondary"
+          href={salesMailto}
+          data-cta-priority={conversionSpine.ctaPrioritySecondaryValue}
+        >
           {productCopy.pricingBillingAndQuestionsBand.enterpriseCtaLabel}
         </a>
       </p>

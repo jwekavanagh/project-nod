@@ -1,6 +1,4 @@
-# After CI succeeds, npm (semantic-release) and PyPI run on the same head_sha CI used.
-# No push-to-main trigger — release is never parallel with the triggering CI.
-# See CONTRIBUTING.md (GitHub Actions / releases).
+# See CONTRIBUTING.md → GitHub Actions (operator) → Releases (canonical).
 name: Release
 
 on:
@@ -72,7 +70,14 @@ jobs:
 
       - name: Dry-run (no version bump, tag, or publish)
         if: github.event_name == 'workflow_dispatch' && inputs.dry_run == true
-        run: npx --no -- semantic-release --dry-run
+        shell: bash
+        run: |
+          set +e
+          npx --no -- semantic-release --dry-run 2>&1 | tee semantic-release.log
+          sr_exit=${PIPESTATUS[0]}
+          set -e
+          node scripts/release-outcome-summarize.mjs --log semantic-release.log --exit-code "$sr_exit"
+          exit "$sr_exit"
 
       - name: Assert commercial license base URL
         if: |
@@ -94,7 +99,14 @@ jobs:
         env:
           WF_BUILD_PROFILE: commercial
           COMMERCIAL_LICENSE_API_BASE_URL: ${{ vars.COMMERCIAL_LICENSE_API_BASE_URL }}
-        run: npx --no -- semantic-release
+        shell: bash
+        run: |
+          set +e
+          npx --no -- semantic-release 2>&1 | tee semantic-release.log
+          sr_exit=${PIPESTATUS[0]}
+          set -e
+          node scripts/release-outcome-summarize.mjs --log semantic-release.log --exit-code "$sr_exit"
+          exit "$sr_exit"
 
   # PyPI: after tag CI. Job if uses only GHA built-ins; first step enforces SemVer 2.0.0 (v*).
   publish-pypi:

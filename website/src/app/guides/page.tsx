@@ -1,4 +1,4 @@
-import { learnHub, productCopy } from "@/content/productCopy";
+import { conversionSpine, learnHub, productCopy } from "@/content/productCopy";
 import { indexableGuideCanonical } from "@/lib/indexableGuides";
 import { listAllSurfaces } from "@/lib/surfaceMarkdown";
 import type { Metadata } from "next";
@@ -76,6 +76,7 @@ export default function GuidesHubPage() {
             <li key={g.href}>
               <Link href={g.href} className="guide-hub-link">
                 <span className="guide-hub-link-title">{g.title}</span>
+                <span className="muted guide-hub-link-caption">{g.caption}</span>
               </Link>
             </li>
           ))}
@@ -89,6 +90,7 @@ export default function GuidesHubPage() {
             <li key={g.href}>
               <Link href={g.href} className="guide-hub-link">
                 <span className="guide-hub-link-title">{g.title}</span>
+                <span className="muted guide-hub-link-caption">{g.caption}</span>
               </Link>
             </li>
           ))}
@@ -114,18 +116,22 @@ export default function GuidesHubPage() {
         <h2 id="learn-closing-heading" className="learn-hub-cta-heading">
           {learnHub.closingTitle}
         </h2>
-        <ul className="mechanism-list guide-hub-list learn-hub-cta-links">
-          <li>
-            <Link href="/integrate" className="guide-hub-link">
-              <span className="guide-hub-link-title">{learnHub.getStartedCtaLabel}</span>
-            </Link>
-          </li>
-          <li>
-            <Link href="/?demo=wf_missing#try-it" className="guide-hub-link">
-              <span className="guide-hub-link-title">{learnHub.tryDemoCtaLabel}</span>
-            </Link>
-          </li>
-        </ul>
+        <p className="home-cta-row">
+          <Link
+            href="/integrate"
+            className="btn"
+            data-cta-priority={conversionSpine.ctaPriorityPrimaryValue}
+          >
+            {productCopy.ctaTaxonomy.decision}
+          </Link>
+          <Link
+            href="/?demo=wf_missing#try-it"
+            className="btn secondary"
+            data-cta-priority={conversionSpine.ctaPrioritySecondaryValue}
+          >
+            {productCopy.ctaTaxonomy.topOfFunnel}
+          </Link>
+        </p>
       </section>
     </main>
   );

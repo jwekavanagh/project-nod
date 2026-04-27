@@ -21,7 +21,7 @@ describe("npm scripts contract (test / test:ci → verify.mjs)", () => {
   it("shims delegate to verify --stages", () => {
     assert.equal(
       pkg.scripts["test:node:sqlite"],
-      "node scripts/verify.mjs --stages=nodeGuards,nodeTestSqlite",
+      "node scripts/verify.mjs --stages=build,nodeGuards,nodeTestSqlite",
     );
     assert.equal(
       pkg.scripts["test:postgres"],

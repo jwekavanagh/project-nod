@@ -32,14 +32,6 @@ export function openapiHrefFromProcessEnv(): string {
   return `${anchorBase}/openapi-commercial-v1.yaml`;
 }
 
-/**
- * Shown in the header on hover (Problems and Compare; the Learn label links to /guides, not in this list).
- */
-export const SITE_HEADER_LEARN_FLYOUT_LINKS = [
-  { key: "problems", href: "/problems", label: "Problems" },
-  { key: "compare", href: "/compare", label: "Compare" },
-] as const;
-
 export function buildSiteHeaderPrimaryLinks(args: {
   anchors: SiteChromeAnchors;
   acquisitionHref: string;
@@ -48,7 +40,7 @@ export function buildSiteHeaderPrimaryLinks(args: {
   const { anchors, acquisitionHref, acquisitionLabel } = args;
   return [
     { key: "acquisition", href: acquisitionHref, label: acquisitionLabel, external: false },
-    { key: "integrate", href: "/integrate", label: "Get started", external: false },
+    { key: "integrate", href: "/integrate", label: "Run first verification", external: false },
     { key: "pricing", href: "/pricing", label: "Pricing", external: false },
     {
       key: "cli",
@@ -87,7 +79,7 @@ export function buildHomeTrustStripLinks(args: {
 }): readonly SiteChromeLink[] {
   const { anchors, openapiHref } = args;
   return [
-    { key: "integrate", href: "/integrate", label: "Get started", external: false },
+    { key: "integrate", href: "/integrate", label: "Run first verification", external: false },
     { key: "openapi", href: openapiHref, label: "OpenAPI (commercial v1)", external: false },
     { key: "npm", href: anchors.npmPackageUrl, label: "npm package", external: true },
     { key: "github", href: anchors.gitRepositoryUrl, label: "Source repository", external: true },

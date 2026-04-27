@@ -1,4 +1,5 @@
 import { formatDistributionFooter } from "./distributionFooter.js";
+import { writeSync } from "node:fs";
 import {
   CLI_OPERATIONAL_CODES,
   cliErrorEnvelope,
@@ -78,10 +79,10 @@ export function emitVerifyWorkflowCliJsonAndExitByStatus(
 
 const defaultIo: StandardVerifyWorkflowCliIo = {
   consoleLog: (line) => {
-    console.log(line);
+    writeSync(1, `${line}\n`);
   },
   stderrLine: (line) => {
-    console.error(line);
+    writeSync(2, `${line}\n`);
   },
   exit: (code) => {
     process.exit(code);

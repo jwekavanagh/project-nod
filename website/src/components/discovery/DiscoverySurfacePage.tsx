@@ -25,7 +25,7 @@ export function DiscoverySurfacePage({ surface }: Props) {
       breadcrumbMiddle={breadcrumbMiddleForSurface(surface)}
     />
   );
-  const progression = <SurfaceProgression primaryCta={surface.primaryCta} />;
+  const progression = <SurfaceProgression primaryCta="integrate" />;
   const article = (
     <article className="integrate-prose">
       <ReactMarkdown remarkPlugins={[remarkGfm]}>{surface.body}</ReactMarkdown>

@@ -1,4 +1,4 @@
-import { productCopy } from "@/content/productCopy";
+import { conversionSpine, productCopy } from "@/content/productCopy";
 import { siteMetadata } from "@/content/siteMetadata";
 import { getSecurityQuickFacts } from "@/lib/commercialNarrative";
 import { indexableGuideCanonical } from "@/lib/indexableGuides";
@@ -19,6 +19,15 @@ export default function SecurityPage() {
     <main className="integrate-main">
       <h1>{st.title}</h1>
       <p className="lede">{st.intro}</p>
+      <p className="home-cta-row">
+        <Link
+          href="/integrate"
+          className="btn"
+          data-cta-priority={conversionSpine.ctaPriorityPrimaryValue}
+        >
+          {productCopy.ctaTaxonomy.decision}
+        </Link>
+      </p>
       <ul className="mechanism-list" data-testid="security-buyer-authority-nav">
         <li>
           <Link href="/guides/buyer-commercial-boundary">{productCopy.pricingBuyerCommercialBoundaryLinkLabel}</Link>

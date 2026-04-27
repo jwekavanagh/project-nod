@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import { randomUUID } from "node:crypto";
-import { readFileSync, statSync } from "fs";
+import { readFileSync, statSync, writeSync } from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
 import {
@@ -684,7 +684,7 @@ async function runQuickSubcommand(args: string[]): Promise<void> {
     }
   }
   try {
-    process.stdout.write(stableStringify(certificate) + "\n");
+    writeSync(1, `${stableStringify(certificate)}\n`);
   } catch (e) {
     const msg = e instanceof Error ? e.message : String(e);
     writeCliError(CLI_OPERATIONAL_CODES.INTERNAL_ERROR, formatOperationalMessage(`stdout: ${msg}`));

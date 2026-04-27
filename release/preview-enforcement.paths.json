@@ -1,0 +1,20 @@
+{
+  "version": 1,
+  "prefixes": [
+    ".github/workflows/",
+    "config/",
+    "conformance/",
+    "examples/",
+    "internal-packages/",
+    "package-lock.json",
+    "package.json",
+    "patches/",
+    "python/",
+    "release/",
+    "schemas/",
+    "scripts/",
+    "src/",
+    "test/",
+    "website/"
+  ]
+}

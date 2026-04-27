@@ -21,6 +21,7 @@ import {
 } from "@/lib/demoScenarios";
 import { buildDemoResultSummary } from "@/lib/demoResultSummary";
 import { shareDemoOutcomeCertificate } from "@/lib/shareDemoPublicReport";
+import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 
@@ -150,6 +151,7 @@ export function TryItSection({ initialScenarioId }: TryItSectionProps) {
     >
       <h2 id="try-it-heading">{productCopy.tryIt.title}</h2>
       <p className="muted">{productCopy.tryIt.intro}</p>
+      <p className="muted">Flow: choose scenario, run verification, inspect verdict, then continue with your own data.</p>
       <p className="muted try-it-pre-frame" data-testid="try-it-pre-button-framing">
         {productCopy.tryIt.preButtonFraming}
       </p>
@@ -243,6 +245,11 @@ export function TryItSection({ initialScenarioId }: TryItSectionProps) {
             >
               {shareLoading ? productCopy.tryIt.running : productCopy.tryIt.shareReportButton}
             </button>
+          </p>
+          <p className="home-cta-row">
+            <Link href="/integrate" className="btn" data-cta-priority="primary">
+              {productCopy.ctaTaxonomy.decision}
+            </Link>
           </p>
           <details className="try-it-human-details" data-testid="try-it-human-details">
             <summary>Full human report</summary>

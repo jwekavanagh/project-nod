@@ -28,7 +28,7 @@ afterEach(() => {
 describe("SurfaceProgression", () => {
   it("marks exactly one primary CTA and always links /security", () => {
     const { container } = render(<SurfaceProgression primaryCta="demo" />);
-    const prim = container.querySelectorAll('[data-primary-cta="true"]');
+    const prim = container.querySelectorAll('[data-cta-priority="primary"]');
     expect(prim.length).toBe(1);
     expect((prim[0] as HTMLAnchorElement).getAttribute("href")).toBe("/?demo=wf_missing#try-it");
     expect(container.querySelector('a[href="/security"]')).toBeTruthy();
@@ -38,11 +38,11 @@ describe("SurfaceProgression", () => {
 });
 
 describe("DiscoverySurfacePage", () => {
-  it("honors primaryCta pricing on comparison surfaces", () => {
+  it("uses get-started as the dominant CTA for comparison surfaces", () => {
     const surface = readSurfaceFile("compare", "observability-vs-preaction-gate");
     const { container } = render(<DiscoverySurfacePage surface={surface} /> as ReactElement);
-    const prim = container.querySelectorAll('[data-primary-cta="true"]');
+    const prim = container.querySelectorAll('[data-cta-priority="primary"]');
     expect(prim.length).toBe(1);
-    expect((prim[0] as HTMLAnchorElement).getAttribute("href")).toBe("/pricing");
+    expect((prim[0] as HTMLAnchorElement).getAttribute("href")).toBe("/integrate");
   });
 });

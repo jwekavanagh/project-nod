@@ -1,6 +1,6 @@
 "use client";
 
-import { productCopy } from "@/content/productCopy";
+import { conversionSpine, productCopy } from "@/content/productCopy";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
 import { useSearchParams } from "next/navigation";
@@ -118,7 +118,11 @@ export function OssClaimClient() {
       <div className="card card-narrow-32">
         <h1>{productCopy.ossClaimPage.title}</h1>
         <p className="muted">{productCopy.ossClaimPage.introUnauthenticated}</p>
-        <Link className="button-link" href="/auth/signin?callbackUrl=%2Fclaim">
+        <Link
+          className="button-link"
+          href="/auth/signin?callbackUrl=%2Fclaim"
+          data-cta-priority={conversionSpine.ctaPriorityPrimaryValue}
+        >
           {productCopy.ossClaimPage.signInCta}
         </Link>
       </div>
@@ -139,7 +143,11 @@ export function OssClaimClient() {
             Request ID: {handoffSupportId}
           </p>
         ) : null}
-        <Link className="button-link" href="/auth/signin?callbackUrl=%2Fclaim">
+        <Link
+          className="button-link"
+          href="/auth/signin?callbackUrl=%2Fclaim"
+          data-cta-priority={conversionSpine.ctaPriorityPrimaryValue}
+        >
           {productCopy.ossClaimPage.signInCta}
         </Link>
       </div>

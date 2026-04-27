@@ -20,11 +20,25 @@ export function resolveAuthSecret(): string {
   }
 
   const nodeEnv = process.env.NODE_ENV;
+  const vercelEnv = process.env.VERCEL_ENV?.trim().toLowerCase();
+  const isPreview = vercelEnv === "preview";
   if (nodeEnv === "development" || nodeEnv === "test") {
     if (nodeEnv === "development" && !devWarned) {
       devWarned = true;
       console.warn(
         "[auth] AUTH_SECRET is unset; using a dev-only fallback. Copy website/.env.example to .env.local and set AUTH_SECRET for production parity.",
+      );
+    }
+    return DEV_FALLBACK;
+  }
+
+  // Vercel preview deployments should remain buildable without prod secrets.
+  // Runtime auth behavior that needs a stable secret is still production-gated.
+  if (isPreview) {
+    if (!devWarned) {
+      devWarned = true;
+      console.warn(
+        "[auth] AUTH_SECRET is unset in Vercel preview; using a preview-only fallback.",
       );
     }
     return DEV_FALLBACK;

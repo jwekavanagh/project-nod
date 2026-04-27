@@ -1,7 +1,7 @@
 "use client";
 
 import { LiveStatus } from "@/components/LiveStatus";
-import { productCopy } from "@/content/productCopy";
+import { conversionSpine, productCopy } from "@/content/productCopy";
 import type { PlanRow } from "@/lib/commercialNarrative";
 import type { PlanId } from "@/lib/plans";
 import Link from "next/link";
@@ -15,17 +15,17 @@ export type BillingInterval = "monthly" | "yearly";
 export type { PlanRow } from "@/lib/commercialNarrative";
 
 function paidCheckoutCtaLabel(plan: PlanId): string {
+  if (plan === "team") return "Continue to checkout";
   const ctas = productCopy.pricingPlanCtas;
   if (plan === "individual") return ctas.individual.checkoutLabel;
-  if (plan === "team") return ctas.team.checkoutLabel;
   if (plan === "business") return ctas.business.checkoutLabel;
   return "Continue to checkout";
 }
 
 function paidSignInCtaLabel(plan: PlanId): string {
+  if (plan === "team") return "Sign in to continue";
   const ctas = productCopy.pricingPlanCtas;
-  if (plan === "individual") return ctas.individual.signInLabel;
-  if (plan === "team") return ctas.team.signInLabel;
+  if (plan === "individual") return "Start free";
   if (plan === "business") return ctas.business.signInLabel;
   return "Get started";
 }
@@ -178,6 +178,7 @@ export function PricingClient({
                 <Link
                   className="btn-pricing-secondary pricing-card-cta"
                   href={productCopy.pricingPlanCtas.starter.href}
+                  data-cta-priority={conversionSpine.ctaPrioritySecondaryValue}
                 >
                   {productCopy.pricingPlanCtas.starter.label}
                 </Link>
@@ -189,6 +190,11 @@ export function PricingClient({
                     className={`pricing-card-cta${p.recommended ? " pricing-cta-emphasized" : ""}`}
                     disabled={loading !== null}
                     onClick={() => checkout(p.checkoutPlanId!)}
+                    data-cta-priority={
+                      p.recommended
+                        ? conversionSpine.ctaPriorityPrimaryValue
+                        : conversionSpine.ctaPrioritySecondaryValue
+                    }
                   >
                     {loading === p.checkoutPlanId ? "…" : paidCheckoutCtaLabel(p.checkoutPlanId!)}
                   </button>
@@ -196,12 +202,21 @@ export function PricingClient({
                   <Link
                     className={`pricing-card-cta${p.recommended ? " pricing-cta-emphasized" : ""} btn-pricing-secondary`}
                     href={PRICING_SIGNIN_HREF}
+                    data-cta-priority={
+                      p.recommended
+                        ? conversionSpine.ctaPriorityPrimaryValue
+                        : conversionSpine.ctaPrioritySecondaryValue
+                    }
                   >
                     {paidSignInCtaLabel(p.checkoutPlanId!)}
                   </Link>
                 ))}
               {p.id === "enterprise" && (
-                <a className="btn pricing-card-cta" href={enterpriseMailto}>
+                <a
+                  className="btn pricing-card-cta"
+                  href={enterpriseMailto}
+                  data-cta-priority={conversionSpine.ctaPrioritySecondaryValue}
+                >
                   {productCopy.pricingPlanCtas.enterprise.label}
                 </a>
               )}

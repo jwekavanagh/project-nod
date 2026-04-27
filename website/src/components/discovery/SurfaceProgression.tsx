@@ -1,3 +1,4 @@
+import { conversionSpine } from "@/content/productCopy";
 import marketing from "@/lib/marketing";
 import Link from "next/link";
 
@@ -17,8 +18,8 @@ export function SurfaceProgression({ primaryCta }: Props) {
   const acquisitionPath = marketing.slug;
   const markedHref = primaryHref[primaryCta];
   const items: { href: string; label: string }[] = [
-    { href: "/integrate", label: "Integrate" },
-    { href: "/?demo=wf_missing#try-it", label: "Try demo" },
+    { href: "/integrate", label: "Run first verification" },
+    { href: "/?demo=wf_missing#try-it", label: "Try interactive demo" },
     { href: "/pricing", label: "Pricing" },
     { href: acquisitionPath, label: "How it works" },
     { href: "/security", label: "Security & Trust" },
@@ -29,7 +30,11 @@ export function SurfaceProgression({ primaryCta }: Props) {
         <Link
           key={item.href}
           href={item.href}
-          data-primary-cta={item.href === markedHref ? "true" : undefined}
+          data-cta-priority={
+            item.href === markedHref
+              ? conversionSpine.ctaPriorityPrimaryValue
+              : conversionSpine.ctaPrioritySecondaryValue
+          }
           className={item.href === markedHref ? "btn" : "btn secondary"}
         >
           {item.label}

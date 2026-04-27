@@ -472,55 +472,9 @@ button.secondary, .btn.secondary {
   text-decoration: underline;
 }
 .site-nav-learn {
-  position: relative;
   display: inline-flex;
   align-items: center;
-  gap: 0;
-  &:hover,
-  &:focus-within {
-    .site-nav-learn-primary::after {
-      content: " \25B4";
-    }
-    .site-nav-learn-flyout {
-      display: flex;
-    }
-  }
-  .site-nav-learn-primary {
-    display: inline-flex;
-    align-items: center;
-    font-weight: 500;
-    color: var(--fg);
-    text-decoration: none;
-  }
-  .site-nav-learn-primary::after {
-    content: " \25BE";
-    font-size: 0.65em;
-    color: var(--muted);
-    margin-left: 0.15rem;
-    font-weight: 400;
-  }
-  .site-nav-learn-flyout {
-    display: none;
-    position: absolute;
-    top: 100%;
-    right: 0;
-    min-width: 9rem;
-    margin-top: 0.4rem;
-    padding: 0.45rem 0.65rem;
-    flex-direction: column;
-    gap: 0.4rem;
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    box-shadow: 0 4px 16px color-mix(in srgb, var(--fg) 8%, transparent);
-    z-index: 20;
-    @media (max-width: 700px) {
-      right: auto;
-      left: 0;
-    }
-  }
 }
-
 .site-footer nav a {
   color: var(--muted);
   text-decoration: none;
@@ -534,6 +488,11 @@ button.secondary, .btn.secondary {
   max-width: 900px;
   margin: 0 auto;
   padding: 2rem 1rem;
+}
+.site-callout-wrap {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 0 1rem;
 }
 .site-footer {
   border-top: 1px solid var(--border);
@@ -550,22 +509,27 @@ button.secondary, .btn.secondary {
 }
 
 .home-section {
-  margin-bottom: 2.5rem;
+  margin-bottom: 3.5rem;
 }
 .home-section h1 {
-  font-size: 1.75rem;
+  font-size: clamp(2rem, 4.8vw, 3.25rem);
   line-height: 1.2;
   margin-top: 0;
+  letter-spacing: -0.02em;
 }
 .home-section h2 {
-  font-size: 1.35rem;
+  font-size: clamp(1.35rem, 2.2vw, 1.75rem);
   margin-top: 0;
 }
 .lede {
   max-width: 40rem;
+  font-size: 1.05rem;
+  line-height: 1.6;
 }
 .muted {
   color: var(--muted);
+  font-size: 1rem;
+  line-height: 1.45;
 }
 .home-cta-row {
   display: flex;
@@ -1092,7 +1056,7 @@ main {
 }
 
 .home-hero {
-  margin-bottom: 2rem;
+  margin-bottom: 2.5rem;
 }
 .home-hero-grid {
   display: grid;
@@ -1110,6 +1074,10 @@ main {
   align-items: center;
   gap: 0.75rem 1rem;
   margin-top: 1.25rem;
+}
+.home-hero-supporting-outcome {
+  font-weight: 600;
+  color: var(--brand-navy-ink);
 }
 .home-hero-terminal-label {
   font-size: 0.85rem;
@@ -1228,6 +1196,93 @@ main {
 .home-hero-tertiary {
   margin: 0.4rem 0 0.75rem;
   font-size: 0.9rem;
+}
+
+.trust-pills {
+  list-style: none;
+  padding: 0;
+  margin: 0.8rem 0 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem 0.65rem;
+}
+.trust-pills li {
+  padding: 0.3rem 0.65rem;
+  border-radius: 9999px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  font-size: 0.84rem;
+  color: var(--brand-navy-ink);
+}
+
+.value-triptych {
+  display: grid;
+  gap: 0.85rem;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  margin: 0.9rem 0 1.25rem;
+}
+.value-card {
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--card);
+  padding: 0.9rem;
+}
+.value-card p {
+  margin: 0;
+}
+.value-card-kicker {
+  font-size: 0.82rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--accent-on-card);
+  margin-bottom: 0.35rem !important;
+}
+
+.decision-box {
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--card);
+  padding: 1rem 1rem 0.75rem;
+}
+.decision-box-grid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+}
+.decision-box h3 {
+  font-size: 1rem;
+  margin: 0.35rem 0 0.35rem;
+}
+.decision-box ul {
+  margin-top: 0.4rem;
+}
+
+.funnel-route-cards {
+  margin-top: 1.25rem;
+}
+.funnel-route-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 0.8rem;
+}
+.funnel-route-card {
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--card);
+  padding: 0.8rem;
+}
+.funnel-route-card h3 {
+  margin: 0 0 0.25rem;
+  font-size: 1rem;
+}
+
+.signin-details {
+  max-width: 32rem;
+}
+.signin-details summary {
+  cursor: pointer;
+  font-weight: 600;
 }
 .try-it-verdict-card {
   margin: 0.6rem 0 0.25rem;
