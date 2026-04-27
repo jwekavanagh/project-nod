@@ -6,8 +6,11 @@ name: CI
 
 on: [push, pull_request]
 
+# deployments: write — reusable deploy-vercel.yml reports successful `vercel --prod` to the GitHub
+# Deployments / Environments API. Without it, only the Vercel Git integration updates those views.
 permissions:
   contents: read
+  deployments: write
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}

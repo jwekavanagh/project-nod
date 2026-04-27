@@ -17,8 +17,10 @@ on:
       VERCEL_TOKEN:
         required: true
 
+# deployments: create GitHub deployment records (Vercel CLI does not, unlike the Vercel Git app).
 permissions:
   contents: read
+  deployments: write
 
 jobs:
   vercel:
@@ -41,3 +43,18 @@ jobs:
       # in Project Settings; adding `--cwd website` would resolve to `website/website` and fail.
       - name: Deploy to Vercel (production, remote build)
         run: npx -y vercel@52 deploy --prod --yes --logs
+      - name: Register production with GitHub Deployments API
+        if: success()
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          # The Vercel GitHub app posts to Deployments/Environments for Git-based builds. `vercel deploy --prod`
+          # in CI does not, so the repository Deployments view stays empty for those ships unless we record them.
+          run_url="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          node -e "const fs=require('fs'); const ref=process.argv[1]; fs.writeFileSync('/tmp/deployment.json', JSON.stringify({ref, environment:'production', auto_merge:false, required_contexts:[], description:'Vercel: vercel deploy --prod (GHA; main has git.deploymentEnabled off)'}));" "${{ github.sha }}"
+          DEPLOY_ID=$(gh api "repos/${{ github.repository }}/deployments" -X POST --input /tmp/deployment.json -q .id)
+          node -e "const fs=require('fs'); const u=process.argv[1]; fs.writeFileSync('/tmp/deployment_status.json', JSON.stringify({ state:'success', environment_url:'https://agentskeptic.com', log_url:u, auto_inactive:true }));" "$run_url"
+          gh api "repos/${{ github.repository }}/deployments/${DEPLOY_ID}/statuses" -X POST --input /tmp/deployment_status.json
+          rm -f /tmp/deployment.json /tmp/deployment_status.json
