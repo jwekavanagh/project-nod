@@ -19,6 +19,11 @@ function looksConventionalHeader(message) {
 
 module.exports = {
   extends: ["@commitlint/config-conventional"],
+  rules: {
+    // Cursor and other IDEs often generate long wrapped bullets. Keep conventional headers strict,
+    // but do not block on body line width.
+    "body-max-line-length": [0],
+  },
   ignores: [
     mergeFromGithub,
     (message) => {
