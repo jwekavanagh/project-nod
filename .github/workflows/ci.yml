@@ -1,37 +1,17 @@
+# Unified gate: every push and every PR run the same jobs. No path filters — avoids
+# skipped "CI" and stuck required checks. Website-only, docs-only, and Python work
+# all go through this workflow; production deploys only from `vercel_production` on
+# `main` after the same gates.
 name: CI
 
-on:
-  push:
-    paths-ignore:
-      - "website/**"
-      - "docs/**"
-      - "**/*.md"
-      - "*.md"
-      - "CHANGELOG.md"
-      - "README.md"
-      - "llms.txt"
-      - "AGENTS.md"
-      - "CONTRIBUTING.md"
-      - "SECURITY.md"
-  pull_request:
-    paths-ignore:
-      - "website/**"
-      - "docs/**"
-      - "**/*.md"
-      - "*.md"
-      - "CHANGELOG.md"
-      - "README.md"
-      - "llms.txt"
-      - "AGENTS.md"
-      - "CONTRIBUTING.md"
-      - "SECURITY.md"
+on: [push, pull_request]
 
 permissions:
   contents: read
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
 jobs:
   commitlint:
@@ -156,6 +136,8 @@ jobs:
       - name: Assert job env Postgres URLs are localhost (runtime; requires core + telemetry)
         run: node scripts/assert-ci-postgres-env-safety.mjs --require-core-and-telemetry
       - uses: ./.github/actions/setup-node-npm
+      - name: Build, LangGraph embeds, and website doc-claim URL gates
+        run: npm run build && npm run check:langgraph-embeds && npm run check:docs-claim-urls --prefix website
       - name: Create website and telemetry databases
         run: node scripts/ci-create-website-telemetry-dbs.mjs
       - name: Validate commercial layer
@@ -182,10 +164,46 @@ jobs:
       - name: Release preview (squash message vs allowlist)
         run: node scripts/release-preview.mjs --event "$GITHUB_EVENT_PATH"
 
-  # After CodeQL, core tests, and commercial gates are green, promote to Vercel production.
+  python:
+    name: Python
+    runs-on: ubuntu-latest
+    env:
+      AGENTSKEPTIC_TELEMETRY: "0"
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    steps:
+      - uses: actions/checkout@v5
+      - uses: ./.github/actions/setup-node-npm
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+      - name: Guardrails
+        run: node scripts/check-python-no-subprocess.mjs && node scripts/assert-python-langgraph-primacy.mjs
+      - name: Pytest
+        env:
+          AGENTSKEPTIC_POSTGRES_LCT_URL: postgresql://postgres:postgres@localhost:5432/postgres
+        run: cd python && python -m pip install -e ".[dev,postgres]" && python -m pytest tests/ -q
+      - name: Timed parity smoke
+        env:
+          TIMED_VERIFY_BUDGET_S: "900"
+        run: cd python && python scripts/timed_first_verify.py
+      - name: Build python image (Dockerfile timed verify)
+        run: docker build -f python/Dockerfile -t agentskeptic-py-verify .
+
+  # After full CI is green, promote to Vercel production (GHA only; Vercel Git deploy for main is off).
   vercel_production:
     name: Vercel production
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    needs: [codeql, test, commercial]
+    needs: [codeql, test, commercial, python]
     uses: ./.github/workflows/deploy-vercel.yml
     secrets: inherit

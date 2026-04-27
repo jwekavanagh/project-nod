@@ -36,7 +36,7 @@ All default and full-CI test ordering lives in [`scripts/verify.mjs`](../scripts
 
 Continues with `nodeTestPostgres` (`pg-ci-init` + postgres `node --test` files), `partnerQuickstartPostgres`, `commercialEnforcePostgres` (`--require-postgres`), `playwrightInstall`, `playwright`, then `rebuildOss`, `validateTtfv`, `relatedExists`. **No** unflagged `commercialEnforce` in this profile (replaced by the postgres + `--require-postgres` path).
 
-**GitHub Actions** runs `npm run test:ci` in [`../.github/workflows/ci.yml`](../.github/workflows/ci.yml) after `npm ci` and (for the test job) `npm ci --prefix test/fixtures/langgraph-node-oracle`. `checkout` is always explicit in the workflow; Node install uses the composite [`.github/actions/setup-node-npm`](../.github/actions/setup-node-npm/action.yml) (Node 22, npm cache, `npm ci` only — no checkout in the composite) so pre-CodeQL grep order stays clear.
+**GitHub Actions** runs a **unified** [`../.github/workflows/ci.yml`](../.github/workflows/ci.yml) on every push and PR (no path filters): the `test` job runs `npm run test:ci` after `npm ci` and `npm ci --prefix test/fixtures/langgraph-node-oracle`. The same workflow also runs **CodeQL**, **commercial** (including `validate-commercial`), **Python** (pytest, timed smoke, Docker), PR-only Conventional Commits and release preview, and **`main`-only** Vercel production after those jobs succeed. `checkout` is always explicit; Node install uses the composite [`.github/actions/setup-node-npm`](../.github/actions/setup-node-npm/action.yml) (Node 22, npm cache, `npm ci` only — no checkout in the composite) so pre-CodeQL grep order stays clear.
 
 **Postgres env** for `test:ci`: `POSTGRES_ADMIN_URL` and `POSTGRES_VERIFICATION_URL` (see README and `ci.yml`).
 

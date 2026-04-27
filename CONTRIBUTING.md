@@ -68,13 +68,18 @@ This section is the **normative** single source of truth for CI and release work
 - **[`ci.yml`](.github/workflows/ci.yml)** and **[`assurance-scheduled.yml`](.github/workflows/assurance-scheduled.yml)** declare workflow-level `permissions: contents: read` so the default `GITHUB_TOKEN` scope does not depend on repository or organization defaults.
 - **[`release.yml`](.github/workflows/release.yml)** uses `permissions: contents: write`, `id-token: write`, and `issues: write` / `pull-requests: write` (for GitHub Releases). It does not use a long‑lived **npm** token: **`npm publish`** uses **Trusted Publishing (OIDC)**. Do not add `NPM_TOKEN` or `NODE_AUTH_TOKEN` to replace OIDC.
 
+### Unified CI (no path filters)
+
+- **Every** `push` and **every** `pull_request` runs **[`ci.yml`](.github/workflows/ci.yml)**. There are no `paths` / `paths-ignore` filters on that workflow, so the **CI** job set is never skipped because of which files changed (website-only, docs-only, Python-only, and mixed changes all go through the same required checks). This is the **single** merge gate; there is no separate `website` or `python-verify` workflow.
+- **Production** still ships **only** from the **`Vercel production`** job at the end of `ci.yml` on **`push` to `main`**, which calls **[`deploy-vercel.yml`](.github/workflows/deploy-vercel.yml)**. `website/vercel.json` keeps **`git.deploymentEnabled.main: false`**, so Vercel’s Git integration does not promote `main` by itself.
+
 ### Releases (canonical)
 
 **Merge policy for `main`:** use **squash merge only**. Disable merge commits and rebase merges in repository settings so the squash commit subject line is always the PR title. semantic-release reads that single commit message on `main`; the PR body carries `BREAKING CHANGE:` when you need a major bump.
 
 **Release eligibility on every PR:** [`ci.yml`](.github/workflows/ci.yml) job **`release-preview`** (**check name `CI / Release preview`**) runs [`scripts/release-preview.mjs`](scripts/release-preview.mjs) with the GitHub event payload. If `git diff` from the PR base to the PR head touches any path in [`release/preview-enforcement.paths.json`](release/preview-enforcement.paths.json), the synthetic message **`PR title + two newlines + PR body`** must be releasable under the same `@semantic-release/commit-analyzer` rules as production (shared config: [`release/commit-analyzer-rules.cjs`](release/commit-analyzer-rules.cjs)). There is **no** repository label or workflow to bypass this check; emergencies use GitHub **administrator bypass of branch protection** only.
 
-**Required status checks on `refs/heads/main`:** after the implementing workflow ships, configure a ruleset (or classic branch protection) with **Require status checks to pass before merging** and **Require branches to be up to date before merging**, and register **exactly** these five required check names (format `CI / <Job name>` from workflow name `CI` in [`ci.yml`](.github/workflows/ci.yml)):
+**Required status checks (pull requests):** configure a ruleset (or classic branch protection) for `main` with **Require status checks to pass before merging** and **Require branches to be up to date before merging**, and register **exactly** these check names (format `CI / <Job name>` from workflow name `CI` in [`ci.yml`](.github/workflows/ci.yml)). PRs only: `commitlint` and `release-preview` do not run on `push`, so you **cannot** add them to “required for push to `main`” in the same way; they are **PR merge** gates. Typical setup: require all six in the table for **merging pull requests** into `main` (treat the PR’s latest run as authoritative).
 
 | Job key | `name:` in YAML | Required status check string |
 |---------|-----------------|------------------------------|
@@ -82,9 +87,14 @@ This section is the **normative** single source of truth for CI and release work
 | `codeql` | `CodeQL (javascript-typescript)` | `CI / CodeQL (javascript-typescript)` |
 | `test` | `test` | `CI / test` |
 | `commercial` | `commercial` | `CI / commercial` |
+| `python` | `Python` | `CI / Python` |
 | `release-preview` | `Release preview` | `CI / Release preview` |
 
-Verify with `gh pr checks <PR> --json name,state` on a green PR: the five `name` values must match the table character-for-character.
+**Note:** `Vercel production` (from `vercel_production` in `ci.yml`) runs only on **`push` to `main`**; it is not a PR merge check.
+
+Verify with `gh pr checks <PR> --json name,state` on a green PR: the six PR job `name` values in the table must match character-for-character.
+
+**Validation scenarios** (local expectations + `gh` commands): see **[`docs/ci-cursor-workflow-validation.md`](docs/ci-cursor-workflow-validation.md)**.
 
 **Release outcome visibility:** every full and dry-run `semantic-release` step in [`release.yml`](.github/workflows/release.yml) pipes logs through [`scripts/release-outcome-summarize.mjs`](scripts/release-outcome-summarize.mjs), which appends `## Release outcome` and a machine line `RELEASE_OUTCOME=<CREATED|SKIPPED_NO_RELEASABLE_COMMITS|SKIPPED_ALREADY_AT_VERSION|FAILED>` to the GitHub Actions job summary.
 
@@ -102,7 +112,8 @@ Verify with `gh pr checks <PR> --json name,state` on a green PR: the five `name`
 
 - **Variable (required for releases):** set [**`COMMERCIAL_LICENSE_API_BASE_URL`**](https://docs.github.com/en/actions/concepts/workflows-and-actions/variables) on the **repository** to your **production** app origin (no trailing slash, e.g. `https://app.example.com`). The Release job fails fast if it is empty when a real publish runs.
 - **npm Trusted Publishing:** in the package settings on [npmjs.com](https://www.npmjs.com), the trusted GitHub Actions workflow must be **[`.github/workflows/release.yml`](.github/workflows/release.yml)** for this repository. See [npm: Trusted publishers](https://docs.npmjs.com/trusted-publishers).
-- **Optional secret:** if **branch protection** on `main` blocks the default **`GITHUB_TOKEN`** from pushing the release commit and tag, add a **fine-grained or classic PAT** with `contents: write` to the `main` branch as the repository secret **`SEMANTIC_RELEASE_GITHUB_TOKEN`**. The workflow uses `secrets.SEMANTIC_RELEASE_GITHUB_TOKEN || secrets.GITHUB_TOKEN` for `checkout` and for semantic-release. If pushes still fail, adjust your ruleset to allow the **`github-actions[bot]`** app to push to `main`, or use the PAT.
+
+**GitHub token for `semantic-release` (canonical):** [`release.yml`](.github/workflows/release.yml) uses [**`actions/create-github-app-token`**](https://github.com/actions/create-github-app-token) with repository variable **`RELEASE_APP_ID`** and secret **`RELEASE_APP_PRIVATE_KEY`**. The installed GitHub App must be allowed to **push to `main`**, open/update **Releases**, and (with rulesets) be exempted or allowed where branch protection would otherwise block the release bot’s commits and tags. This replaces ad-hoc `GITHUB_TOKEN` + PAT workarounds for protected `main`. **If you are not using a GitHub App,** re-introducing a long-lived **PAT** in secrets is a last-resort local fork concern only — the default automation in this repository **does not** use `SEMANTIC_RELEASE_GITHUB_TOKEN`; do not add it unless you have intentionally changed the workflow to read it.
 
 ### Dry-run
 
@@ -112,10 +123,12 @@ Verify with `gh pr checks <PR> --json name,state` on a green PR: the five `name`
 
 ### CI concurrency (normative)
 
-| Trigger | Concurrency group | `cancel-in-progress` | Expected outcome |
-|---------|-------------------|----------------------|------------------|
-| `push` / `pull_request` to **`refs/heads/main`** | `ci-${{ github.workflow }}-${{ github.ref }}` | **false** | Two rapid `main` pushes may yield **two concurrent** workflow runs; both may run to completion; neither is canceled by a sibling `main` run. Branch protection treats the conclusion of the run(s) the protection rule evaluates as authoritative (standard GitHub behavior). |
-| `push` / `pull_request` to **any other ref** | same group formula | **true** | A newer push on the **same ref** **cancels** the older in-progress run. The canceled run ends **`cancelled`**. Required checks re-target the **newest** run for that PR or branch; superseded runs must not be interpreted as the final gate. |
+| Trigger | `concurrency.group` in [`ci.yml`](.github/workflows/ci.yml) | `cancel-in-progress` | Expected outcome |
+|---------|-----------------|----------------------|------------------|
+| `push` to **`refs/heads/main`** (and `pull_request` does not use that ref) | `${{ github.workflow }}-${{ github.ref }}` (workflow `name` is `CI`, so e.g. `CI-refs/heads/main`) | **false** | Two rapid `main` pushes may yield **two concurrent** `CI` runs; neither is cancelled by a sibling. |
+| `pull_request` and **`push` to any branch other than `main`** | same `group` formula for that event’s ref | **true** | A newer run on the **same ref** cancels the older in-progress run. The latest run is the one that matters for the PR/branch. |
+
+`cancel-in-progress` is implemented as: **`${{ github.ref != 'refs/heads/main' }}`**, so it is **false** only for the **`push`** event’s ref when the branch is **`main`**. (Feature-branch **pushes** still cancel; **`pull_request`** events use a `refs/pull/...` ref and are never `main`, so they always allow cancelation.)
 
 ### Failure modes (summary)
 

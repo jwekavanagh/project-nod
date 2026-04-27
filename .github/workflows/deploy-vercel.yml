@@ -1,4 +1,4 @@
-# Reusable: production Vercel deploy (remote build). Call from CI and Website workflows.
+# Reusable: production Vercel deploy (remote build). Call from CI only.
 # `website/vercel.json` disables auto-deploys for `main` so a push alone does not ship.
 name: Deploy Vercel production
 
