@@ -1,3 +1,15 @@
+# 1.0.0 (2026-04-27)
+
+
+### Bug Fixes
+
+* release visibility and pre-merge eligibility ([#11](https://github.com/jwekavanagh/agentskeptic/issues/11)) ([669065c](https://github.com/jwekavanagh/agentskeptic/commit/669065cddd669a511f284e6a78a975639ba45ef6))
+
+
+### Features
+
+* stateful enforcement, unified CI, and release automation ([#12](https://github.com/jwekavanagh/agentskeptic/issues/12)) ([0275407](https://github.com/jwekavanagh/agentskeptic/commit/027540788b3251ad5106f48555e1a58124e228a9))
+
 # Changelog
 
 ## 1.2.1
