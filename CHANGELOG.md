@@ -1,3 +1,10 @@
+## [1.0.1](https://github.com/jwekavanagh/agentskeptic/compare/v1.0.0...v1.0.1) (2026-04-27)
+
+
+### Bug Fixes
+
+* harden CI/release reliability and commit message DX ([#13](https://github.com/jwekavanagh/agentskeptic/issues/13)) ([b5c0c16](https://github.com/jwekavanagh/agentskeptic/commit/b5c0c1690f57241f12a8efdddf5eb3c0ca3af20d))
+
 # 1.0.0 (2026-04-27)
 
 
