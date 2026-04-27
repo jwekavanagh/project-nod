@@ -2,6 +2,9 @@ version: 2
 updates:
   - package-ecosystem: "github-actions"
     directory: "/"
+    # Prefix PR/commit titles so allowlisted diffs (e.g. .github/workflows/) pass CI / Release preview.
+    commit-message:
+      prefix: "fix(deps)"
     schedule:
       interval: "weekly"
     open-pull-requests-limit: 10
