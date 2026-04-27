@@ -77,6 +77,7 @@ import { classifyWorkflowLineage } from "./funnel/workflowLineageClassify.js";
 import { postProductActivationEvent } from "./telemetry/postProductActivationEvent.js";
 import { runFunnelAnonCliAndExit } from "./cli/runFunnelAnonSet.js";
 import { fetchCurrentUsage } from "./commercial/getCurrentUsage.js";
+import { AGENTSKEPTIC_CLI_SEMVER } from "./publicDistribution.generated.js";
 
 function usageQuick(): string {
   return `Usage:
@@ -1057,6 +1058,10 @@ function runPlanTransitionSubcommand(args: string[]): void {
 
 async function main(): Promise<void> {
   const args = process.argv.slice(2);
+  if (args[0] === "--version" || args[0] === "-V") {
+    console.log(AGENTSKEPTIC_CLI_SEMVER);
+    process.exit(0);
+  }
   if (args[0] === "init") {
     const { runInitCommand } = await import("./cli/initCommand.js");
     runInitCommand(args.slice(1));
