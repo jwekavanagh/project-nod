@@ -1,3 +1,10 @@
+## [1.1.3](https://github.com/jwekavanagh/agentskeptic/compare/v1.1.2...v1.1.3) (2026-04-27)
+
+
+### Bug Fixes
+
+* **ci:** bump create-github-app-token to v3 in release workflow ([#21](https://github.com/jwekavanagh/agentskeptic/issues/21)) ([548f9e7](https://github.com/jwekavanagh/agentskeptic/commit/548f9e79275d8993a297e4d24bbea66d31010ca5))
+
 ## [1.1.2](https://github.com/jwekavanagh/agentskeptic/compare/v1.1.1...v1.1.2) (2026-04-27)
 
 
