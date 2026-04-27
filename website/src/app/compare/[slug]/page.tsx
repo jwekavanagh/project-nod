@@ -1,6 +1,6 @@
 import { DiscoverySurfacePage } from "@/components/discovery/DiscoverySurfacePage";
 import { indexableGuideCanonical } from "@/lib/indexableGuides";
-import { marketingOpenGraphAndTwitter } from "@/lib/marketingSocialMetadata";
+import { brandedMarketingTitle, marketingOpenGraphAndTwitter } from "@/lib/marketingSocialMetadata";
 import { listSlugsForSegment, readSurfaceFile, type SurfaceSegment } from "@/lib/surfaceMarkdown";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
@@ -24,7 +24,10 @@ export async function generateMetadata({
       description: s.description,
       robots: { index: true, follow: true },
       alternates: { canonical: indexableGuideCanonical(s.route) },
-      ...marketingOpenGraphAndTwitter({ title: s.title, description: s.description }),
+      ...marketingOpenGraphAndTwitter({
+        title: brandedMarketingTitle(s.title),
+        description: s.description,
+      }),
     };
   } catch {
     return { title: "Not found", robots: { index: false, follow: false } };

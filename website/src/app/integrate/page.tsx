@@ -3,11 +3,11 @@ import marketing from "@/lib/marketing";
 import { conversionSpine } from "@/content/productCopy";
 import { siteMetadata } from "@/content/siteMetadata";
 import { indexableGuideCanonical } from "@/lib/indexableGuides";
-import { marketingOpenGraphAndTwitter } from "@/lib/marketingSocialMetadata";
+import { brandedMarketingTitle, marketingOpenGraphAndTwitter } from "@/lib/marketingSocialMetadata";
 import type { Metadata } from "next";
 import Link from "next/link";
 
-const integrateSocialTitle = `${siteMetadata.integrate.title} — AgentSkeptic`;
+const integrateSocialTitle = brandedMarketingTitle(siteMetadata.integrate.title);
 
 export const metadata: Metadata = {
   title: siteMetadata.integrate.title,

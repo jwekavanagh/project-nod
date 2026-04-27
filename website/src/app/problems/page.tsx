@@ -2,20 +2,22 @@ import { DiscoveryArticleJsonLd } from "@/components/discovery/DiscoveryArticleJ
 import { conversionSpine, productCopy } from "@/content/productCopy";
 import marketing from "@/lib/marketing";
 import { indexableGuideCanonical } from "@/lib/indexableGuides";
-import { marketingOpenGraphAndTwitter } from "@/lib/marketingSocialMetadata";
+import { brandedMarketingTitle, marketingOpenGraphAndTwitter } from "@/lib/marketingSocialMetadata";
 import { readSurfaceFile } from "@/lib/surfaceMarkdown";
 import type { Metadata } from "next";
 import Link from "next/link";
 
 const problemsDescription = productCopy.problemsPageMetadata.description;
+const problemsSegmentTitle = productCopy.problemsPageMetadata.title;
+const problemsPublicTitle = brandedMarketingTitle(problemsSegmentTitle);
 
 export const metadata: Metadata = {
-  title: productCopy.problemsPageMetadata.title,
+  title: problemsSegmentTitle,
   description: problemsDescription,
   alternates: { canonical: indexableGuideCanonical("/problems") },
   robots: { index: true, follow: true },
   ...marketingOpenGraphAndTwitter({
-    title: productCopy.problemsPageMetadata.title,
+    title: problemsPublicTitle,
     description: problemsDescription,
   }),
 };

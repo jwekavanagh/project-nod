@@ -7,10 +7,11 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { type ReactNode, Fragment } from "react";
 
+const acquisitionSegmentTitle = productBriefPage.metadata.title;
 const metaTitle = `${productBriefPage.metadata.title} — ${productBriefPage.metadata.titleSuffix}`;
 
 export const metadata: Metadata = {
-  title: metaTitle,
+  title: acquisitionSegmentTitle,
   description: productBriefPage.metadata.description,
   alternates: { canonical: indexableGuideCanonical(marketing.slug) },
   ...marketingOpenGraphAndTwitter({

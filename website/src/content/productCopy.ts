@@ -591,7 +591,7 @@ export const productCopy = {
 
   /** `/problems` metadata (UI-only; list body comes from `config/marketing.json` `problemIndex`). */
   problemsPageMetadata: {
-    title: "Problems the product routes to — AgentSkeptic",
+    title: "Problems the product routes to",
     description:
       "Buyer moments from `config/marketing.json` `problemIndex`—each row links to a guide and related site paths.",
   },

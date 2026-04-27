@@ -40,3 +40,11 @@ export function homePageTitleFromMarketing(heroTitle: string): string {
   const withoutTrailingPeriod = heroTitle.replace(/\s*\.\s*$/u, "");
   return `${withoutTrailingPeriod} — AgentSkeptic`;
 }
+
+/**
+ * Full public document/social title when the root layout uses `title.template: "%s — AgentSkeptic"`
+ * and the page exports only the **segment** in `metadata.title`.
+ */
+export function brandedMarketingTitle(shortPageSegment: string): string {
+  return `${shortPageSegment} — AgentSkeptic`;
+}
