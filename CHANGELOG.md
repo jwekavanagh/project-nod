@@ -1,3 +1,15 @@
+# [1.1.0](https://github.com/jwekavanagh/agentskeptic/compare/v1.0.1...v1.1.0) (2026-04-27)
+
+
+### Bug Fixes
+
+* **ci:** lhci per-url performance floors; relax home for ci noise ([#16](https://github.com/jwekavanagh/agentskeptic/issues/16)) ([d69bae1](https://github.com/jwekavanagh/agentskeptic/commit/d69bae1433caf2172f85817e530d0d66e1b68210))
+
+
+### Features
+
+* **website:** SEO metadata, title template, sitemap, preview noindex ([#14](https://github.com/jwekavanagh/agentskeptic/issues/14)) ([682fd7a](https://github.com/jwekavanagh/agentskeptic/commit/682fd7a366af5e7c05098ab4e8cf224fcddfcb11))
+
 ## [1.0.1](https://github.com/jwekavanagh/agentskeptic/compare/v1.0.0...v1.0.1) (2026-04-27)
 
 
