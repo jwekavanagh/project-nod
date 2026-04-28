@@ -8,6 +8,8 @@ This is the single canonical onboarding path for AgentSkeptic:
 
 All other stack combinations are contract-based only and are out of scope for this first-run path.
 
+Default decision-gate path reference: [README — Default path: DecisionGate before you act](../README.md#default-path-decisiongate-before-you-act).
+
 <!-- epistemic-contract:consumer:golden-path -->
 **Epistemic framing (pointer only):** [`epistemic-contract.md`](epistemic-contract.md) — then follow adoption and product SSOT below.
 <!-- /epistemic-contract:consumer:golden-path -->
@@ -67,5 +69,5 @@ Keep these files in your app:
 
 - Canonical product guidance: [`integrate.md`](integrate.md)
 - Guided browser drafting flow (subordinate, optional): [`guided-first-verification.md`](guided-first-verification.md)
-- Decision-ready production framing: [`adoption-epistemics.md`](adoption-epistemics.md)
+- Decision-ready production framing: [`adoption-epistemics.md#decision-ready-productioncomplete-normative`](adoption-epistemics.md#decision-ready-productioncomplete-normative)
 - Verification semantics and contract framing: [`epistemic-contract.md`](epistemic-contract.md)
