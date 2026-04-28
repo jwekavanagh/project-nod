@@ -1,11 +1,15 @@
 import type { ValidateFunction } from "ajv/dist/2020.js";
 import { normalizeOpenAiToolCallsToBootstrapPackInput } from "./normalizeOpenAiToolCallsToBootstrapPackInput.js";
 
+/** Explicit backend — default `hosted_openai`. No silent failover. */
+export type DraftProviderId = "hosted_openai" | "local_ollama";
+
 export type RegistryDraftParseResult =
   | {
       ok: true;
       normalizedBootstrapPackInput: Record<string, unknown>;
       ddlHint: string | undefined;
+      draftProvider: DraftProviderId;
     }
   | { ok: false; errors: unknown };
 
@@ -30,6 +34,9 @@ export function parseAndNormalizeRegistryDraftRequest(
   const ddlHintRaw = e.ddlHint;
   const ddlHint =
     typeof ddlHintRaw === "string" && ddlHintRaw.length > 0 ? ddlHintRaw : undefined;
+  const draftProviderRaw = e["draftProvider"];
+  const draftProvider: DraftProviderId =
+    draftProviderRaw === "local_ollama" ? "local_ollama" : "hosted_openai";
 
   let normalized: Record<string, unknown>;
   if (e.inputKind === "bootstrap_pack_v1") {
@@ -47,5 +54,5 @@ export function parseAndNormalizeRegistryDraftRequest(
     return { ok: false, errors: validateBootstrap.errors ?? [] };
   }
 
-  return { ok: true, normalizedBootstrapPackInput: normalized, ddlHint };
+  return { ok: true, normalizedBootstrapPackInput: normalized, ddlHint, draftProvider };
 }

@@ -4,7 +4,8 @@ This is the **default** path to reach a real verification: **valid `tools.json` 
 
 ## Prerequisite
 
-- Hosted same-origin **registry draft** is enabled: `POST /api/integrator/registry-draft` (see [registry-draft.md](registry-draft.md) for operators and response **v2** with `quickIngestInput`).
+- Same-origin **registry draft** is enabled (`REGISTRY_DRAFT_ENABLED`): `POST /api/integrator/registry-draft` (see [registry-draft.md](registry-draft.md) for operators, **`draftProvider`**, readiness, and **`quickIngestInput`**).
+- Equivalent offline path (same DraftEngine merge rules): **`agentskeptic registry-draft --provider … --request <envelope.json>`** (writes the v3 JSON envelope to stdout; optional **`--out <dir>`** for `tools.json` + `quick-input.ndjson`).
 
 ## Steps (browser)
 
@@ -18,7 +19,7 @@ This is the **default** path to reach a real verification: **valid `tools.json` 
 
 ## Why this is one flow
 
-- The **same** `POST` returns **v2** with both `draft` and `quickIngestInput.body` (deterministic synthesis from the normalized request—see [registry-draft.md](registry-draft.md#response-v2--quickingestinput)).
+- The **`POST`** (or **`registry-draft`** CLI) returns **`schemaVersion: 3`** with both **`draft`** and **`quickIngestInput.body`** (deterministic synthesis from the normalized request—see [registry-draft.md](registry-draft.md)).
 - You do **not** need to import `synthesizeQuickInputUtf8FromOpenAiV1` yourself for the happy path.
 
 ## Engineering

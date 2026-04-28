@@ -19,6 +19,8 @@
     },
     "./schemaLoad": "./dist/schemaLoad.js",
     "./registryDraft": "./dist/registryDraft/index.js",
+    "./registryDraft/engine": "./dist/registryDraft/engine.js",
+    "./registryDraft/providers/hosted_openai": "./dist/registryDraft/providers/hosted_openai.js",
     "./bootstrapPackSynthesis": "./dist/bootstrap/bootstrapPackSynthesis.js",
     "./verificationHypothesisContract": "./dist/telemetry/verificationHypothesisContract.js",
     "./firstFiveMinutesChecklist": "./dist/firstFiveMinutesChecklist.js"

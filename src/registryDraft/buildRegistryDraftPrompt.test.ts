@@ -7,6 +7,7 @@ describe("buildRegistryDraftPrompt", () => {
     expect(p).toContain("toolId");
     expect(p).toContain("effectDescriptionTemplate");
     expect(p).toContain('"kind":"sql_row"');
+    expect(p).toContain("\"model\":");
     expect(p).toContain("Do NOT use \"name\" instead of toolId");
     expect(p).toContain("never use a sibling property named \"sql_row\"");
   });

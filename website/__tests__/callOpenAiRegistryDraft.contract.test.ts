@@ -1,10 +1,10 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { getOpenAiRegistryDraftLlmResponseJsonSchemaRoot } from "agentskeptic/registryDraft";
-import { callOpenAiRegistryDraftJson } from "../src/lib/registryDraft/callOpenAiRegistryDraft";
+import { callHostedOpenAiRegistryDraftJson } from "agentskeptic/registryDraft/providers/hosted_openai";
 
 const fetchMock = vi.fn();
 
-describe("callOpenAiRegistryDraftJson", () => {
+describe("callHostedOpenAiRegistryDraftJson", () => {
   beforeEach(() => {
     process.env.OPENAI_API_KEY = "sk-test";
     fetchMock.mockReset();
@@ -23,7 +23,7 @@ describe("callOpenAiRegistryDraftJson", () => {
   });
 
   it("POSTs with json_schema response_format for the LLM partial; schema matches stripped on-disk Llm root", async () => {
-    const r = await callOpenAiRegistryDraftJson({ prompt: "p", model: "gpt-4o-mini" });
+    const r = await callHostedOpenAiRegistryDraftJson({ prompt: "p", model: "gpt-4o-mini", env: process.env });
     expect(r.ok).toBe(true);
     expect(fetchMock).toHaveBeenCalledTimes(1);
     const [, init] = fetchMock.mock.calls[0]!;

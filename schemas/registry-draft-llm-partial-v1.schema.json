@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://agentskeptic.com/schemas/registry-draft-llm-partial-v1.schema.json",
   "title": "RegistryDraftLlmPartialV1",
-  "description": "Model output for registry draft only. Server adds schemaVersion, quickIngestInput. Not used for AJV full envelope validation.",
+  "description": "Model output for registry draft only. Server adds schemaVersion, quickIngestInput, readiness, generation. Full tools rows are validated via tools-registry.schema.json post-merge.",
   "type": "object",
   "additionalProperties": false,
   "required": ["draft", "assumptions", "warnings", "disclaimer", "model"],
@@ -16,7 +16,22 @@
           "type": "array",
           "minItems": 1,
           "items": {
-            "type": "object"
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["toolId", "effectDescriptionTemplate", "verification"],
+            "properties": {
+              "toolId": { "type": "string", "minLength": 1 },
+              "effectDescriptionTemplate": { "type": "string" },
+              "verification": {
+                "type": "object",
+                "required": ["kind"],
+                "minProperties": 1,
+                "properties": {
+                  "kind": { "type": "string", "minLength": 1 }
+                },
+                "additionalProperties": true
+              }
+            }
           }
         }
       }
@@ -33,9 +48,8 @@
     "model": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["provider", "model"],
+      "required": ["model"],
       "properties": {
-        "provider": { "type": "string", "const": "openai" },
         "model": { "type": "string", "minLength": 1 }
       }
     }

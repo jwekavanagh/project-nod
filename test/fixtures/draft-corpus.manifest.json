@@ -1,0 +1,12 @@
+{
+  "version": "1",
+  "description": "Canonical fixtures for DraftEngine acceptance — expand over time; see test/draft-corpus-gate.test.mjs",
+  "items": [
+    {
+      "id": "branch-b-baseline",
+      "requestFixture": "test/fixtures/registry-draft/branch-b-envelope.json",
+      "expectReadiness": "ready",
+      "dualBackend": true
+    }
+  ]
+}

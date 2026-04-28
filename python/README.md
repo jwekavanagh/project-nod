@@ -4,6 +4,8 @@ First-party Python verification kernel and `agentskeptic.verify()` integration s
 
 Authoritative integrator narrative: [../docs/integrator-verification.md](../docs/integrator-verification.md).
 
+LM-assisted **`tools.json` drafting** from OpenAI/bootstrap inputs is **`npx agentskeptic registry-draft`** (DraftEngine in the Node package) — see [../docs/registry-draft.md](../docs/registry-draft.md). The small `emit_tools_json` helper in this package is template-only, not a second draft stack.
+
 ```bash
 pip install -e ".[dev]"
 pytest

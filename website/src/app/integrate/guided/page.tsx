@@ -7,6 +7,7 @@ const DEFAULT_OPENAI_ENVELOPE = JSON.stringify(
   {
     inputKind: "openai_tool_calls_v1",
     schemaVersion: 1,
+    draftProvider: "hosted_openai",
     workflowId: "wf_bootstrap_fixture",
     tool_calls: [
       {
@@ -30,6 +31,7 @@ const DEFAULT_BOOTSTRAP_ENVELOPE = JSON.stringify(
   {
     inputKind: "bootstrap_pack_v1",
     schemaVersion: 1,
+    draftProvider: "hosted_openai",
     bootstrapPackInput: {
       schemaVersion: 1,
       workflowId: "wf_integrate_spine",
@@ -69,11 +71,27 @@ const QUICK_CMD_MULTILINE = `npx agentskeptic quick \\
 const QUICK_CMD_ONE_LINE =
   "npx agentskeptic quick --input path/to/quick-input.ndjson --export-registry path/to/tools.json --db path/to/readable.sqlite --no-human-report";
 
-type V2 = {
-  schemaVersion: 2;
+/** POST /api/integrator/registry-draft success body (schemas/registry-draft-response.schema.json). */
+type DraftEngineResponseSuccess = {
+  schemaVersion: 3;
   draft: { tools: unknown[] };
   quickIngestInput: { encoding: string; body: string };
+  readiness: { status: "ready" | "review" | "blocked"; reasons: string[] };
+  generation?: { backend: string; model: string };
 };
+
+function preflightEnvelope(obj: unknown): string | null {
+  if (obj === null || typeof obj !== "object" || Array.isArray(obj)) {
+    return "Request body must be a JSON object.";
+  }
+  const o = obj as Record<string, unknown>;
+  if (o.schemaVersion !== 1) return "Expected schemaVersion: 1 in the envelope.";
+  const kind = o.inputKind;
+  if (kind !== "bootstrap_pack_v1" && kind !== "openai_tool_calls_v1") {
+    return `inputKind must be bootstrap_pack_v1 or openai_tool_calls_v1 — got "${String(kind)}".`;
+  }
+  return null;
+}
 
 function copyToClipboard(text: string): void {
   void navigator.clipboard.writeText(text);
@@ -84,7 +102,7 @@ export default function IntegrateGuidedPage() {
   const [bodyText, setBodyText] = useState(DEFAULT_OPENAI_ENVELOPE);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [result, setResult] = useState<V2 | null>(null);
+  const [result, setResult] = useState<DraftEngineResponseSuccess | null>(null);
   const [unavailable, setUnavailable] = useState(false);
 
   const setModeAndTemplate = (m: "openai" | "bootstrap") => {
@@ -109,6 +127,12 @@ export default function IntegrateGuidedPage() {
         setLoading(false);
         return;
       }
+      const pre = preflightEnvelope(parsed);
+      if (pre) {
+        setError(pre);
+        setLoading(false);
+        return;
+      }
       try {
         const res = await fetch("/api/integrator/registry-draft", {
           method: "POST",
@@ -128,7 +152,7 @@ export default function IntegrateGuidedPage() {
           setLoading(false);
           return;
         }
-        setResult(j as V2);
+        setResult(j as DraftEngineResponseSuccess);
       } catch {
         setError("Request failed. Check your connection and try again.");
       } finally {
@@ -167,8 +191,9 @@ export default function IntegrateGuidedPage() {
 
       {unavailable && (
         <p className="lede" role="alert">
-          Registry draft is not available on this deployment. For operators: set <code>REGISTRY_DRAFT_ENABLED=1</code> and
-          a valid <code>OPENAI_API_KEY</code>.
+          Registry draft is not available on this deployment. For operators: set <code>REGISTRY_DRAFT_ENABLED=1</code>.
+          Hosted drafting also needs <code>OPENAI_API_KEY</code>; local Ollama drafting needs{" "}
+          <code>AGENTSKEPTIC_DRAFT_LOCAL_MODEL</code> and a reachable Ollama <code>/api/chat</code> endpoint.
         </p>
       )}
 
@@ -196,7 +221,8 @@ export default function IntegrateGuidedPage() {
         </label>
         <label className="registry-draft-technical--embed-tail" htmlFor="registry-draft-body">
           Request JSON (per{" "}
-          <code>schemas/registry-draft-request-v1.schema.json</code>)
+          <code>schemas/registry-draft-request-v1.schema.json</code> — optional{" "}
+          <code>draftProvider</code>: <code>hosted_openai</code> | <code>local_ollama</code>)
         </label>
         <textarea
           id="registry-draft-body"
@@ -227,6 +253,13 @@ export default function IntegrateGuidedPage() {
         >
           <h2>Copy artifacts</h2>
           <div className="integrate-registry-draft-panel--secondary">
+            <p className="lede muted" data-testid="integrate-guided-readiness">
+              <strong>Readiness</strong>: <code>{result.readiness.status}</code>
+              {" — backend "}
+              <code>{result.generation?.backend ?? "?"}</code>, model{" "}
+              <code>{result.generation?.model ?? "?"}</code>. Review <code>readiness.reasons</code> in the response JSON
+              before shipping.
+            </p>
             <p>
               <strong>1) tools.json</strong> (array file — save as e.g. <code>path/to/tools.json</code>)
             </p>

@@ -10,12 +10,12 @@ const SCHEMA_FILES_IN_ORDER = [
   "openai-function-tool-call-item-v1.schema.json",
   "bootstrap-pack-input-v1.schema.json",
   "registry-draft-request-v1.schema.json",
-  "registry-draft-response-v2.schema.json",
+  "registry-draft-response.schema.json",
   "tools-registry.schema.json",
 ] as const;
 
 const REGISTRY_DRAFT_REQUEST_ID = "https://agentskeptic.com/schemas/registry-draft-request-v1.schema.json";
-const REGISTRY_DRAFT_RESPONSE_ID = "https://agentskeptic.com/schemas/registry-draft-response-v2.schema.json";
+const REGISTRY_DRAFT_RESPONSE_ID = "https://agentskeptic.com/schemas/registry-draft-response.schema.json";
 const BOOTSTRAP_PACK_INPUT_ID = "https://agentskeptic.com/schemas/bootstrap-pack-input-v1.schema.json";
 const TOOLS_REGISTRY_ID = "https://agentskeptic.com/schemas/tools-registry.schema.json";
 

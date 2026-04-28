@@ -1,0 +1,89 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://agentskeptic.com/schemas/registry-draft-response.schema.json",
+  "title": "RegistryDraftResponseEnvelope",
+  "description": "Single SSOT envelope for assisted registry-draft (HTTP 200 success). Breaking change from deprecated v2.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "draft",
+    "assumptions",
+    "warnings",
+    "disclaimer",
+    "generation",
+    "quickIngestInput",
+    "readiness"
+  ],
+  "properties": {
+    "schemaVersion": { "type": "integer", "const": 3 },
+    "draft": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["tools"],
+      "properties": {
+        "tools": {
+          "$ref": "https://agentskeptic.com/schemas/tools-registry.schema.json"
+        }
+      }
+    },
+    "assumptions": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "warnings": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "disclaimer": { "type": "string", "minLength": 1 },
+    "generation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["backend", "model"],
+      "properties": {
+        "backend": { "type": "string", "enum": ["hosted_openai", "local_ollama"] },
+        "model": { "type": "string", "minLength": 1 }
+      }
+    },
+    "quickIngestInput": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["encoding", "body"],
+      "properties": {
+        "encoding": { "type": "string", "const": "utf8" },
+        "body": {
+          "type": "string",
+          "maxLength": 65536,
+          "description": "Deterministic NDJSON from normalized bootstrap pack (synthesizeQuickInputUtf8FromOpenAiV1)."
+        }
+      }
+    },
+    "readiness": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "reasons"],
+      "properties": {
+        "status": { "type": "string", "enum": ["ready", "review", "blocked"] },
+        "reasons": {
+          "type": "array",
+          "items": { "type": "string", "enum": ["REGISTRY_INVALID", "MERGE_FAILED", "MODEL_NON_JSON", "POINTERS_UNRESOLVED", "ASSUMPTIONS_PRESENT", "WARNINGS_PRESENT", "OK"] }
+        }
+      }
+    },
+    "diagnostics": {
+      "type": "array",
+      "description": "Optional structured hints; typically empty when readiness is ready or review.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["code", "message"],
+        "properties": {
+          "instancePath": { "type": "string" },
+          "code": { "type": "string" },
+          "message": { "type": "string" },
+          "suggestedFix": { "type": "string" }
+        }
+      }
+    }
+  }
+}

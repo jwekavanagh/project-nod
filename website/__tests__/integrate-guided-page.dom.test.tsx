@@ -19,13 +19,14 @@ describe("/integrate/guided (RTL)", () => {
 
   it("POSTs registry-draft and shows tools, ndjson, and command; 404 shows operator hint", async () => {
     const payload = {
-      schemaVersion: 2,
+      schemaVersion: 3,
       draft: { tools: [{ toolId: "a.b", effectDescriptionTemplate: "x", verification: { kind: "sql_row" } }] },
       assumptions: [],
       warnings: [],
       disclaimer: "d",
-      model: { provider: "openai", model: "gpt-4o-mini" },
+      generation: { backend: "hosted_openai", model: "gpt-4o-mini" },
       quickIngestInput: { encoding: "utf8", body: "LINE\n" },
+      readiness: { status: "ready", reasons: ["OK"] },
     };
     fetchMock.mockResolvedValueOnce(new Response(JSON.stringify(payload), { status: 200 }));
 
@@ -35,6 +36,7 @@ describe("/integrate/guided (RTL)", () => {
     await waitFor(() => {
       expect(screen.getByTestId("integrate-guided-results")).toBeTruthy();
     });
+    expect(screen.getByTestId("integrate-guided-readiness").textContent).toMatch(/ready/i);
     expect(screen.getByTestId("integrate-guided-tools-json").textContent).toContain("a.b");
     expect(screen.getByTestId("integrate-guided-ndjson").textContent).toBe("LINE\n");
     const cmd = screen.getByTestId("integrate-guided-command").textContent ?? "";

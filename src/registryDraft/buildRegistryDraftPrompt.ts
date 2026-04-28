@@ -20,10 +20,11 @@ Rules:
      { "kind": "sql_row", "table": { "const": "<table>" }, "identityEq": [ { "column": { "const": "<col>" }, "value": { "pointer": "<json-pointer>" } } ], "requiredFields": { "pointer": "<json-pointer>" } }
   The string "sql_row" belongs ONLY inside verification.kind — never use a sibling property named "sql_row", never rename verification to something else, and never put row-check fields at the top level of the tool object.
 - Do NOT use "name" instead of toolId. Do NOT nest verification under informal keys.
-- assumptions and warnings are string arrays (may be empty). disclaimer is a non-empty string (state human review required). model is { "provider": "openai", "model": "<model id you used>" }.
+- assumptions and warnings are string arrays (may be empty). disclaimer is a non-empty string (state human review required).
+- model MUST be an object with EXACTLY one property: "model" — the model identifier string you are using (hosted or local). Do NOT include schemaVersion, quickIngestInput, generation, or provider fields.
 
 Minimal structural example (placeholders — replace with values inferred from the bootstrap input):
-{"draft":{"tools":[{"toolId":"namespace.tool_name","effectDescriptionTemplate":"Upsert row {/recordId} with fields {/fields}","verification":{"kind":"sql_row","table":{"const":"contacts"},"identityEq":[{"column":{"const":"id"},"value":{"pointer":"/recordId"}}],"requiredFields":{"pointer":"/fields"}}}]},"assumptions":[],"warnings":[],"disclaimer":"Draft only; review before use.","model":{"provider":"openai","model":"gpt-4o-mini"}}
+{"draft":{"tools":[{"toolId":"namespace.tool_name","effectDescriptionTemplate":"Upsert row {/recordId} with fields {/fields}","verification":{"kind":"sql_row","table":{"const":"contacts"},"identityEq":[{"column":{"const":"id"},"value":{"pointer":"/recordId"}}],"requiredFields":{"pointer":"/fields"}}}]},"assumptions":[],"warnings":[],"disclaimer":"Draft only; review before use.","model":{"model":"gpt-4o-mini"}}
 
 Do not claim execution correctness.
 
