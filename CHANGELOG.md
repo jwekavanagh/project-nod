@@ -1,3 +1,10 @@
+# [2.2.0](https://github.com/jwekavanagh/agentskeptic/compare/v2.1.0...v2.2.0) (2026-04-28)
+
+
+### Features
+
+* **emission:** enforce canonical emitter-first integration ([#27](https://github.com/jwekavanagh/agentskeptic/issues/27)) ([ba2a404](https://github.com/jwekavanagh/agentskeptic/commit/ba2a4044c10ff33adde5da07b69d53fe86032b0f))
+
 # [2.1.0](https://github.com/jwekavanagh/agentskeptic/compare/v2.0.0...v2.1.0) (2026-04-28)
 
 

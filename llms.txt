@@ -8,7 +8,7 @@
 ### Lifecycle
 
 1. Keep **`agentskeptic/tools.json`** in version control; update when `toolId` → SQL mapping changes.
-2. After each persisted tool observation, call **`gate.appendRunEvent(...)`** with one [event line](docs/agentskeptic.md#event-line-schema). Optionally mirror the same JSON line to **`agentskeptic/events.ndjson`** for CI replay.
+2. Emit observations via the canonical SDK emitter, then append emitted rows to the gate buffer. Optionally mirror the same JSON lines to **`agentskeptic/events.ndjson`** for CI replay.
 3. Immediately **before** any irreversible side effect (ship, bill, ticket close), call **`await gate.assertSafeForIrreversibleAction()`** so unsafe or unknown trust never reaches customers.
 
 ### Install
@@ -25,7 +25,7 @@ npx agentskeptic init --framework none --database sqlite --yes
 
 ```ts
 import { join } from "node:path";
-import { AgentSkeptic } from "agentskeptic";
+import { AgentSkeptic, BufferSink } from "agentskeptic";
 
 const skeptic = new AgentSkeptic({
   registryPath: join("agentskeptic", "tools.json"),
@@ -33,15 +33,19 @@ const skeptic = new AgentSkeptic({
 });
 
 const gate = skeptic.gate({ workflowId: "wf_complete" });
-// After each tool observation, buffer the event:
-gate.appendRunEvent({
-  schemaVersion: 1,
+const sink = new BufferSink();
+const emitter = skeptic.createEmitter({
   workflowId: "wf_complete",
-  seq: 0,
-  type: "tool_observed",
+  sink,
+  defaultToolObservedSchemaVersion: 2,
+});
+await emitter.emitToolObserved({
   toolId: "crm.upsert_contact",
   params: { recordId: "c_ok", fields: { name: "Alice", status: "active" } },
 });
+await emitter.finalizeRun();
+for (const ev of sink.snapshot()) gate.appendRunEvent(ev);
+gate.assertEmissionQuality();
 // Before an irreversible action:
 await gate.assertSafeForIrreversibleAction();
 ```
