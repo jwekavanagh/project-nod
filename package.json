@@ -37,7 +37,7 @@
     "test:vitest": "vitest run",
     "test:node:sqlite": "npm run build && node scripts/run-sqlite-node-test-batch.mjs",
     "test:postgres": "node scripts/run-postgres-node-test-batch.mjs",
-    "test:workflow-truth-contract": "node --test --test-force-exit test/ci-workflow-truth-postgres-contract.test.mjs",
+    "test:workflow-truth-contract": "node scripts/run-workflow-truth-contract.mjs",
     "validate-ttfv": "node scripts/validate-ttfv.mjs",
     "test:python": "node scripts/check-python-no-subprocess.mjs && node scripts/assert-python-langgraph-primacy.mjs && cd python && python -m pip install -e \".[dev]\" -q && python -m pytest tests/ -q",
     "test": "node scripts/verification-truth.mjs",

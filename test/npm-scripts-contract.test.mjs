@@ -29,11 +29,8 @@ describe("npm scripts contract (verification:truth)", () => {
     assert.equal(pkg.scripts["test:postgres"], "node scripts/run-postgres-node-test-batch.mjs");
   });
 
-  it("test:workflow-truth-contract runs postgres contract suite directly", () => {
-    assert.equal(
-      pkg.scripts["test:workflow-truth-contract"],
-      "node --test --test-force-exit test/ci-workflow-truth-postgres-contract.test.mjs",
-    );
+  it("test:workflow-truth-contract runs postgres contract suite via shim", () => {
+    assert.equal(pkg.scripts["test:workflow-truth-contract"], "node scripts/run-workflow-truth-contract.mjs");
   });
 
   it("verification-truth journey tail includes validateTtfv exactly once", () => {
