@@ -1,3 +1,10 @@
+# [1.4.0](https://github.com/jwekavanagh/agentskeptic/compare/v1.3.0...v1.4.0) (2026-04-28)
+
+
+### Features
+
+* **contract:** verification contract manifest v1 ([#24](https://github.com/jwekavanagh/agentskeptic/issues/24)) ([a5c4533](https://github.com/jwekavanagh/agentskeptic/commit/a5c45334cba13a03e18ac8e10a924a4295abd883))
+
 # [1.3.0](https://github.com/jwekavanagh/agentskeptic/compare/v1.2.1...v1.3.0) (2026-04-28)
 
 
