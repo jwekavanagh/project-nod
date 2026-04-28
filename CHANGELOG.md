@@ -1,3 +1,10 @@
+# [2.1.0](https://github.com/jwekavanagh/agentskeptic/compare/v2.0.0...v2.1.0) (2026-04-28)
+
+
+### Features
+
+* **golden-path:** ship executable Next.js + Postgres reference ([#26](https://github.com/jwekavanagh/agentskeptic/issues/26)) ([f7aa1f7](https://github.com/jwekavanagh/agentskeptic/commit/f7aa1f783010e2c98f89f5dfe047d176332bcda1))
+
 # [2.0.0](https://github.com/jwekavanagh/agentskeptic/compare/v1.4.0...v2.0.0) (2026-04-28)
 
 
