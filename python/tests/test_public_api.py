@@ -5,6 +5,7 @@ def test_only_documented_public_exports() -> None:
         "verify",
         "emit_tools_json",
         "AgentSkeptic",
+        "CanonicalEventEmitter",
         "AgentSkepticError",
         "AGENT_SKEPTIC_ERROR_CODES",
         "DecisionUnsafeError",
