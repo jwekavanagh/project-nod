@@ -1,3 +1,15 @@
+# [1.3.0](https://github.com/jwekavanagh/agentskeptic/compare/v1.2.1...v1.3.0) (2026-04-28)
+
+
+### Bug Fixes
+
+* **release:** publish 1.2.2 after npm blocked duplicate 1.2.0 ([#23](https://github.com/jwekavanagh/agentskeptic/issues/23)) ([eb70266](https://github.com/jwekavanagh/agentskeptic/commit/eb70266ee15f3b4cfb5958fb74fd281f9bba30b3))
+
+
+### Features
+
+* enhance integration documentation and API response structure ([#22](https://github.com/jwekavanagh/agentskeptic/issues/22)) ([23f2bde](https://github.com/jwekavanagh/agentskeptic/commit/23f2bde4bf39aa61d795347ca67505407a6228bc))
+
 # [1.2.0](https://github.com/jwekavanagh/agentskeptic/compare/v1.1.3...v1.2.0) (2026-04-28)
 
 
