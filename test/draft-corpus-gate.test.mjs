@@ -48,13 +48,23 @@ describe("draft corpus gate", async () => {
   };
 
   async function stubFetchDual(urlStr) {
-    const u = String(urlStr);
-    if (u.includes("api.openai.com")) {
+    let u;
+    try {
+      u = new URL(String(urlStr));
+    } catch {
+      return new Response("bad", { status: 404 });
+    }
+    if (
+      u.protocol === "https:" &&
+      u.hostname === "api.openai.com" &&
+      u.pathname.startsWith("/v1/chat/completions")
+    ) {
       return new Response(JSON.stringify({ choices: [{ message: { content: JSON.stringify(validPartial) } }] }), {
         status: 200,
       });
     }
-    if (u.includes("/api/chat")) {
+    const ollamaLocal = u.hostname === "127.0.0.1" || u.hostname === "localhost";
+    if (ollamaLocal && u.port === "11434" && u.pathname === "/api/chat") {
       return new Response(JSON.stringify({ message: { content: JSON.stringify(validPartial) } }), { status: 200 });
     }
     return new Response("bad", { status: 404 });
