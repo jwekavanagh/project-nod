@@ -1,6 +1,8 @@
 # AgentSkeptic integrator guide (v2 SSOT)
 
-**Fastest first path to a real verify:** [guided-first-verification.md](guided-first-verification.md) (browser flow: draft + quick ingest + one `agentskeptic quick` copy-paste).
+**Start here (canonical):** [golden-path.md](golden-path.md) (executable Next.js + Postgres reference with deterministic pass/fail verification).
+
+Optional accelerator: [guided-first-verification.md](guided-first-verification.md) (browser flow for draft + quick ingest generation).
 
 This document is the **single supported starting point** for shipping AgentSkeptic in application code. Older split guides are stubs that redirect here.
 
@@ -17,9 +19,17 @@ This document is the **single supported starting point** for shipping AgentSkept
 npm install agentskeptic
 ```
 
-### Scaffold
+### Golden path stack (default)
 
-Supported **day-one** combinations (SQLite only):
+AgentSkeptic ships one fully-supported onboarding reference: **Next.js (App Router) + Postgres**.
+Use [`golden-path.md`](golden-path.md) for the complete copy-and-run path (reference app + deterministic verify).
+
+All other stacks are **contract-based** only: supported by schemas and verification contracts, but not first-run
+golden onboarding.
+
+### Scaffold (contract-based local bootstrap)
+
+Local scaffold commands remain available for quick setup, but they are not the canonical production onboarding path:
 
 ```bash
 npx agentskeptic init --framework next --database sqlite --yes
@@ -43,7 +53,7 @@ import { join } from "node:path";
 
 const skeptic = new AgentSkeptic({
   registryPath: join(process.cwd(), "agentskeptic", "tools.json"),
-  databaseUrl: join(process.cwd(), "demo.db"),
+  databaseUrl: process.env.DATABASE_URL ?? join(process.cwd(), "demo.db"),
 });
 
 export const POST = createNextRouteHandler(skeptic, async (gate, req) => {

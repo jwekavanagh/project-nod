@@ -1,6 +1,7 @@
-# Guided first verification (integrator SSOT)
+# Guided first verification (optional accelerator)
 
-This is the **default** path to reach a real verification: **valid `tools.json` (draft) + matching quick-ingest bytes + one local `agentskeptic quick` command**—without stitching separate tools or multiple docs.
+This is an **optional** path to generate `tools.json` and matching quick-ingest bytes quickly.
+The canonical onboarding path is [`golden-path.md`](golden-path.md): Next.js + Postgres executable reference.
 
 ## Prerequisite
 

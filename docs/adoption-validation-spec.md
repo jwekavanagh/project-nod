@@ -13,7 +13,7 @@ This document defines how the repository proves the **adoption golden path**: de
 | NO_STEPS_STDERR | `no_steps_human_stderr_contains_full_message` |
 | README_SCOPE | `readme-wedge-inevitability.test.mjs` (adoption order + no `npm start` above `## Advanced`) |
 | DOC_BOUNDARY | `adoption-docs-boundary.test.mjs` |
-| GOLDEN_PATH_POINTERS | `docs-golden-path-pointer-only.test.mjs` |
+| GOLDEN_PATH_EXECUTABLE | `docs-golden-path-pointer-only.test.mjs` |
 | ARTIFACT_REGISTRY | `adoption_validation_spec_registry_matches_plan` |
 | ADOPTION_COMPLETE_PATTERN | `node scripts/validate-adoption-complete.mjs` — PatternComplete bootstrap + verify on temp paths; writes `artifacts/adoption-complete-validation-verdict.json` |
 | VERDICT | `npm test` runs `npm run build`, Vitest, pinned SQLite `node:test`, `node scripts/first-run.mjs`, `node scripts/validate-adoption-complete.mjs`, `npm run partner-quickstart`, `node scripts/validate-integrate-spine.mjs`, `node dist/cli.js assurance run --manifest examples/assurance/manifest.json`, `node scripts/commercial-enforce-test-harness.mjs`, then `npm run build` again (restore OSS `dist/` after the commercial harness), then `npm run validate-ttfv` — **no** Postgres |

@@ -1,5 +1,5 @@
 /**
- * docs/golden-path.md is pointers only — no fenced code blocks.
+ * docs/golden-path.md is executable and Postgres-first.
  */
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
@@ -10,9 +10,12 @@ import { fileURLToPath } from "node:url";
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const root = join(__dirname, "..");
 
-describe("golden-path pointers doc", () => {
-  it("no triple-backtick fences", () => {
+describe("golden-path executable doc", () => {
+  it("contains runnable steps and canonical stack language", () => {
     const s = readFileSync(join(root, "docs", "golden-path.md"), "utf8");
-    assert.equal(/```/.test(s), false);
+    assert.equal(/```bash/.test(s), true);
+    assert.equal(s.includes("Next.js + Postgres"), true);
+    assert.equal(s.includes("npm run golden:path"), true);
+    assert.equal(s.includes("examples/golden-next-postgres"), true);
   });
 });

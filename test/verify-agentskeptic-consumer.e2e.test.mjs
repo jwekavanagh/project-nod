@@ -177,3 +177,103 @@ try {
     rmSync(consumerDir, { recursive: true, force: true });
   }
 });
+
+test("consumer E2E: canonical Postgres verification scenario", async (t) => {
+  const adminUrl = process.env.POSTGRES_ADMIN_URL?.trim();
+  if (!adminUrl) {
+    t.skip("POSTGRES_ADMIN_URL is required for Postgres consumer E2E");
+    return;
+  }
+
+  const packDest = mkdtempSync(join(tmpdir(), "as-pack-pg-"));
+  const consumerDir = mkdtempSync(join(tmpdir(), "as-consumer-pg-"));
+  const dbName = "wfv_consumer_e2e_pg";
+  const { default: pg } = await import("pg");
+
+  const databaseUrl = (() => {
+    const u = new URL(adminUrl);
+    u.pathname = "/" + dbName;
+    return u.href;
+  })();
+
+  const adminClient = new pg.Client({ connectionString: adminUrl });
+  try {
+    const tgz = runBuildAndPack(packDest);
+    npmInitInstall(consumerDir, tgz);
+    const asDir = join(consumerDir, "agentskeptic");
+    mkdirSync(asDir, { recursive: true });
+    writeFileSync(join(asDir, "tools.json"), `${TOOLS_JSON}\n`);
+    await adminClient.connect();
+    await adminClient.query(
+      "SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname = $1 AND pid <> pg_backend_pid()",
+      [dbName],
+    );
+    await adminClient.query(`DROP DATABASE IF EXISTS ${dbName}`);
+    await adminClient.query(`CREATE DATABASE ${dbName}`);
+    await adminClient.end();
+
+    const dbClient = new pg.Client({ connectionString: databaseUrl });
+    await dbClient.connect();
+    await dbClient.query(
+      "CREATE TABLE contacts (id TEXT PRIMARY KEY, name TEXT, status TEXT); INSERT INTO contacts VALUES ('c_ok','Alice','active');",
+    );
+    await dbClient.end();
+
+    const eventOk = {
+      schemaVersion: 1,
+      workflowId: "e2e_pg_ok",
+      seq: 0,
+      type: "tool_observed",
+      toolId: "crm.upsert_contact",
+      params: { recordId: "c_ok", fields: { name: "Alice", status: "active" } },
+    };
+    const eventBad = {
+      ...eventOk,
+      workflowId: "e2e_pg_bad",
+      params: { recordId: "missing_row", fields: { name: "x", status: "y" } },
+    };
+
+    writeFileSync(join(asDir, "events.ndjson"), `${JSON.stringify(eventOk)}\n`);
+    const runnerA = `import { verifyAgentskeptic } from 'agentskeptic';
+const certificate = await verifyAgentskeptic({ workflowId: 'e2e_pg_ok', databaseUrl: ${JSON.stringify(databaseUrl)} });
+if (certificate.stateRelation !== 'matches_expectations' || certificate.highStakesReliance !== 'permitted') process.exit(2);
+process.exit(0);
+`;
+    writeFileSync(join(consumerDir, "run-pg-a.mjs"), runnerA);
+    const a = spawnSync(process.execPath, ["run-pg-a.mjs"], {
+      cwd: consumerDir,
+      encoding: "utf8",
+      stdio: ["ignore", "pipe", "pipe"],
+    });
+    assert.equal(a.status, 0, a.stderr || a.stdout);
+
+    writeFileSync(join(asDir, "events.ndjson"), `${JSON.stringify(eventBad)}\n`);
+    const runnerB = `import { verifyAgentskeptic } from 'agentskeptic';
+const certificate = await verifyAgentskeptic({ workflowId: 'e2e_pg_bad', databaseUrl: ${JSON.stringify(databaseUrl)} });
+if (certificate.stateRelation !== 'does_not_match' || certificate.highStakesReliance !== 'prohibited') process.exit(3);
+if (!certificate.explanation.details.some((d) => d.code === 'ROW_ABSENT')) process.exit(4);
+process.exit(0);
+`;
+    writeFileSync(join(consumerDir, "run-pg-b.mjs"), runnerB);
+    const b = spawnSync(process.execPath, ["run-pg-b.mjs"], {
+      cwd: consumerDir,
+      encoding: "utf8",
+      stdio: ["ignore", "pipe", "pipe"],
+    });
+    assert.equal(b.status, 0, b.stderr || b.stdout);
+  } finally {
+    try {
+      if (adminClient) {
+        await adminClient.connect();
+        await adminClient.query(
+          "SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname = $1 AND pid <> pg_backend_pid()",
+          [dbName],
+        );
+        await adminClient.query(`DROP DATABASE IF EXISTS ${dbName}`);
+        await adminClient.end();
+      }
+    } catch {}
+    rmSync(packDest, { recursive: true, force: true });
+    rmSync(consumerDir, { recursive: true, force: true });
+  }
+});

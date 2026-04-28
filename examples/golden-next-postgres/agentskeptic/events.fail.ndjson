@@ -1,0 +1,1 @@
+{"schemaVersion":1,"workflowId":"wf_golden_fail","seq":0,"type":"tool_observed","toolId":"crm.upsert_contact","params":{"recordId":"missing_row","fields":{"name":"Alice","status":"active"}}}

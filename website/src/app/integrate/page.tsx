@@ -30,12 +30,11 @@ export default function IntegratePage() {
         aria-label="Guided first verification"
       >
         <p className="lede">
-          <strong>Fastest first run:</strong>{" "}
+          <strong>Optional guided drafting:</strong>{" "}
           <Link className="btn" href="/integrate/guided" data-testid="integrate-guided-link">
             Guided: generate registry and quick input
           </Link>{" "}
-          — one page to produce a <code>tools.json</code> draft, the matching <code>quick</code> ingest, and a single local
-          verify command.
+          — generate artifacts quickly, then follow the canonical Next.js + Postgres golden path for production onboarding.
         </p>
       </section>
       <p className="lede integrate-benefit-lede">
@@ -45,6 +44,13 @@ export default function IntegratePage() {
         Run a single verification that compares what your agents and tools claimed against your actual stored state.
       </p>
       <p className="lede">Get a clear, binary verdict before you ship, bill, or hand off to customers.</p>
+      <p className="lede">
+        <strong>Golden path:</strong> Next.js (App Router) + Postgres. Use the executable{" "}
+        <a href="https://github.com/jwekavanagh/agentskeptic/blob/main/docs/golden-path.md" rel="noopener noreferrer" target="_blank">
+          golden-path.md
+        </a>{" "}
+        and reference app for first-run onboarding.
+      </p>
       <p className="home-cta-row">
         <a
           className="btn"
@@ -125,7 +131,8 @@ export default function IntegratePage() {
       >
         <h3>Framework starter (`init`)</h3>
         <p className="muted">
-          AgentSkeptic v2 ships a small, tested matrix. SQLite only on day one. Full integrator SSOT:{" "}
+          AgentSkeptic v2 has one fully-supported onboarding stack: Next.js + Postgres. Commands below are local
+          contract-based bootstrap helpers. Full integrator SSOT:{" "}
           <a href={p.githubDeepLink} rel="noopener noreferrer" target="_blank">
             docs/integrate.md
           </a>

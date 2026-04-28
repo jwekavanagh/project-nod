@@ -43,6 +43,7 @@
     "test": "node scripts/verify.mjs --profile=default",
     "test:debug-ui": "playwright test",
     "test:ci": "node scripts/verify.mjs --profile=ci",
+    "golden:path": "node examples/golden-next-postgres/scripts/run-reference.mjs",
     "example:workflow-hook": "npm run build && node examples/workflow-runner.mjs",
     "agentskeptic": "node dist/cli.js",
     "migrate:workflow-result-v11": "npm run build && node scripts/migrate-workflow-result-v11.mjs",

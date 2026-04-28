@@ -91,6 +91,7 @@ export const sqliteNodeTestFiles = [
   "test/adoption-validation.test.mjs",
   "test/assurance-cli.test.mjs",
   "test/docs-golden-path-pointer-only.test.mjs",
+  "test/golden-path-drift.contract.test.mjs",
   "test/integrate-spine-step3-chain.happy.test.mjs",
   "test/integrate-spine-step3-chain.negative.test.mjs",
   "test/no-handrolled-node-test-lists.mjs",
