@@ -1,0 +1,27 @@
+{
+  "manifestVersion": 1,
+  "regeneration": {
+    "scripts": [
+      { "cwd": ".", "npmScript": "codegen:types" },
+      { "cwd": ".", "npmScript": "codegen:error-codes" },
+      { "cwd": ".", "npmScript": "sync-website-ssot" },
+      { "cwd": ".", "npmScript": "build" },
+      { "cwd": ".", "npmScript": "check:langgraph-embeds" },
+      { "cwd": "website", "npmScript": "check:docs-claim-urls" }
+    ]
+  },
+  "gating": {
+    "gitPathspecs": [
+      "schemas/",
+      "llms.txt",
+      "README.md",
+      "AGENTS.md",
+      "package.json",
+      "website/public/",
+      "website/src/generated/",
+      "src/publicDistribution.generated.ts",
+      "src/sdk/_generated/",
+      "src/agentskeptic-error-codes.json"
+    ]
+  }
+}

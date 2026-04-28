@@ -61,8 +61,8 @@ jobs:
       - name: Assert SARIF has no results for remediation rule IDs
         run: node scripts/assert-codeql-remediation-sarif.mjs "${{ steps.codeql_analyze.outputs['sarif-output'] }}"
 
-  test:
-    name: test
+  verification:
+    name: verification
     runs-on: ubuntu-latest
     services:
       postgres:
@@ -79,46 +79,10 @@ jobs:
     env:
       POSTGRES_ADMIN_URL: postgresql://postgres:postgres@localhost:5432/postgres
       POSTGRES_VERIFICATION_URL: postgresql://verifier_ro:verifier@localhost:5432/postgres
-      AGENTSKEPTIC_TELEMETRY: "0"
-      # Root `test:ci` does not use website DATABASE_URL / TELEMETRY_DATABASE_URL; keep split off so Vitest defaults match “core-only” unless a test stubs otherwise.
-      AGENTSKEPTIC_TELEMETRY_WRITES_TELEMETRY_DB: "0"
-    steps:
-      - uses: actions/checkout@v5
-      - name: Assert workflow Postgres URLs use localhost only (static scan)
-        run: node scripts/assert-ci-workflows-database-url-hosts.mjs
-      - uses: ./.github/actions/setup-node-npm
-      - name: Epistemic contract structure (sync + validate)
-        run: node scripts/sync-epistemic-contract-website.mjs && node scripts/validate-epistemic-contract-structure.mjs
-      - name: Install LangGraph Node oracle fixture dependencies
-        run: npm ci --prefix test/fixtures/langgraph-node-oracle
-      - name: Build, tests, and adoption chain (CI / Postgres)
-        run: npm run test:ci
-      - name: Emission onboarding metrics snapshot
-        run: npm run measure:emission-onboarding-metrics
-      - name: Conformance gates
-        run: npm run conformance:all && npm run conformance:gate && node conformance/assert-bigquery-excluded.mjs && npm run docs:check:capabilities
-
-  commercial:
-    name: commercial
-    runs-on: ubuntu-latest
-    services:
-      postgres:
-        image: postgres:16
-        env:
-          POSTGRES_PASSWORD: postgres
-        ports:
-          - 5432:5432
-        options: >-
-          --health-cmd "pg_isready -U postgres"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-    # Fixture Postgres on the job `services.postgres` container — not production. Separate DB names
-    # exercise core vs telemetry routing the same way as split-store production, without remote hosts.
-    env:
       DATABASE_URL: postgresql://postgres:postgres@localhost:5432/wfv_website
       TELEMETRY_DATABASE_URL: postgresql://postgres:postgres@localhost:5432/wfv_telemetry
-      AGENTSKEPTIC_TELEMETRY_WRITES_TELEMETRY_DB: "1"
+      AGENTSKEPTIC_TELEMETRY: "0"
+      AGENTSKEPTIC_TELEMETRY_WRITES_TELEMETRY_DB: "0"
       AUTH_SECRET: ci_auth_secret_value_at_least_32_chars_ok
       CONTACT_SALES_EMAIL: sales-ci@example.com
       STRIPE_SECRET_KEY: sk_test_ci_placeholder
@@ -133,7 +97,6 @@ jobs:
       STRIPE_OVERAGE_TEAM: price_ci_ov_t
       STRIPE_OVERAGE_BUSINESS: price_ci_ov_b
       CRON_SECRET: ci_cron_secret_placeholder_32chars_min
-      AGENTSKEPTIC_TELEMETRY: "0"
     steps:
       - uses: actions/checkout@v5
       - name: Assert workflow Postgres URLs use localhost only (static scan)
@@ -141,16 +104,10 @@ jobs:
       - name: Assert job env Postgres URLs are localhost (runtime; requires core + telemetry)
         run: node scripts/assert-ci-postgres-env-safety.mjs --require-core-and-telemetry
       - uses: ./.github/actions/setup-node-npm
-      - name: Build, LangGraph embeds, and website doc-claim URL gates
-        run: npm run build && npm run check:langgraph-embeds && npm run check:docs-claim-urls --prefix website
-      - name: Create website and telemetry databases
-        run: node scripts/ci-create-website-telemetry-dbs.mjs
-      - name: Validate commercial layer
-        run: npm run validate-commercial
-      - name: Install Playwright Chromium (website holistic gate)
-        run: npx playwright install chromium
-      - name: Verify web marketing copy contract
-        run: npm run verify:web-marketing-copy
+      - name: Install LangGraph Node oracle fixture dependencies
+        run: npm ci --prefix test/fixtures/langgraph-node-oracle
+      - name: Verification truth
+        run: npm run verification:truth
 
   release-preview:
     name: Release preview
@@ -206,6 +163,6 @@ jobs:
   vercel_production:
     name: Vercel production
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    needs: [codeql, test, commercial, python]
+    needs: [codeql, verification, python]
     uses: ./.github/workflows/deploy-vercel.yml
     secrets: inherit

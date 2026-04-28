@@ -1,6 +1,6 @@
 /**
  * Fail if any root package.json script value embeds a `test/…/*.mjs` path.
- * Hand-rolled lists are forbidden; use test/suites.mjs + scripts/verify.mjs.
+ * Hand-rolled lists are forbidden; use test/suites.mjs + scripts/verification-truth*.mjs.
  */
 import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
@@ -15,7 +15,7 @@ const pkg = JSON.parse(readFileSync(join(root, "package.json"), "utf8"));
 const handRolledTestMjs = /test\/[A-Za-z0-9_.-]+\.mjs/g;
 
 describe("no hand-rolled test/*.mjs in package.json scripts", () => {
-  it("scripts must not reference test/*.mjs (use test/suites.mjs and verify.mjs)", () => {
+  it("scripts must not reference test/*.mjs (use test/suites.mjs and verification-truth orchestration)", () => {
     for (const [name, v] of Object.entries(pkg.scripts)) {
       if (typeof v !== "string") continue;
       const matches = v.match(handRolledTestMjs);
@@ -23,7 +23,7 @@ describe("no hand-rolled test/*.mjs in package.json scripts", () => {
         const uniq = [...new Set(matches)].sort().join(", ");
         assert.fail(
           `Hand-rolled test path in scripts.${name}: ${uniq}. ` +
-            `Use node scripts/verify.mjs; registry is test/suites.mjs`,
+            `Use test/suites.mjs and verification-truth tooling; registry is test/suites.mjs`,
         );
       }
     }

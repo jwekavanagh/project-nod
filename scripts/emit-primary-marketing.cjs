@@ -177,6 +177,7 @@ Normative **public distribution** and anchor sync: [\`docs/public-distribution.m
 - Verification Contract Manifest (canonical): ${contractPin.url}
 - Verification Contract Manifest (repo raw): ${contractRaw}
 - Acquisition page (canonical): ${acquisitionUrl}
+- CI regeneration + drift pathspecs: [\`schemas/ci/verification-truth.manifest.json\`](schemas/ci/verification-truth.manifest.json) (validated by [\`test/verification-truth.manifest.completeness.test.mjs\`](test/verification-truth.manifest.completeness.test.mjs))
 `;
   writeFileSync(join(ROOT, "AGENTS.md"), body, "utf8");
 }

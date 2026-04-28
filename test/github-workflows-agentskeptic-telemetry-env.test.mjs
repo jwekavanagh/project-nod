@@ -24,15 +24,13 @@ describe("GitHub Actions AGENTSKEPTIC_TELEMETRY env", () => {
     const ids = Object.keys(jobs).sort();
     assert.deepEqual(ids, [
       "codeql",
-      "commercial",
       "commitlint",
       "python",
       "release-preview",
-      "test",
       "vercel_production",
+      "verification",
     ]);
-    assert.equal(jobs.test.env.AGENTSKEPTIC_TELEMETRY, "0");
-    assert.equal(jobs.commercial.env.AGENTSKEPTIC_TELEMETRY, "0");
+    assert.equal(jobs.verification.env.AGENTSKEPTIC_TELEMETRY, "0");
     assert.equal(jobs.python.env.AGENTSKEPTIC_TELEMETRY, "0");
     assert.equal("AGENTSKEPTIC_TELEMETRY" in (jobs.codeql.env ?? {}), false);
     assert.equal(jobs.vercel_production.uses, "./.github/workflows/deploy-vercel.yml");

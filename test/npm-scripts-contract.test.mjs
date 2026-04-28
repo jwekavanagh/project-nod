@@ -1,5 +1,5 @@
 /**
- * Enforces package.json + scripts/verify.mjs single-orchestrator shape.
+ * Enforces package.json + scripts/verification-truth canonical gate shape.
  */
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
@@ -10,59 +10,39 @@ import { fileURLToPath } from "node:url";
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const root = join(__dirname, "..");
 const pkg = JSON.parse(readFileSync(join(root, "package.json"), "utf8"));
-const verifySrc = readFileSync(join(root, "scripts/verify.mjs"), "utf8");
+const stagesSrc = readFileSync(join(root, "scripts", "verification-truth-stages.mjs"), "utf8");
 
-describe("npm scripts contract (test / test:ci → verify.mjs)", () => {
-  it("scripts.test / test:ci are verify one-liners", () => {
-    assert.equal(pkg.scripts.test, "node scripts/verify.mjs --profile=default");
-    assert.equal(pkg.scripts["test:ci"], "node scripts/verify.mjs --profile=ci");
+const truth = "node scripts/verification-truth.mjs";
+
+describe("npm scripts contract (verification:truth)", () => {
+  it("scripts.test / test:ci / verification:truth are identical one-liners", () => {
+    assert.equal(pkg.scripts["verification:truth"], truth);
+    assert.equal(pkg.scripts.test, truth);
+    assert.equal(pkg.scripts["test:ci"], truth);
   });
 
-  it("shims delegate to verify --stages", () => {
+  it("shims use dedicated batch runners (no verify.mjs)", () => {
     assert.equal(
       pkg.scripts["test:node:sqlite"],
-      "node scripts/verify.mjs --stages=build,nodeGuards,nodeTestSqlite",
+      "npm run build && node scripts/run-sqlite-node-test-batch.mjs",
     );
-    assert.equal(
-      pkg.scripts["test:postgres"],
-      "node scripts/verify.mjs --stages=nodeTestPostgres",
-    );
+    assert.equal(pkg.scripts["test:postgres"], "node scripts/run-postgres-node-test-batch.mjs");
   });
 
-  it("test:workflow-truth-contract is a single verify stage (no mjs in package.json)", () => {
-    assert.equal(
-      pkg.scripts["test:workflow-truth-contract"],
-      "node scripts/verify.mjs --stages=ciWorkflowTruthSingle",
-    );
+  it("test:workflow-truth-contract runs postgres contract suite via shim", () => {
+    assert.equal(pkg.scripts["test:workflow-truth-contract"], "node scripts/run-workflow-truth-contract.mjs");
   });
 
-  it("verify:decision-readiness uses the JSON gate", () => {
-    assert.equal(
-      pkg.scripts["verify:decision-readiness"],
-      "node scripts/verify.mjs --profile=decision-readiness",
-    );
+  it("verification-truth journey tail includes validateTtfv exactly once", () => {
+    const matches = [...stagesSrc.matchAll(/"validateTtfv",/g)];
+    assert.equal(matches.length, 1);
   });
 
-  it("verify.mjs: default profile runs commercialEnforce then rebuild; ci runs postgres tail after assurance", () => {
-    const iC = verifySrc.indexOf("const profileDefault = [");
-    const iD = verifySrc.indexOf("const profileCi = [");
-    assert.ok(iC !== -1 && iD !== -1);
-    const defaultBlock = verifySrc.slice(iC, iD);
-    const jAss = defaultBlock.indexOf('"assurance"');
-    const jCom = defaultBlock.indexOf('"commercialEnforce"');
-    const jRe = defaultBlock.indexOf('"rebuildOss"');
-    assert.ok(jAss < jCom && jCom < jRe, "default: assurance → commercialEnforce → rebuildOss");
-    const ciBlock = verifySrc.slice(iD);
-    const aAs = ciBlock.indexOf('"assurance"');
-    const aPo = ciBlock.indexOf('"nodeTestPostgres"');
-    assert.ok(
-      aAs < aPo,
-      "ci: nodeTestPostgres after assurance (no unflagged commercial before postgres)",
-    );
-  });
-
-  it("verify.mjs: each profile includes exactly one validateTtfv stage", () => {
-    const inArrays = (verifySrc.match(/"validateTtfv",/g) || []).length;
-    assert.equal(inArrays, 2, "profileDefault and profileCi should each list validateTtfv");
+  it("measureEmission appears once at end of profileCiTail", () => {
+    const i = stagesSrc.indexOf("export const profileCiTail");
+    assert.ok(i !== -1);
+    const slice = stagesSrc.slice(i);
+    const nMeasure = (slice.match(/"measureEmissionOnboarding"/g) || []).length;
+    assert.equal(nMeasure, 1);
   });
 });

@@ -269,6 +269,48 @@
       "remediation": "See docs/migrate-2.md and the AgentSkeptic 2.0 integrator guide (docs/integrate.md)."
     },
     {
+      "code": "EMIT_LANGGRAPH_CHECKPOINT_INVALID",
+      "category": "operational",
+      "httpStatus": null,
+      "retryable": false,
+      "remediation": "See docs/migrate-2.md and the AgentSkeptic 2.0 integrator guide (docs/integrate.md)."
+    },
+    {
+      "code": "EMIT_LINT_FAILED",
+      "category": "operational",
+      "httpStatus": null,
+      "retryable": false,
+      "remediation": "See docs/migrate-2.md and the AgentSkeptic 2.0 integrator guide (docs/integrate.md)."
+    },
+    {
+      "code": "EMIT_LINT_USAGE",
+      "category": "operational",
+      "httpStatus": null,
+      "retryable": false,
+      "remediation": "See docs/migrate-2.md and the AgentSkeptic 2.0 integrator guide (docs/integrate.md)."
+    },
+    {
+      "code": "EMIT_RETRIEVAL_SOURCE_INVALID",
+      "category": "operational",
+      "httpStatus": null,
+      "retryable": false,
+      "remediation": "See docs/migrate-2.md and the AgentSkeptic 2.0 integrator guide (docs/integrate.md)."
+    },
+    {
+      "code": "EMIT_TOOL_ID_INVALID",
+      "category": "operational",
+      "httpStatus": null,
+      "retryable": false,
+      "remediation": "See docs/migrate-2.md and the AgentSkeptic 2.0 integrator guide (docs/integrate.md)."
+    },
+    {
+      "code": "EMIT_WORKFLOW_ID_INVALID",
+      "category": "operational",
+      "httpStatus": null,
+      "retryable": false,
+      "remediation": "See docs/migrate-2.md and the AgentSkeptic 2.0 integrator guide (docs/integrate.md)."
+    },
+    {
       "code": "ENFORCEMENT_REQUIRES_PAID_PLAN",
       "category": "license",
       "httpStatus": null,

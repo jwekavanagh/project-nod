@@ -24,7 +24,7 @@ function assertGateJson(jsonName) {
   }
 }
 
-describe("website gate module JSON (SSOT for verify.mjs Vitest arg lists)", () => {
+describe("website gate module JSON (SSOT for verification-truth-stages Vitest arg lists)", () => {
   it("ci-website-gate.modules.json", () => {
     assertGateJson("ci-website-gate.modules.json");
   });

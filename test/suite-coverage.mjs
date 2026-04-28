@@ -1,6 +1,7 @@
 /**
  * Every top-level `test/*.mjs` (except `suites.mjs` and `*.lib.mjs`) is classified
- * in test/suites.mjs into sqlite, postgres, commercialHarness, commercialPostgresHarness, nodeTestScheduledByVerify, or mjsAtTestRootRunByVerifyOnly.
+ * in test/suites.mjs into sqlite, postgres, commercialHarness, commercialPostgresHarness,
+ * nodeTestScheduledByVerificationTruth, or mjsAtTestRootRunByVerificationTruthOnly.
  */
 import { readdir, stat } from "node:fs/promises";
 import { dirname, join } from "node:path";
@@ -12,8 +13,8 @@ import {
   postgresNodeTestFiles,
   commercialHarnessNodeTestFiles,
   commercialPostgresHarnessNodeTestFiles,
-  nodeTestScheduledByVerify,
-  mjsAtTestRootRunByVerifyOnly,
+  nodeTestScheduledByVerificationTruth,
+  mjsAtTestRootRunByVerificationTruthOnly,
 } from "./suites.mjs";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -78,8 +79,8 @@ describe("test/suites.mjs coverage (exhaustive, disjoint)", () => {
       ...postgresNodeTestFiles,
       ...commercialHarnessNodeTestFiles,
       ...commercialPostgresHarnessNodeTestFiles,
-      ...nodeTestScheduledByVerify,
-      ...mjsAtTestRootRunByVerifyOnly,
+      ...nodeTestScheduledByVerificationTruth,
+      ...mjsAtTestRootRunByVerificationTruthOnly,
     ]);
 
     for (const p of top) {

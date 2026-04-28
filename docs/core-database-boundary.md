@@ -59,9 +59,9 @@ Direct `npx drizzle-kit …` against team infrastructure is **unsupported** and 
 ## CI workflow host audit
 
 - **Static scan:** [`scripts/assert-ci-workflows-database-url-hosts.mjs`](../scripts/assert-ci-workflows-database-url-hosts.mjs) — fails if any workflow literal `DATABASE_URL:` or `TELEMETRY_DATABASE_URL:` (non–`${{ }}`) uses a host other than `localhost` / `127.0.0.1`.
-- **Placement:** [`.github/workflows/ci.yml`](../.github/workflows/ci.yml) → `jobs.test` and `jobs.commercial` → immediately after `actions/checkout@v5` (before `setup-node` on `test`).
-- **Runtime guard (GitHub Actions only):** [`scripts/assert-ci-postgres-env-safety.mjs`](../scripts/assert-ci-postgres-env-safety.mjs) with `--require-core-and-telemetry` on `jobs.commercial` so the job must set both URLs and they must still resolve to localhost-only hosts (belt-and-suspenders vs secrets or env injection).
-- **Split-behavior flags:** `jobs.test` sets `AGENTSKEPTIC_TELEMETRY_WRITES_TELEMETRY_DB=0` (root `test:ci` does not rely on website core/telemetry fixture split). `jobs.commercial` sets `AGENTSKEPTIC_TELEMETRY_WRITES_TELEMETRY_DB=1` against isolated DB names `wfv_website` / `wfv_telemetry` on the job Postgres service.
+- **Placement:** [`.github/workflows/ci.yml`](../.github/workflows/ci.yml) → `jobs.verification` → immediately after `actions/checkout@v5` (before `setup-node-npm`).
+- **Runtime guard (GitHub Actions only):** [`scripts/assert-ci-postgres-env-safety.mjs`](../scripts/assert-ci-postgres-env-safety.mjs) with `--require-core-and-telemetry` on `jobs.verification` so the job must set both core and telemetry URLs and they must still resolve to localhost-only hosts (belt-and-suspenders vs secrets or env injection).
+- **Telemetry writes:** the job sets `AGENTSKEPTIC_TELEMETRY_WRITES_TELEMETRY_DB=0` at the job level; [`scripts/verification-truth.mjs`](../scripts/verification-truth.mjs) temporarily sets `1` only for the **`validate-commercial`** / related website steps. Fixture DB names **`wfv_website`** / **`wfv_telemetry`** on the job Postgres service match the split-store production pattern.
 
 ## Cross-links
 

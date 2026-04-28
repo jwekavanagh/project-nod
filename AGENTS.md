@@ -10,3 +10,4 @@ Normative **public distribution** and anchor sync: [`docs/public-distribution.md
 - Verification Contract Manifest (canonical): https://agentskeptic.com/contract/v1.json
 - Verification Contract Manifest (repo raw): https://raw.githubusercontent.com/jwekavanagh/agentskeptic/refs/heads/main/schemas/contract/v1.json
 - Acquisition page (canonical): https://agentskeptic.com/database-truth-vs-traces
+- CI regeneration + drift pathspecs: [`schemas/ci/verification-truth.manifest.json`](schemas/ci/verification-truth.manifest.json) (validated by [`test/verification-truth.manifest.completeness.test.mjs`](test/verification-truth.manifest.completeness.test.mjs))

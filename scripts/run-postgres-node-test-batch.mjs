@@ -1,0 +1,10 @@
+#!/usr/bin/env node
+import { execSync } from "node:child_process";
+import { join, dirname } from "node:path";
+import { fileURLToPath } from "node:url";
+import { postgresNodeTestFiles } from "../test/suites.mjs";
+
+const root = join(dirname(fileURLToPath(import.meta.url)), "..");
+execSync("node scripts/pg-ci-init.mjs", { stdio: "inherit", cwd: root, shell: true, env: process.env });
+const files = postgresNodeTestFiles.map((f) => join(root, f).replace(/\\/g, "/")).join(" ");
+execSync(`node --test --test-force-exit ${files}`, { stdio: "inherit", cwd: root, shell: true, env: process.env });

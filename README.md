@@ -330,7 +330,7 @@ Everything beyond core contract verification lives in **[`docs/agentskeptic.md`]
 
 **Why SQLite:** same note as under [Contract path](#contract-path-registry--events) (file-backed demo DB; read-only verification SQL).
 
-**`npm test`** runs `node scripts/verify.mjs --profile=default` (build, tests, first-run, adoption, assurance, commercial harness, TTFV, etc. — no Postgres). Stage order: **[`docs/testing.md`](docs/testing.md)**.
+**`npm test`** runs **`npm run verification:truth`** (regeneration + contract gate, Postgres distribution, then full journey suite). Requires **`DATABASE_URL`** and **`TELEMETRY_DATABASE_URL`** (see [`website/.env.example`](website/.env.example)). Ordering: **[`docs/testing.md`](docs/testing.md)**.
 
 **Full CI parity** (Postgres + Playwright for Debug Console): set **`POSTGRES_ADMIN_URL`** and **`POSTGRES_VERIFICATION_URL`**, then **`npm run test:ci`**. See **[`docs/testing.md`](docs/testing.md)**, [`.github/workflows/ci.yml`](.github/workflows/ci.yml), and: `docker run -d --name etl-pg -p 5432:5432 -e POSTGRES_PASSWORD=postgres postgres:16`.
 

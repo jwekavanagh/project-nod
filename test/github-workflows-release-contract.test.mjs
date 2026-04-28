@@ -39,13 +39,15 @@ describe("release workflow contract", () => {
     assert.ok(yml.includes("tee semantic-release.log"));
   });
 
-  it("ci.yml has release-preview job and stable job names", () => {
+  it("ci.yml has release-preview, verification job, and verification:truth step", () => {
     const yml = readFileSync(join(root, ".github", "workflows", "ci.yml"), "utf8");
     assert.ok(yml.includes("release-preview:"));
     assert.ok(yml.includes("name: Release preview"));
-    assert.ok(yml.includes("name: test"));
-    assert.ok(yml.includes("name: commercial"));
+    assert.ok(yml.includes("name: verification"));
+    assert.ok(yml.includes("npm run verification:truth"));
     assert.ok(yml.includes("scripts/release-preview.mjs --event"));
+    assert.equal(yml.includes("name: test"), false);
+    assert.equal(yml.includes("name: commercial"), false);
   });
 
   it("release-outcome-summarize.mjs contains RELEASE_OUTCOME=", () => {

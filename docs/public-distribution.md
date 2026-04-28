@@ -78,7 +78,7 @@ API semantics remain in **`docs/commercial.md`**.
 
 ## Operator
 
-### CI (`jobs.commercial.env`)
+### CI (`jobs.verification.env`)
 
 Core variables (names; values in `.github/workflows/ci.yml`) include: `DATABASE_URL`, `AUTH_SECRET`, `CONTACT_SALES_EMAIL`, `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, base **`STRIPE_PRICE_*`** (monthly and yearly per plan), metered **`STRIPE_OVERAGE_*`**, and **`CRON_SECRET`** for the internal overage report route. See `website/.env.example` and [`config/commercial-plans.json`](../config/commercial-plans.json).
 

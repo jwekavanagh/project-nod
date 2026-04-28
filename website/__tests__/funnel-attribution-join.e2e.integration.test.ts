@@ -43,7 +43,7 @@ function restoreSandboxHome(): void {
 describe.skipIf(!hasDatabaseUrl || !hasTelemetryDb)("funnel attribution join — end-to-end", () => {
   beforeEach(async () => {
     vi.stubEnv("AGENTSKEPTIC_TELEMETRY_WRITES_TELEMETRY_DB", "1");
-    // `jobs.commercial` in CI sets AGENTSKEPTIC_TELEMETRY=0 job-wide; this suite asserts
+    // CI `jobs.verification` leaves AGENTSKEPTIC_TELEMETRY unset; this suite asserts
     // `postProductActivationEvent` still builds bodies and calls fetch (mocked per test).
     vi.stubEnv("AGENTSKEPTIC_TELEMETRY", "1");
     await truncateCommercialFixtureDbs();

@@ -12,8 +12,12 @@ const outDir = join(root, "website", "src", "generated");
 const firstRunPath = join(root, "docs", "first-run-integration.md");
 const partnerPath = join(root, "docs", "partner-quickstart-commands.md");
 
-const firstRun = readFileSync(firstRunPath, "utf8");
-const partner = readFileSync(partnerPath, "utf8");
+function normalizeLf(raw) {
+  return raw.replace(/\r\n/g, "\n").replace(/\r/g, "\n");
+}
+
+const firstRun = normalizeLf(readFileSync(firstRunPath, "utf8"));
+const partner = normalizeLf(readFileSync(partnerPath, "utf8"));
 
 mkdirSync(outDir, { recursive: true });
 

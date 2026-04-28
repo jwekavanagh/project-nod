@@ -1,0 +1,47 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://agentskeptic.com/schemas/ci/verification-truth.manifest.schema.json",
+  "title": "Verification truth manifest",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["manifestVersion", "regeneration", "gating"],
+  "properties": {
+    "manifestVersion": { "type": "integer", "minimum": 1 },
+    "regeneration": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["scripts"],
+      "properties": {
+        "scripts": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["cwd", "npmScript"],
+            "properties": {
+              "cwd": { "type": "string", "enum": [".", "website"] },
+              "npmScript": {
+                "type": "string",
+                "pattern": "^[a-zA-Z0-9:_-]+$",
+                "description": "Name of npm script defined in workspace root or website/package.json when cwd is website"
+              }
+            }
+          }
+        }
+      }
+    },
+    "gating": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["gitPathspecs"],
+      "properties": {
+        "gitPathspecs": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "string", "minLength": 1 }
+        }
+      }
+    }
+  }
+}

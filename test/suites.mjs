@@ -4,7 +4,7 @@
  * - postgresNodeTestFiles (CI postgres batch; OSS dist)
  * - commercialHarnessNodeTestFiles (commercial dist + license mock; commercial-enforce-test-harness.mjs, no --require-postgres)
  * - commercialPostgresHarnessNodeTestFiles (enforce + postgres; only commercial-enforce-test-harness.mjs --require-postgres)
- * - nodeTestScheduledByVerify (run only in scripts/verify.mjs, not the sqlite batch; ordering contract)
+ * - nodeTestScheduledByVerificationTruth (run only in scripts/verification-truth-stages.mjs journeys, not sqlite batch)
  * @packageDocumentation
  */
 export const sqliteNodeTestFiles = [
@@ -109,6 +109,8 @@ export const sqliteNodeTestFiles = [
   "test/website-gate-modules.contract.test.mjs",
   "test/emit-lint-cli.test.mjs",
   "test/emitter-first-doc-guard.test.mjs",
+  "test/verification-truth.manifest.completeness.test.mjs",
+  "test/verification-truth.drift.integration.test.mjs",
 ];
 
 export const postgresNodeTestFiles = [
@@ -131,8 +133,8 @@ export const commercialPostgresHarnessNodeTestFiles = [
   "test/ci-workflow-truth-postgres-enforce.test.mjs",
 ];
 
-/** Not run in the sqlite node --test batch: ordering with validate-adoption stages in verify.mjs. */
-export const nodeTestScheduledByVerify = ["test/validate-adoption-complete-failure.test.mjs"];
+/** Not run in the sqlite node --test batch: ordering with validate-adoption stages in verification-truth journeys. */
+export const nodeTestScheduledByVerificationTruth = ["test/validate-adoption-complete-failure.test.mjs"];
 
-/** Top-level `test/*.mjs` run only via `scripts/verify.mjs` (not `node --test` batch), besides suites.mjs. */
-export const mjsAtTestRootRunByVerifyOnly = ["test/partner-quickstart.adversarial.mjs"];
+/** Top-level `test/*.mjs` run only via `scripts/verification-truth-stages.mjs` (not `node --test` batch), besides suites.mjs. */
+export const mjsAtTestRootRunByVerificationTruthOnly = ["test/partner-quickstart.adversarial.mjs"];
