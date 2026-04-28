@@ -104,9 +104,19 @@ function fail(key, detail) {
   process.exit(exit);
 }
 
-/** @param {string} absPath */
+/**
+ * Hash canonical text bytes so Windows CRLF vs Linux LF checkouts produce the
+ * same digest (CI runs on Ubuntu; devs may use core.autocrlf).
+ * @param {string} absPath
+ */
 function sha256OfFile(absPath) {
-  const buf = readFileSync(absPath);
+  const raw = readFileSync(absPath);
+  const lower = absPath.replace(/\\/g, "/").toLowerCase();
+  const isTextContract =
+    lower.endsWith(".json") || lower.endsWith(".ndjson") || lower.endsWith(".yaml") || lower.endsWith(".yml");
+  const buf = isTextContract
+    ? Buffer.from(raw.toString("utf8").replace(/\r\n/g, "\n").replace(/\r/g, "\n"), "utf8")
+    : raw;
   return createHash("sha256").update(buf).digest("hex");
 }
 

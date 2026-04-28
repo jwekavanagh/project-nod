@@ -50,7 +50,7 @@ After this change, "what is the contract?" has a single answer: the manifest.
 
 ```json
 "verificationContractManifest": {
-  "version": "1.0.0",
+  "version": "1.0.1",
   "manifestSha256": "<64-hex>",
   "url": "https://agentskeptic.com/contract/v1.json"
 }

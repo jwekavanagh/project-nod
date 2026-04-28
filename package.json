@@ -167,8 +167,8 @@
     "workflow"
   ],
   "verificationContractManifest": {
-    "version": "1.0.0",
-    "manifestSha256": "5017579f4372b349278841e1528076db44131a3c7e68075aea7f6a461ca0f415",
+    "version": "1.0.1",
+    "manifestSha256": "c5f23ec43576716c4b9a13e752cd2962a78bb4b4da1f9e521f911e15dfd80268",
     "url": "https://agentskeptic.com/contract/v1.json"
   }
 }

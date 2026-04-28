@@ -15,8 +15,17 @@ const root = join(__dirname, "..");
 const manifest = JSON.parse(readFileSync(join(root, "schemas", "contract", "v1.json"), "utf8"));
 const head = manifest.history[manifest.history.length - 1];
 
+/** Must match `sha256OfFile` in scripts/contract-manifest.mjs */
 function sha256OfFile(rel) {
-  return createHash("sha256").update(readFileSync(join(root, rel))).digest("hex");
+  const abs = join(root, rel);
+  const raw = readFileSync(abs);
+  const lower = abs.replace(/\\/g, "/").toLowerCase();
+  const isText =
+    lower.endsWith(".json") || lower.endsWith(".ndjson") || lower.endsWith(".yaml") || lower.endsWith(".yml");
+  const buf = isText
+    ? Buffer.from(raw.toString("utf8").replace(/\r\n/g, "\n").replace(/\r/g, "\n"), "utf8")
+    : raw;
+  return createHash("sha256").update(buf).digest("hex");
 }
 
 function sortKeys(value) {
