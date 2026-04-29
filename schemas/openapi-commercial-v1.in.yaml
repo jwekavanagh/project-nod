@@ -213,6 +213,47 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/EnforcementHistoryResponse"
+  /api/v1/governance/export:
+    get:
+      operationId: exportGovernanceAuditBundle
+      summary: Export governance audit bundle for one workflow (session auth)
+      parameters:
+        - name: workflow_id
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: from
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date-time
+        - name: to
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date-time
+      responses:
+        "200":
+          description: Governance audit bundle
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GovernanceAuditBundleV1"
+        "400":
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+        "401":
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
   /api/public/verification-reports:
     post:
       operationId: createPublicVerificationReport
@@ -551,6 +592,39 @@ components:
           const: 1
         workflow_id:
           type: string
+        events:
+          type: array
+          items:
+            type: object
+            additionalProperties: true
+    GovernanceAuditBundleV1:
+      type: object
+      required: [schemaVersion, generatedAt, userId, workflowId, baseline, events]
+      properties:
+        schemaVersion:
+          type: integer
+          const: 1
+        generatedAt:
+          type: string
+          format: date-time
+        userId:
+          type: string
+        workflowId:
+          type: string
+        window:
+          type: object
+          required: [from, to]
+          properties:
+            from:
+              type: string
+              format: date-time
+            to:
+              type: string
+              format: date-time
+        baseline:
+          type: object
+          nullable: true
+          additionalProperties: true
         events:
           type: array
           items:
