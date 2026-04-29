@@ -57,11 +57,13 @@ class UsageCurrentV1(BaseModel):
     estimated_overage_usd: str
 
 
-class EnforcementProjectionRequest(BaseModel):
+class EnforcementEvidenceRequestV2(BaseModel):
+    schema_version: Literal[2] = 2
     run_id: str
     workflow_id: str
-    projection_hash: str
-    projection: dict[str, Any]
+    outcome_certificate_v1: dict[str, Any]
+    material_truth_sha256: str
+    certificate_sha256: str
 
 
 class EnforcementStateResponse(BaseModel):
@@ -79,6 +81,16 @@ class EnforcementHistoryResponse(BaseModel):
     schema_version: Literal[1] = 1
     workflow_id: str
     events: list[dict[str, Any]]
+
+
+class GovernanceAuditBundleV1(BaseModel):
+    schemaVersion: Literal[1] = 1
+    generatedAt: str
+    userId: str
+    workflowId: str
+    baseline: dict[str, Any] | None
+    events: list[dict[str, Any]]
+    window: dict[str, str] | None = None
 
 
 class VerifyOutcomeRequestV2(BaseModel):
