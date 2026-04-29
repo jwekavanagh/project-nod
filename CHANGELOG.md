@@ -1,3 +1,10 @@
+## [3.3.2](https://github.com/jwekavanagh/agentskeptic/compare/v3.3.1...v3.3.2) (2026-04-29)
+
+
+### Bug Fixes
+
+* **website:** bundle config JSON for serverless ([#35](https://github.com/jwekavanagh/agentskeptic/issues/35)) ([4c5d05c](https://github.com/jwekavanagh/agentskeptic/commit/4c5d05cbff979419fc104a609d75491986f1f99f))
+
 ## [3.3.1](https://github.com/jwekavanagh/agentskeptic/compare/v3.3.0...v3.3.1) (2026-04-29)
 
 

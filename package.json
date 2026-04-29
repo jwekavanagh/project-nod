@@ -1,6 +1,6 @@
 {
   "name": "agentskeptic",
-  "version": "3.3.1",
+  "version": "3.3.2",
   "description": "AgentSkeptic compares agent claims with real downstream state — databases, APIs, object stores, and vector stores — and returns a clear verdict.",
   "license": "MIT",
   "type": "module",
