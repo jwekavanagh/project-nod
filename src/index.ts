@@ -51,11 +51,15 @@ export type {
   LangGraphCheckpointTrustEligibility,
   LangGraphCheckpointTrustGate,
 } from "./langGraphCheckpointTrustGate.js";
-export { LangGraphCheckpointTrustUnsafeError } from "./langGraphCheckpointTrustUnsafeError.js";
 export { trustDecisionFromCertificate } from "./trustDecision.js";
 export type { TrustDecision } from "./trustDecision.js";
-export { formatDecisionBlockerForHumans } from "./decisionBlocker.js";
-export { DecisionUnsafeError } from "./decisionUnsafeError.js";
+export { formatDecisionBlockerForHumans, firstProblemStepForCertificate } from "./decisionBlocker.js";
+export { TrustDecisionBlockedError } from "./trustDecisionBlockedError.js";
+export type {
+  TrustDecisionRecordV1,
+  TrustCertificateSnapshotV1,
+  TrustGateKind,
+} from "./commercial/trustDecisionRecord.js";
 export { loadSchemaValidator } from "./schemaLoad.js";
 export type { SchemaValidatorName } from "./schemaLoad.js";
 export { quickReportToStdoutLine } from "./quickVerify/runQuickVerify.js";

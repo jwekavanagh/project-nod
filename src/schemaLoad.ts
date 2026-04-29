@@ -91,7 +91,9 @@ export type SchemaValidatorName =
   | "bootstrap-pack-input-v1"
   | "openai-function-tool-call-item-v1"
   | "contract-manifest"
-  | "local-run-history-index-v1";
+  | "local-run-history-index-v1"
+  | "trust-decision-record-v1"
+  | "trust-certificate-snapshot-v1";
 
 const validatorCache: Partial<Record<SchemaValidatorName, ValidateFunction>> = {};
 
@@ -212,6 +214,11 @@ export function loadSchemaValidator(name: SchemaValidatorName): ValidateFunction
       return compileSchemaFile(name, "contract-manifest.schema.json");
     case "local-run-history-index-v1":
       return compileSchemaFile(name, "local-run-history-index-v1.schema.json");
+    case "trust-certificate-snapshot-v1":
+      return compileSchemaFile(name, "trust-certificate-snapshot-v1.schema.json");
+    case "trust-decision-record-v1":
+      compileSchemaFile("trust-certificate-snapshot-v1", "trust-certificate-snapshot-v1.schema.json");
+      return compileSchemaFile(name, "trust-decision-record-v1.schema.json");
     default: {
       const _exhaustive: never = name;
       return _exhaustive;

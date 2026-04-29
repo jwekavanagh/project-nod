@@ -1,9 +1,8 @@
 import path from "node:path";
 import { CLI_OPERATIONAL_CODES, runLevelIssue } from "./failureCatalog.js";
-import { formatDecisionBlockerForHumans } from "./decisionBlocker.js";
+import { finalizeIrreversibleBlockThrow } from "./finalizeIrreversibleTrustBlock.js";
 import { isToolObservedRunEvent } from "./executionTrace.js";
 import { validatedLangGraphIneligibleCertificate } from "./langGraphCheckpointTrustIneligibleCertificate.js";
-import { LangGraphCheckpointTrustUnsafeError } from "./langGraphCheckpointTrustUnsafeError.js";
 import { loadSchemaValidator } from "./schemaLoad.js";
 import { resolveVerificationPolicyInput } from "./verificationPolicy.js";
 import { TruthLayerError } from "./truthLayerError.js";
@@ -49,26 +48,41 @@ export function classifyLangGraphCheckpointTrustEligibility(input: {
   return { eligible: true };
 }
 
-/**
- * LangGraph production wedge: succeeds only on terminal row **B** (matches + all checkpoint verdicts verified).
- */
-export function assertLangGraphCheckpointProductionGate(certificate: OutcomeCertificateV1): void {
-  if (certificate.runKind !== "contract_sql_langgraph_checkpoint_trust") {
-    throw new Error(
-      "assertLangGraphCheckpointProductionGate: certificate.runKind must be contract_sql_langgraph_checkpoint_trust",
-    );
-  }
+function lgRowBPasses(certificate: OutcomeCertificateV1): boolean {
   const verdicts = certificate.checkpointVerdicts;
-  const rowB =
+  return (
     verdicts !== undefined &&
     verdicts.length > 0 &&
     verdicts.every((r) => r.verdict === "verified") &&
     certificate.stateRelation === "matches_expectations" &&
     certificate.highStakesReliance === "permitted" &&
-    trustDecisionFromCertificate(certificate) === "safe";
-  if (rowB) return;
-  const { lines } = formatDecisionBlockerForHumans(certificate);
-  throw new LangGraphCheckpointTrustUnsafeError(certificate, lines);
+    trustDecisionFromCertificate(certificate) === "safe"
+  );
+}
+
+/**
+ * LangGraph production wedge: succeeds only on terminal row **B** (matches + all checkpoint verdicts verified).
+ */
+export async function assertLangGraphCheckpointProductionGate(
+  certificate: OutcomeCertificateV1,
+  routingOpts?: { ownerRoutingKey?: string; routingTeam?: string; ownerSlug?: string },
+): Promise<void> {
+  if (certificate.runKind !== "contract_sql_langgraph_checkpoint_trust") {
+    throw new Error(
+      "assertLangGraphCheckpointProductionGate: certificate.runKind must be contract_sql_langgraph_checkpoint_trust",
+    );
+  }
+  if (lgRowBPasses(certificate)) return;
+  await finalizeIrreversibleBlockThrow({
+    certificate,
+    gateKind: "langgraph_checkpoint_terminal",
+    routingOpts: {
+      workflowIdFallback: certificate.workflowId,
+      ownerRoutingKey: routingOpts?.ownerRoutingKey,
+      routingTeam: routingOpts?.routingTeam,
+      ownerSlug: routingOpts?.ownerSlug,
+    },
+  });
 }
 
 export type CreateLangGraphCheckpointTrustGateOptions = {
@@ -79,6 +93,9 @@ export type CreateLangGraphCheckpointTrustGateOptions = {
   verificationPolicy?: VerificationPolicy;
   logStep?: (line: object) => void;
   truthReport?: (report: string) => void;
+  ownerRoutingKey?: string;
+  routingTeam?: string;
+  ownerSlug?: string;
 };
 
 export type LangGraphCheckpointTrustGate = {
@@ -167,7 +184,11 @@ export function createLangGraphCheckpointTrustGate(
 
   api.assertLangGraphCheckpointProductionGate = async (): Promise<void> => {
     const certificate = await api.runCheckpointTrust();
-    assertLangGraphCheckpointProductionGate(certificate);
+    await assertLangGraphCheckpointProductionGate(certificate, {
+      ownerRoutingKey: options.ownerRoutingKey,
+      routingTeam: options.routingTeam,
+      ownerSlug: options.ownerSlug,
+    });
   };
 
   return api;

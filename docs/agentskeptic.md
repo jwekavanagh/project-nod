@@ -346,7 +346,7 @@ Relational check authoring and the mapping from product vocabulary to registry c
 
 ### Low-friction integration (runtime)
 
-Primary integration: **`AgentSkeptic.createEmitter`** + **`createDecisionGate`** (or `AgentSkeptic.gate`). Emit canonical events first, append emitted rows to the gate buffer, then run **`gate.assertEmissionQuality()`** before evaluation. Before irreversible work, call **`await assertSafeForIrreversibleAction()`** (throws **`DecisionUnsafeError`** with a six-line human blocker). **`evaluate()`** returns **`WorkflowResult`**; **`evaluateCertificate()`** returns **`OutcomeCertificateV1`**.
+Primary integration: **`AgentSkeptic.createEmitter`** + **`createDecisionGate`** (or `AgentSkeptic.gate`). Emit canonical events first, append emitted rows to the gate buffer, then run **`gate.assertEmissionQuality()`** before evaluation. Before irreversible work, call **`await assertSafeForIrreversibleAction()`** (throws **`TrustDecisionBlockedError`** carrying **`TrustDecisionRecordV1`** and a six-line human **`message`**). **`evaluate()`** returns **`WorkflowResult`**; **`evaluateCertificate()`** returns **`OutcomeCertificateV1`**.
 
 **Postgres and SQLite:** pass `databaseUrl` as either a filesystem path (SQLite) or a `postgres://` / `postgresql://` URL. **`consistencyMode: "eventual"`** is supported the same as batch verify. For **MySQL, BigQuery, Microsoft SQL Server**, vector indexes, object storage, HTTP witnesses, and MongoDB verification kinds, see the normative matrix in [`verification-state-stores.md`](verification-state-stores.md).
 

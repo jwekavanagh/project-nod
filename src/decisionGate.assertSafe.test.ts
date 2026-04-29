@@ -5,7 +5,7 @@ import { fileURLToPath } from "node:url";
 import { DatabaseSync } from "node:sqlite";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { createDecisionGateImpl } from "./decisionGate.js";
-import { DecisionUnsafeError } from "./decisionUnsafeError.js";
+import { TrustDecisionBlockedError } from "./trustDecisionBlockedError.js";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 
@@ -27,7 +27,7 @@ describe("DecisionGate.assertSafeForIrreversibleAction", () => {
     rmSync(workDir, { recursive: true, force: true });
   });
 
-  it("throws DecisionUnsafeError when DB does not match (wf_missing)", async () => {
+  it("throws TrustDecisionBlockedError when DB does not match (wf_missing)", async () => {
     const eventsPath = join(root, "examples", "events.ndjson");
     const registryPath = join(root, "examples", "tools.json");
     const lines = readFileSync(eventsPath, "utf8").split(/\r?\n/).filter((l) => l.trim().length > 0);
@@ -46,7 +46,7 @@ describe("DecisionGate.assertSafeForIrreversibleAction", () => {
       }
     }
     await expect(gate.assertSafeForIrreversibleAction()).rejects.toSatisfy((e: unknown) => {
-      if (!(e instanceof DecisionUnsafeError)) return false;
+      if (!(e instanceof TrustDecisionBlockedError)) return false;
       if (e.trustDecision !== "unsafe") return false;
       return e.message.split("\n").length === 6;
     });

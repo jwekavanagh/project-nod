@@ -163,6 +163,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/funnel/trust-decision-blocked": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Record a blocked irreversible trust decision (idempotent per API key + fingerprint)
+         * @description POST when an in-process gate blocks an irreversible action. Success is HTTP 204. Requires Bearer API key with report scope. Duplicate fingerprint returns 204 without a second funnel insert.
+         */
+        post: operations["postTrustDecisionBlocked"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/oss/claim-ticket": {
         parameters: {
             query?: never;
@@ -290,6 +310,39 @@ export interface components {
             workload_class: "bundled_examples" | "non_bundled";
             /** @enum {string} */
             subcommand: "batch_verify" | "quick_verify" | "verify_integrator_owned";
+        };
+        TrustDecisionRecordRequestV1: {
+            /** @constant */
+            schema_version: 1;
+            /** @enum {string} */
+            trust_decision: "safe" | "unsafe" | "unknown";
+            /** @enum {string} */
+            gate_kind: "contract_sql_irreversible" | "langgraph_checkpoint_terminal";
+            routing: {
+                routing_key: string;
+                team?: string;
+                owner_slug?: string;
+            };
+            certificate_snapshot: components["schemas"]["TrustCertificateSnapshotRequestV1"];
+            human_blocker_lines: string[];
+        };
+        TrustCertificateSnapshotRequestV1: {
+            /** @constant */
+            schema_version: 1;
+            workflow_id: string;
+            /** @enum {string} */
+            run_kind: "contract_sql" | "contract_sql_langgraph_checkpoint_trust" | "quick_preview";
+            /** @enum {string} */
+            state_relation: "matches_expectations" | "does_not_match" | "not_established";
+            /** @enum {string} */
+            high_stakes_reliance: "permitted" | "prohibited";
+            reason_codes: string[];
+            first_problem: {
+                seq: number;
+                tool_id: string;
+                observed_trunc: string;
+                expected_trunc: string;
+            } | null;
         };
         /** @description v1 or v2 OSS claim ticket wire shape (see website/src/lib/ossClaimTicketPayload.ts). */
         OssClaimTicketRequest: {
@@ -790,6 +843,64 @@ export interface operations {
             };
             /** @description Reservation too old */
             410: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Server error */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    postTrustDecisionBlocked: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TrustDecisionRecordRequestV1"];
+            };
+        };
+        responses: {
+            /** @description Record accepted or duplicate ignored */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Invalid JSON or validation failure */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Invalid API key */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Payload too large */
+            413: {
                 headers: {
                     [name: string]: unknown;
                 };

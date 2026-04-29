@@ -296,10 +296,10 @@ describe("langgraph checkpoint trust terminal contract", () => {
     } finally {
       cleanup();
     }
-    m.assertLangGraphCheckpointProductionGate(certB);
+    await m.assertLangGraphCheckpointProductionGate(certB);
     const certA2 = m.buildIneligibleLangGraphCheckpointTrustCertificate("wf_x", [
       { code: "MALFORMED_EVENT_LINE", message: "test" },
     ]);
-    assert.throws(() => m.assertLangGraphCheckpointProductionGate(certA2));
+    await assert.rejects(() => m.assertLangGraphCheckpointProductionGate(certA2));
   });
 });

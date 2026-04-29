@@ -23,6 +23,7 @@ export const CORE_TIER_FUNNEL_EVENTS = [
   "report_share_created",
   "report_share_view",
   "licensed_verify_outcome",
+  "trust_decision_blocked",
   "oss_claim_redeemed",
 ] as const satisfies readonly FunnelEventName[];
 

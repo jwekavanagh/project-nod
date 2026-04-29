@@ -119,6 +119,7 @@ export const postgresNodeTestFiles = [
   "test/pipeline.postgres.test.mjs",
   "test/decisionGate.postgres.test.mjs",
   "test/ci-workflow-truth-postgres-contract.test.mjs",
+  "test/trust-error-surface.major.contract.test.mjs",
   "test/quick-verify.postgres.test.mjs",
 ];
 

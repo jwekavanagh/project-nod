@@ -14,6 +14,7 @@ export const FUNNEL_EVENT_NAMES = [
   "acquisition_landed",
   "integrate_landed",
   "licensed_verify_outcome",
+  "trust_decision_blocked",
   "verify_started",
   "verify_outcome",
   "oss_claim_redeemed",

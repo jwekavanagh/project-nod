@@ -304,6 +304,48 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ProblemDetails"
+  /api/v1/funnel/trust-decision-blocked:
+    post:
+      operationId: postTrustDecisionBlocked
+      summary: Record a blocked irreversible trust decision (idempotent per API key + fingerprint)
+      description: >
+        POST when an in-process gate blocks an irreversible action. Success is HTTP 204.
+        Requires Bearer API key with report scope. Duplicate fingerprint returns 204 without a second funnel insert.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TrustDecisionRecordRequestV1"
+      responses:
+        "204":
+          description: Record accepted or duplicate ignored
+        "400":
+          description: Invalid JSON or validation failure
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+        "401":
+          description: Invalid API key
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+        "413":
+          description: Payload too large
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+        "503":
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
   /api/oss/claim-ticket:
     post:
       operationId: postOssClaimTicket
@@ -564,6 +606,102 @@ components:
         subcommand:
           type: string
           enum: [batch_verify, quick_verify, verify_integrator_owned]
+    TrustDecisionRecordRequestV1:
+      type: object
+      additionalProperties: false
+      required:
+        - schema_version
+        - trust_decision
+        - gate_kind
+        - routing
+        - certificate_snapshot
+        - human_blocker_lines
+      properties:
+        schema_version:
+          type: integer
+          const: 1
+        trust_decision:
+          type: string
+          enum: [safe, unsafe, unknown]
+        gate_kind:
+          type: string
+          enum: [contract_sql_irreversible, langgraph_checkpoint_terminal]
+        routing:
+          type: object
+          additionalProperties: false
+          required:
+            - routing_key
+          properties:
+            routing_key:
+              type: string
+              maxLength: 512
+            team:
+              type: string
+              maxLength: 256
+            owner_slug:
+              type: string
+              maxLength: 256
+        certificate_snapshot:
+          $ref: "#/components/schemas/TrustCertificateSnapshotRequestV1"
+        human_blocker_lines:
+          type: array
+          minItems: 6
+          maxItems: 6
+          items:
+            type: string
+    TrustCertificateSnapshotRequestV1:
+      type: object
+      additionalProperties: false
+      required:
+        - schema_version
+        - workflow_id
+        - run_kind
+        - state_relation
+        - high_stakes_reliance
+        - reason_codes
+        - first_problem
+      properties:
+        schema_version:
+          type: integer
+          const: 1
+        workflow_id:
+          type: string
+          maxLength: 512
+        run_kind:
+          type: string
+          enum: [contract_sql, contract_sql_langgraph_checkpoint_trust, quick_preview]
+        state_relation:
+          type: string
+          enum: [matches_expectations, does_not_match, not_established]
+        high_stakes_reliance:
+          type: string
+          enum: [permitted, prohibited]
+        reason_codes:
+          type: array
+          maxItems: 24
+          items:
+            type: string
+        first_problem:
+          nullable: true
+          type: object
+          additionalProperties: false
+          required:
+            - seq
+            - tool_id
+            - observed_trunc
+            - expected_trunc
+          properties:
+            seq:
+              type: integer
+              minimum: 0
+            tool_id:
+              type: string
+            observed_trunc:
+              type: string
+              maxLength: 512
+            expected_trunc:
+              type: string
+              maxLength: 512
     OssClaimTicketRequest:
       type: object
       description: v1 or v2 OSS claim ticket wire shape (see website/src/lib/ossClaimTicketPayload.ts).

@@ -8,8 +8,9 @@ import { apiKeysV2 } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { assembleCommercialAccountState } from "@/lib/commercialAccountState";
 import { loadAccountPageVerificationActivity } from "@/lib/funnelObservabilityQueries";
+import { loadTrustDecisionBlockedActivity } from "@/lib/loadTrustDecisionBlockedActivity";
 import { loadReliabilitySignalsForUser } from "@/lib/reliabilitySignals";
-import { ReliabilitySignalsView } from "./ReliabilitySignalsView";
+import { TrustPostureSection } from "./TrustPostureSection";
 
 /** User session, DB, and Stripe state — must stay fresh per request. */
 export const dynamic = "force-dynamic";
@@ -37,13 +38,14 @@ export default async function AccountPage() {
   );
 
   const reliability = await loadReliabilitySignalsForUser(session.user.id);
+  const blockedActivity = await loadTrustDecisionBlockedActivity(session.user.id);
 
   const masked = keys[0] ? `${keys[0].label} · wf_sk_live_****…` : null;
 
   return (
     <main>
       <h1>Account</h1>
-      <ReliabilitySignalsView data={reliability} />
+      <TrustPostureSection reliability={reliability} blockedActivity={blockedActivity} />
       <div className="card u-mt-1">
         <AccountServerAboveFold
           email={session.user.email ?? ""}

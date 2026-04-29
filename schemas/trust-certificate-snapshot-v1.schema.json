@@ -1,0 +1,36 @@
+{
+  "$id": "https://agentskeptic.com/schemas/trust-certificate-snapshot-v1.schema.json",
+  "title": "TrustCertificateSnapshotV1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "workflow_id", "run_kind", "state_relation", "high_stakes_reliance", "reason_codes", "first_problem"],
+  "properties": {
+    "schema_version": { "type": "integer", "const": 1 },
+    "workflow_id": { "type": "string", "minLength": 1, "maxLength": 512 },
+    "run_kind": {
+      "type": "string",
+      "enum": ["contract_sql", "contract_sql_langgraph_checkpoint_trust", "quick_preview"]
+    },
+    "state_relation": {
+      "type": "string",
+      "enum": ["matches_expectations", "does_not_match", "not_established"]
+    },
+    "high_stakes_reliance": { "type": "string", "enum": ["permitted", "prohibited"] },
+    "reason_codes": {
+      "type": "array",
+      "maxItems": 24,
+      "items": { "type": "string", "minLength": 1, "maxLength": 256 }
+    },
+    "first_problem": {
+      "type": ["object", "null"],
+      "additionalProperties": false,
+      "required": ["seq", "tool_id", "observed_trunc", "expected_trunc"],
+      "properties": {
+        "seq": { "type": "integer", "minimum": 0 },
+        "tool_id": { "type": "string" },
+        "observed_trunc": { "type": "string", "maxLength": 512 },
+        "expected_trunc": { "type": "string", "maxLength": 512 }
+      }
+    }
+  }
+}

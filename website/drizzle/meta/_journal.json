@@ -134,6 +134,13 @@
       "when": 1777300000000,
       "tag": "0018_backfill_api_key_v2_from_legacy",
       "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "7",
+      "when": 1777400000000,
+      "tag": "0020_trust_authority",
+      "breakpoints": true
     }
   ]
 }

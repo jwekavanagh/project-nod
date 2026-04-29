@@ -26,6 +26,8 @@ export function runRepoPolicyAndApiGuards() {
       "node scripts/assert-no-legacy-verify-surface.mjs && " +
       "node scripts/assert-no-withWorkflowVerification-surface.mjs && " +
       "node scripts/assert-openapi-covers-activation-routes.mjs && " +
+      "node scripts/assert-trust-major-export-surface.mjs && " +
+      "node scripts/assert-commercial-trust-ingest-rules.mjs && " +
       "node scripts/check-agentskeptic-compare-delegation.mjs && " +
       "node scripts/assert-no-adhoc-fetch-for-activation.mjs && " +
       "node scripts/assert-error-code-parity.mjs && " +

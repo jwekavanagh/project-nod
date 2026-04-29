@@ -12,8 +12,7 @@ import { resolveVerificationPolicyInput } from "./verificationPolicy.js";
 import { TruthLayerError } from "./truthLayerError.js";
 import type { Reason, RunEvent, VerificationDatabase, VerificationPolicy, WorkflowResult } from "./types.js";
 import { trustDecisionFromCertificate } from "./trustDecision.js";
-import { formatDecisionBlockerForHumans } from "./decisionBlocker.js";
-import { DecisionUnsafeError } from "./decisionUnsafeError.js";
+import { finalizeIrreversibleBlockThrow } from "./finalizeIrreversibleTrustBlock.js";
 
 const validateEvent = loadSchemaValidator("event");
 
@@ -29,6 +28,10 @@ export type CreateDecisionGateOptions = {
   verificationPolicy?: VerificationPolicy;
   logStep?: (line: object) => void;
   truthReport?: (report: string) => void;
+  /** Overrides **`routing.routing_key`** in **`TrustDecisionRecordV1`** (default **`workflowId`**). */
+  ownerRoutingKey?: string;
+  routingTeam?: string;
+  ownerSlug?: string;
 };
 
 export type DecisionGate = {
@@ -132,10 +135,19 @@ export function createDecisionGateImpl(options: CreateDecisionGateOptions): Deci
 
   api.assertSafeForIrreversibleAction = async (): Promise<void> => {
     const certificate = await api.evaluateCertificate();
-    if (trustDecisionFromCertificate(certificate) !== "safe") {
-      const { lines } = formatDecisionBlockerForHumans(certificate);
-      throw new DecisionUnsafeError(certificate, lines);
+    if (trustDecisionFromCertificate(certificate) === "safe") {
+      return;
     }
+    await finalizeIrreversibleBlockThrow({
+      certificate,
+      gateKind: "contract_sql_irreversible",
+      routingOpts: {
+        workflowIdFallback: options.workflowId,
+        ownerRoutingKey: options.ownerRoutingKey,
+        routingTeam: options.routingTeam,
+        ownerSlug: options.ownerSlug,
+      },
+    });
   };
 
   return api;

@@ -2,7 +2,7 @@ import Link from "next/link";
 import type { ReliabilitySignalsData } from "@/lib/reliabilitySignals";
 
 const TELEMETRY_DOC_HREF =
-  "https://github.com/jwekavanagh/agentskeptic/blob/main/docs/decision-gate.md#telemetry";
+  "https://github.com/jwekavanagh/agentskeptic/blob/main/docs/trust-authority-layer.md";
 
 export function ReliabilitySignalsView({ data }: { data: ReliabilitySignalsData }) {
   return (

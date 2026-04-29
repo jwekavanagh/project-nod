@@ -4,7 +4,7 @@
 
 Optional accelerator: [guided-first-verification.md](guided-first-verification.md) (browser flow for draft + quick ingest generation).
 
-This document is the **single supported starting point** for shipping AgentSkeptic in application code. Older split guides are stubs that redirect here.
+This document is the **single supported starting point** for shipping AgentSkeptic in application code. Hosted trust capture (blocked-decision records + alerts) lives in **[trust-authority-layer.md](trust-authority-layer.md)**. Older split guides are stubs that redirect here.
 
 ## Product shape
 

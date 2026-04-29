@@ -8,8 +8,7 @@ def test_only_documented_public_exports() -> None:
         "CanonicalEventEmitter",
         "AgentSkepticError",
         "AGENT_SKEPTIC_ERROR_CODES",
-        "DecisionUnsafeError",
-        "LangGraphCheckpointTrustUnsafeError",
+        "TrustDecisionBlockedError",
     }
     for name in agentskeptic.__all__:
         assert hasattr(agentskeptic, name)

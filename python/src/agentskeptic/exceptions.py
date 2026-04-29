@@ -1,31 +1,24 @@
 """Backward-compatible public errors; prefer `agentskeptic.errors.AgentSkepticError` in new code."""
 
+from __future__ import annotations
+
+from collections.abc import Mapping
+from typing import Any
+
 from agentskeptic.errors import AgentSkepticError
 
 
-class DecisionUnsafeError(AgentSkepticError):
-    """Raised when verification blocks an irreversible action (contract_sql)."""
+class TrustDecisionBlockedError(AgentSkepticError):
+    """Raised when an irreversible-action gate blocks on trust (parity with npm `TrustDecisionBlockedError`)."""
 
     def __init__(
         self,
         message: str,
         *,
-        certificate: dict | None = None,
-        code: str = "DECISION_UNSAFE",
+        trust_decision: str,
+        record: Mapping[str, Any] | None = None,
+        code: str = "INTERNAL_ERROR",
     ) -> None:
         super().__init__(code, message)
-        self.certificate = certificate
-
-
-class LangGraphCheckpointTrustUnsafeError(AgentSkepticError):
-    """Raised when LangGraph checkpoint production gate fails (row B not satisfied)."""
-
-    def __init__(
-        self,
-        message: str,
-        *,
-        certificate: dict | None = None,
-        code: str = "LANGGRAPH_CHECKPOINT_UNSAFE",
-    ) -> None:
-        super().__init__(code, message)
-        self.certificate = certificate
+        self.trust_decision = trust_decision
+        self.record: dict[str, Any] = dict(record) if record is not None else {}

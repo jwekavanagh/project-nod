@@ -48,9 +48,9 @@ export async function runQuickVerifyToValidatedReport(opts: RunQuickVerifyOption
   return runQuickVerifyToValidatedReportInner(opts);
 }
 
-export function assertLangGraphCheckpointProductionGate(certificate: OutcomeCertificateV1): void {
+export async function assertLangGraphCheckpointProductionGate(certificate: OutcomeCertificateV1): Promise<void> {
   emitDeprecationOnce("assertLangGraphCheckpointProductionGate", MIGRATE);
-  return assertLangGraphCheckpointProductionGateInner(certificate);
+  await assertLangGraphCheckpointProductionGateInner(certificate);
 }
 
 export function createLangGraphCheckpointTrustGate(

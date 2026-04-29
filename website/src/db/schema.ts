@@ -313,3 +313,34 @@ export const sharedVerificationReports = pgTable("shared_verification_report", {
   reportStatusToken: text("report_status_token").notNull(),
   humanText: text("human_text").notNull(),
 });
+
+/** Idempotent receipt for POST /api/v1/funnel/trust-decision-blocked. */
+export const trustDecisionReceipts = pgTable(
+  "trust_decision_receipt",
+  {
+    apiKeyId: text("api_key_id").notNull(),
+    fingerprintSha256: text("fingerprint_sha256").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true, mode: "date" }).notNull().defaultNow(),
+  },
+  (t) => ({
+    pk: primaryKey({ columns: [t.apiKeyId, t.fingerprintSha256] }),
+  }),
+);
+
+export const trustAlertCheckpoint = pgTable("trust_alert_checkpoint", {
+  userId: text("user_id")
+    .primaryKey()
+    .references(() => users.id, { onDelete: "cascade" }),
+  lastDigestSentAt: timestamp("last_digest_sent_at", { withTimezone: true, mode: "date" }),
+});
+
+export const trustAlertDelivery = pgTable("trust_alert_delivery", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  userId: text("user_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  sentAt: timestamp("sent_at", { withTimezone: true, mode: "date" }).notNull().defaultNow(),
+  resendEmailId: text("resend_email_id").notNull(),
+  windowStart: timestamp("window_start", { withTimezone: true, mode: "date" }).notNull(),
+  windowEnd: timestamp("window_end", { withTimezone: true, mode: "date" }).notNull(),
+});

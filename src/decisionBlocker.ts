@@ -20,7 +20,10 @@ function inferStepStatus(step: OutcomeCertificateV1["steps"][0]): string {
   return "non_verified";
 }
 
-function pickPrimaryStep(certificate: OutcomeCertificateV1): OutcomeCertificateV1["steps"][0] | null {
+/**
+ * Exported for Trust Decision Record snapshots — same selection rules as **`formatDecisionBlockerForHumans`**.
+ */
+export function firstProblemStepForCertificate(certificate: OutcomeCertificateV1): OutcomeCertificateV1["steps"][0] | null {
   const steps = [...certificate.steps].sort((a, b) => a.seq - b.seq);
   if (steps.length === 0) return null;
   const td = trustDecisionFromCertificate(certificate);
@@ -43,7 +46,7 @@ export function formatDecisionBlockerForHumans(certificate: OutcomeCertificateV1
     certificate.explanation.details.map((d) => d.code),
     5,
   );
-  const primary = pickPrimaryStep(certificate);
+  const primary = firstProblemStepForCertificate(certificate);
 
   const line3 =
     trustDecision === "safe"
