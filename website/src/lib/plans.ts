@@ -1,5 +1,7 @@
 import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
+import commercialPlansBundled from "../../../config/commercial-plans.json";
+import legalMetadataBundled from "../../../config/legal-metadata.json";
 
 /**
  * Resolve repo `config/` whether the dev server cwd is `website/` or the monorepo root
@@ -57,9 +59,17 @@ export type CommercialPlansFile = {
 };
 
 export function loadCommercialPlans(): CommercialPlansFile {
-  const dir = resolveConfigDir();
-  const p = path.join(dir, "commercial-plans.json");
-  return JSON.parse(readFileSync(p, "utf8")) as CommercialPlansFile;
+  try {
+    const dir = resolveConfigDir();
+    const p = path.join(dir, "commercial-plans.json");
+    return JSON.parse(readFileSync(p, "utf8")) as CommercialPlansFile;
+  } catch {
+    /**
+     * Serverless bundles do not always include repo `config/` on disk (cwd / tracing gaps).
+     * A static import guarantees the catalog ships in the JS output so routes like `/account` never 500.
+     */
+    return commercialPlansBundled as CommercialPlansFile;
+  }
 }
 
 export function planHasSelfServeCheckout(def: PlanDefinition): boolean {
@@ -67,10 +77,14 @@ export function planHasSelfServeCheckout(def: PlanDefinition): boolean {
 }
 
 export function loadLegalMetadata(): { effectiveDate: string; termsVersion: string } {
-  const dir = resolveConfigDir();
-  const p = path.join(dir, "legal-metadata.json");
-  return JSON.parse(readFileSync(p, "utf8")) as {
-    effectiveDate: string;
-    termsVersion: string;
-  };
+  try {
+    const dir = resolveConfigDir();
+    const p = path.join(dir, "legal-metadata.json");
+    return JSON.parse(readFileSync(p, "utf8")) as {
+      effectiveDate: string;
+      termsVersion: string;
+    };
+  } catch {
+    return legalMetadataBundled as { effectiveDate: string; termsVersion: string };
+  }
 }
