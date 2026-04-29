@@ -23,7 +23,7 @@ It always does all of the following in one run:
 
 1. `VERDICT: TRUSTED|NOT TRUSTED|UNKNOWN`
 2. `WHY: <single concise rationale>`
-3. `CHANGED_SINCE_LAST_RUN: <no_baseline|summary>`
+3. `LOCAL_REGRESSION_COMPARE: <no_anchor|summary>`
 4. `NEXT_ACTION: <single actionable step>` (required for `NOT TRUSTED` and `UNKNOWN`; omitted for `TRUSTED`)
 5. `RUN_REF: <capturedAt workflowId path>`
 

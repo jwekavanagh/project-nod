@@ -11,6 +11,7 @@ import { loadAccountPageVerificationActivity } from "@/lib/funnelObservabilityQu
 import { loadTrustDecisionBlockedActivity } from "@/lib/loadTrustDecisionBlockedActivity";
 import { loadReliabilitySignalsForUser } from "@/lib/reliabilitySignals";
 import { TrustPostureSection } from "./TrustPostureSection";
+import Link from "next/link";
 
 /** User session, DB, and Stripe state — must stay fresh per request. */
 export const dynamic = "force-dynamic";
@@ -45,6 +46,10 @@ export default async function AccountPage() {
   return (
     <main>
       <h1>Account</h1>
+      <p>
+        Governance timeline and audit export are available at{" "}
+        <Link href="/account/governance">/account/governance</Link>.
+      </p>
       <TrustPostureSection reliability={reliability} blockedActivity={blockedActivity} />
       <div className="card u-mt-1">
         <AccountServerAboveFold

@@ -93,7 +93,8 @@ export type SchemaValidatorName =
   | "contract-manifest"
   | "local-run-history-index-v1"
   | "trust-decision-record-v1"
-  | "trust-certificate-snapshot-v1";
+  | "trust-certificate-snapshot-v1"
+  | "material-truth-v1";
 
 const validatorCache: Partial<Record<SchemaValidatorName, ValidateFunction>> = {};
 
@@ -219,6 +220,8 @@ export function loadSchemaValidator(name: SchemaValidatorName): ValidateFunction
     case "trust-decision-record-v1":
       compileSchemaFile("trust-certificate-snapshot-v1", "trust-certificate-snapshot-v1.schema.json");
       return compileSchemaFile(name, "trust-decision-record-v1.schema.json");
+    case "material-truth-v1":
+      return compileSchemaFile(name, "material-truth-v1.schema.json");
     default: {
       const _exhaustive: never = name;
       return _exhaustive;

@@ -188,6 +188,21 @@ export const usageReservations = pgTable(
   }),
 );
 
+/** Immutable evidence blob per governance write. */
+export const governanceEvidence = pgTable("governance_evidence", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  userId: text("user_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  workflowId: text("workflow_id").notNull(),
+  runId: text("run_id").notNull(),
+  certificateJson: jsonb("certificate_json").notNull(),
+  certificateSha256: text("certificate_sha256").notNull(),
+  materialTruthJson: jsonb("material_truth_json").notNull(),
+  materialTruthSha256: text("material_truth_sha256").notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true, mode: "date" }).notNull().defaultNow(),
+});
+
 /** Stateful CI enforcement baseline per (user, workflow). */
 export const enforcementBaselines = pgTable(
   "enforcement_baseline",
@@ -199,6 +214,8 @@ export const enforcementBaselines = pgTable(
     workflowId: text("workflow_id").notNull(),
     projectionHash: text("projection_hash").notNull(),
     projection: jsonb("projection").notNull(),
+    baselineEvidenceId: uuid("baseline_evidence_id").references(() => governanceEvidence.id, { onDelete: "set null" }),
+    needsRebaseline: boolean("needs_rebaseline").notNull().default(false),
     acceptedByKeyId: text("accepted_by_key_id"),
     createdAt: timestamp("created_at", { withTimezone: true, mode: "date" }).notNull().defaultNow(),
     updatedAt: timestamp("updated_at", { withTimezone: true, mode: "date" }).notNull().defaultNow(),
@@ -219,6 +236,7 @@ export const enforcementEvents = pgTable("enforcement_event", {
   event: text("event").notNull(),
   expectedProjectionHash: text("expected_projection_hash"),
   actualProjectionHash: text("actual_projection_hash").notNull(),
+  evidenceId: uuid("evidence_id").references(() => governanceEvidence.id, { onDelete: "set null" }),
   metadata: jsonb("metadata"),
   createdAt: timestamp("created_at", { withTimezone: true, mode: "date" }).notNull().defaultNow(),
 });

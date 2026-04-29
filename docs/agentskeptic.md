@@ -1,6 +1,7 @@
 # AgentSkeptic CLI (MVP) — Single Source of Truth
 
 **Integrators — public verification artifact:** Outcome Certificate v1 is defined in [`outcome-certificate-normative.md`](outcome-certificate-normative.md); usage and CLI contracts in [`outcome-certificate-integrator.md`](outcome-certificate-integrator.md). This document is the **engine / wire / reconciliation** SSOT (`WorkflowResult`, NDJSON, registry SQL semantics).
+Stateful commercial governance (evidence-native enforcement, baselines, drift, shared visibility, export) is specified in [`governance.md`](governance.md).
 
 **Canonical local operator flow** is specified in [`local-feedback-loop.md`](local-feedback-loop.md) (`agentskeptic loop`: normalized trust verdict + auto-compare + local run history). **Quick Verify (zero-config inference)** is specified in [`quick-verify-normative.md`](quick-verify-normative.md). **Bootstrap pack** (`agentskeptic bootstrap`) is specified in [`bootstrap-pack-normative.md`](bootstrap-pack-normative.md). Product narrative, audiences, and documentation ownership for the wedge live in [`verification-product.md`](verification-product.md). This document remains the SSOT for **Advanced verification** (NDJSON events, `tools.json` registry, `WorkflowResult`) and compatibility commands (`quick`, `crossing`, `verify-integrator-owned`).
 

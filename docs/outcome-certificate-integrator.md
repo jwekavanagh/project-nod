@@ -1,6 +1,7 @@
 # Outcome Certificate — CLI and share
 
 Library integration (`createDecisionGate`, NDJSON replay): **[`docs/decision-gate.md`](decision-gate.md)**.
+Commercial governance semantics (material truth hash, baseline lifecycle, shared governance UI, audit export) are in **[`docs/governance.md`](governance.md)**.
 
 ## CLI (batch contract verify)
 

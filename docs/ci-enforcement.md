@@ -1,6 +1,7 @@
 # CI enforcement (`enforce`)
 
 This document is the CI enforcement SSOT.
+Governance semantics (evidence model, material truth hash, migration, UI/export) are now defined in [`docs/governance.md`](governance.md).
 
 ## Product boundary
 

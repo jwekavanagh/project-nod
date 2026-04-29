@@ -371,7 +371,7 @@ export async function orchestrateVerifyBatchLockRun(restArgs: string[]): Promise
 }
 
 /** `agentskeptic enforce batch` (commercial build only — caller gates OSS). */
-export async function orchestrateEnforceBatchLockRun(restArgs: string[]): Promise<void> {
+async function orchestrateEnforceBatchLockRun(restArgs: string[]): Promise<void> {
   let route: ParsedBatchLockRoute;
   try {
     route = parseEnforceBatchExpectLockRoute(restArgs);
@@ -621,7 +621,7 @@ export async function orchestrateVerifyQuickLockRun(restArgs: string[]): Promise
 }
 
 /** `agentskeptic enforce quick` (commercial only). */
-export async function orchestrateEnforceQuickLockRun(restArgs: string[]): Promise<void> {
+async function orchestrateEnforceQuickLockRun(restArgs: string[]): Promise<void> {
   let route: { pq: ParsedQuickCli; lockPath: string };
   try {
     route = parseEnforceQuickExpectLockRoute(restArgs);

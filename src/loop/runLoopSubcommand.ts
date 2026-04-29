@@ -70,8 +70,11 @@ export async function runLoopSubcommand(args: string[]): Promise<void> {
       maxRuns,
     });
 
-    let compare: { kind: "no_baseline" } | { kind: "summary"; artifact: ReturnType<typeof buildRegressionArtifactFromDebugCorpus> } =
-      { kind: "no_baseline" };
+    let compare:
+      | { kind: "no_local_regression_anchor" }
+      | { kind: "summary"; artifact: ReturnType<typeof buildRegressionArtifactFromDebugCorpus> } = {
+      kind: "no_local_regression_anchor",
+    };
     if (prior) {
       try {
         const priorResult = readWorkflowResultFromPath(prior.workflowResultPath);
@@ -82,7 +85,7 @@ export async function runLoopSubcommand(args: string[]): Promise<void> {
         });
         compare = { kind: "summary", artifact };
       } catch {
-        compare = { kind: "no_baseline" };
+        compare = { kind: "no_local_regression_anchor" };
       }
     }
 
