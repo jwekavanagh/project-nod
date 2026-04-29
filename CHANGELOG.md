@@ -1,3 +1,25 @@
+# [3.0.0](https://github.com/jwekavanagh/agentskeptic/compare/v2.4.0...v3.0.0) (2026-04-29)
+
+
+* feat(trust)!: trust decision authority layer ([e736224](https://github.com/jwekavanagh/agentskeptic/commit/e73622461beee7dfa32c4716165ab9ce8eea5061))
+
+
+### BREAKING CHANGES
+
+* DecisionUnsafeError and LangGraphCheckpointTrustUnsafeError removed.
+
+Use TrustDecisionBlockedError; record matches TrustDecisionRecordV1 shape.
+
+Made-with: Cursor
+
+* fix(trust): satisfy commercial ingest guard without preflight literal in comment
+
+Made-with: Cursor
+
+* fix(python): add Pydantic models for TrustDecisionRecord OpenAPI schemas
+
+Made-with: Cursor
+
 # [2.4.0](https://github.com/jwekavanagh/agentskeptic/compare/v2.3.0...v2.4.0) (2026-04-28)
 
 
