@@ -1,14 +1,14 @@
 import { describe, expect, it } from "vitest";
 import {
+  getHomeCommercialLead,
   getHomeCommercialSectionFromConfig,
   HOME_COMMERCIAL_BOUNDARY_DOCS,
-  HOME_COMMERCIAL_LEAD,
 } from "@/lib/commercialNarrative";
 
 describe("commercial surface contract", () => {
   it("home commercial uses lede, empty strip, and boundary link metadata", () => {
     const s = getHomeCommercialSectionFromConfig();
-    expect(s.lead).toBe(HOME_COMMERCIAL_LEAD);
+    expect(s.lead).toBe(getHomeCommercialLead());
     expect(s.strip).toBe("");
     expect(s.title).toBe("Open source and commercial");
     expect(HOME_COMMERCIAL_BOUNDARY_DOCS.label).toBe("See the commercial boundary docs.");

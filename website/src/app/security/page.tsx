@@ -71,13 +71,13 @@ export default function SecurityPage() {
         <h2 id="security-doc-links">Authoritative documentation</h2>
         <ul>
           <li>
-            <a href={st.docLinks.verificationProductSsot} rel="noreferrer">
-              Verification product SSOT (trust boundary)
+            <a href={st.docLinks.verificationSemanticsHref} rel="noreferrer">
+              Verification semantics (Outcome Certificate, normative)
             </a>
           </li>
           <li>
-            <a href={st.docLinks.commercialSsot} rel="noreferrer">
-              Commercial SSOT
+            <a href={st.docLinks.commercialSsotHref} rel="noreferrer">
+              Commercial SSOT (mechanics and metering)
             </a>
           </li>
           <li>

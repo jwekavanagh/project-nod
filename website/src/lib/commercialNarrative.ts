@@ -1,10 +1,15 @@
 /**
- * Sole public TypeScript source for site-facing commercial + contract phrasing
- * (pricing, metering clarifier, feature table, terms bullets, home commercial block).
- * Data SSOT: config/commercial-plans.json. Presentation uses loadCommercialPlans only here.
+ * Site-facing commercial + contract phrasing. Numeric/data SSOT: config/commercial-plans.json.
+ * Buyer-facing narrative: config/buyer-truth.v1.json (loaded via @/lib/buyerTruth).
  */
 import marketing from "@/lib/marketing";
-import { publicProductAnchors } from "@/lib/publicProductAnchors";
+import {
+  exportBuyerFacingProjection,
+  frameworkFootnotePlainText,
+  interpolate,
+  loadBuyerTruth,
+  substitutionVarsFromCatalog,
+} from "@/lib/buyerTruth";
 import {
   loadCommercialPlans,
   planHasSelfServeCheckout,
@@ -26,12 +31,12 @@ export type PlanRow = {
   recommended: boolean;
 };
 
-export const COMMERCIAL_SSOT_PROGRAMMATIC_VS_CLI_ANCHOR =
-  "programmatic-verification-vs-licensed-cli" as const;
+export const COMMERCIAL_SSOT_PROGRAMMATIC_VS_CLI_HREF = loadBuyerTruth().canonicalHref.commercialBoundary;
 
-const ssotPath = `${publicProductAnchors.gitRepositoryUrl}/blob/main/docs/commercial.md#${COMMERCIAL_SSOT_PROGRAMMATIC_VS_CLI_ANCHOR}`;
-
-export const COMMERCIAL_SSOT_PROGRAMMATIC_VS_CLI_HREF = ssotPath;
+export const HOME_COMMERCIAL_BOUNDARY_DOCS = {
+  href: COMMERCIAL_SSOT_PROGRAMMATIC_VS_CLI_HREF,
+  label: "See the commercial boundary docs.",
+} as const;
 
 const fmt = new Intl.NumberFormat("en-US");
 
@@ -44,35 +49,31 @@ function formatCount(n: number): string {
  * commercial block uses a shorter lede and a linked boundary doc line instead of `getMeteringClarifier()`.
  */
 export function getMeteringClarifier(): string {
-  return `In-process library use (createDecisionGate) evaluates read-only SQL without calling the license reserve API. The published npm CLI path—contract verify, quick with lock flags, and enforce—requires an API key and POST /api/v1/usage/reserve. Boundary: ${ssotPath}`;
+  const href = loadBuyerTruth().canonicalHref.commercialBoundary;
+  return `In-process library use (createDecisionGate) evaluates read-only SQL without calling the license reserve API. The published npm CLI path—contract verify, quick with lock flags, and enforce—requires an API key and POST /api/v1/usage/reserve. Boundary: ${href}`;
 }
 
-/** Homepage commercial block lede (short; details on Pricing and GitHub SSOT). */
-export const HOME_COMMERCIAL_LEAD =
-  "Open-source CLI is unmetered locally. Commercial API and licensed npm support CI and production usage. In-process createDecisionGate stays local and does not call the usage API." as const;
+export function getHomeCommercialLead(): string {
+  const bt = loadBuyerTruth();
+  return interpolate(bt.commercialEntryPoints.homeCommercialLeadMarkdown, {});
+}
 
-/** Homepage commercial block: link label + GitHub href (replaces raw URL in the UI). */
-export const HOME_COMMERCIAL_BOUNDARY_DOCS = {
-  href: COMMERCIAL_SSOT_PROGRAMMATIC_VS_CLI_HREF,
-  label: "See the commercial boundary docs.",
-} as const;
+export function getFrameworkFootnoteForHomepage(): string {
+  return frameworkFootnotePlainText(loadBuyerTruth());
+}
 
-/** Security page quick-fact: outcome certificate vs quick verify (index 2 in the four-bullet list). */
-export const outcomeCertificateQuickFactBullet =
-  "Quick verify is a preview path; contract verification with an Outcome Certificate is what the engine treats as decision-grade for matches—see outcome-certificate-normative on GitHub for highStakesReliance rules." as const;
+export function getOutcomeCertificateQuickFactBullet(): string {
+  return loadBuyerTruth().securityQuickFactsBullets[2];
+}
 
 export function getSecurityQuickFacts(): {
   title: string;
   bullets: readonly [string, string, string, string];
 } {
+  const b = loadBuyerTruth().securityQuickFactsBullets;
   return {
     title: "Quick facts for buyers",
-    bullets: [
-      "CLI and verification engine run in your infrastructure against databases you configure; the homepage demo runs bundled fixtures on this server for evaluation only.",
-      "Structured tool activity is compared to database query results at verification time; that check does not prove a specific network call caused a row.",
-      outcomeCertificateQuickFactBullet,
-      "For the on-site buyer trust summary, use the trust buyer guide on this site; full normative verification semantics stay in verification-product.md on GitHub.",
-    ] as const,
+    bullets: [b[0], b[1], b[2], b[3]] as const,
   };
 }
 
@@ -88,76 +89,38 @@ export type PricingFeatureComparison = {
   rows: readonly PricingComparisonRow[];
 };
 
+const planColumns: readonly PlanColumn[] = ["starter", "individual", "team", "business", "enterprise"];
+
 export function getPricingFeatureComparison(catalog: CommercialPlansFile): PricingFeatureComparison {
-  const s = catalog.plans.starter;
-  const i = catalog.plans.individual;
-  const t = catalog.plans.team;
-  const b = catalog.plans.business;
-  const incStarter = s.includedMonthly;
-  if (incStarter == null) {
-    throw new Error("commercialNarrative: starter.includedMonthly is required for comparison table");
-  }
+  const bt = loadBuyerTruth();
+  const vars = substitutionVarsFromCatalog(catalog);
+  const rows = bt.pricing.comparisonRows.map((row) => {
+    const cells = row.cells as Record<string, string>;
+    const starter = interpolate(String(cells.starter ?? ""), vars);
+    const individual = interpolate(String(cells.individual ?? ""), vars);
+    const team = interpolate(String(cells.team ?? ""), vars);
+    const business = interpolate(String(cells.business ?? ""), vars);
+    const enterprise = interpolate(String(cells.enterprise ?? ""), vars);
+    return {
+      feature: row.featureDisplay,
+      starter,
+      individual,
+      team,
+      business,
+      enterprise,
+    };
+  });
+
   return {
     title: "Plan comparison",
     columnLabels: ["Capability", "Starter", "Individual", "Team", "Business", "Enterprise"] as const,
-    rows: [
-      {
-        feature: "Local OSS verification",
-        starter: "Yes",
-        individual: "Yes",
-        team: "Yes",
-        business: "Yes",
-        enterprise: "Yes",
-      },
-      {
-        feature: "Fail CI on mismatch (OSS build)",
-        starter: "Yes",
-        individual: "Yes",
-        team: "Yes",
-        business: "Yes",
-        enterprise: "Yes",
-      },
-      {
-        feature: "Published npm CLI + API key (licensed / metered)",
-        starter: `${formatCount(incStarter)} / mo (hard cap, per key)`,
-        individual: "Yes + overage",
-        team: "Yes + overage",
-        business: "Yes + overage",
-        enterprise: "Custom",
-      },
-      {
-        feature: "Lock / enforce commands (paid only)",
-        starter: "No",
-        individual: "Yes",
-        team: "Yes",
-        business: "Yes",
-        enterprise: "Yes",
-      },
-      {
-        feature: "Included CI verifications (per key; then overage on paid plans)",
-        starter: formatCount(incStarter),
-        individual: formatCount(i.includedMonthly ?? 0),
-        team: formatCount(t.includedMonthly ?? 0),
-        business: formatCount(b.includedMonthly ?? 0),
-        enterprise: "Custom",
-      },
-    ],
+    rows,
   };
 }
 
-function paidVerificationBody(catalog: CommercialPlansFile): string {
-  const n = catalog.plans.starter.includedMonthly;
-  if (n == null) {
-    throw new Error("commercialNarrative: starter.includedMonthly is required for paid verification line");
-  }
-  return `Starter includes ${formatCount(n)} published npm CLI verifications per month (hard cap, no overage). Individual, Team, and Business include higher monthly amounts plus pay-as-you-go overage; an active subscription is required (trial counts).`;
+export function paidVerificationTermsBody(catalog: CommercialPlansFile): string {
+  return interpolate(loadBuyerTruth().pricing.paidVerificationTemplate, substitutionVarsFromCatalog(catalog));
 }
-
-const enforcementAndCIBody =
-  "CI locks, the enforce command, and quick verify with lock flags require a paid plan (not Starter) and the same active subscription and metering model." as const;
-
-const contractsBody =
-  "Limits and semantics: OpenAPI at /openapi-commercial-v1.yaml, plans JSON at /api/v1/commercial/plans, and entitlement docs on GitHub main." as const;
 
 export type CommercialTermsBullet = {
   lead: "Paid verification" | "Enforcement and CI" | "Contracts";
@@ -165,10 +128,12 @@ export type CommercialTermsBullet = {
 };
 
 export function getPricingCommercialTermsBullets(catalog: CommercialPlansFile): readonly CommercialTermsBullet[] {
+  const bt = loadBuyerTruth();
+  const vars = substitutionVarsFromCatalog(catalog);
   return [
-    { lead: "Paid verification", body: paidVerificationBody(catalog) },
-    { lead: "Enforcement and CI", body: enforcementAndCIBody },
-    { lead: "Contracts", body: contractsBody },
+    { lead: "Paid verification", body: interpolate(bt.pricing.paidVerificationTemplate, vars) },
+    { lead: "Enforcement and CI", body: bt.pricing.enforcementMarkdown },
+    { lead: "Contracts", body: bt.pricing.contractsMarkdown },
   ] as const;
 }
 
@@ -183,14 +148,11 @@ export function getNormativePolicySurfaceLines(
 export function getPricingPageHeroNarrative(
   catalog: CommercialPlansFile,
 ): { subtitle: string; subtitleSecondary: string } {
-  const cap = catalog.plans.starter.includedMonthly;
-  if (cap == null) {
-    throw new Error("commercialNarrative: starter.includedMonthly is required for hero");
-  }
+  const bt = loadBuyerTruth();
+  const vars = substitutionVarsFromCatalog(catalog);
   return {
-    subtitle: `Local and open-source (OSS) paths are unmetered. The published npm CLI with a Starter account includes up to ${formatCount(cap)} licensed verifications per key per month; paid self-serve plans add more included usage, then metered overage on licensed runs when you pass that quota.`,
-    subtitleSecondary:
-      "Paid self-serve plans also unlock the enforce and lock-failure paths. Enterprise is contract.",
+    subtitle: interpolate(bt.pricing.pricingHeroSubtitleTemplate, vars),
+    subtitleSecondary: bt.pricing.pricingHeroSubtitleSecondary,
   };
 }
 
@@ -204,14 +166,13 @@ export function getHomeCommercialSection(catalog: CommercialPlansFile): {
   }
   return {
     title: "Open source and commercial",
-    lead: HOME_COMMERCIAL_LEAD,
-    /** Plain-text metering line removed; use `HOME_COMMERCIAL_BOUNDARY_DOCS` in the page. */
+    lead: getHomeCommercialLead(),
     strip: "",
   };
 }
 
 export function getPricingLocalVerificationFootnote(): string {
-  return "Local OSS verification remains free forever.";
+  return loadBuyerTruth().pricing.localVerificationFootnote;
 }
 
 export function getCompareApproachesLabel(): string {
@@ -227,7 +188,6 @@ export function getPricingPageViewModel(catalog: CommercialPlansFile): {
   termsBullets: ReturnType<typeof getPricingCommercialTermsBullets>;
   featureComparison: PricingFeatureComparison;
   localVerificationFootnote: string;
-  /** Flat string for <meta name="description">. */
   metadataDescription: string;
 } {
   const m = marketing.site.pricing;
@@ -274,4 +234,9 @@ export function getPricingPageViewModelFromConfig(): ReturnType<typeof getPricin
 
 export function getHomeCommercialSectionFromConfig(): ReturnType<typeof getHomeCommercialSection> {
   return getHomeCommercialSection(loadCommercialPlans());
+}
+
+/** CI / Vitest projection equality against committed snapshot JSON. */
+export function getCommittedBuyerFacingProjection(): Record<string, string> {
+  return exportBuyerFacingProjection(loadCommercialPlans());
 }

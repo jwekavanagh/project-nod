@@ -70,7 +70,6 @@ function validateMarketingValue(m) {
     "readmeFold",
     "shareableTerminalDemo",
     "cliFollowupLines",
-    "r2",
     "site",
     "integratePage",
     "problemIndex",
@@ -80,6 +79,11 @@ function validateMarketingValue(m) {
     if (m[k] === undefined || m[k] === null) {
       throw new Error(`marketing: missing required key ${k}`);
     }
+  }
+  if ("r2" in m) {
+    throw new Error(
+      "marketing: top-level key r2 removed — homepage framework footer is driven by config/buyer-truth.v1.json",
+    );
   }
   if (!Array.isArray(m.keywords) || m.keywords.length === 0) {
     throw new Error("marketing: keywords must be a non-empty array");
@@ -116,11 +120,10 @@ function validateMarketingValue(m) {
   if (!cmd.includes("tools.json")) {
     throw new Error("marketing: packLedCommand must reference tools.json");
   }
-  if (!Array.isArray(m.integratePage.requirements) || m.integratePage.requirements.length < 1) {
-    throw new Error("marketing: integratePage.requirements must be a non-empty array");
-  }
-  if (m.integratePage.requirements.length < 1 || m.integratePage.requirements.length > 5) {
-    throw new Error("marketing: integratePage.requirements must have 1–5 items");
+  if ("requirements" in m.integratePage) {
+    throw new Error(
+      "marketing: integratePage.requirements removed — use Buyer Truth integrateRequirements (/integrate page)",
+    );
   }
   const v = String(m.visitorProblemAnswer);
   if (v.toLowerCase().includes("causality")) {

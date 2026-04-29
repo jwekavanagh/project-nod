@@ -12,14 +12,12 @@ describe("marketing config", () => {
     require(join(root, "scripts", "discovery-acquisition.lib.cjs")).validateDiscoveryAcquisition(root);
   });
 
-  it("r2.frameworkMaturity: if AutoGen is named, the line must acknowledge experimental", () => {
+  it("marketing.json must not resurrect removed r2 (buyer frameworks live in buyer-truth.v1.json)", () => {
     const root = getRepoRoot();
-    const m = JSON.parse(readFileSync(join(root, "config", "marketing.json"), "utf8")) as {
-      r2: { frameworkMaturity: string };
-    };
-    const t = m.r2.frameworkMaturity;
-    if (/\bautogen\b/i.test(t)) {
-      expect(t.toLowerCase()).toContain("experimental");
-    }
+    const raw = JSON.parse(readFileSync(join(root, "config", "marketing.json"), "utf8")) as Record<string, unknown>;
+    expect("r2" in raw).toBe(false);
+    const ig = raw.integratePage as Record<string, unknown>;
+    expect(ig).toBeTruthy();
+    expect("requirements" in ig).toBe(false);
   });
 });

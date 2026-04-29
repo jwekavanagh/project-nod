@@ -10,6 +10,7 @@ import { publicProductAnchors } from "@/lib/publicProductAnchors";
 import type { Metadata } from "next";
 import { shareableTerminalFailureJsonOnly } from "@/lib/shareableTerminalFailureExcerpt";
 import {
+  getFrameworkFootnoteForHomepage,
   getHomeCommercialSectionFromConfig,
   HOME_COMMERCIAL_BOUNDARY_DOCS,
 } from "@/lib/commercialNarrative";
@@ -210,6 +211,7 @@ export default async function HomePage({
           ))}
         </ol>
         <p className="muted home-how-works-with">{productCopy.mechanism.worksWith}</p>
+        <p className="muted home-how-quick-path">{productCopy.mechanism.quickPathDisclaimer}</p>
       </section>
     ),
     homeWhoFor: (
@@ -263,7 +265,7 @@ export default async function HomePage({
         <h2 id="home-closing-heading">{productCopy.homeClosing.sectionTitle}</h2>
         <p className="lede">{productCopy.homeClosing.subtitle}</p>
         <p className="muted" data-testid="home-framework-maturity">
-          {marketing.r2.frameworkMaturity}
+          {getFrameworkFootnoteForHomepage()}
         </p>
         <p className="muted home-closing-links-caption">{productCopy.homeClosing.integratorLinksCaption}</p>
         <FunnelRouteCards />

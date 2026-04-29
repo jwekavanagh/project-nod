@@ -31,6 +31,7 @@ function runNpmScript(name) {
   }
 }
 
+runNpmScript("codegen:buyer-truth");
 runNode("scripts/generate-integrate-activation-shell.mjs");
 runNpmScript("sync:public-product-anchors");
 runNode("scripts/sync-integrator-docs-embedded.mjs");

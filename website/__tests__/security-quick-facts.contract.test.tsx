@@ -20,13 +20,13 @@ describe("Security quick facts", () => {
     expect(items[2]).toHaveTextContent(qf.bullets[2]!);
   });
 
-  it("fourth bullet points to buyer trust guide and GitHub verification SSOT", () => {
+  it("fourth bullet matches buyer-truth securityQuickFactsBullets[3]", () => {
+    const qf = getSecurityQuickFacts();
     render(<SecurityPage />);
     const section = screen.getByTestId("security-quick-facts");
     const list = section.querySelector("ul");
     expect(list).toBeTruthy();
     const items = within(list!).getAllByRole("listitem");
-    expect(items[3].textContent).toContain("trust buyer guide");
-    expect(items[3].textContent).toContain("verification-product.md");
+    expect(items[3]).toHaveTextContent(qf.bullets[3]!);
   });
 });

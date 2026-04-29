@@ -1,3 +1,4 @@
+import { loadBuyerTruth } from "@/lib/buyerTruth";
 import marketing from "@/lib/marketing";
 import { conversionSpine } from "@/content/productCopy";
 import { siteMetadata } from "@/content/siteMetadata";
@@ -21,6 +22,7 @@ export const metadata: Metadata = {
 
 export default function IntegratePage() {
   const p = marketing.integratePage;
+  const requirements = loadBuyerTruth().integrateRequirements;
   return (
     <main className="integrate-main integrate-prose" data-testid="integrate-page">
       <h1>{siteMetadata.integrate.title}</h1>
@@ -100,7 +102,7 @@ export default function IntegratePage() {
 
       <h2>Requirements</h2>
       <ul>
-        {p.requirements.map((line) => (
+        {requirements.map((line) => (
           <li key={line}>{line}</li>
         ))}
       </ul>
