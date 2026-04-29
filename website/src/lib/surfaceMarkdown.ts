@@ -117,7 +117,7 @@ export function parseSurfaceMarkdownRaw(raw: string, segment: SurfaceSegment, sl
   const widx = body.indexOf("## What to do next");
   const afterWhat = body.slice(widx);
   const linkRe =
-    /\]\((\/integrate|\/pricing|\/database-truth-vs-traces|\/guides|\/examples\/wf-complete|\/examples\/wf-missing|\/security|\/\?demo=wf_missing#try-it|\/#try-it)\)/g;
+    /\]\((\/integrate|\/pricing|\/database-truth-vs-traces|\/guides|\/examples\/wf-complete|\/examples\/wf-missing|\/security|\/verify)\)/g;
   const linkMatches = [...afterWhat.matchAll(linkRe)];
   if (linkMatches.length < 2) {
     throw new Error("surface markdown: ## What to do next must include at least two allowlisted markdown links");

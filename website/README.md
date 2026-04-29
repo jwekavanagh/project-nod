@@ -54,7 +54,7 @@ Set env **`NEXT_CONFIG_TRACE_ROOT=1`** on the **website** build so `outputFileTr
 
 ## Engine build, demo API, and fixtures
 
-The homepage **Try it** flow calls `POST /api/demo/verify`, which runs the same `verifyWorkflow` engine as the CLI against repo **`examples/`** files. Default entry URL: **`/?demo=wf_missing#try-it`** (eight bundled scenarios; see SSOT).
+The **`/verify`** flow calls `POST /api/verify`, which runs the same `verifyWorkflow` engine as the CLI against repo **`examples/`** files. Default entry payload is the bundled **`wf_missing`** line (see SSOT).
 
 - From **repo root**, build the engine before relying on the demo API or running **`npm run build`** inside `website/`:
 

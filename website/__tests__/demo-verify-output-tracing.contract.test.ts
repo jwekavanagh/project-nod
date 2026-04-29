@@ -23,6 +23,7 @@ describe("demo verify serverless file tracing contract", () => {
     const src = readFileSync(nextConfigPath, "utf8");
     expect(src).toContain("demoVerifyOutputFileTracingGlobs");
     expect(src).toContain('"/api/demo/verify"');
+    expect(src).toContain('"/api/verify"');
     expect(src).toContain("outputFileTracingIncludes");
   });
 

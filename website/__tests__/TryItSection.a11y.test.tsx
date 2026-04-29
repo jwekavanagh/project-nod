@@ -1,33 +1,13 @@
 /** @vitest-environment jsdom */
 
-import { readFileSync } from "node:fs";
-import path from "node:path";
-import { fileURLToPath } from "node:url";
 import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { TryItSection } from "@/app/home/TryItSection";
-import { productCopy } from "@/content/productCopy";
-
-const { mockReplace } = vi.hoisted(() => ({ mockReplace: vi.fn() }));
-
-vi.mock("next/navigation", () => ({
-  useRouter: () => ({ replace: mockReplace }),
-  useSearchParams: () => new URLSearchParams("demo=wf_missing"),
-}));
-
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const demoSuccessBody = readFileSync(
-  path.join(__dirname, "fixtures", "demo-verify-success-wf-complete.json"),
-  "utf8",
-);
+import { afterEach, describe, expect, it, vi } from "vitest";
+import { VerifyPageClient } from "@/app/verify/VerifyPageClient";
+import { EXAMPLE_WF_MISSING_NDJSON } from "@/lib/verifyDefaultSample";
 
 function mockFetch(implementation: (input: string, init?: RequestInit) => Promise<Response>) {
   vi.stubGlobal("fetch", vi.fn(implementation) as unknown as typeof fetch);
 }
-
-beforeEach(() => {
-  mockReplace.mockReset();
-});
 
 afterEach(() => {
   cleanup();
@@ -35,53 +15,38 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
-describe("TryItSection a11y", () => {
-  it("sets aria-busy while loading", async () => {
+describe("VerifyPageClient a11y", () => {
+  it("disables run button while loading", async () => {
     mockFetch(
       () =>
         new Promise(() => {
           /* never resolves */
         }) as Promise<Response>,
     );
-    render(<TryItSection initialScenarioId="wf_missing" />);
-    fireEvent.click(screen.getByRole("button", { name: productCopy.tryIt.runButton }));
-    const section = screen.getByTestId(productCopy.uiTestIds.tryIt);
-    expect(section).toHaveAttribute("aria-busy", "true");
+    render(<VerifyPageClient />);
+    const btn = screen.getByRole("button", { name: "Run verification" });
+    fireEvent.click(btn);
+    expect(btn).toBeDisabled();
   });
 
-  it("announces API errors in an alert with human title (not raw wire string alone)", async () => {
+  it("shows API errors in alert region", async () => {
     mockFetch(async () => ({
       ok: false,
       status: 500,
       headers: new Headers({ "x-request-id": "test-req-1" }),
-      text: async () => JSON.stringify({ error: "boom" }),
+      text: async () => JSON.stringify({ ok: false, error: "VERIFY_ENGINE_FAILED" }),
     } as Response));
-    render(<TryItSection initialScenarioId="wf_missing" />);
-    fireEvent.click(screen.getByRole("button", { name: productCopy.tryIt.runButton }));
+    render(<VerifyPageClient />);
+    fireEvent.click(screen.getByRole("button", { name: "Run verification" }));
     await waitFor(() => {
       const alert = screen.getByRole("alert");
-      expect(alert).toHaveTextContent("Something went wrong");
+      expect(alert).toHaveTextContent("Verification failed");
       expect(alert).toHaveTextContent("Request ID:");
       expect(alert).toHaveTextContent("test-req-1");
     });
   });
 
-  it("announces success politely", async () => {
-    mockFetch(async () => ({
-      ok: true,
-      status: 200,
-      headers: new Headers(),
-      text: async () => demoSuccessBody,
-    } as Response));
-    render(<TryItSection initialScenarioId="wf_missing" />);
-    fireEvent.click(screen.getByRole("button", { name: productCopy.tryIt.runButton }));
-    await waitFor(() => {
-      const polite = document.querySelector("[aria-live=polite]");
-      expect(polite?.textContent).toContain(productCopy.tryIt.a11ySuccessAnnouncement);
-    });
-  });
-
-  it("does not treat legacy truthReportText-only response as success", async () => {
+  it("renders contradiction headline on successful default response", async () => {
     mockFetch(async () => ({
       ok: true,
       status: 200,
@@ -89,17 +54,20 @@ describe("TryItSection a11y", () => {
       text: async () =>
         JSON.stringify({
           ok: true,
-          truthReportText: "legacy",
-          workflowResult: {},
+          workflowId: "wf_missing",
+          humanReport: "ROW_ABSENT: expected row is missing.",
+          certificate: {
+            stateRelation: "does_not_match",
+            explanation: { headline: "Expected row is missing.", details: [{ code: "ROW_ABSENT" }] },
+          },
         }),
     } as Response));
-    render(<TryItSection initialScenarioId="wf_missing" />);
-    fireEvent.click(screen.getByRole("button", { name: productCopy.tryIt.runButton }));
+    render(<VerifyPageClient />);
+    expect(screen.getByLabelText("Verification events NDJSON")).toHaveValue(EXAMPLE_WF_MISSING_NDJSON);
+    fireEvent.click(screen.getByRole("button", { name: "Run verification" }));
     await waitFor(() => {
-      expect(screen.getByRole("alert")).toHaveTextContent("Unexpected response");
+      expect(screen.getByText("Reality contradicts the claim")).toBeInTheDocument();
+      expect(screen.getByText("Expected row is missing.")).toBeInTheDocument();
     });
-    expect(screen.getByRole("alert")).toHaveTextContent(
-      "The demo returned data this page cannot display",
-    );
   });
 });

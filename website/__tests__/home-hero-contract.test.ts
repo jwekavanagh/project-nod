@@ -22,7 +22,7 @@ describe("home hero contract (page.tsx source)", () => {
     expect(linkOpens).toBe(1);
 
     expect(ctaRowSlice).not.toContain('href="/pricing"');
-    expect(ctaRowSlice.split('href="/?demo=wf_missing#try-it"').length - 1).toBe(1);
+    expect(ctaRowSlice.split('href="/verify"').length - 1).toBe(1);
     expect(ctaRowSlice).toContain('data-cta-priority="primary"');
     expect(heroSlice).toContain('data-testid="home-hero-cta-row"');
     expect(heroSlice).toContain("data-testid={productCopy.homePageHeroSecondaryCta.testId}");

@@ -3,10 +3,10 @@ import {
   demoVerifyRequestSchema,
 } from "@/lib/demoVerify.contract";
 import {
-  DemoEngineFailedError,
-  DemoResultSchemaMismatchError,
-  runDemoVerifyScenario,
-} from "@/lib/demoVerify";
+  BundledVerifyEngineFailedError,
+  BundledVerifyResultSchemaMismatchError,
+  runBundledContractVerify,
+} from "@/lib/bundledContractVerify";
 import { logFunnelEvent } from "@/lib/funnelEvent";
 import { DemoFixturesMissingError } from "@/lib/resolveRepoExamples";
 import { telemetryCoreWriteFreezeActive } from "@/lib/telemetryWritesConfig";
@@ -56,11 +56,14 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
   }
 
   try {
-    const out = await runDemoVerifyScenario(parsed.data.scenarioId);
+    const out = await runBundledContractVerify({
+      kind: "scenarioFile",
+      workflowId: parsed.data.scenarioId,
+    });
     await logFunnelEvent({ event: "demo_verify_ok" });
     return jsonWithId(req, {
       ok: true as const,
-      scenarioId: out.scenarioId,
+      workflowId: out.workflowId,
       certificate: out.certificate,
       humanReport: out.humanReport,
     }, 200);
@@ -68,10 +71,10 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     if (e instanceof DemoFixturesMissingError) {
       return jsonWithId(req, { ok: false, error: DEMO_ERROR_CODES.FIXTURES_MISSING }, 503);
     }
-    if (e instanceof DemoEngineFailedError) {
+    if (e instanceof BundledVerifyEngineFailedError) {
       return jsonWithId(req, { ok: false, error: DEMO_ERROR_CODES.ENGINE_FAILED }, 500);
     }
-    if (e instanceof DemoResultSchemaMismatchError) {
+    if (e instanceof BundledVerifyResultSchemaMismatchError) {
       return jsonWithId(req, { ok: false, error: DEMO_ERROR_CODES.RESULT_SCHEMA_MISMATCH }, 500);
     }
     console.error("[api/demo/verify] unexpected error", e);

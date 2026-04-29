@@ -130,7 +130,7 @@ export default function GuidesHubPage() {
             {productCopy.ctaTaxonomy.decision}
           </Link>
           <Link
-            href="/?demo=wf_missing#try-it"
+            href="/verify"
             className="btn secondary"
             data-cta-priority={conversionSpine.ctaPrioritySecondaryValue}
           >

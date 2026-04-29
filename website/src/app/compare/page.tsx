@@ -82,7 +82,7 @@ export default function CompareHubPage() {
           </Link>
           <a
             className="btn secondary"
-            href="/?demo=wf_missing#try-it"
+            href="/verify"
             data-cta-priority={conversionSpine.ctaPrioritySecondaryValue}
           >
             {productCopy.ctaTaxonomy.topOfFunnel}

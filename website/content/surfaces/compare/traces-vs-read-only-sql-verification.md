@@ -17,7 +17,7 @@ When your evaluation criteria include finance tables, CRM state, or entitlements
 
 ## What to do next
 
-- Try the homepage demo at [`/?demo=wf_missing#try-it`](/?demo=wf_missing#try-it) to see the failure transcript quickly.
+- Try the interactive demo at [`/verify`](/verify) to see the failure transcript quickly.
 - Follow [`/integrate`](/integrate) for first-run verification on your SQLite or Postgres file.
 - Compare commercial tiers on [`/pricing`](/pricing) when you need enforce fixtures or API metering.
 - Read [`/security`](/security) before widening database access.

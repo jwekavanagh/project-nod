@@ -1,7 +1,8 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import * as agentskeptic from "agentskeptic";
-import { runDemoVerifyScenario } from "@/lib/demoVerify";
-describe("runDemoVerifyScenario", () => {
+import { runBundledContractVerify } from "@/lib/bundledContractVerify";
+
+describe("runBundledContractVerify", () => {
   const verifyWorkflow = vi.spyOn(agentskeptic, "verifyWorkflow");
   const consoleError = vi.spyOn(console, "error").mockImplementation(() => {});
 
@@ -15,13 +16,18 @@ describe("runDemoVerifyScenario", () => {
     consoleError.mockRestore();
   });
 
-  it("logs before DemoEngineFailedError when verifyWorkflow throws", async () => {
+  it("logs before BundledVerifyEngineFailedError when verifyWorkflow throws", async () => {
     verifyWorkflow.mockRejectedValue(new Error("injected-failure"));
-    await expect(runDemoVerifyScenario("wf_complete")).rejects.toThrow();
+    await expect(
+      runBundledContractVerify({
+        kind: "scenarioFile",
+        workflowId: "wf_complete",
+      }),
+    ).rejects.toThrow();
     expect(consoleError).toHaveBeenCalled();
-    const first = consoleError.mock.calls[0] as [string, { scenarioId: string; err: unknown }];
-    expect(first[0]).toBe("[demoVerify]");
-    expect(first[1].scenarioId).toBe("wf_complete");
+    const first = consoleError.mock.calls[0] as [string, { workflowId: string; err: unknown }];
+    expect(first[0]).toBe("[runBundledContractVerify]");
+    expect(first[1].workflowId).toBe("wf_complete");
     expect((first[1].err as Error).message).toBe("injected-failure");
   });
 });

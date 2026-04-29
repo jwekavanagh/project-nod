@@ -7,15 +7,16 @@ import {
 } from "@/generated/integratorDocsEmbedded";
 
 const repoRoot = path.resolve(__dirname, "..", "..");
+const lf = (s: string) => s.replace(/\r\n/g, "\n");
 
 describe("integratorDocsEmbedded parity vs docs SSOT", () => {
   it("embeddedFirstRunIntegrationMd matches docs/first-run-integration.md", () => {
     const disk = readFileSync(path.join(repoRoot, "docs", "first-run-integration.md"), "utf8");
-    expect(embeddedFirstRunIntegrationMd).toBe(disk);
+    expect(lf(embeddedFirstRunIntegrationMd)).toBe(lf(disk));
   });
 
   it("embeddedPartnerQuickstartCommandsMd matches docs/partner-quickstart-commands.md", () => {
     const disk = readFileSync(path.join(repoRoot, "docs", "partner-quickstart-commands.md"), "utf8");
-    expect(embeddedPartnerQuickstartCommandsMd).toBe(disk);
+    expect(lf(embeddedPartnerQuickstartCommandsMd)).toBe(lf(disk));
   });
 });

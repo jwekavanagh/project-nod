@@ -12,6 +12,7 @@ Thanks for helping improve **agentskeptic**.
 - **Node.js ≥ 22.13** (see `package.json` `engines`).
 - `npm install`
 - `npm run build` — TypeScript compile and asset copy.
+- Browser demo path (no setup): `website` route `/verify`.
 - Canonical local verification loop: `agentskeptic loop --workflow-id <id> --events <path> --registry <path> (--db <sqlitePath> | --postgres-url <url>)` (see [`docs/local-feedback-loop.md`](docs/local-feedback-loop.md)).
 - `npm test` — default validation before a PR (OSS `npm run build` + Vitest + SQLite `node:test`, then `scripts/commercial-enforce-test-harness.mjs` rebuilds **commercial** `dist/` and runs **`enforce`** integration tests plus **`assurance` CLI regression tests`, then `npm run build` restores OSS `dist/`, then `npm run validate-ttfv`). Policy: **[`docs/commercial-enforce-gate-normative.md`](docs/commercial-enforce-gate-normative.md)**.
 

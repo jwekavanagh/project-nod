@@ -16,17 +16,10 @@ import {
 } from "@/lib/commercialNarrative";
 import { homePageTitleFromMarketing, marketingOpenGraphAndTwitter } from "@/lib/marketingSocialMetadata";
 import { buildHomeTrustStripLinks, openapiHrefFromProcessEnv } from "@/lib/siteChrome";
-import { isDemoScenarioId, type DemoScenarioId } from "@/lib/demoScenarios";
 import Link from "next/link";
-import { Fragment, Suspense } from "react";
-import { TryItSection } from "./home/TryItSection";
+import { Fragment } from "react";
+import { HomeVerifyCta } from "./home/HomeVerifyCta";
 import { HOME_SECTION_ORDER, type HomeSectionId } from "./page.sections";
-
-function resolveInitialTryItDemo(demo: string | string[] | undefined): DemoScenarioId {
-  const s = Array.isArray(demo) ? demo[0] : demo;
-  if (s && isDemoScenarioId(s)) return s;
-  return "wf_missing";
-}
 
 const homePageTitle = homePageTitleFromMarketing(marketing.heroTitle);
 
@@ -47,13 +40,7 @@ const anchors = {
   bugsUrl: publicProductAnchors.bugsUrl,
 };
 
-export default async function HomePage({
-  searchParams,
-}: {
-  searchParams: Promise<{ demo?: string | string[] }>;
-}) {
-  const sp = await searchParams;
-  const tryItInitial = resolveInitialTryItDemo(sp.demo);
+export default async function HomePage() {
   const homeCommercial = getHomeCommercialSectionFromConfig();
   const trustLinks = buildHomeTrustStripLinks({
     anchors,
@@ -83,7 +70,7 @@ export default async function HomePage({
             <p className="home-cta-row" data-testid="home-hero-cta-row">
               <a
                 className="btn"
-                href="/?demo=wf_missing#try-it"
+                href="/verify"
                 data-testid="home-hero-demo-cta"
                 data-cta-priority="primary"
               >
@@ -147,9 +134,7 @@ export default async function HomePage({
       </section>
     ),
     tryIt: (
-      <Suspense key="tryIt" fallback={null}>
-        <TryItSection initialScenarioId={tryItInitial} />
-      </Suspense>
+      <HomeVerifyCta key="tryIt" />
     ),
     homeWhatCatches: (
       <section

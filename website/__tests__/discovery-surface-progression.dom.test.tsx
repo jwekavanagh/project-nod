@@ -30,7 +30,7 @@ describe("SurfaceProgression", () => {
     const { container } = render(<SurfaceProgression primaryCta="demo" />);
     const prim = container.querySelectorAll('[data-cta-priority="primary"]');
     expect(prim.length).toBe(1);
-    expect((prim[0] as HTMLAnchorElement).getAttribute("href")).toBe("/?demo=wf_missing#try-it");
+    expect((prim[0] as HTMLAnchorElement).getAttribute("href")).toBe("/verify");
     expect(container.querySelector('a[href="/security"]')).toBeTruthy();
     expect(container.querySelector('a[href="/integrate"]')).toBeTruthy();
     expect(container.querySelector('a[href="/pricing"]')).toBeTruthy();

@@ -164,7 +164,7 @@ export default function DatabaseTruthVsTracesPage() {
       >
         <a
           className="btn"
-          href="/?demo=wf_missing#try-it"
+          href="/verify"
           data-testid="acquisition-try-home-demo-cta"
           data-cta-priority={conversionSpine.ctaPriorityPrimaryValue}
         >

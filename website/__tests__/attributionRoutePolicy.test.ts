@@ -9,6 +9,7 @@ describe("resolveAttributionSurface", () => {
     expect(resolveAttributionSurface("/guides")).toBe("acquisition");
     expect(resolveAttributionSurface("/guides/foo")).toBe("acquisition");
     expect(resolveAttributionSurface("/claim")).toBe("acquisition");
+    expect(resolveAttributionSurface("/verify")).toBe("acquisition");
     expect(resolveAttributionSurface("/verify/link")).toBe("acquisition");
     expect(resolveAttributionSurface("/examples/wf-complete")).toBe("acquisition");
   });

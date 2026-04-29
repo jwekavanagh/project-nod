@@ -56,6 +56,7 @@ const nextConfig: NextConfig = {
    */
   outputFileTracingIncludes: {
     "/api/demo/verify": [...DEMO_VERIFY_OUTPUT_FILE_TRACING_GLOBS],
+    "/api/verify": [...DEMO_VERIFY_OUTPUT_FILE_TRACING_GLOBS],
     "/api/integrator/registry-draft": [...REGISTRY_DRAFT_API_FILE_TRACING_GLOBS],
   },
   async headers() {

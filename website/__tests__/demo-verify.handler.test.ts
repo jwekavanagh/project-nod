@@ -1,8 +1,10 @@
 import { POST, GET } from "@/app/api/demo/verify/route";
+import { POST as verifyPost } from "@/app/api/verify/route";
 import {
   demoVerifySuccessResponseSchema,
   DEMO_SCENARIO_IDS,
 } from "@/lib/demoVerify.contract";
+import { EXAMPLE_WF_MISSING_NDJSON } from "@/lib/verifyDefaultSample";
 import { runDemoVerifyScenario } from "@/lib/demoVerify";
 import { loadSchemaValidator } from "agentskeptic/schemaLoad";
 import { NextRequest } from "next/server";
@@ -51,11 +53,34 @@ describe("POST /api/demo/verify", () => {
 
       expect(parsed.data.certificate).toEqual(once.certificate);
       expect(parsed.data.humanReport).toBe(once.humanReport);
+      expect(parsed.data.workflowId).toBe(scenarioId);
 
       expect(validateCert(parsed.data.certificate)).toBe(true);
       assertScenarioMatrix(scenarioId, parsed.data.certificate as Record<string, unknown>);
     });
   }
+
+  it("matches the same success keys as POST /api/verify", async () => {
+    const demoRes = await POST(
+      new NextRequest("http://localhost/api/demo/verify", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ scenarioId: "wf_missing" }),
+      }),
+    );
+    const verifyRes = await verifyPost(
+      new NextRequest("http://localhost/api/verify", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ eventsNdjson: EXAMPLE_WF_MISSING_NDJSON }),
+      }),
+    );
+    expect(demoRes.status).toBe(200);
+    expect(verifyRes.status).toBe(200);
+    const demoJson = (await demoRes.json()) as Record<string, unknown>;
+    const verifyJson = (await verifyRes.json()) as Record<string, unknown>;
+    expect(Object.keys(demoJson).sort()).toEqual(Object.keys(verifyJson).sort());
+  });
 
   it("GET returns 405 with x-request-id", async () => {
     const res = await GET(

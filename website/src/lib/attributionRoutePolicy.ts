@@ -12,6 +12,7 @@ const ACQUISITION_EXACT_PATHS = new Set<string>([
   "/terms",
   "/privacy",
   "/claim",
+  "/verify",
   "/verify/link",
   "/examples/wf-complete",
   "/examples/wf-missing",

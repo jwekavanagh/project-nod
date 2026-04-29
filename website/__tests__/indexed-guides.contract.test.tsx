@@ -50,7 +50,7 @@ describe("indexed guides", () => {
       expect(container.querySelector(`a[href="${e.route}"]`)).toBeTruthy();
     }
     expect(container.querySelector('a[href="/integrate"]')).toBeTruthy();
-    expect(container.querySelector('a[href="/?demo=wf_missing#try-it"]')).toBeTruthy();
+    expect(container.querySelector('a[href="/verify"]')).toBeTruthy();
     expect(productCopy.guidesHubBridgeSentence.length).toBeGreaterThan(40);
   });
 
