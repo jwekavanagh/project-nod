@@ -3,10 +3,8 @@ import { unauthorized } from "next/navigation";
 import { auth } from "@/auth";
 import { AccountClient } from "./AccountClient";
 import { AccountServerAboveFold } from "./AccountServerAboveFold";
-import { db } from "@/db/client";
-import { apiKeysV2 } from "@/db/schema";
-import { eq } from "drizzle-orm";
 import { assembleCommercialAccountState } from "@/lib/commercialAccountState";
+import { loadApiKeysV2RowsForAccount } from "@/lib/loadApiKeysV2ForAccount";
 import { loadAccountPageVerificationActivity } from "@/lib/funnelObservabilityQueries";
 import { loadTrustDecisionBlockedActivity } from "@/lib/loadTrustDecisionBlockedActivity";
 import { loadReliabilitySignalsForUser } from "@/lib/reliabilitySignals";
@@ -22,10 +20,7 @@ export default async function AccountPage() {
     unauthorized();
   }
 
-  const keys = await db
-    .select()
-    .from(apiKeysV2)
-    .where(eq(apiKeysV2.userId, session.user.id));
+  const keys = await loadApiKeysV2RowsForAccount(session.user.id);
 
   const initialCommercial = await assembleCommercialAccountState({
     userId: session.user.id,

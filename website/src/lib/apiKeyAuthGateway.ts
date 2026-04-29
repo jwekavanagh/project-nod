@@ -12,6 +12,7 @@ import {
   sha256HexApiKeyLookupFingerprint,
   verifyApiKey,
 } from "@/lib/apiKeyCrypto";
+import { isMissingApiKeyV2Relation } from "@/lib/isMissingApiKeyV2Relation";
 
 export type ApiKeyScope = "read" | "meter" | "report" | "admin";
 export type ApiKeySource = "v2" | "legacy";
@@ -131,15 +132,7 @@ export async function authenticateApiKey(
       .where(eq(apiKeysV2.keyLookupSha256, lookup))
       .limit(1);
   } catch (error) {
-    const maybeCode =
-      typeof error === "object" && error !== null
-        ? (error as { code?: string; cause?: { code?: string } }).code ??
-          (error as { cause?: { code?: string } }).cause?.code
-        : undefined;
-    const message = error instanceof Error ? error.message : String(error);
-    const isMissingV2Relation =
-      maybeCode === "42P01" || /relation "api_key_v2" does not exist/i.test(message);
-    if (!isMissingV2Relation) {
+    if (!isMissingApiKeyV2Relation(error)) {
       throw error;
     }
   }

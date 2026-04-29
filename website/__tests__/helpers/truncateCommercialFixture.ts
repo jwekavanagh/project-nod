@@ -1,5 +1,6 @@
 import { db } from "@/db/client";
 import { dbTelemetry } from "@/db/telemetryClient";
+import { isMissingApiKeyV2Relation } from "@/lib/isMissingApiKeyV2Relation";
 import { sql } from "drizzle-orm";
 import { assertPostgresUrlsSafeForTruncate } from "./assertDestructivePostgresUrlsForTests";
 
@@ -16,16 +17,6 @@ const CORE_TRUNCATE_SQL_WITH_V2 = `
 const TELEMETRY_TRUNCATE_SQL = `
   TRUNCATE funnel_event, product_activation_started_beacon, product_activation_outcome_beacon RESTART IDENTITY CASCADE
 `;
-
-function isMissingApiKeyV2Relation(error: unknown): boolean {
-  const maybeCode =
-    typeof error === "object" && error !== null
-      ? (error as { code?: string; cause?: { code?: string } }).code ??
-        (error as { cause?: { code?: string } }).cause?.code
-      : undefined;
-  const message = error instanceof Error ? error.message : String(error);
-  return maybeCode === "42P01" && /api_key_v2/i.test(message);
-}
 
 /**
  * Truncates shared commercial tables used by website integration tests.
