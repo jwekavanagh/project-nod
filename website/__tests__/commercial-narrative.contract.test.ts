@@ -41,7 +41,7 @@ describe("commercialNarrative vs commercial-plans.json", () => {
 
   it("feature table included row matches plan caps", () => {
     const t = getPricingFeatureComparison(catalog);
-    const row = t.rows.find((r) => r.feature.startsWith("Included CI verifications"));
+    const row = t.rows.find((r) => r.feature.startsWith("Included verified runs"));
     expect(row).toBeTruthy();
     const fmt = new Intl.NumberFormat("en-US");
     expect(row!.starter).toBe(fmt.format(catalog.plans.starter.includedMonthly!));

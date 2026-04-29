@@ -50,7 +50,7 @@
   "pricing_row_4_included_monthly_ci_enterprise": "Custom",
   "pricing_row_4_included_monthly_ci_individual": "5,000",
   "pricing_row_4_included_monthly_ci_label": "Included verified runs (UTC month; pooled per account)",
-  "pricing_row_4_included_monthly_ci_starter": "1000",
+  "pricing_row_4_included_monthly_ci_starter": "1,000",
   "pricing_row_4_included_monthly_ci_team": "20,000",
   "quick_sql_only_disclaimer": "Quick verification (`agentskeptic quick`) is SQL inference only — full registry contract verification adds vectors, object storage (S3-compatible), HTTP witnesses, Mongo, and relational checks per docs/verification-state-stores.md.",
   "readme_commercial_joined": "**Commercial metering (published npm)** uses `AGENTSKEPTIC_API_KEY` + `POST /api/v1/usage/reserve` as documented in docs/commercial.md — account-pooled quota per billing month.\n**OSS/unmetered CLI** for single-run verification: clone this repo and use the OSS build (`WF_BUILD_PROFILE=oss` / default `npm run build` artifact). State over-time `enforce` needs the commercial CLI and a paid entitlement.",

@@ -91,7 +91,7 @@
         "featureKey": "included_monthly_ci",
         "featureDisplay": "Included verified runs (UTC month; pooled per account)",
         "cells": {
-          "starter": "{{starterIncludedDigits}}",
+          "starter": "{{starterIncluded}}",
           "individual": "{{individualIncludedDigits}}",
           "team": "{{teamIncludedDigits}}",
           "business": "{{businessIncludedDigits}}",
