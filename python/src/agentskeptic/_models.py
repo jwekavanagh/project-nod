@@ -151,3 +151,41 @@ class CommercialPlansResponse(BaseModel):
     model_config = ConfigDict(extra="forbid", populate_by_name=True)
     schemaVersion: int
     plans: dict[str, PublicPlan]
+
+
+class TrustDecisionRoutingV1(BaseModel):
+    """`routing` on **`TrustDecisionRecordRequestV1`** (OpenAPI-aligned)."""
+
+    model_config = ConfigDict(extra="forbid")
+    routing_key: str = Field(max_length=512)
+    team: str | None = Field(default=None, max_length=256)
+    owner_slug: str | None = Field(default=None, max_length=256)
+
+
+class TrustCertificateFirstProblemRequestV1(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    seq: int = Field(ge=0)
+    tool_id: str
+    observed_trunc: str = Field(max_length=512)
+    expected_trunc: str = Field(max_length=512)
+
+
+class TrustCertificateSnapshotRequestV1(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    schema_version: Literal[1] = 1
+    workflow_id: str = Field(max_length=512)
+    run_kind: Literal["contract_sql", "contract_sql_langgraph_checkpoint_trust", "quick_preview"]
+    state_relation: Literal["matches_expectations", "does_not_match", "not_established"]
+    high_stakes_reliance: Literal["permitted", "prohibited"]
+    reason_codes: list[str] = Field(max_length=24)
+    first_problem: TrustCertificateFirstProblemRequestV1 | None = None
+
+
+class TrustDecisionRecordRequestV1(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    schema_version: Literal[1] = 1
+    trust_decision: Literal["safe", "unsafe", "unknown"]
+    gate_kind: Literal["contract_sql_irreversible", "langgraph_checkpoint_terminal"]
+    routing: TrustDecisionRoutingV1
+    certificate_snapshot: TrustCertificateSnapshotRequestV1
+    human_blocker_lines: list[str] = Field(min_length=6, max_length=6)
