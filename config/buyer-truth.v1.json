@@ -1,0 +1,132 @@
+{
+  "schemaVersion": 1,
+  "projectionVersion": 1,
+  "quota": {
+    "model": "account_pooled",
+    "pooledExplanation": "Monthly licensed verification usage is account-pooled across API keys within the billing month—the same pooling policy described under Quota semantics in docs/commercial.md."
+  },
+  "frameworkClaims": [
+    {
+      "id": "crewai",
+      "displayName": "CrewAI",
+      "status": "supported"
+    },
+    {
+      "id": "langgraph",
+      "displayName": "LangGraph",
+      "status": "supported"
+    },
+    {
+      "id": "autogen",
+      "displayName": "AutoGen",
+      "status": "removed"
+    }
+  ],
+  "frameworkFootnoteSuffix": "Any framework able to emit structured tool activity can integrate.",
+  "verificationPaths": {
+    "quickSqlOnlyDisclaimer": "Quick verification (`agentskeptic quick`) is SQL inference only — full registry contract verification adds vectors, object storage (S3-compatible), HTTP witnesses, Mongo, and relational checks per docs/verification-state-stores.md.",
+    "mechanismCalloutAppend": ""
+  },
+  "integrateRequirements": [
+    "Node.js 22 or newer",
+    "Read-only access to at least one queryable store (full contract/registry verification supports SQL, vectors, S3-compatible object storage, HTTP witnesses, Mongo, and SQLite or remote SQL)",
+    "Ability to emit or export structured tool activity as NDJSON"
+  ],
+  "commercialEntryPoints": {
+    "homeCommercialLeadMarkdown": "Open-source CLI is unmetered locally. Published npm installs use the commercial build — API key and successful POST /api/v1/usage/reserve apply for licensed CLI runs as described in docs/commercial.md. In-process createDecisionGate stays local and does not call the usage API."
+  },
+  "pricing": {
+    "pricingHeroSubtitleTemplate": "Local and open-source (OSS) paths are unmetered. The published npm CLI with a Starter account includes up to {{starterIncluded}} licensed verifications per month, account-pooled across API keys within the billing month (hard cap; no overage). Paid self-serve plans add more included usage and metered overage beyond included when subscribed.",
+    "pricingHeroSubtitleSecondary": "Paid self-serve plans also unlock enforce and lock-failure paths. Enterprise is contract.",
+    "paidVerificationTemplate": "Starter includes {{starterIncluded}} published npm CLI verifications per month (hard cap, no overage; account-pooled usage). Individual, Team, and Business include higher monthly amounts plus pay-as-you-go overage; an active subscription is required (trial counts).",
+    "enforcementMarkdown": "CI locks, the enforce command, and quick verify with lock flags require a paid plan (not Starter) and the same active subscription and metering model.",
+    "contractsMarkdown": "Limits and semantics: OpenAPI at /openapi-commercial-v1.yaml, plans JSON at /api/v1/commercial/plans, and entitlement docs on GitHub main.",
+    "localVerificationFootnote": "Local OSS verification remains free forever.",
+    "comparisonRows": [
+      {
+        "featureKey": "local_oss_verify",
+        "featureDisplay": "Local OSS verification",
+        "cells": {
+          "starter": "Yes",
+          "individual": "Yes",
+          "team": "Yes",
+          "business": "Yes",
+          "enterprise": "Yes"
+        }
+      },
+      {
+        "featureKey": "fail_ci_oss_verify",
+        "featureDisplay": "Fail CI on mismatch (OSS build)",
+        "cells": {
+          "starter": "Yes",
+          "individual": "Yes",
+          "team": "Yes",
+          "business": "Yes",
+          "enterprise": "Yes"
+        }
+      },
+      {
+        "featureKey": "npm_licensed",
+        "featureDisplay": "Published npm CLI + API key (licensed / metered)",
+        "cells": {
+          "starter": "{{starterIncluded}} / mo (hard cap; pooled per account)",
+          "individual": "Yes + overage",
+          "team": "Yes + overage",
+          "business": "Yes + overage",
+          "enterprise": "Custom"
+        }
+      },
+      {
+        "featureKey": "enforce",
+        "featureDisplay": "Lock / enforce commands (paid only)",
+        "cells": {
+          "starter": "No",
+          "individual": "Yes",
+          "team": "Yes",
+          "business": "Yes",
+          "enterprise": "Yes"
+        }
+      },
+      {
+        "featureKey": "included_monthly_ci",
+        "featureDisplay": "Included verified runs (UTC month; pooled per account)",
+        "cells": {
+          "starter": "{{starterIncludedDigits}}",
+          "individual": "{{individualIncludedDigits}}",
+          "team": "{{teamIncludedDigits}}",
+          "business": "{{businessIncludedDigits}}",
+          "enterprise": "Custom"
+        }
+      }
+    ]
+  },
+  "accountQuotaUrgency": {
+    "ok": "Usage is comfortably below your included verifications (account pooled) for this billing month.",
+    "notice": "You have used at least 75% of your included verifications (account pooled) for this billing month.",
+    "warning": "You have used at least 90% of your included verifications, or you are near the top of included before overage billing.",
+    "in_overage": "Verified runs have exceeded included amount — metered overage applied per plan where enabled; check the Stripe estimate above.",
+    "at_cap": "You have reached the hard cap (Starter where applicable) or a limit that blocks new runs. Upgrade or wait for the next month.",
+    "zero_usage": "No verification usage recorded for this billing month yet."
+  },
+  "securityQuickFactsBullets": [
+    "CLI and verification engine run in your infrastructure against databases you configure; the homepage demo runs bundled fixtures on this server for evaluation only.",
+    "Structured tool activity is compared to database query results at verification time; that check does not prove a specific network call caused a row.",
+    "Quick verify is a preview path; contract verification with an Outcome Certificate is what the engine treats as decision-grade for matches — see docs/outcome-certificate-normative.md on GitHub for highStakesReliance rules.",
+    "For buyer trust summaries on this site, use the guides and Problems index linked here first; authoritative field semantics remain in docs/outcome-certificate-normative.md on GitHub (not verification-product.md, which is a legacy redirect)."
+  ],
+  "canonicalHref": {
+    "verificationSemantics": "https://github.com/jwekavanagh/agentskeptic/blob/main/docs/outcome-certificate-normative.md",
+    "commercialSsotDoc": "https://github.com/jwekavanagh/agentskeptic/blob/main/docs/commercial.md",
+    "commercialBoundary": "https://github.com/jwekavanagh/agentskeptic/blob/main/docs/commercial.md#programmatic-verification-vs-licensed-cli"
+  },
+  "readmeSegments": {
+    "commercialEntry": [
+      "**Commercial metering (published npm)** uses `AGENTSKEPTIC_API_KEY` + `POST /api/v1/usage/reserve` as documented in docs/commercial.md — account-pooled quota per billing month.",
+      "**OSS/unmetered CLI** for single-run verification: clone this repo and use the OSS build (`WF_BUILD_PROFILE=oss` / default `npm run build` artifact). State over-time `enforce` needs the commercial CLI and a paid entitlement."
+    ]
+  },
+  "homepageCopy": {
+    "valueProposition": "AgentSkeptic compares agent claims with real downstream state — databases, APIs, object stores, and vector stores — and returns a clear verdict. Read-only, deterministic, and CI-friendly.",
+    "mechanismWorksWith": "Postgres, SQLite, MongoDB, S3, HTTP APIs, vector stores, and other queryable systems — full registry contract verification covers witness kinds documented in verification-state-stores.md; quick mode stays SQL-focused."
+  }
+}

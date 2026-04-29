@@ -3,15 +3,15 @@
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 import {
+  getHomeCommercialLead,
   getHomeCommercialSectionFromConfig,
   HOME_COMMERCIAL_BOUNDARY_DOCS,
-  HOME_COMMERCIAL_LEAD,
 } from "@/lib/commercialNarrative";
 
 describe("homepage commercial strip", () => {
   it("uses lede, linked boundary line, and in-process local copy in lede", () => {
     const section = getHomeCommercialSectionFromConfig();
-    expect(section.lead).toBe(HOME_COMMERCIAL_LEAD);
+    expect(section.lead).toBe(getHomeCommercialLead());
     expect(section.strip).toBe("");
     expect(section.lead.toLowerCase()).toContain("createdecisiongate");
     render(

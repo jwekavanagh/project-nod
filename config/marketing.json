@@ -49,9 +49,6 @@
     "{{INTEGRATE_URL}}",
     "{{ORIGIN}}/"
   ],
-  "r2": {
-    "frameworkMaturity": "CrewAI: full support. AutoGen: experimental. Works with any framework that can emit structured activity."
-  },
   "site": {
     "integrate": {
       "title": "Get started",
@@ -86,12 +83,7 @@
   "integratePage": {
     "packLedCommand": "npx agentskeptic init --framework none --database sqlite --yes\n\n# Pack-led replay (after scaffold):\nnpx agentskeptic crossing \\\n  --workflow-id YOUR_WORKFLOW_ID \\\n  --events ./path/to/events.ndjson \\\n  --registry ./path/to/tools.json \\\n  --db ./path/to/readable.sqlite",
     "githubDeepLink": "https://github.com/jwekavanagh/agentskeptic/blob/main/docs/integrate.md",
-    "githubFirstRunLink": "https://github.com/jwekavanagh/agentskeptic/blob/main/docs/integrate.md",
-    "requirements": [
-      "Node.js 22 or newer",
-      "Read-only access to at least one queryable store (SQL, vectors, S3, Mongo, HTTP, etc.)",
-      "Ability to emit or export structured tool activity as NDJSON"
-    ]
+    "githubFirstRunLink": "https://github.com/jwekavanagh/agentskeptic/blob/main/docs/integrate.md"
   },
   "briefProblem": "Claims vs read-only; ROW_ABSENT.",
   "briefSections": [],

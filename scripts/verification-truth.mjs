@@ -69,6 +69,7 @@ function runGitDiffGate(manifest) {
 }
 
 function runStructuralAfterDiff() {
+  runShell("npm run check:buyer-truth", "verification-truth:gating");
   runShell("node scripts/contract-manifest.mjs --check", "verification-truth:gating");
   runShell("npm run check:epistemic-contract-structure", "verification-truth:gating");
   console.error("[verification-truth:guards] repo policy + API surface");

@@ -7,6 +7,7 @@ import {
   getSiteHtml,
   registerMarketingSiteTeardown,
 } from "./helpers/siteTestServer";
+import { getFrameworkFootnoteForHomepage } from "@/lib/commercialNarrative";
 
 registerMarketingSiteTeardown();
 
@@ -17,7 +18,6 @@ type M = {
     integrate: { title: string; description: string };
     pricing: { heroTitle: string; positioning: string };
   };
-  r2: { frameworkMaturity: string };
 };
 
 function loadMarketingConfig(): M {
@@ -58,9 +58,9 @@ describe("marketing surface parity (HTML includes JSON needles)", { timeout: 300
     expect(flat).toContain(collapseWs(m.site.pricing.positioning));
   });
 
-  it("home includes r2 framework maturity (buyer line)", async () => {
+  it("home includes buyer-truth framework footnote (homepage closing)", async () => {
     const html = await getSiteHtml("/");
     const flat = collapseWs(html);
-    expect(flat).toContain(collapseWs(m.r2.frameworkMaturity));
+    expect(flat).toContain(collapseWs(getFrameworkFootnoteForHomepage()));
   });
 });

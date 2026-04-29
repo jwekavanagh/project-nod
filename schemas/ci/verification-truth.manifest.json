@@ -12,6 +12,8 @@
   },
   "gating": {
     "gitPathspecs": [
+      "config/buyer-truth.v1.json",
+      "schemas/buyer-truth-v1.schema.json",
       "schemas/",
       "llms.txt",
       "README.md",

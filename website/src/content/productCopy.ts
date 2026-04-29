@@ -1,6 +1,10 @@
-/** Single source for most site chrome, a11y, and test ids. Public commercial + contract copy lives in `@/lib/commercialNarrative` + `config/commercial-plans.json`. */
+/** Single source for most site chrome, a11y, and test ids. Buyer semantics: `config/buyer-truth.v1.json` via `@/lib/buyerTruth`. */
+
+import { loadBuyerTruth } from "@/lib/buyerTruth";
 
 import marketing from "@/lib/marketing";
+
+const bt = loadBuyerTruth();
 
 export type InternalHref =
   | "/security"
@@ -378,8 +382,7 @@ export const trustStripPills = [
  * `config/marketing.json` for the prose budget; the site renders this object instead.
  */
 const homepageDisplay = {
-  homeValueProposition:
-    "AgentSkeptic compares agent claims with real downstream state — databases, APIs, object stores, and vector stores — and returns a clear verdict. Read-only, deterministic, and CI-friendly.",
+  homeValueProposition: bt.homepageCopy.valueProposition,
   homeWhatCatches: {
     sectionTitle: "What it catches",
     bullets: [
@@ -402,9 +405,9 @@ const homepageDisplay = {
       "You map tool ids to the stores they touch (for example in tools.json).",
       "Verification re-reads those stores and returns a deterministic outcome you can script in CI and HTTP.",
     ] as const,
-    worksWith:
-      "Postgres, SQLite, MongoDB, S3, HTTP APIs, vector stores, and other queryable systems.",
+    worksWith: bt.homepageCopy.mechanismWorksWith,
     notObservability: "It compares state to claims, not a full APM, distributed tracing, or log aggregation product.",
+    quickPathDisclaimer: bt.verificationPaths.quickSqlOnlyDisclaimer,
   },
   homeClosing: {
     sectionTitle: "Ready to try?",
@@ -660,8 +663,8 @@ export const productCopy = {
       },
     ],
     docLinks: {
-      verificationProductSsot: `${marketing.gitRepositoryUrl}/blob/main/docs/verification-product.md`,
-      commercialSsot: `${marketing.gitRepositoryUrl}/blob/main/docs/commercial.md`,
+      verificationSemanticsHref: bt.canonicalHref.verificationSemantics,
+      commercialSsotHref: bt.canonicalHref.commercialSsotDoc,
     },
   },
 
@@ -682,6 +685,7 @@ export const productCopy = {
     intro: homepageDisplay.mechanism.intro,
     items: [...homepageDisplay.mechanism.items],
     worksWith: homepageDisplay.mechanism.worksWith,
+    quickPathDisclaimer: homepageDisplay.mechanism.quickPathDisclaimer,
     notObservability: homepageDisplay.mechanism.notObservability,
   },
 
@@ -729,15 +733,14 @@ export const productCopy = {
     monthlyQuotaDistinctDaysTitle:
       "Each count is a separate UTC calendar day this billing month when you ran paid verification against your allowance.",
     quotaUrgencyCopy: {
-      ok: "Usage is comfortably below your included verifications (per API key) for this month.",
-      notice: "You have used at least 75% of your included verifications (per key) for this month.",
-      warning: "You have used at least 90% of your included verifications, or you are at the top of the included amount before overage.",
-      in_overage:
-        "You are past the included amount on at least one key. Metered overage is billed; see the estimate above and your Stripe invoice.",
-      at_cap: "You have reached the hard cap (Starter) or a limit that blocks new runs. Upgrade or wait for the next month.",
-    } as const,
+      ok: bt.accountQuotaUrgency.ok,
+      notice: bt.accountQuotaUrgency.notice,
+      warning: bt.accountQuotaUrgency.warning,
+      in_overage: bt.accountQuotaUrgency.in_overage,
+      at_cap: bt.accountQuotaUrgency.at_cap,
+    },
     /** Shown instead of `quotaUrgencyCopy.ok` when there is no usage yet this month. */
-    quotaUrgencyZeroUsage: "No verification usage recorded for this billing month yet.",
+    quotaUrgencyZeroUsage: bt.accountQuotaUrgency.zero_usage,
     a11yApiKeyReady: "API key generated. Copy it from the page and store it safely.",
     apiKeyRevealUrgentTitle: "Copy this now — you will not see the full key again after you leave this page.",
     apiKeyCopyButton: "Copy key",

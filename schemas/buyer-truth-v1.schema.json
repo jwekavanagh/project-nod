@@ -1,0 +1,162 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://agentskeptic.dev/schemas/buyer-truth-v1.schema.json",
+  "title": "BuyerTruthV1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "projectionVersion",
+    "quota",
+    "frameworkClaims",
+    "frameworkFootnoteSuffix",
+    "verificationPaths",
+    "integrateRequirements",
+    "commercialEntryPoints",
+    "pricing",
+    "accountQuotaUrgency",
+    "securityQuickFactsBullets",
+    "canonicalHref",
+    "readmeSegments",
+    "homepageCopy"
+  ],
+  "properties": {
+    "schemaVersion": { "type": "integer", "const": 1 },
+    "projectionVersion": { "type": "integer", "minimum": 1 },
+    "quota": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["model", "pooledExplanation"],
+      "properties": {
+        "model": { "type": "string", "const": "account_pooled" },
+        "pooledExplanation": { "type": "string", "minLength": 8 }
+      }
+    },
+    "frameworkClaims": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "displayName", "status"],
+        "properties": {
+          "id": { "type": "string" },
+          "displayName": { "type": "string" },
+          "status": {
+            "type": "string",
+            "enum": ["supported", "removed", "experimental"]
+          }
+        }
+      }
+    },
+    "frameworkFootnoteSuffix": { "type": "string" },
+    "verificationPaths": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["quickSqlOnlyDisclaimer", "mechanismCalloutAppend"],
+      "properties": {
+        "quickSqlOnlyDisclaimer": { "type": "string" },
+        "mechanismCalloutAppend": { "type": "string" }
+      }
+    },
+    "integrateRequirements": {
+      "type": "array",
+      "items": { "type": "string" },
+      "minItems": 1
+    },
+    "commercialEntryPoints": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["homeCommercialLeadMarkdown"],
+      "properties": {
+        "homeCommercialLeadMarkdown": { "type": "string" }
+      }
+    },
+    "pricing": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "pricingHeroSubtitleTemplate",
+        "pricingHeroSubtitleSecondary",
+        "paidVerificationTemplate",
+        "enforcementMarkdown",
+        "contractsMarkdown",
+        "localVerificationFootnote",
+        "comparisonRows"
+      ],
+      "properties": {
+        "pricingHeroSubtitleTemplate": { "type": "string" },
+        "pricingHeroSubtitleSecondary": { "type": "string" },
+        "paidVerificationTemplate": { "type": "string" },
+        "enforcementMarkdown": { "type": "string" },
+        "contractsMarkdown": { "type": "string" },
+        "localVerificationFootnote": { "type": "string" },
+        "comparisonRows": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["featureKey", "featureDisplay", "cells"],
+            "properties": {
+              "featureKey": { "type": "string" },
+              "featureDisplay": { "type": "string" },
+              "cells": {
+                "type": "object",
+                "additionalProperties": { "type": "string" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "accountQuotaUrgency": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["ok", "notice", "warning", "in_overage", "at_cap", "zero_usage"],
+      "properties": {
+        "ok": { "type": "string" },
+        "notice": { "type": "string" },
+        "warning": { "type": "string" },
+        "in_overage": { "type": "string" },
+        "at_cap": { "type": "string" },
+        "zero_usage": { "type": "string" }
+      }
+    },
+    "securityQuickFactsBullets": {
+      "type": "array",
+      "items": { "type": "string" },
+      "minItems": 4,
+      "maxItems": 4
+    },
+    "canonicalHref": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["verificationSemantics", "commercialSsotDoc", "commercialBoundary"],
+      "properties": {
+        "verificationSemantics": { "type": "string", "pattern": "^https://" },
+        "commercialSsotDoc": { "type": "string", "pattern": "^https://" },
+        "commercialBoundary": { "type": "string", "pattern": "^https://" }
+      }
+    },
+    "readmeSegments": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["commercialEntry"],
+      "properties": {
+        "commercialEntry": {
+          "type": "array",
+          "items": { "type": "string" },
+          "minItems": 1
+        }
+      }
+    },
+    "homepageCopy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["valueProposition", "mechanismWorksWith"],
+      "properties": {
+        "valueProposition": { "type": "string" },
+        "mechanismWorksWith": { "type": "string" }
+      }
+    }
+  }
+}
