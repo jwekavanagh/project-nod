@@ -1,3 +1,10 @@
+# [3.2.0](https://github.com/jwekavanagh/agentskeptic/compare/v3.1.0...v3.2.0) (2026-04-29)
+
+
+### Features
+
+* **website:** buyer truth SSOT contract and CI gate ([#32](https://github.com/jwekavanagh/agentskeptic/issues/32)) ([d62ded1](https://github.com/jwekavanagh/agentskeptic/commit/d62ded10959d987f34e537d76126c158ff6f2fca))
+
 # [3.1.0](https://github.com/jwekavanagh/agentskeptic/compare/v3.0.0...v3.1.0) (2026-04-29)
 
 
