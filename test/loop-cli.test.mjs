@@ -48,7 +48,7 @@ describe("CLI loop", () => {
     rmSync(home, { recursive: true, force: true });
   });
 
-  it("first loop run prints contract and no_baseline", () => {
+  it("first loop run prints contract and no local regression anchor", () => {
     const r = spawnSync(
       process.execPath,
       [
@@ -70,7 +70,7 @@ describe("CLI loop", () => {
     const out = r.stdout.replace(/\r\n/g, "\n").trimEnd().split("\n");
     assert.ok(out[0].startsWith("VERDICT: TRUSTED"));
     assert.ok(out[1].startsWith("WHY: "));
-    assert.equal(out[2], "CHANGED_SINCE_LAST_RUN: no_baseline");
+    assert.equal(out[2], "LOCAL_REGRESSION_COMPARE: no_anchor");
     assert.ok(out[3].startsWith("RUN_REF: "));
   });
 
@@ -94,7 +94,7 @@ describe("CLI loop", () => {
     );
     assert.equal(r.status, 0, r.stderr);
     const out = r.stdout.replace(/\r\n/g, "\n");
-    assert.ok(out.includes("CHANGED_SINCE_LAST_RUN: classification="), out);
+    assert.ok(out.includes("LOCAL_REGRESSION_COMPARE: classification="), out);
 
     const indexPath = join(home, ".agentskeptic", "runs", "index.json");
     assert.equal(existsSync(indexPath), true);

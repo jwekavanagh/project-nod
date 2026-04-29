@@ -12,19 +12,19 @@ function normalizedVerdict(certificate: OutcomeCertificateV1): "TRUSTED" | "NOT 
 export function renderLoopTerminalContract(input: {
   certificate: OutcomeCertificateV1;
   runRef: string;
-  compare: { kind: "no_baseline" } | { kind: "summary"; artifact: RegressionArtifactV1 };
+  compare: { kind: "no_local_regression_anchor" } | { kind: "summary"; artifact: RegressionArtifactV1 };
   failureHint?: { likelyCause: string; nextAction: string };
 }): string {
   const verdict = normalizedVerdict(input.certificate);
   const lines: string[] = [];
   lines.push(`VERDICT: ${verdict}`);
   lines.push(`WHY: ${input.certificate.explanation.headline}`);
-  if (input.compare.kind === "no_baseline") {
-    lines.push("CHANGED_SINCE_LAST_RUN: no_baseline");
+  if (input.compare.kind === "no_local_regression_anchor") {
+    lines.push("LOCAL_REGRESSION_COMPARE: no_anchor");
   } else {
     const v = input.compare.artifact.verification.compareHighlights;
     lines.push(
-      `CHANGED_SINCE_LAST_RUN: classification=${input.compare.artifact.narrative.classification}; introduced=${v.introducedLogicalStepKeys.length}; resolved=${v.resolvedLogicalStepKeys.length}; recurring=${v.recurringSignatures.length}`,
+      `LOCAL_REGRESSION_COMPARE: classification=${input.compare.artifact.narrative.classification}; introduced=${v.introducedLogicalStepKeys.length}; resolved=${v.resolvedLogicalStepKeys.length}; recurring=${v.recurringSignatures.length}`,
     );
   }
   if (verdict !== "TRUSTED") {
@@ -46,7 +46,7 @@ export function renderLoopOperationalUnknown(input: {
   return [
     "VERDICT: UNKNOWN",
     `WHY: ${input.message}`,
-    "CHANGED_SINCE_LAST_RUN: no_baseline",
+    "LOCAL_REGRESSION_COMPARE: no_anchor",
     `NEXT_ACTION: ${input.nextAction}`,
     `RUN_REF: ${input.runRef}`,
   ].join("\n");

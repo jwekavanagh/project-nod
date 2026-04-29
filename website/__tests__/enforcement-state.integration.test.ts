@@ -21,7 +21,8 @@ const state = vi.hoisted(() => ({
     status: "active" as const,
     user: { plan: "team", subscriptionStatus: "active", stripePriceId: null },
   } satisfies Principal,
-  baselineByWorkflow: new Map<string, { hash: string; projection: unknown; acceptedBy: string }>(),
+  baselineByWorkflow: new Map<string, { hash: string; projection: unknown; acceptedBy: string; needsRebaseline?: boolean }>(),
+  evidence: new Map<string, { certHash: string; truthHash: string }>(),
   events: [] as Array<{
     workflowId: string;
     runId: string;
@@ -37,34 +38,53 @@ vi.mock("@/lib/apiKeyAuthGateway", () => ({
 }));
 
 vi.mock("@/lib/enforcementState", () => ({
-  parseProjectionInput: (body: unknown) => {
+  parseGovernanceEvidenceInput: (body: unknown) => {
     if (!body || typeof body !== "object") return null;
     const b = body as Record<string, unknown>;
     if (
+      b.schema_version !== 2 ||
       typeof b.run_id !== "string" ||
       typeof b.workflow_id !== "string" ||
-      typeof b.projection_hash !== "string" ||
-      !Object.prototype.hasOwnProperty.call(b, "projection")
+      typeof b.material_truth_sha256 !== "string" ||
+      typeof b.certificate_sha256 !== "string" ||
+      !Object.prototype.hasOwnProperty.call(b, "outcome_certificate_v1")
     ) {
       return null;
     }
     return {
+      schema_version: 2 as const,
       run_id: b.run_id as string,
       workflow_id: b.workflow_id as string,
-      projection_hash: b.projection_hash as string,
-      projection: b.projection,
+      material_truth_sha256: b.material_truth_sha256 as string,
+      certificate_sha256: b.certificate_sha256 as string,
+      outcome_certificate_v1: b.outcome_certificate_v1,
     };
   },
+  verifyEvidenceHashes: vi.fn((input: {
+    material_truth_sha256: string;
+    certificate_sha256: string;
+  }) => ({
+    certificateSha256: input.certificate_sha256,
+    materialTruthSha256: input.material_truth_sha256,
+    materialTruth: { mocked: true },
+  })),
+  createGovernanceEvidence: vi.fn(async (input: { certificateSha256: string; materialTruthSha256: string }) => {
+    const id = crypto.randomUUID();
+    state.evidence.set(id, { certHash: input.certificateSha256, truthHash: input.materialTruthSha256 });
+    return id;
+  }),
   upsertBaseline: vi.fn(async (input: {
     workflowId: string;
     projectionHash: string;
     projection: unknown;
     keyId: string;
+    needsRebaseline?: boolean;
   }) => {
     state.baselineByWorkflow.set(input.workflowId, {
       hash: input.projectionHash,
       projection: input.projection,
       acceptedBy: input.keyId,
+      needsRebaseline: input.needsRebaseline,
     });
   }),
   getBaseline: vi.fn(async (input: { workflowId: string }) => {
@@ -76,6 +96,8 @@ vi.mock("@/lib/enforcementState", () => ({
       workflowId: input.workflowId,
       projectionHash: row.hash,
       projection: row.projection as Record<string, unknown>,
+      baselineEvidenceId: null,
+      needsRebaseline: row.needsRebaseline ?? false,
       acceptedByKeyId: row.acceptedBy,
       createdAt: new Date(),
       updatedAt: new Date(),
@@ -87,6 +109,7 @@ vi.mock("@/lib/enforcementState", () => ({
     event: string;
     expectedProjectionHash: string | null;
     actualProjectionHash: string;
+    evidenceId?: string;
   }) => {
     state.events.push({
       workflowId: input.workflowId,
@@ -131,10 +154,19 @@ describe("enforcement state lifecycle", () => {
         method: "POST",
         headers: { authorization: "Bearer wf_sk_test", "content-type": "application/json" },
         body: JSON.stringify({
+          schema_version: 2,
           run_id: run,
           workflow_id: "wf-a",
-          projection_hash: hash,
-          projection,
+          material_truth_sha256: hash,
+          certificate_sha256: `c_${hash}`,
+          outcome_certificate_v1: {
+            schemaVersion: 1,
+            workflowId: "wf-a",
+            runKind: "contract_sql",
+            stateRelation: "matches_expectations",
+            explanation: { details: [{ code: "X", message: "x" }] },
+            steps: [],
+          },
         }),
       });
 
@@ -158,6 +190,40 @@ describe("enforcement state lifecycle", () => {
     expect(pass2.status).toBe(200);
     expect((await pass2.json()).status).toBe("ok");
   });
+
+  it("returns rebase-required when legacy baseline flag is set", async () => {
+    state.baselineByWorkflow.set("wf-legacy", {
+      hash: "h-old",
+      projection: { legacy: true },
+      acceptedBy: "k1",
+      needsRebaseline: true,
+    });
+    const { POST: check } = await import("@/app/api/v1/enforcement/check/route");
+    const res = await check(
+      new NextRequest("http://localhost/api/v1/enforcement/check", {
+        method: "POST",
+        headers: { authorization: "Bearer wf_sk_test", "content-type": "application/json" },
+        body: JSON.stringify({
+          schema_version: 2,
+          run_id: "r-legacy",
+          workflow_id: "wf-legacy",
+          material_truth_sha256: "h-old",
+          certificate_sha256: "c-old",
+          outcome_certificate_v1: {
+            schemaVersion: 1,
+            workflowId: "wf-legacy",
+            runKind: "contract_sql",
+            stateRelation: "matches_expectations",
+            explanation: { details: [{ code: "X", message: "x" }] },
+            steps: [],
+          },
+        }),
+      }),
+    );
+    expect(res.status).toBe(409);
+    const body = (await res.json()) as { code?: string };
+    expect(body.code).toBe("ENFORCE_BASELINE_REBASE_REQUIRED");
+  });
 });
 
 describe("enforcement API entitlement and quota semantics", () => {
@@ -172,10 +238,19 @@ describe("enforcement API entitlement and quota semantics", () => {
         method: "POST",
         headers: { authorization: "Bearer wf_sk_test", "content-type": "application/json" },
         body: JSON.stringify({
+          schema_version: 2,
           run_id: "r1",
           workflow_id: "wf-ent",
-          projection_hash: "h-ent",
-          projection: { ok: true },
+          material_truth_sha256: "h-ent",
+          certificate_sha256: "c-ent",
+          outcome_certificate_v1: {
+            schemaVersion: 1,
+            workflowId: "wf-ent",
+            runKind: "contract_sql",
+            stateRelation: "matches_expectations",
+            explanation: { details: [{ code: "X", message: "x" }] },
+            steps: [],
+          },
         }),
       });
     for (const fn of [createBaseline, check, accept]) {
@@ -195,10 +270,19 @@ describe("enforcement API entitlement and quota semantics", () => {
         method: "POST",
         headers: { authorization: "Bearer wf_sk_test", "content-type": "application/json" },
         body: JSON.stringify({
+          schema_version: 2,
           run_id: "r2",
           workflow_id: "wf-ent",
-          projection_hash: "h-ent2",
-          projection: { ok: true },
+          material_truth_sha256: "h-ent2",
+          certificate_sha256: "c-ent2",
+          outcome_certificate_v1: {
+            schemaVersion: 1,
+            workflowId: "wf-ent",
+            runKind: "contract_sql",
+            stateRelation: "matches_expectations",
+            explanation: { details: [{ code: "X", message: "x" }] },
+            steps: [],
+          },
         }),
       }),
     );
@@ -216,10 +300,19 @@ describe("enforcement API entitlement and quota semantics", () => {
         method: "POST",
         headers: { authorization: "Bearer wf_sk_test", "content-type": "application/json" },
         body: JSON.stringify({
+          schema_version: 2,
           run_id: "r3",
           workflow_id: "wf-ent",
-          projection_hash: "h-ent3",
-          projection: { ok: true },
+          material_truth_sha256: "h-ent3",
+          certificate_sha256: "c-ent3",
+          outcome_certificate_v1: {
+            schemaVersion: 1,
+            workflowId: "wf-ent",
+            runKind: "contract_sql",
+            stateRelation: "matches_expectations",
+            explanation: { details: [{ code: "X", message: "x" }] },
+            steps: [],
+          },
         }),
       }),
     );

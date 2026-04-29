@@ -70,9 +70,9 @@ const server = createServer((req, res) => {
         return;
       }
       const workflowId = typeof body.workflow_id === "string" ? body.workflow_id : "";
-      const projectionHash = typeof body.projection_hash === "string" ? body.projection_hash : "";
-      if (!workflowId || !projectionHash) {
-        json(res, 400, { detail: "workflow_id and projection_hash are required" });
+      const projectionHash = typeof body.material_truth_sha256 === "string" ? body.material_truth_sha256 : "";
+      if (!workflowId || !projectionHash || body.schema_version !== 2) {
+        json(res, 400, { detail: "schema_version=2, workflow_id and material_truth_sha256 are required" });
         return;
       }
       if (req.url === "/api/v1/enforcement/baselines" || req.url === "/api/v1/enforcement/accept") {

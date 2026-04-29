@@ -1,0 +1,62 @@
+{
+  "$id": "https://agentskeptic.com/schemas/material-truth-v1.schema.json",
+  "title": "MaterialTruthV1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "workflowId",
+    "runKind",
+    "stateRelation",
+    "reasonCodes",
+    "steps",
+    "checkpointVerdicts"
+  ],
+  "properties": {
+    "schemaVersion": { "type": "integer", "const": 1 },
+    "workflowId": { "type": "string", "minLength": 1, "maxLength": 512 },
+    "runKind": {
+      "type": "string",
+      "enum": ["contract_sql", "contract_sql_langgraph_checkpoint_trust", "quick_preview"]
+    },
+    "stateRelation": {
+      "type": "string",
+      "enum": ["matches_expectations", "does_not_match", "not_established"]
+    },
+    "reasonCodes": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1, "maxLength": 256 }
+    },
+    "steps": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["seq", "toolId", "declaredAction", "expectedOutcome", "observedOutcome"],
+        "properties": {
+          "seq": { "type": "integer", "minimum": 0 },
+          "toolId": { "type": "string", "maxLength": 512 },
+          "declaredAction": { "type": "string", "minLength": 1, "maxLength": 4096 },
+          "expectedOutcome": { "type": "string", "minLength": 1, "maxLength": 4096 },
+          "observedOutcome": { "type": "string", "minLength": 1, "maxLength": 8192 }
+        }
+      }
+    },
+    "checkpointVerdicts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["checkpointKey", "verdict", "seqs"],
+        "properties": {
+          "checkpointKey": { "type": "string", "minLength": 1, "maxLength": 2048 },
+          "verdict": { "type": "string", "enum": ["verified", "inconsistent", "incomplete"] },
+          "seqs": {
+            "type": "array",
+            "items": { "type": "integer", "minimum": 0 }
+          }
+        }
+      }
+    }
+  }
+}

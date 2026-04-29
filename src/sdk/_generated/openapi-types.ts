@@ -261,13 +261,16 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
-        EnforcementProjectionRequest: {
+        EnforcementEvidenceRequestV2: {
+            /** @constant */
+            schema_version: 2;
             run_id: string;
             workflow_id: string;
-            projection_hash: string;
-            projection: {
+            outcome_certificate_v1: {
                 [key: string]: unknown;
             };
+            material_truth_sha256: string;
+            certificate_sha256: string;
         };
         EnforcementStateResponse: {
             /** @constant */
@@ -621,7 +624,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["EnforcementProjectionRequest"];
+                "application/json": components["schemas"]["EnforcementEvidenceRequestV2"];
             };
         };
         responses: {
@@ -663,7 +666,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["EnforcementProjectionRequest"];
+                "application/json": components["schemas"]["EnforcementEvidenceRequestV2"];
             };
         };
         responses: {
@@ -696,7 +699,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["EnforcementProjectionRequest"];
+                "application/json": components["schemas"]["EnforcementEvidenceRequestV2"];
             };
         };
         responses: {
