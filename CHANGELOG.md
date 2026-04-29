@@ -1,3 +1,10 @@
+# [3.1.0](https://github.com/jwekavanagh/agentskeptic/compare/v3.0.0...v3.1.0) (2026-04-29)
+
+
+### Features
+
+* **governance:** make enforcement evidence-native and drift deterministic ([#31](https://github.com/jwekavanagh/agentskeptic/issues/31)) ([f68c0ad](https://github.com/jwekavanagh/agentskeptic/commit/f68c0adb99732537c75ff48922cdf234af285129))
+
 # [3.0.0](https://github.com/jwekavanagh/agentskeptic/compare/v2.4.0...v3.0.0) (2026-04-29)
 
 
