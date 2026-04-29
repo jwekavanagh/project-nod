@@ -10,7 +10,7 @@ function resolveBearerApiKey(): string | null {
 
 /**
  * Emission allowed iff commercial origin (**`LICENSE_API_BASE_URL`**) and API key coexist.
- * **`LICENSE_PREFLIGHT_ENABLED`** is intentionally not consulted (CLI metering is orthogonal).
+ * Import rules forbid reading the metering-preflight env pair (`LICENSE_PREFLIGHT` + `_ENABLED`); see repo guard tests.
  */
 export function commercialTrustDecisionIngestConfigured(): boolean {
   return LICENSE_API_BASE_URL.trim().length > 0 && resolveBearerApiKey() !== null;
