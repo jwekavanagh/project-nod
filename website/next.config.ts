@@ -1,6 +1,7 @@
 import type { NextConfig } from "next";
 import path from "path";
 import { COMMERCIAL_SITE_SECURITY_HEADERS } from "./src/lib/httpSecurityHeaders";
+import { ACCOUNT_PAGE_OUTPUT_FILE_TRACING_GLOBS } from "./src/lib/accountPageFileTracingGlobs";
 import { DEMO_VERIFY_OUTPUT_FILE_TRACING_GLOBS } from "./src/lib/demoVerifyOutputFileTracingGlobs";
 import { REGISTRY_DRAFT_API_FILE_TRACING_GLOBS } from "./src/lib/registryDraft/registryDraftApiFileTracingGlobs";
 
@@ -55,6 +56,7 @@ const nextConfig: NextConfig = {
    * the route returns a non-JSON 500 (the Try-it client then shows "Network error" from `response.json()`).
    */
   outputFileTracingIncludes: {
+    "/account": [...ACCOUNT_PAGE_OUTPUT_FILE_TRACING_GLOBS],
     "/api/demo/verify": [...DEMO_VERIFY_OUTPUT_FILE_TRACING_GLOBS],
     "/api/verify": [...DEMO_VERIFY_OUTPUT_FILE_TRACING_GLOBS],
     "/api/integrator/registry-draft": [...REGISTRY_DRAFT_API_FILE_TRACING_GLOBS],

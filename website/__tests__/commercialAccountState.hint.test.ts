@@ -2,7 +2,9 @@ import {
   buildCommercialAccountStatePayload,
   computeWorstUrgency,
   emptyMonthlyQuotaForTests,
+  resolveAccountPlanId,
 } from "@/lib/commercialAccountState";
+import { loadCommercialPlans } from "@/lib/plans";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 describe("buildCommercialAccountStatePayload billingPriceSyncHint", () => {
@@ -64,6 +66,20 @@ describe("buildCommercialAccountStatePayload billingPriceSyncHint", () => {
     });
     expect(p.priceMapping).toBe("unmapped");
     expect(p.billingPriceSyncHint).toEqual({ supportEmail: "ops@example.com" });
+  });
+});
+
+describe("resolveAccountPlanId", () => {
+  const catalog = loadCommercialPlans();
+
+  it("preserves known catalog plans", () => {
+    expect(resolveAccountPlanId("team", catalog)).toBe("team");
+  });
+
+  it("maps corrupt or legacy ids to starter", () => {
+    expect(resolveAccountPlanId("not-a-plan", catalog)).toBe("starter");
+    expect(resolveAccountPlanId("", catalog)).toBe("starter");
+    expect(resolveAccountPlanId(null, catalog)).toBe("starter");
   });
 });
 

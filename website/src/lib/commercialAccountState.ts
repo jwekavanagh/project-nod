@@ -9,7 +9,7 @@ import {
 } from "@/lib/commercialEntitlement";
 import { db } from "@/db/client";
 import { users } from "@/db/schema";
-import { loadCommercialPlans, type PlanId } from "@/lib/plans";
+import { loadCommercialPlans, type CommercialPlansFile, type PlanId } from "@/lib/plans";
 import { priceIdToPlanId } from "@/lib/priceIdToPlanId";
 import { eq } from "drizzle-orm";
 import { loadUsageSnapshotForUser } from "@/lib/usageSnapshot";
@@ -220,6 +220,15 @@ export type AssembleCommercialAccountStateInput = {
   operatorContactEmail?: string | null;
 };
 
+/**
+ * Resolves `user.plan` to a valid `config/commercial-plans.json` key. Legacy or corrupt rows
+ * default to `starter` so the account page renders instead of throwing `PLANS_UNAVAILABLE`.
+ */
+export function resolveAccountPlanId(raw: string | null | undefined, catalog: CommercialPlansFile): PlanId {
+  if (typeof raw !== "string" || raw.trim() === "") return "starter";
+  return raw in catalog.plans ? (raw as PlanId) : "starter";
+}
+
 export async function assembleCommercialAccountState(
   input: AssembleCommercialAccountStateInput,
 ): Promise<CommercialAccountStatePayload> {
@@ -227,13 +236,14 @@ export async function assembleCommercialAccountState(
   if (!row) {
     throw new Error("assembleCommercialAccountState: user not found");
   }
-  const plan = row.plan as PlanId;
+  const catalog = loadCommercialPlans();
+  const plan = resolveAccountPlanId(row.plan, catalog);
   const subscriptionStatus = normalizeSubscriptionStatusForAccount(row.subscriptionStatus);
   const usage = await loadUsageSnapshotForUser({
     userId: input.userId,
     planId: plan,
   });
-  const planDef = loadCommercialPlans().plans[plan];
+  const planDef = catalog.plans[plan];
   const allowOverage = planDef?.allowOverage === true;
   const quotaKeyRows: MonthlyQuotaKeyRow[] = [
     {
