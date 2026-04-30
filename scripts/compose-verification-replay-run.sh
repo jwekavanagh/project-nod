@@ -12,4 +12,6 @@ npx playwright install chromium
 
 CHROME_PATH="$(node /workspace/scripts/resolve-playwright-chrome.mjs)"
 export CHROME_PATH
+# Disposable CI container: allow pip editable install against system Python (PEP 668 override).
+export PIP_BREAK_SYSTEM_PACKAGES=1
 exec npm run verification:truth
