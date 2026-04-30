@@ -68,7 +68,7 @@ describe("CI workflow truth contract (Postgres CLI) enforce", () => {
     assert.ok(!r.error, r.error?.message ?? String(r.error));
     assert.equal(r.status, 0, r.stderr);
     const parsed = JSON.parse(r.stdout.trim());
-    assert.equal(parsed.schemaVersion, 1);
+    assert.equal(parsed.schemaVersion, 2);
     assert.equal(parsed.enforce.status, "ok");
     assert.equal(parsed.enforce.workflow_id, "wf_complete");
   });
@@ -117,7 +117,7 @@ describe("CI workflow truth contract (Postgres CLI) enforce", () => {
     assert.ok(!r.error, r.error?.message ?? String(r.error));
     assert.equal(r.status, 1, r.stderr);
     const parsed = JSON.parse(r.stdout.trim());
-    assert.equal(parsed.schemaVersion, 1);
+    assert.equal(parsed.schemaVersion, 2);
     assert.equal(parsed.enforce.status, "ok");
     assert.equal(parsed.enforce.workflow_id, "wf_missing");
   });
