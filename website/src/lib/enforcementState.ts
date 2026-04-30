@@ -28,6 +28,12 @@ export type EnforcementEvidenceInput = {
   certificate_sha256: string;
 };
 
+/** POST /accept — governance envelope plus optimistic concurrency and pending-drift hash pin. */
+export type EnforcementAcceptEvidenceInput = EnforcementEvidenceInput & {
+  expected_projection_hash: string;
+  lifecycle_state_version: number;
+};
+
 function stableStringify(value: unknown): string {
   if (value === null || typeof value !== "object") return JSON.stringify(value);
   if (Array.isArray(value)) return `[${value.map((v) => stableStringify(v)).join(",")}]`;
@@ -102,6 +108,22 @@ export function parseGovernanceEvidenceInput(body: unknown): EnforcementEvidence
     return null;
   }
   return { schema_version: 2, run_id, workflow_id, outcome_certificate_v1: cert, material_truth_sha256, certificate_sha256 };
+}
+
+export function parseAcceptEvidenceInput(body: unknown): EnforcementAcceptEvidenceInput | null {
+  const base = parseGovernanceEvidenceInput(body);
+  if (!base) return null;
+  const b = body as Record<string, unknown>;
+  const expected = typeof b.expected_projection_hash === "string" ? b.expected_projection_hash.trim() : "";
+  const verRaw = b.lifecycle_state_version;
+  const lifecycle_state_version =
+    typeof verRaw === "number" && Number.isFinite(verRaw) && Number.isInteger(verRaw)
+      ? verRaw
+      : typeof verRaw === "string" && /^\d+$/.test(verRaw.trim())
+        ? Number.parseInt(verRaw.trim(), 10)
+        : NaN;
+  if (!expected || !Number.isInteger(lifecycle_state_version)) return null;
+  return { ...base, expected_projection_hash: expected, lifecycle_state_version };
 }
 
 export function verifyEvidenceHashes(input: EnforcementEvidenceInput): {
@@ -196,6 +218,11 @@ export async function getBaseline(input: {
   return rows[0] ?? null;
 }
 
+/**
+ * Appends read-only-compatible timeline rows (`enforcement_events`).
+ * Hosted lifecycle authority is enforced via `enforcement_lifecycle`,
+ * `enforcement_transition`, and `enforcement_decision`; do not infer posture from events alone.
+ */
 export async function appendEnforcementEvent(input: {
   userId: string;
   workflowId: string;

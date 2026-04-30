@@ -6,6 +6,7 @@ import {
   pgEnum,
   pgTable,
   primaryKey,
+  smallint,
   text,
   timestamp,
   unique,
@@ -238,6 +239,84 @@ export const enforcementEvents = pgTable("enforcement_event", {
   actualProjectionHash: text("actual_projection_hash").notNull(),
   evidenceId: uuid("evidence_id").references(() => governanceEvidence.id, { onDelete: "set null" }),
   metadata: jsonb("metadata"),
+  createdAt: timestamp("created_at", { withTimezone: true, mode: "date" }).notNull().defaultNow(),
+});
+
+export const enforcementLifecycleStateEnum = pgEnum("enforcement_lifecycle_state", [
+  "baseline_missing",
+  "baseline_active",
+  "action_required",
+  "rerun_required",
+]);
+
+export const enforcementDecisionVerdictEnum = pgEnum("enforcement_decision_verdict", [
+  "decision_trusted",
+  "decision_blocked",
+]);
+
+export const enforcementFsmEventKindEnum = pgEnum("enforcement_fsm_event_kind", [
+  "check",
+  "baseline_create",
+  "accept_drift",
+]);
+
+/** Authoritative posture per `(user_id, workflow_id)`. */
+export const enforcementLifecycle = pgTable(
+  "enforcement_lifecycle",
+  {
+    userId: text("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    workflowId: text("workflow_id").notNull(),
+    currentState: enforcementLifecycleStateEnum("current_state").notNull().default("baseline_missing"),
+    stateVersion: integer("state_version").notNull().default(0),
+    pendingAcceptProjectionHash: text("pending_accept_projection_hash"),
+    lastTransitionId: uuid("last_transition_id"),
+    updatedAt: timestamp("updated_at", { withTimezone: true, mode: "date" }).notNull().defaultNow(),
+  },
+  (t) => ({
+    pk: primaryKey({ columns: [t.userId, t.workflowId] }),
+  }),
+);
+
+export const enforcementFsmTransition = pgTable("enforcement_transition", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  userId: text("user_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  workflowId: text("workflow_id").notNull(),
+  runId: text("run_id").notNull(),
+  eventKind: enforcementFsmEventKindEnum("event_kind").notNull(),
+  fromState: enforcementLifecycleStateEnum("from_state").notNull(),
+  toState: enforcementLifecycleStateEnum("to_state").notNull(),
+  lifecycleStateVersionAfter: integer("lifecycle_state_version_after").notNull(),
+  expectedProjectionHash: text("expected_projection_hash"),
+  actualProjectionHash: text("actual_projection_hash").notNull(),
+  evidenceId: uuid("evidence_id").references(() => governanceEvidence.id, { onDelete: "set null" }),
+  metadata: jsonb("metadata"),
+  createdAt: timestamp("created_at", { withTimezone: true, mode: "date" }).notNull().defaultNow(),
+});
+
+/** Immutable verification attempt verdict (POST /check, POST /baselines only). */
+export const enforcementDecision = pgTable("enforcement_decision", {
+  attemptId: uuid("attempt_id").primaryKey().defaultRandom(),
+  userId: text("user_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  workflowId: text("workflow_id").notNull(),
+  runId: text("run_id").notNull(),
+  decisionState: enforcementDecisionVerdictEnum("decision_state").notNull(),
+  decisionReasonCode: text("decision_reason_code").notNull(),
+  lifecycleStateBefore: enforcementLifecycleStateEnum("lifecycle_state_before").notNull(),
+  lifecycleStateAfter: enforcementLifecycleStateEnum("lifecycle_state_after").notNull(),
+  materialTruthSha256: text("material_truth_sha256").notNull(),
+  certificateSha256: text("certificate_sha256").notNull(),
+  evidenceId: uuid("evidence_id").references(() => governanceEvidence.id, { onDelete: "set null" }),
+  httpStatus: smallint("http_status").notNull(),
+  recommendedAction: text("recommended_action"),
+  automationSafe: boolean("automation_safe"),
+  classificationCode: text("classification_code"),
+  trustBlockFingerprintSha256: text("trust_block_fingerprint_sha256"),
   createdAt: timestamp("created_at", { withTimezone: true, mode: "date" }).notNull().defaultNow(),
 });
 

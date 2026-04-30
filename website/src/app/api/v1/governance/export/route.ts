@@ -1,11 +1,18 @@
 import { NextRequest, NextResponse } from "next/server";
-import { and, desc, eq, gte, lte } from "drizzle-orm";
+import { and, asc, desc, eq, gte, lte } from "drizzle-orm";
 import type { OutcomeCertificateV1 } from "agentskeptic";
 import { computeCompletenessFromParts } from "agentskeptic/decisionEvidenceBundle";
 import { loadSchemaValidator } from "agentskeptic/schemaLoad";
 import { auth } from "@/auth";
 import { db } from "@/db/client";
-import { enforcementBaselines, enforcementEvents, governanceEvidence } from "@/db/schema";
+import {
+  enforcementBaselines,
+  enforcementDecision,
+  enforcementEvents,
+  enforcementFsmTransition,
+  enforcementLifecycle,
+  governanceEvidence,
+} from "@/db/schema";
 import pkg from "../../../../../../package.json";
 
 export async function GET(req: NextRequest) {
@@ -25,6 +32,26 @@ export async function GET(req: NextRequest) {
   if (!Number.isFinite(from.valueOf()) || !Number.isFinite(to.valueOf()) || from > to) {
     return NextResponse.json({ code: "BAD_REQUEST", message: "Invalid from/to range." }, { status: 400 });
   }
+
+  const lifecycleRows = await db
+    .select()
+    .from(enforcementLifecycle)
+    .where(and(eq(enforcementLifecycle.userId, session.user.id), eq(enforcementLifecycle.workflowId, workflowId)))
+    .limit(1);
+
+  const fsmTransitions = await db
+    .select()
+    .from(enforcementFsmTransition)
+    .where(
+      and(eq(enforcementFsmTransition.userId, session.user.id), eq(enforcementFsmTransition.workflowId, workflowId)),
+    )
+    .orderBy(asc(enforcementFsmTransition.createdAt), asc(enforcementFsmTransition.id));
+
+  const verificationDecisions = await db
+    .select()
+    .from(enforcementDecision)
+    .where(and(eq(enforcementDecision.userId, session.user.id), eq(enforcementDecision.workflowId, workflowId)))
+    .orderBy(asc(enforcementDecision.createdAt), asc(enforcementDecision.attemptId));
 
   const baselineRows = await db
     .select({
@@ -138,12 +165,24 @@ export async function GET(req: NextRequest) {
   };
 
   const baseline = baselineRows[0] ?? null;
+  const lifecycle = lifecycleRows[0] ?? null;
   const payload = {
     schemaVersion: 2,
     generatedAt: new Date().toISOString(),
     userId: session.user.id,
     workflowId,
     window: { from: from.toISOString(), to: to.toISOString() },
+    lifecycle: lifecycle
+      ? {
+          lifecycleState: lifecycle.currentState,
+          lifecycleStateVersion: lifecycle.stateVersion,
+          pendingExpectedProjectionHashForAccept: lifecycle.pendingAcceptProjectionHash,
+          updatedAt: lifecycle.updatedAt.toISOString(),
+          lastFsmTransitionId: lifecycle.lastTransitionId,
+        }
+      : null,
+    fsmTransitions,
+    verificationDecisions,
     baseline,
     events: eventRows.map((e) => ({
       ...e,

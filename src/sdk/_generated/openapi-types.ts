@@ -67,7 +67,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Create or replace accepted enforcement baseline for a workflow */
+        /** Establish accepted enforcement baseline (baseline_missing → baseline_active only) */
         post: operations["createEnforcementBaseline"];
         delete?: never;
         options?: never;
@@ -84,7 +84,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Compare current run projection against accepted baseline */
+        /** Compare current material-truth projection against accepted baseline (verification attempt) */
         post: operations["checkEnforcementDrift"];
         delete?: never;
         options?: never;
@@ -101,7 +101,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Accept current projection as new baseline */
+        /** Procedural drift accept (action_required → rerun_required; not a verification verdict) */
         post: operations["acceptEnforcementDrift"];
         delete?: never;
         options?: never;
@@ -289,15 +289,20 @@ export interface components {
             material_truth_sha256: string;
             certificate_sha256: string;
         };
-        EnforcementStateResponse: {
+        /** @description Hosted enforcement lifecycle + verification attempt payload (schema_version 2). */
+        EnforcementFsmEnvelopeV2: {
             /** @constant */
-            schema_version: 1;
-            status: string;
-            workflow_id: string;
+            schema_version: 2;
+            code: string;
+            quota_enforced_via_reserve?: boolean;
+        } & {
+            [key: string]: unknown;
         };
-        EnforcementCheckResponse: components["schemas"]["EnforcementStateResponse"] & {
+        EnforcementAcceptEvidenceRequestV2: components["schemas"]["EnforcementEvidenceRequestV2"] & {
+            /** @description Must equal expected_projection_hash_for_accept from the open drift POST /check response. */
             expected_projection_hash: string;
-            actual_projection_hash: string;
+            /** @description Optimistic concurrency token; must match lifecycle_state_version from the prior response. */
+            lifecycle_state_version: number;
         };
         EnforcementHistoryResponse: {
             /** @constant */
@@ -326,6 +331,41 @@ export interface components {
             events: {
                 [key: string]: unknown;
             }[];
+        };
+        /** @description Governance export including authoritative lifecycle FSM rows and verification decisions. */
+        GovernanceAuditBundleV2: {
+            /** @constant */
+            schemaVersion: 2;
+            /** Format: date-time */
+            generatedAt: string;
+            userId: string;
+            workflowId: string;
+            window?: {
+                /** Format: date-time */
+                from: string;
+                /** Format: date-time */
+                to: string;
+            };
+            lifecycle?: {
+                [key: string]: unknown;
+            } | null;
+            fsmTransitions?: {
+                [key: string]: unknown;
+            }[];
+            verificationDecisions?: {
+                [key: string]: unknown;
+            }[];
+            baseline: {
+                [key: string]: unknown;
+            } | null;
+            events: {
+                [key: string]: unknown;
+            }[];
+            decisionEvidenceExport?: {
+                [key: string]: unknown;
+            };
+        } & {
+            [key: string]: unknown;
         };
         ProblemDetails: {
             /** Format: uri */
@@ -665,13 +705,13 @@ export interface operations {
             };
         };
         responses: {
-            /** @description Baseline created or replaced */
+            /** @description Lifecycle transition completed */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["EnforcementStateResponse"];
+                    "application/json": components["schemas"]["EnforcementFsmEnvelopeV2"];
                 };
             };
             /** @description Invalid request */
@@ -692,6 +732,15 @@ export interface operations {
                     "application/json": components["schemas"]["ProblemDetails"];
                 };
             };
+            /** @description Invalid transition or decision-grade certificate required */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EnforcementFsmEnvelopeV2"];
+                };
+            };
         };
     };
     checkEnforcementDrift: {
@@ -707,22 +756,22 @@ export interface operations {
             };
         };
         responses: {
-            /** @description Comparison result (ok or drift) */
+            /** @description Check completed (match, open drift, rerun pass/fail, etc.) */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["EnforcementCheckResponse"];
+                    "application/json": components["schemas"]["EnforcementFsmEnvelopeV2"];
                 };
             };
-            /** @description Baseline not initialized */
+            /** @description Baseline missing, remediation acknowledgement required, or other enforce guard */
             409: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ProblemDetails"];
+                    "application/json": components["schemas"]["EnforcementFsmEnvelopeV2"];
                 };
             };
         };
@@ -736,17 +785,26 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["EnforcementEvidenceRequestV2"];
+                "application/json": components["schemas"]["EnforcementAcceptEvidenceRequestV2"];
             };
         };
         responses: {
-            /** @description Drift accepted */
+            /** @description Baseline updated; rerun POST /check required before returning to trusted-only posture */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["EnforcementStateResponse"];
+                    "application/json": components["schemas"]["EnforcementFsmEnvelopeV2"];
+                };
+            };
+            /** @description Stale lifecycle version, hash pin mismatch, or invalid transition */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EnforcementFsmEnvelopeV2"];
                 };
             };
         };
@@ -793,7 +851,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["GovernanceAuditBundleV1"];
+                    "application/json": components["schemas"]["GovernanceAuditBundleV2"];
                 };
             };
             /** @description Invalid request */

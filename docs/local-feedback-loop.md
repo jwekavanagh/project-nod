@@ -10,6 +10,8 @@ agentskeptic loop --workflow-id <id> --events <path> --registry <path> (--db <sq
 
 `agentskeptic loop` is the default local path to get an immediate decision-grade trust verdict on real database state with historical context.
 
+**Hosted commercial posture** (lifecycle states, rerun gates, procedural accept semantics) lives in **`docs/outcome-certificate-normative.md`** — Hosted enforcement lifecycle (verification FSM) — not here.
+
 It always does all of the following in one run:
 - verifies against the target database,
 - emits normalized verdict output,
