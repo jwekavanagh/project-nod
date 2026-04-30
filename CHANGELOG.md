@@ -1,3 +1,10 @@
+# [3.5.0](https://github.com/jwekavanagh/agentskeptic/compare/v3.4.0...v3.5.0) (2026-04-30)
+
+
+### Features
+
+* **verification:** execution identity, receipts, Docker replay, contract URL parity ([#38](https://github.com/jwekavanagh/agentskeptic/issues/38)) ([b65e898](https://github.com/jwekavanagh/agentskeptic/commit/b65e898d3a8401fb9da83861b86eaf061df7c3fe))
+
 # [3.4.0](https://github.com/jwekavanagh/agentskeptic/compare/v3.3.3...v3.4.0) (2026-04-30)
 
 
