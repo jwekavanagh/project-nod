@@ -2,6 +2,8 @@
 
 All merge-gated ordering lives in [`scripts/verification-truth.mjs`](../scripts/verification-truth.mjs), which loads [`schemas/ci/verification-truth.manifest.json`](../schemas/ci/verification-truth.manifest.json) and runs regeneration, `git diff`, structural checks, Postgres-backed distribution steps, then the journey tail in [`scripts/verification-truth-stages.mjs`](../scripts/verification-truth-stages.mjs).
 
+Integrator-facing execution semantics (CLI receipts, identity pin, compose replay): [`verification-execution-ssot.md`](verification-execution-ssot.md).
+
 `package.json` exposes **`npm run verification:truth`** (and **`npm test`** / **`npm run test:ci`** as identical aliases); **no** raw `test/…/*.mjs` paths are embedded in `package.json` scripts (see `test/no-handrolled-node-test-lists.mjs`).
 
 ## Commands
@@ -24,7 +26,7 @@ All merge-gated ordering lives in [`scripts/verification-truth.mjs`](../scripts/
 
 ## GitHub Actions
 
-[`../.github/workflows/ci.yml`](../.github/workflows/ci.yml) runs on every push and PR (no path filters). The **`verification`** job runs **`npm run verification:truth`** once (after checkout, Postgres env, LangGraph oracle fixture **`npm ci`**, and setup). The same workflow also runs **CodeQL**, **Python** (pytest, timed smoke, Docker), PR-only Conventional Commits and release preview, and **`main`-only** Vercel production after those jobs succeed.
+[`../.github/workflows/ci.yml`](../.github/workflows/ci.yml) runs on every push and PR (no path filters). The **`verification`** job runs **`npm run verification:truth`** once (after checkout, Postgres env, LangGraph oracle fixture **`npm ci`**, and setup); **`replay_verification_truth`** reruns that gate inside **Docker Compose** (`npm run replay:verification`). The same workflow also runs **CodeQL**, **Python** (pytest, timed smoke, Docker), PR-only Conventional Commits and release preview, and **`main`-only** Vercel production after those jobs succeed.
 
 **Postgres env** for the gate: `POSTGRES_ADMIN_URL`, `POSTGRES_VERIFICATION_URL`, `DATABASE_URL`, and `TELEMETRY_DATABASE_URL` (see [`ci.yml`](../.github/workflows/ci.yml) and README).
 

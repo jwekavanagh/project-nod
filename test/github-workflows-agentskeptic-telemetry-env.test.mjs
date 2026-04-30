@@ -27,6 +27,7 @@ describe("GitHub Actions AGENTSKEPTIC_TELEMETRY env", () => {
       "commitlint",
       "python",
       "release-preview",
+      "replay_verification_truth",
       "vercel_production",
       "verification",
     ]);

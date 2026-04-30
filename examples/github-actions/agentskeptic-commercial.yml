@@ -7,6 +7,12 @@
 #
 # Copy to .github/workflows/ in a repo that vendors the same examples/ layout, or run from this monorepo.
 #
+# Optional integrator hardening (not required for this demo):
+# - Vendor a pinned `execution-identity.v1.json` and gate CI with:
+#     npx agentskeptic execution-identity verify --expect-json ./path/to/execution-identity.v1.json
+# - Collect `artifacts/agentskeptic-receipts/*.json` after verify/enforce for audit (one receipt per run).
+# See docs/verification-execution-ssot.md.
+#
 # Ambient discovery (job summary + failure PR comment): normative contract in docs/ambient-ci-distribution.md
 name: AgentSkeptic (commercial CLI)
 

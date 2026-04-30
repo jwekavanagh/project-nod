@@ -109,7 +109,7 @@ export const sqliteNodeTestFiles = [
   "test/website-gate-modules.contract.test.mjs",
   "test/emit-lint-cli.test.mjs",
   "test/emitter-first-doc-guard.test.mjs",
-  "test/verification-truth.manifest.completeness.test.mjs",
+  "test/verification-truth.closed-drift.contract.test.mjs",
   "test/verification-truth.drift.integration.test.mjs",
 ];
 

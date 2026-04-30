@@ -6,7 +6,9 @@
 import pg from "pg";
 
 const adminUrl =
-  process.env.CI_WFV_ADMIN_URL || "postgresql://postgres:postgres@localhost:5432/postgres";
+  process.env.CI_WFV_ADMIN_URL?.trim() ||
+  process.env.POSTGRES_ADMIN_URL?.trim() ||
+  "postgresql://postgres:postgres@localhost:5432/postgres";
 
 const client = new pg.Client({ connectionString: adminUrl });
 await client.connect();

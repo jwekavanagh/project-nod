@@ -1,0 +1,50 @@
+# Replay hostnames use the `postgres` service. Env mirrors `.github/workflows/ci.yml`
+# verification job (~lines 79–99); swap localhost → `postgres`.
+services:
+  postgres:
+    image: postgres:16
+    environment:
+      POSTGRES_PASSWORD: postgres
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+
+  verifier:
+    build:
+      context: .
+      dockerfile: Dockerfile.verification-replay
+    working_dir: /workspace
+    volumes:
+      - .:/workspace
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      # Ephemeral Postgres on service hostname postgres (non-loopback). validate-commercial asserts
+      # destructive DB URLs unless AGENTSKEPTIC_ALLOW_NONLOCAL_COMMERCIAL_DB=1 — see scripts/assert-destructive-postgres-urls.mjs
+      AGENTSKEPTIC_ALLOW_NONLOCAL_COMMERCIAL_DB: "1"
+      # Drizzle-kit / postgres.js omit TLS for localhost only; Compose uses hostname `postgres`.
+      AGENTSKEPTIC_PG_NO_TLS_HOSTS: postgres
+      POSTGRES_ADMIN_URL: postgresql://postgres:postgres@postgres:5432/postgres
+      POSTGRES_VERIFICATION_URL: postgresql://verifier_ro:verifier@postgres:5432/postgres
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/wfv_website
+      TELEMETRY_DATABASE_URL: postgresql://postgres:postgres@postgres:5432/wfv_telemetry
+      AGENTSKEPTIC_TELEMETRY: "0"
+      AGENTSKEPTIC_TELEMETRY_WRITES_TELEMETRY_DB: "1"
+      AUTH_SECRET: ci_auth_secret_value_at_least_32_chars_ok
+      CONTACT_SALES_EMAIL: sales-ci@example.com
+      STRIPE_SECRET_KEY: sk_test_ci_placeholder
+      STRIPE_WEBHOOK_SECRET: whsec_ci_placeholder
+      STRIPE_PRICE_INDIVIDUAL: price_ci_individual
+      STRIPE_PRICE_INDIVIDUAL_YEARLY: price_ci_individual_y
+      STRIPE_PRICE_TEAM: price_ci_team
+      STRIPE_PRICE_TEAM_YEARLY: price_ci_team_y
+      STRIPE_PRICE_BUSINESS: price_ci_business
+      STRIPE_PRICE_BUSINESS_YEARLY: price_ci_business_y
+      STRIPE_OVERAGE_INDIVIDUAL: price_ci_ov_i
+      STRIPE_OVERAGE_TEAM: price_ci_ov_t
+      STRIPE_OVERAGE_BUSINESS: price_ci_ov_b
+      CRON_SECRET: ci_cron_secret_placeholder_32chars_min
+    command: ["bash", "scripts/compose-verification-replay-run.sh"]

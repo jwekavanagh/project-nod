@@ -14,7 +14,7 @@
 
 - **List checks on a PR:**  
   `gh pr checks <PR_NUMBER> --json name,state`  
-  Expect **five** PR checks: `CI / Conventional Commits`, `CI / CodeQL (javascript-typescript)`, `CI / verification`, `CI / Python`, `CI / Release preview`.
+  Expect **six** PR checks: `CI / Conventional Commits`, `CI / CodeQL (javascript-typescript)`, `CI / verification`, `CI / Replay verification truth (Docker)`, `CI / Python`, `CI / Release preview`.
 
 - **Watch a PR run:**  
   `gh pr view <PR_NUMBER> --web` (optional) or `gh run list --workflow=CI` then `gh run watch <RUN_ID>`
@@ -30,7 +30,7 @@
 
 | ID | Scenario | What should happen |
 |----|----------|-------------------|
-| a | **Website-only PR** (e.g. only `website/**`) | **Full `CI` runs** (not skipped). Same five PR checks. No “missing” required checks. |
+| a | **Website-only PR** (e.g. only `website/**`) | **Full `CI` runs** (not skipped). Same six PR checks. No “missing” required checks. |
 | b | **Docs-only PR** (e.g. only `docs/**` or `*.md` outside enforcement) | **Full `CI` runs** (no path filter). Slightly more work (CodeQL, etc.) for doc edits — intentional for one predictable gate. |
 | c | **Package / root change PR** | **Full `CI`**, including **`verification`** (`npm run verification:truth`). |
 | d | **Mixed `website` + package PR** | **Single** `CI` run; **one** Vercel production path on `main` after success — still only **`ci.yml` → `vercel_production`**. |
@@ -38,7 +38,7 @@
 | f | **Squash merge to `main` with a message that should release** (e.g. `fix: …` / `feat: …` per your rules) | **`CI` succeeds** on the squash commit → **`Release`** runs via `workflow_run` → semantic-release may version, tag, and publish. |
 | g | **Squash merge to `main` that should deploy the site but not cut a new npm/PyPI version** (e.g. `chore:` / `docs:` with no releasable analyzer outcome) | **`CI` succeeds** on `main` → **`Vercel production`** job runs; **`Release`** may **skip** (no new version) if there is nothing releasable. |
 
-**Duplicate production deploys:** with **`website.yml` removed**, there is a **single** production deploy path: **`CI` / `Vercel production` on `main` push** after `codeql`, **`verification`**, and `python` succeed.
+**Duplicate production deploys:** with **`website.yml` removed**, there is a **single** production deploy path: **`CI` / `Vercel production` on `main` push** after `codeql`, **`verification`**, **`replay_verification_truth`**, and `python` succeed.
 
 ## Local contract test (optional)
 

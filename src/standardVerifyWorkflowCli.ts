@@ -53,6 +53,8 @@ export type StandardVerifyWorkflowCliIo = {
   consoleLog: (line: string) => void;
   stderrLine: (line: string) => void;
   exit: (code: number) => void;
+  /** When set, operational abort uses this so callers can emit receipts with the envelope code. */
+  exitOperational?: (operationalCode: string) => never;
 };
 
 /**
@@ -99,6 +101,9 @@ function abortVerifyCli(
   message: string,
 ): never {
   writeCliError(code, message);
+  if (io.exitOperational !== undefined) {
+    io.exitOperational(code);
+  }
   io.exit(3);
   throw new Error(CLI_EXITED_AFTER_ERROR);
 }

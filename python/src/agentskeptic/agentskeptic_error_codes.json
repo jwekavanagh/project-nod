@@ -346,6 +346,20 @@
       "remediation": "See docs/migrate-2.md and the AgentSkeptic 2.0 integrator guide (docs/integrate.md)."
     },
     {
+      "code": "EXECUTION_IDENTITY_MISMATCH",
+      "category": "operational",
+      "httpStatus": null,
+      "retryable": false,
+      "remediation": "See docs/migrate-2.md and the AgentSkeptic 2.0 integrator guide (docs/integrate.md)."
+    },
+    {
+      "code": "EXECUTION_IDENTITY_USAGE",
+      "category": "operational",
+      "httpStatus": null,
+      "retryable": false,
+      "remediation": "See docs/migrate-2.md and the AgentSkeptic 2.0 integrator guide (docs/integrate.md)."
+    },
+    {
       "code": "EXECUTION_TRACE_USAGE",
       "category": "operational",
       "httpStatus": null,
@@ -515,6 +529,20 @@
     },
     {
       "code": "PROJECT_VERIFICATION_LAYOUT_MISSING",
+      "category": "operational",
+      "httpStatus": null,
+      "retryable": false,
+      "remediation": "See docs/migrate-2.md and the AgentSkeptic 2.0 integrator guide (docs/integrate.md)."
+    },
+    {
+      "code": "RECEIPT_PERSIST_FAILED",
+      "category": "operational",
+      "httpStatus": null,
+      "retryable": false,
+      "remediation": "See docs/migrate-2.md and the AgentSkeptic 2.0 integrator guide (docs/integrate.md)."
+    },
+    {
+      "code": "RECEIPT_SCHEMA_INVALID",
       "category": "operational",
       "httpStatus": null,
       "retryable": false,

@@ -1,8 +1,12 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   ensureDatabaseUrlForNodePgDriver,
   ensureSslModeRequire,
 } from "@/db/ensureSslModeRequire";
+
+afterEach(() => {
+  vi.unstubAllEnvs();
+});
 
 describe("ensureSslModeRequire", () => {
   it("leaves localhost URLs unchanged", () => {
@@ -39,6 +43,12 @@ describe("ensureSslModeRequire", () => {
   it("passes through non-postgres URLs", () => {
     expect(ensureSslModeRequire("mysql://x")).toBe("mysql://x");
   });
+
+  it("skips tls when hostname is listed in AGENTSKEPTIC_PG_NO_TLS_HOSTS", () => {
+    vi.stubEnv("AGENTSKEPTIC_PG_NO_TLS_HOSTS", "postgres , db");
+    const u = "postgresql://postgres:postgres@postgres:5432/wfv_website";
+    expect(ensureSslModeRequire(u)).toBe(u);
+  });
 });
 
 describe("ensureDatabaseUrlForNodePgDriver (drizzle-kit / node-pg)", () => {
@@ -64,6 +74,12 @@ describe("ensureDatabaseUrlForNodePgDriver (drizzle-kit / node-pg)", () => {
   it("does not duplicate uselibpqcompat", () => {
     const u =
       "postgresql://u:p@db.example.com:5432/postgres?sslmode=require&uselibpqcompat=true";
+    expect(ensureDatabaseUrlForNodePgDriver(u)).toBe(u);
+  });
+
+  it("skips sslmode/uselibpqcompat when hostname is in AGENTSKEPTIC_PG_NO_TLS_HOSTS", () => {
+    vi.stubEnv("AGENTSKEPTIC_PG_NO_TLS_HOSTS", "postgres");
+    const u = "postgresql://postgres:postgres@postgres:5432/wfv_website";
     expect(ensureDatabaseUrlForNodePgDriver(u)).toBe(u);
   });
 });

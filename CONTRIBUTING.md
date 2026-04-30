@@ -81,19 +81,20 @@ This section is the **normative** single source of truth for CI and release work
 
 **Release eligibility on every PR:** [`ci.yml`](.github/workflows/ci.yml) job **`release-preview`** (**check name `CI / Release preview`**) runs [`scripts/release-preview.mjs`](scripts/release-preview.mjs) with the GitHub event payload. If `git diff` from the PR base to the PR head touches any path in [`release/preview-enforcement.paths.json`](release/preview-enforcement.paths.json), the synthetic message **`PR title + two newlines + PR body`** must be releasable under the same `@semantic-release/commit-analyzer` rules as production (shared config: [`release/commit-analyzer-rules.cjs`](release/commit-analyzer-rules.cjs)). There is **no** repository label or workflow to bypass this check; emergencies use GitHub **administrator bypass of branch protection** only.
 
-**Required status checks (pull requests):** configure a ruleset (or classic branch protection) for `main` with **Require status checks to pass before merging** and **Require branches to be up to date before merging**, and register **exactly** these check names (format `CI / <Job name>` from workflow name `CI` in [`ci.yml`](.github/workflows/ci.yml)). PRs only: `commitlint` and `release-preview` do not run on `push`, so you **cannot** add them to “required for push to `main`” in the same way; they are **PR merge** gates. Typical setup: require all five in the table for **merging pull requests** into `main` (treat the PR’s latest run as authoritative).
+**Required status checks (pull requests):** configure a ruleset (or classic branch protection) for `main` with **Require status checks to pass before merging** and **Require branches to be up to date before merging**, and register **exactly** these check names (format `CI / <Job name>` from workflow name `CI` in [`ci.yml`](.github/workflows/ci.yml)). PRs only: `commitlint` and `release-preview` do not run on `push`, so you **cannot** add them to “required for push to `main`” in the same way; they are **PR merge** gates. Typical setup: require all merge-gate rows in the table for **merging pull requests** into `main` (treat the PR’s latest run as authoritative).
 
 | Job key | `name:` in YAML | Required status check string |
 |---------|-----------------|------------------------------|
 | `commitlint` | `Conventional Commits` | `CI / Conventional Commits` |
 | `codeql` | `CodeQL (javascript-typescript)` | `CI / CodeQL (javascript-typescript)` |
 | `verification` | `verification` | `CI / verification` |
+| `replay_verification_truth` | `Replay verification truth (Docker)` | `CI / Replay verification truth (Docker)` |
 | `python` | `Python` | `CI / Python` |
 | `release-preview` | `Release preview` | `CI / Release preview` |
 
 **Note:** `Vercel production` (from `vercel_production` in `ci.yml`) runs only on **`push` to `main`**; it is not a PR merge check.
 
-Verify with `gh pr checks <PR> --json name,state` on a green PR: the five PR job `name` values in the table must match character-for-character.
+Verify with `gh pr checks <PR> --json name,state` on a green PR: the PR-visible job `name` values in the table must match character-for-character.
 
 **Validation scenarios** (local expectations + `gh` commands): see **[`docs/ci-cursor-workflow-validation.md`](docs/ci-cursor-workflow-validation.md)**.
 
@@ -110,6 +111,8 @@ Verify with `gh pr checks <PR> --json name,state` on a green PR: the five PR job
 - **PyPI:** when semantic-release **pushes** the `vX.Y.Z` tag, the **`publish-pypi`** job in the same workflow file builds the wheel from [`python/`](python/) and publishes to PyPI with **Trusted Publishing (OIDC)** via `pypa/gh-action-pypi-publish`. Register this workflow as a **trusted publisher** for the `agentskeptic` project on [PyPI](https://pypi.org).
 
 **Version integrity (merge-gated):** [`scripts/assert-version-integrity.mjs`](scripts/assert-version-integrity.mjs) runs in **`CI`** as part of [`scripts/repo-policy-and-api-guards.mjs`](scripts/repo-policy-and-api-guards.mjs) (via [`scripts/verification-truth.mjs`](scripts/verification-truth.mjs)). The root [`package.json`](package.json) `version` is the only mutable semver; [`python/pyproject.toml`](python/pyproject.toml), [`website/package.json`](website/package.json), [`src/publicDistribution.generated.ts`](src/publicDistribution.generated.ts) (`AGENTSKEPTIC_CLI_SEMVER`), and committed [`schemas/openapi-commercial-v1.yaml`](schemas/openapi-commercial-v1.yaml) `info.version` must match it or the merge fails.
+
+**Verification execution identity (merge receipts, Docker replay, live contract parity):** [`docs/verification-execution-ssot.md`](docs/verification-execution-ssot.md).
 
 **Post-PyPI distribution verify:** the **`publish-pypi`** job ends with **`Verify distribution`**, which runs `node scripts/verify-release-distribution.mjs` with `EXPECTED_VERSION` (from the tag) and `GH_TOKEN` (`secrets.GITHUB_TOKEN`) so **npm**, **PyPI**, and **GitHub Releases** all report the same version (fixed retry policy in the script). The working tree copy of OpenAPI under `website/public/` is **not** committed (gitignored); the integrity check targets only `schemas/openapi-commercial-v1.yaml` at the repo root. For local runs of the verify script, `gh` must be authenticated (e.g. `gh auth login`).
 

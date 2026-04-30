@@ -13,6 +13,8 @@ import { assertValidRunEventParentGraph, buildExecutionTraceView, formatExecutio
 import { loadEventsForWorkflow } from "./loadEvents.js";
 import { verifyWorkflow } from "./pipeline.js";
 import { argValue, argValues, parseBatchVerifyCliArgs, parseQuickCliArgs } from "./cliArgv.js";
+import { exitAfterQuickVerifyReceipt, exitAfterVerifyCliReceipt } from "./cliExecutionFinalize.js";
+import { runExecutionIdentityVerifyCli } from "./executionIdentityVerifyCli.js";
 import { runEnforce } from "./enforceCli.js";
 import {
   CLI_EXITED_AFTER_ERROR,
@@ -206,6 +208,9 @@ Advanced / optional (persisted runs, signing, local UI, plan/git checks):
 
   verify-bundle-signature --run-dir <dir> --public-key <path>
   Verify signed bundle (Ed25519 + manifest v2). Exit 0 if valid; exit 3 with JSON envelope on failure.
+
+  agentskeptic execution-identity verify --expect-json <path>
+  Compare pinned JSON to dist/execution-identity.v1.json ($schema ignored in compare).
 
   agentskeptic debug --corpus <dir> [--port <n>]
   Local Debug Console on 127.0.0.1 (see docs/agentskeptic.md — Debug Console).
@@ -633,7 +638,12 @@ async function runQuickSubcommand(args: string[]): Promise<void> {
       CLI_OPERATIONAL_CODES.ENFORCE_USAGE,
       "Lock flags are removed. Use `agentskeptic verify` for stateless checks or `agentskeptic enforce` for stateful CI enforcement.",
     );
-    process.exit(3);
+    exitAfterVerifyCliReceipt({
+      parsedBatch: null,
+      certificate: null,
+      exitCode: 3,
+      operationalCode: CLI_OPERATIONAL_CODES.ENFORCE_USAGE,
+    });
   }
   let pq;
   try {
@@ -641,7 +651,12 @@ async function runQuickSubcommand(args: string[]): Promise<void> {
   } catch (e) {
     if (e instanceof TruthLayerError) {
       writeCliError(e.code, e.message);
-      process.exit(3);
+      exitAfterVerifyCliReceipt({
+        parsedBatch: null,
+        certificate: null,
+        exitCode: 3,
+        operationalCode: e.code,
+      });
     }
     throw e;
   }
@@ -672,11 +687,21 @@ async function runQuickSubcommand(args: string[]): Promise<void> {
   } catch (e) {
     if (e instanceof TruthLayerError) {
       writeCliError(e.code, e.message);
-      process.exit(3);
+      exitAfterQuickVerifyReceipt({
+        quick: pq,
+        certificate: null,
+        exitCode: 3,
+        operationalCode: e.code,
+      });
     }
     const msg = e instanceof Error ? e.message : String(e);
     writeCliError(CLI_OPERATIONAL_CODES.INTERNAL_ERROR, formatOperationalMessage(msg));
-    process.exit(3);
+    exitAfterQuickVerifyReceipt({
+      quick: pq,
+      certificate: null,
+      exitCode: 3,
+      operationalCode: CLI_OPERATIONAL_CODES.INTERNAL_ERROR,
+    });
   }
   let inputUtf8: string;
   try {
@@ -684,7 +709,12 @@ async function runQuickSubcommand(args: string[]): Promise<void> {
   } catch (e) {
     const msg = e instanceof Error ? e.message : String(e);
     writeCliError(CLI_OPERATIONAL_CODES.CLI_USAGE, `Cannot read --input: ${msg}`);
-    process.exit(3);
+    exitAfterQuickVerifyReceipt({
+      quick: pq,
+      certificate: null,
+      exitCode: 3,
+      operationalCode: CLI_OPERATIONAL_CODES.CLI_USAGE,
+    });
   }
   const quickBuildProfile = LICENSE_PREFLIGHT_ENABLED ? ("commercial" as const) : ("oss" as const);
   const quickWorkloadClass = classifyQuickVerifyWorkload({
@@ -720,11 +750,21 @@ async function runQuickSubcommand(args: string[]): Promise<void> {
   } catch (e) {
     if (e instanceof TruthLayerError) {
       writeCliError(e.code, e.message);
-      process.exit(3);
+      exitAfterQuickVerifyReceipt({
+        quick: pq,
+        certificate: null,
+        exitCode: 3,
+        operationalCode: e.code,
+      });
     }
     const msg = e instanceof Error ? e.message : String(e);
     writeCliError(CLI_OPERATIONAL_CODES.INTERNAL_ERROR, formatOperationalMessage(msg));
-    process.exit(3);
+    exitAfterQuickVerifyReceipt({
+      quick: pq,
+      certificate: null,
+      exitCode: 3,
+      operationalCode: CLI_OPERATIONAL_CODES.INTERNAL_ERROR,
+    });
   }
   await postProductActivationEvent({
     phase: "verify_outcome",
@@ -741,7 +781,12 @@ async function runQuickSubcommand(args: string[]): Promise<void> {
   } catch (e) {
     const msg = e instanceof Error ? e.message : String(e);
     writeCliError(CLI_OPERATIONAL_CODES.INTERNAL_ERROR, formatOperationalMessage(`export-registry: ${msg}`));
-    process.exit(3);
+    exitAfterQuickVerifyReceipt({
+      quick: pq,
+      certificate: null,
+      exitCode: 3,
+      operationalCode: CLI_OPERATIONAL_CODES.INTERNAL_ERROR,
+    });
   }
   if (emitEventsPath !== undefined) {
     const eventsUtf8 = buildQuickContractEventsNdjson({
@@ -753,7 +798,12 @@ async function runQuickSubcommand(args: string[]): Promise<void> {
     } catch (e) {
       const msg = e instanceof Error ? e.message : String(e);
       writeCliError(CLI_OPERATIONAL_CODES.INTERNAL_ERROR, formatOperationalMessage(`emit-events: ${msg}`));
-      process.exit(3);
+      exitAfterQuickVerifyReceipt({
+        quick: pq,
+        certificate: null,
+        exitCode: 3,
+        operationalCode: CLI_OPERATIONAL_CODES.INTERNAL_ERROR,
+      });
     }
   }
   const quickHumanOpts = {
@@ -789,11 +839,21 @@ async function runQuickSubcommand(args: string[]): Promise<void> {
     } catch (e) {
       if (e instanceof TruthLayerError) {
         writeCliError(e.code, e.message);
-        process.exit(3);
+        exitAfterQuickVerifyReceipt({
+          quick: pq,
+          certificate: null,
+          exitCode: 3,
+          operationalCode: e.code,
+        });
       }
       const msg = e instanceof Error ? e.message : String(e);
       writeCliError(CLI_OPERATIONAL_CODES.INTERNAL_ERROR, formatOperationalMessage(msg));
-      process.exit(3);
+      exitAfterQuickVerifyReceipt({
+        quick: pq,
+        certificate: null,
+        exitCode: 3,
+        operationalCode: CLI_OPERATIONAL_CODES.INTERNAL_ERROR,
+      });
     }
   }
   if (shareReportOrigin !== undefined) {
@@ -808,7 +868,12 @@ async function runQuickSubcommand(args: string[]): Promise<void> {
           `share_report_origin=${shareReportOrigin} http_status=${String(shareRes.status)} detail=${shareRes.bodySnippet}`,
         ),
       );
-      process.exit(3);
+      exitAfterQuickVerifyReceipt({
+        quick: pq,
+        certificate: null,
+        exitCode: 3,
+        operationalCode: CLI_OPERATIONAL_CODES.SHARE_REPORT_FAILED,
+      });
     }
   }
   try {
@@ -816,7 +881,12 @@ async function runQuickSubcommand(args: string[]): Promise<void> {
   } catch (e) {
     const msg = e instanceof Error ? e.message : String(e);
     writeCliError(CLI_OPERATIONAL_CODES.INTERNAL_ERROR, formatOperationalMessage(`stdout: ${msg}`));
-    process.exit(3);
+    exitAfterQuickVerifyReceipt({
+      quick: pq,
+      certificate: null,
+      exitCode: 3,
+      operationalCode: CLI_OPERATIONAL_CODES.INTERNAL_ERROR,
+    });
   }
   if (!noHumanReport) {
     console.error(certificate.humanReport);
@@ -838,9 +908,28 @@ async function runQuickSubcommand(args: string[]): Promise<void> {
     subcommand: "quick_verify",
     xRequestId: quickHttpCorrelationId,
   });
-  if (report.verdict === "pass") process.exit(0);
-  if (report.verdict === "fail") process.exit(1);
-  process.exit(2);
+  if (report.verdict === "pass") {
+    exitAfterQuickVerifyReceipt({
+      quick: pq,
+      certificate,
+      exitCode: 0,
+      operationalCode: null,
+    });
+  }
+  if (report.verdict === "fail") {
+    exitAfterQuickVerifyReceipt({
+      quick: pq,
+      certificate,
+      exitCode: 1,
+      operationalCode: null,
+    });
+  }
+  exitAfterQuickVerifyReceipt({
+    quick: pq,
+    certificate,
+    exitCode: 2,
+    operationalCode: null,
+  });
 }
 
 function runVerifyBundleSignatureSubcommand(args: string[]): void {
@@ -1282,6 +1371,11 @@ async function main(): Promise<void> {
       process.exit(3);
     }
   }
+  if (args[0] === "execution-identity") {
+    runExecutionIdentityVerifyCli(args.slice(1));
+    return;
+  }
+
   if (args[0] === "funnel-anon") {
     await runFunnelAnonCliAndExit(args.slice(1));
     return;

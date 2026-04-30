@@ -1,0 +1,36 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://agentskeptic.com/schemas/execution-identity-v1.schema.json",
+  "title": "AgentSkeptic execution identity (packaged build)",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "$schema",
+    "identityVersion",
+    "npmPackageVersion",
+    "nodeEnginesDeclared",
+    "verificationContractManifest",
+    "pythonPipExtrasFragment",
+    "closedDriftPathCount",
+    "mergeGateFingerprintSha256"
+  ],
+  "properties": {
+    "$schema": { "type": "string" },
+    "identityVersion": { "type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$" },
+    "npmPackageVersion": { "type": "string", "minLength": 1 },
+    "nodeEnginesDeclared": { "type": "string" },
+    "verificationContractManifest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["version", "manifestSha256", "url"],
+      "properties": {
+        "version": { "type": "string" },
+        "manifestSha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+        "url": { "type": "string", "format": "uri" }
+      }
+    },
+    "pythonPipExtrasFragment": { "type": "string", "minLength": 1 },
+    "closedDriftPathCount": { "type": "integer", "minimum": 0 },
+    "mergeGateFingerprintSha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" }
+  }
+}

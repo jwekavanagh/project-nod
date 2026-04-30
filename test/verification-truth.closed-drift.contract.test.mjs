@@ -1,5 +1,6 @@
 /**
- * Every tracked output path enumerated for emit/sync must appear under verification-truth.manifest.json gating.
+ * Merge gate prelude contract: manifest schema valid, git path specs cover codegen writers,
+ * and closed drift roster matches scripts/enumerate-drift-artifacts.mjs enumerator (sorted lexicographically).
  */
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
@@ -9,6 +10,7 @@ import { fileURLToPath } from "node:url";
 import { Ajv2020 } from "ajv/dist/2020.js";
 import addFormats from "ajv-formats";
 import picomatch from "picomatch";
+import { CLOSED_DRIFT_ARTIFACT_REL_PATHS } from "../scripts/enumerate-drift-artifacts.mjs";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const root = join(__dirname, "..");
@@ -45,7 +47,7 @@ function pathspecCoversRelative(rel, gitPathspecs) {
   return false;
 }
 
-describe("verification-truth manifest completeness", () => {
+describe("verification-truth closed drift + pathspec contract", () => {
   it("manifest validates against JSON Schema", () => {
     const manifest = JSON.parse(
       readFileSync(join(root, "schemas", "ci", "verification-truth.manifest.json"), "utf8"),
@@ -57,6 +59,15 @@ describe("verification-truth manifest completeness", () => {
     addFormats(ajv);
     const ok = ajv.validate(schema, manifest);
     assert.equal(ok, true, ajv.errors ? JSON.stringify(ajv.errors, null, 2) : "");
+  });
+
+  it("gating.closedDriftPaths matches enumerator CLOSED_DRIFT_ARTIFACT_REL_PATHS (sorted)", () => {
+    const manifest = JSON.parse(
+      readFileSync(join(root, "schemas", "ci", "verification-truth.manifest.json"), "utf8"),
+    );
+    const want = [...CLOSED_DRIFT_ARTIFACT_REL_PATHS];
+    const got = manifest.gating?.closedDriftPaths ?? [];
+    assert.deepEqual(got, want, "Update manifest or enumerator; lists must stay byte-for-byte aligned.");
   });
 
   it("emit-primary-marketing join(ROOT,…) targets are covered by gitPathspecs", () => {
@@ -93,11 +104,7 @@ describe("verification-truth manifest completeness", () => {
       "website/src/generated/epistemicContractIntegrator.ts",
     ];
     for (const rel of required) {
-      assert.equal(
-        pathspecCoversRelative(rel, gitPathspecs),
-        true,
-        `missing pathspec for ${rel}`,
-      );
+      assert.equal(pathspecCoversRelative(rel, gitPathspecs), true, `missing pathspec for ${rel}`);
     }
   });
 });

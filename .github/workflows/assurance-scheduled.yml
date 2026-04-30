@@ -23,3 +23,5 @@ jobs:
       - uses: ./.github/actions/setup-node-npm
       - name: Build and assurance run
         run: npm run build && node dist/cli.js assurance run --manifest examples/assurance/manifest.json
+      - name: Live contract manifest URL parity
+        run: node scripts/assert-public-contract-url.mjs

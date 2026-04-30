@@ -5,6 +5,7 @@ import {
 } from "./failureCatalog.js";
 import { TruthLayerError } from "./truthLayerError.js";
 import { LICENSE_PREFLIGHT_ENABLED } from "./generated/commercialBuildFlags.js";
+import { exitAfterEnforceCliReceipt } from "./cliExecutionFinalize.js";
 import { runStatefulEnforce } from "./enforceStateful.js";
 
 /** User-facing message for OSS builds when `enforce` is invoked; exported for tests. */
@@ -39,17 +40,35 @@ export async function runEnforce(args: string[]): Promise<void> {
   }
   if (!LICENSE_PREFLIGHT_ENABLED) {
     writeCliError(CLI_OPERATIONAL_CODES.ENFORCE_REQUIRES_COMMERCIAL_BUILD, ENFORCE_OSS_GATE_MESSAGE);
-    process.exit(3);
+    exitAfterEnforceCliReceipt({
+      parsedBatch: null,
+      quick: null,
+      exitCode: 3,
+      operationalCode: CLI_OPERATIONAL_CODES.ENFORCE_REQUIRES_COMMERCIAL_BUILD,
+      certificate: null,
+    });
   }
   try {
     await runStatefulEnforce(args);
   } catch (e) {
     if (e instanceof TruthLayerError) {
       writeCliError(e.code, e.message);
-      process.exit(3);
+      exitAfterEnforceCliReceipt({
+        parsedBatch: null,
+        quick: null,
+        exitCode: 3,
+        operationalCode: e.code,
+        certificate: null,
+      });
     }
     const msg = e instanceof Error ? e.message : String(e);
     writeCliError(CLI_OPERATIONAL_CODES.INTERNAL_ERROR, formatOperationalMessage(msg));
-    process.exit(3);
+    exitAfterEnforceCliReceipt({
+      parsedBatch: null,
+      quick: null,
+      exitCode: 3,
+      operationalCode: CLI_OPERATIONAL_CODES.INTERNAL_ERROR,
+      certificate: null,
+    });
   }
 }

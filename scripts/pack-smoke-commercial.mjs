@@ -4,7 +4,7 @@
  * then npm pack succeeds. Uses COMMERCIAL_LICENSE_API_BASE_URL when set (trimmed); else https://smoke.example.com.
  */
 import { spawnSync } from "node:child_process";
-import { readFileSync, mkdtempSync, rmSync } from "node:fs";
+import { readFileSync, mkdtempSync, readdirSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -41,5 +41,32 @@ if (p.status !== 0) {
   console.error("npm pack failed", p.stderr?.toString() || p.stdout?.toString() || "");
   process.exit(1);
 }
+
+const idDisk = path.join(root, "dist", "execution-identity.v1.json");
+try {
+  readFileSync(idDisk, "utf8");
+} catch {
+  console.error("pack-smoke-commercial: dist/execution-identity.v1.json missing after build-commercial");
+  process.exit(1);
+}
+
+const packed = readdirSync(dir).filter((f) => f.endsWith(".tgz"));
+const tgzPath = packed[0];
+if (!tgzPath) {
+  console.error("pack-smoke-commercial: npm pack produced no .tgz in destination");
+  process.exit(1);
+}
+const tf = spawnSync("tar", ["tf", path.join(dir, tgzPath)], { encoding: "utf8" });
+if (typeof tf.status === "number" && tf.status === 0) {
+  if (!tf.stdout.includes("package/dist/execution-identity.v1.json")) {
+    console.error(
+      "pack-smoke-commercial: npm pack tarball missing package/dist/execution-identity.v1.json (check package.json files)",
+    );
+    process.exit(1);
+  }
+} else {
+  console.error("pack-smoke-commercial: warning — `tar tf` failed; skipped tarball path check");
+}
+
 console.log("pack-smoke-commercial: ok");
 rmSync(dir, { recursive: true, force: true });

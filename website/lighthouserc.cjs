@@ -8,6 +8,19 @@ const categoryAssertions = {
   "categories:seo": ["error", { minScore: 0.96 }],
 };
 
+/** Docker verification replay installs Chromium via Playwright; set CHROME_PATH in compose. */
+const chromePathEnv = process.env.CHROME_PATH?.trim();
+const collectChromeOpts = chromePathEnv?.length
+  ? {
+      settings: {
+        chromePath: chromePathEnv,
+        // Docker verifier runs as root; Playwright Chromium requires no-sandbox in that case.
+        chromeFlags:
+          "--no-sandbox --disable-setuid-sandbox --disable-dev-shm-usage",
+      },
+    }
+  : {};
+
 module.exports = {
   ci: {
     collect: {
@@ -17,6 +30,7 @@ module.exports = {
         "http://127.0.0.1:3040/security",
       ],
       numberOfRuns: 1,
+      ...collectChromeOpts,
     },
     assert: {
       assertMatrix: [

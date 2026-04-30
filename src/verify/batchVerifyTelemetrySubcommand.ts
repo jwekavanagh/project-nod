@@ -40,6 +40,7 @@ import {
   emitOutcomeCertificateCliAndExitByStateRelation,
   runStandardVerifyWorkflowCliToTerminalResult,
 } from "../standardVerifyWorkflowCli.js";
+import { exitAfterVerifyCliReceipt } from "../cliExecutionFinalize.js";
 import { writeDecisionEvidenceBundle } from "../decisionEvidenceBundle/index.js";
 
 function terminalStatusFromCertificate(
@@ -80,11 +81,21 @@ function maybeWriteDecisionEvidenceBundle(
   } catch (e) {
     if (e instanceof TruthLayerError) {
       writeCliError(e.code, e.message);
-      process.exit(3);
+      return exitAfterVerifyCliReceipt({
+        parsedBatch,
+        certificate: null,
+        exitCode: 3,
+        operationalCode: e.code,
+      });
     }
     const msg = e instanceof Error ? e.message : String(e);
     writeCliError(CLI_OPERATIONAL_CODES.INTERNAL_ERROR, formatOperationalMessage(msg));
-    process.exit(3);
+    return exitAfterVerifyCliReceipt({
+      parsedBatch,
+      certificate: null,
+      exitCode: 3,
+      operationalCode: CLI_OPERATIONAL_CODES.INTERNAL_ERROR,
+    });
   }
 }
 
@@ -97,16 +108,23 @@ export async function runBatchVerifyWithTelemetrySubcommand(
     stderrAppendBeforeStdout?: (result: WorkflowResult) => void;
   },
 ): Promise<void> {
-  let parsedBatch: ParsedBatchVerifyCli;
+  let parsedMaybe: ParsedBatchVerifyCli | null = null;
   try {
-    parsedBatch = parseBatchVerifyCliArgs(batchArgs);
+    parsedMaybe = parseBatchVerifyCliArgs(batchArgs);
   } catch (e) {
     if (e instanceof TruthLayerError) {
       writeCliError(e.code, e.message);
-      process.exit(3);
+      return exitAfterVerifyCliReceipt({
+        parsedBatch: null,
+        certificate: null,
+        exitCode: 3,
+        operationalCode: e.code,
+      });
     }
     throw e;
   }
+  if (parsedMaybe === null) throw new Error("batch verify parse: unreachable null");
+  const parsedBatch = parsedMaybe;
 
   if (
     !parsedBatch.langgraphCheckpointTrust &&
@@ -118,7 +136,12 @@ export async function runBatchVerifyWithTelemetrySubcommand(
         "Events contain schemaVersion 3 tool_observed for this workflow. Use --langgraph-checkpoint-trust for LangGraph checkpoint trust mode, or emit schemaVersion 1/2 only for generic verify.",
       ),
     );
-    process.exit(3);
+    return exitAfterVerifyCliReceipt({
+      parsedBatch,
+      certificate: null,
+      exitCode: 3,
+      operationalCode: CLI_OPERATIONAL_CODES.LANGGRAPH_CHECKPOINT_TRUST_GENERIC_MODE_CONFLICT,
+    });
   }
 
   const batchActivationRunId =
@@ -135,7 +158,12 @@ export async function runBatchVerifyWithTelemetrySubcommand(
   } catch (e) {
     if (e instanceof TruthLayerError) {
       writeCliError(e.code, e.message);
-      process.exit(3);
+      return exitAfterVerifyCliReceipt({
+        parsedBatch,
+        certificate: null,
+        exitCode: 3,
+        operationalCode: e.code,
+      });
     }
     throw e;
   }
@@ -151,7 +179,13 @@ export async function runBatchVerifyWithTelemetrySubcommand(
       "INTEGRATOR_OWNED_GATE: integrator-owned contract verify rejects workload_class=bundled_examples (shipped example paths).\n" +
         "bundled_examples: use standard batch verify for demos, or pass integrator-owned --events, --registry, and --db paths. See docs/first-run-integration.md.\n",
     );
-    process.exit(2);
+    return exitAfterVerifyCliReceipt({
+      parsedBatch,
+      certificate: null,
+      exitCode: 2,
+      operationalCode: null,
+      verdictIncompleteWithoutCertificate: true,
+    });
   }
 
   const batchLineage = classifyWorkflowLineage({
@@ -168,16 +202,46 @@ export async function runBatchVerifyWithTelemetrySubcommand(
     subcommand: opts.telemetrySubcommand,
     build_profile: batchBuildProfile,
   });
-  const batchIo = {
+
+  /** Receipt-aware exit paths for verdict (0–2) after stdout certificate emission. */
+  const verdictCliIoFor = (certificate: OutcomeCertificateV1) => ({
     consoleLog: (line: string) => {
       console.log(line);
     },
     stderrLine: (line: string) => {
       console.error(line);
     },
-    exit: (code: number) => {
-      process.exit(code);
+    exit: (code: number): never =>
+      exitAfterVerifyCliReceipt({
+        parsedBatch,
+        certificate,
+        exitCode: code,
+        operationalCode: null,
+      }),
+  });
+
+  /** Runner phase (`runStandardVerifyWorkflowCliToTerminalResult`): operational exits only emit receipts here. */
+  const verifyRunnerIo = {
+    consoleLog: (line: string) => {
+      console.log(line);
     },
+    stderrLine: (line: string) => {
+      console.error(line);
+    },
+    exitOperational: (operationalCode: string): never =>
+      exitAfterVerifyCliReceipt({
+        parsedBatch,
+        certificate: null,
+        exitCode: 3,
+        operationalCode,
+      }),
+    exit: (_code: number): never =>
+      exitAfterVerifyCliReceipt({
+        parsedBatch,
+        certificate: null,
+        exitCode: 3,
+        operationalCode: CLI_OPERATIONAL_CODES.INTERNAL_ERROR,
+      }),
   };
 
   const projectRoot = path.resolve(process.cwd());
@@ -201,11 +265,15 @@ export async function runBatchVerifyWithTelemetrySubcommand(
               `share_report_origin=${shareOrigin} http_status=${String(shareRes.status)} detail=${shareRes.bodySnippet}`,
             ),
           );
-          batchIo.exit(3);
-          throw new Error(CLI_EXITED_AFTER_ERROR);
+          exitAfterVerifyCliReceipt({
+            parsedBatch,
+            certificate: null,
+            exitCode: 3,
+            operationalCode: CLI_OPERATIONAL_CODES.SHARE_REPORT_FAILED,
+          });
         }
         if (!parsedBatch.noHumanReport) {
-          batchIo.stderrLine(formatContractVerifyStderrForStderrLine(certificate));
+          console.error(formatContractVerifyStderrForStderrLine(certificate));
         }
       } else if (!parsedBatch.noHumanReport) {
         process.stderr.write(formatContractVerifyStderrForStderrWrite(certificate));
@@ -245,7 +313,7 @@ export async function runBatchVerifyWithTelemetrySubcommand(
     if (workflowResultForStderrHook !== undefined) {
       opts.stderrAppendBeforeStdout?.(workflowResultForStderrHook);
     }
-    emitOutcomeCertificateCliAndExitByStateRelation(certificate, batchIo);
+    emitOutcomeCertificateCliAndExitByStateRelation(certificate, verdictCliIoFor(certificate));
   }
 
   let langGraphEligibleLoad: LoadEventsResult | undefined;
@@ -328,7 +396,7 @@ export async function runBatchVerifyWithTelemetrySubcommand(
                 wfResult,
                 parsedBatch.signPrivateKeyPath,
               ),
-      io: batchIo,
+      io: verifyRunnerIo,
     });
     maybeWriteDecisionEvidenceBundle(parsedBatch, certificate, batchActivationRunId);
     await finishCertificateTelemetryAndExit(certificate, workflowResult, "afterStandardRunner");

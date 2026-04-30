@@ -23,7 +23,36 @@
       "website/src/generated/",
       "src/publicDistribution.generated.ts",
       "src/sdk/_generated/",
-      "src/agentskeptic-error-codes.json"
+      "src/agentskeptic-error-codes.json",
+      "website/content/surfaces/guides/",
+      "website/src/content/embeddedReports/",
+      "python/tests/parity_vectors/"
+    ],
+    "closedDriftPaths": [
+      "AGENTS.md",
+      "README.md",
+      "llms.txt",
+      "package.json",
+      "python/tests/parity_vectors/langgraph_lct_a2/golden_certificate.json",
+      "python/tests/parity_vectors/langgraph_lct_b/golden_certificate.json",
+      "python/tests/parity_vectors/langgraph_lct_c/golden_certificate.json",
+      "python/tests/parity_vectors/langgraph_lct_d/golden_certificate.json",
+      "schemas/openapi-commercial-v1.yaml",
+      "src/publicDistribution.generated.ts",
+      "src/sdk/_generated/openapi-types.ts",
+      "website/content/surfaces/guides/buyer-ci-enforcement-metering.md",
+      "website/content/surfaces/guides/buyer-commercial-boundary.md",
+      "website/content/surfaces/guides/buyer-trust-production-implications.md",
+      "website/public/contract/v1.json",
+      "website/src/content/embeddedReports/langgraph-lct-a2-ineligible.v1.json",
+      "website/src/content/embeddedReports/langgraph-lct-b-verified.v1.json",
+      "website/src/content/embeddedReports/langgraph-lct-c-mismatch.v1.json",
+      "website/src/content/embeddedReports/langgraph-lct-d-incomplete.v1.json",
+      "website/src/generated/buyerTruthCodegenHash.ts",
+      "website/src/generated/buyerTruthProjection.snap.json",
+      "website/src/generated/epistemicContractIntegrator.ts",
+      "website/src/generated/integrateActivationShellStatic.ts",
+      "website/src/generated/integratorDocsEmbedded.ts"
     ]
   }
 }

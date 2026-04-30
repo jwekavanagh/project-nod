@@ -1,0 +1,108 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://agentskeptic.com/schemas/verification-receipt-v1.schema.json",
+  "title": "AgentSkeptic verification receipt v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "$schema",
+    "receiptVersion",
+    "kind",
+    "outcome",
+    "exitCode",
+    "emittedAt",
+    "pid",
+    "receiptPathRelative",
+    "runtime",
+    "verificationSummary",
+    "inputIntegrity",
+    "executionIdentityEmbedded",
+    "executionIdentitySha256",
+    "abortReason",
+    "phaseTimingsMs"
+  ],
+  "properties": {
+    "$schema": { "type": "string" },
+    "receiptVersion": { "type": "string", "const": "1.0.0" },
+    "kind": { "type": "string", "enum": ["merge_gate", "verify", "enforce"] },
+    "outcome": { "type": "string", "enum": ["success", "failure", "operational_abort"] },
+    "exitCode": { "type": "integer" },
+    "emittedAt": { "type": "string" },
+    "pid": { "type": "integer", "minimum": 1 },
+    "receiptPathRelative": { "type": "string", "minLength": 1 },
+    "runtime": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["nodeProcessVersion", "platform", "arch"],
+      "properties": {
+        "nodeProcessVersion": { "type": "string" },
+        "platform": { "type": "string" },
+        "arch": { "type": "string" }
+      }
+    },
+    "verificationSummary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["workflowStatus", "operationalCode", "enforceExitKind"],
+      "properties": {
+        "workflowStatus": { "type": ["string", "null"] },
+        "operationalCode": { "type": ["string", "null"] },
+        "enforceExitKind": { "type": ["string", "null"] }
+      }
+    },
+    "inputIntegrity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "workflowId",
+        "dbKind",
+        "eventsSha256",
+        "registrySha256",
+        "npmTestScript",
+        "verificationTruthExitPhase"
+      ],
+      "properties": {
+        "workflowId": { "type": "string" },
+        "dbKind": { "type": "string", "enum": ["sqlite", "postgres", "none"] },
+        "eventsSha256": { "type": ["string", "null"] },
+        "registrySha256": { "type": ["string", "null"] },
+        "npmTestScript": { "type": ["string", "null"] },
+        "verificationTruthExitPhase": { "type": ["string", "null"] }
+      }
+    },
+    "executionIdentityEmbedded": {
+      "anyOf": [{ "type": "object" }, { "type": "null" }]
+    },
+    "executionIdentitySha256": {
+      "anyOf": [{ "type": "string", "pattern": "^[0-9a-f]{64}$" }, { "type": "null" }]
+    },
+    "abortReason": {
+      "anyOf": [{ "type": "string", "const": "MISSING_DIST_EXECUTION_IDENTITY" }, { "type": "null" }]
+    },
+    "phaseTimingsMs": {
+      "anyOf": [
+        { "type": "null" },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "regeneration",
+            "preflightDriftRoster",
+            "gitDiffGate",
+            "structuralGuards",
+            "postgresDistribution",
+            "journeyTail"
+          ],
+          "properties": {
+            "regeneration": { "type": "integer", "minimum": 0 },
+            "preflightDriftRoster": { "type": "integer", "minimum": 0 },
+            "gitDiffGate": { "type": "integer", "minimum": 0 },
+            "structuralGuards": { "type": "integer", "minimum": 0 },
+            "postgresDistribution": { "type": "integer", "minimum": 0 },
+            "journeyTail": { "type": "integer", "minimum": 0 }
+          }
+        }
+      ]
+    }
+  }
+}
