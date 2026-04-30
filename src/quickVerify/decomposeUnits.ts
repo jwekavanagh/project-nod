@@ -1,6 +1,7 @@
 import { compareUtf16Id } from "../resolveExpectation.js";
 import type { FlatScalar } from "./ingest.js";
-import { argmaxTableAction, argmaxTableSegment, T_TABLE } from "./tableScoring.js";
+import { argmaxTableAction, argmaxTableSegment } from "./tableScoring.js";
+import { T_TABLE } from "./thresholds.js";
 
 export type ActionBucket = {
   bucketKey: string;
