@@ -5,6 +5,7 @@ set -euo pipefail
 cd /workspace
 
 git config --global --add safe.directory /workspace
+git config --global --add safe.directory /workspace/.git
 npm ci
 npx playwright install-deps chromium
 npx playwright install chromium
