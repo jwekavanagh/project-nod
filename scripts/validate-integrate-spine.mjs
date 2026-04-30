@@ -60,7 +60,7 @@ const bashPath = resolveBash();
 
 /** Validator-only: after clone, L0.5 may be missing from file:// clone until committed; sync from host root. */
 function validatorHarnessShellBody(templateUtf8) {
-  const inject = `cd agentskeptic
+  const inject = `cd agentskeptic || cd workspace
 # validate-integrate-spine harness: L0.5 sync when absent (CI: files already committed; local: uncommitted tree)
 if [ ! -f examples/integrate-your-db/bootstrap-input.json ] && [ -n "\${INTEGRATE_SPINE_HOST_ROOT:-}" ]; then
   mkdir -p examples/integrate-your-db
