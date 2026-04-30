@@ -3,6 +3,8 @@
 Library integration (`createDecisionGate`, NDJSON replay): **[`docs/decision-gate.md`](decision-gate.md)**.
 Commercial governance semantics (material truth hash, baseline lifecycle, shared governance UI, audit export) are in **[`docs/governance.md`](governance.md)**.
 
+**Hosted enforce API (`POST /api/v1/enforcement/check|baselines|accept`):** request/response envelopes use **`schema_version` 2** with **`lifecycle_state`**, **`lifecycle_state_version`**, and per-attempt verification decisions on **`POST /check`** / **`POST /baselines`** only. Authoritative behavior is **[`docs/outcome-certificate-normative.md`](outcome-certificate-normative.md)** — section **Hosted enforcement lifecycle (verification FSM)** — not inferred from legacy `enforcement_events.event` strings.
+
 ## Retaining decision evidence
 
 Use **`--write-decision-bundle`** for a portable directory (outcome certificate, exit, human-layer, manifest; optional attestation / next-action). See **[`decision-evidence-bundle.md`](decision-evidence-bundle.md)**. **`--write-run-bundle`** is the separate **technical run bundle** (events + workflow result + manifest).

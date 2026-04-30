@@ -66,15 +66,19 @@ class EnforcementEvidenceRequestV2(BaseModel):
     certificate_sha256: str
 
 
-class EnforcementStateResponse(BaseModel):
-    schema_version: Literal[1] = 1
-    status: str
-    workflow_id: str
+class EnforcementFsmEnvelopeV2(BaseModel):
+    """Hosted enforcement response (POST /check | /baselines | /accept); extra fields vary by route."""
+
+    model_config = ConfigDict(extra="allow")
+
+    schema_version: Literal[2] = 2
+    code: str
+    quota_enforced_via_reserve: bool | None = None
 
 
-class EnforcementCheckResponse(EnforcementStateResponse):
+class EnforcementAcceptEvidenceRequestV2(EnforcementEvidenceRequestV2):
     expected_projection_hash: str
-    actual_projection_hash: str
+    lifecycle_state_version: int
 
 
 class EnforcementHistoryResponse(BaseModel):
@@ -91,6 +95,22 @@ class GovernanceAuditBundleV1(BaseModel):
     baseline: dict[str, Any] | None
     events: list[dict[str, Any]]
     window: dict[str, str] | None = None
+
+
+class GovernanceAuditBundleV2(BaseModel):
+    model_config = ConfigDict(extra="allow")
+
+    schemaVersion: Literal[2] = 2
+    generatedAt: str
+    userId: str
+    workflowId: str
+    baseline: dict[str, Any] | None
+    events: list[dict[str, Any]]
+    window: dict[str, str] | None = None
+    lifecycle: dict[str, Any] | None = None
+    fsmTransitions: list[dict[str, Any]] | None = None
+    verificationDecisions: list[dict[str, Any]] | None = None
+    decisionEvidenceExport: dict[str, Any] | None = None
 
 
 class VerifyOutcomeRequestV2(BaseModel):

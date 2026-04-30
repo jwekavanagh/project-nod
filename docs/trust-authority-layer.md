@@ -14,6 +14,7 @@ Prefer catching **`TrustDecisionBlockedError`**. Inspect **`error.record`** (**`
 
 ## Operators (hosted)
 
+- Hosted **verification attempts** expose immutable **`attempt_id`**-keyed **`enforcementDecision`** rows (trusted/blocked) on **`POST /api/v1/enforcement/check`** and **`POST /api/v1/enforcement/baselines`**; funnel receipts remain **blocked-only** idempotency keyed by fingerprints. Canonical lifecycle/decision wording: **[`docs/outcome-certificate-normative.md`](outcome-certificate-normative.md)** — Hosted enforcement lifecycle (verification FSM).
 - **`funnel_event.event = trust_decision_blocked`** stores payloads for account Trust posture (**Account → Trust posture**).
 - Threshold digest email uses **Resend** (`RESEND_API_KEY`) from **`GET`/`POST` `/api/internal/trust-alerts`** (**`Authorization: Bearer ${CRON_SECRET}`**) on schedule **`5 0 * * *`**.
 - Append-only proof rows: **`trust_alert_delivery`** (**`resend_email_id`**), cadence in **`trust_alert_checkpoint`**.

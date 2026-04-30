@@ -12,7 +12,7 @@ Tokens: `agentskeptic quick --input <path> (--postgres-url <url> | --db <sqliteP
 
 - **Phase A:** exit 3, stderr single JSON [`schemas/cli-error-envelope.schema.json`](../schemas/cli-error-envelope.schema.json), **no stdout bytes**.
 - **Phase B:** after successful registry atomic write and read-back (see **Registry file and canonical JSON** below), optionally atomic-write **`--emit-events`** (may be **zero bytes** when there are no exported row tools), then emit one stdout line: `stableStringify(report) + "\n"`, schema-valid; exit 0/1/2.
-- **`agentskeptic enforce`:** stateful CI lifecycle command (baseline/check/accept) with **exit 4** on drift. Full stdout/stderr rules and the authoritative exit table live only in [agentskeptic.md — Enforce stream contract (normative)](agentskeptic.md#enforce-stream-contract-normative) (do not duplicate that table here).
+- **`agentskeptic enforce`:** stateful CI lifecycle command (baseline/check/accept) with **exit 4** on drift. Full stdout/stderr rules and the authoritative exit table live only in [agentskeptic.md — Enforce stream contract (normative)](agentskeptic.md#enforce-stream-contract-normative) (do not duplicate that table here). **Hosted posture names** (`lifecycle_state`, accept/rerun sequencing) come only from **`docs/outcome-certificate-normative.md`** (Hosted enforcement lifecycle), not quick-verify algorithms.
 
 ## A.3 Registry file and canonical JSON
 

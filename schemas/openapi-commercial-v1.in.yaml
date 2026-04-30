@@ -117,7 +117,7 @@ paths:
   /api/v1/enforcement/baselines:
     post:
       operationId: createEnforcementBaseline
-      summary: Create or replace accepted enforcement baseline for a workflow
+      summary: Establish accepted enforcement baseline (baseline_missing → baseline_active only)
       security:
         - bearerAuth: []
       requestBody:
@@ -128,11 +128,17 @@ paths:
               $ref: "#/components/schemas/EnforcementEvidenceRequestV2"
       responses:
         "200":
-          description: Baseline created or replaced
+          description: Lifecycle transition completed
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/EnforcementStateResponse"
+                $ref: "#/components/schemas/EnforcementFsmEnvelopeV2"
+        "409":
+          description: Invalid transition or decision-grade certificate required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EnforcementFsmEnvelopeV2"
         "400":
           description: Invalid request
           content:
@@ -148,7 +154,7 @@ paths:
   /api/v1/enforcement/check:
     post:
       operationId: checkEnforcementDrift
-      summary: Compare current run projection against accepted baseline
+      summary: Compare current material-truth projection against accepted baseline (verification attempt)
       security:
         - bearerAuth: []
       requestBody:
@@ -159,21 +165,21 @@ paths:
               $ref: "#/components/schemas/EnforcementEvidenceRequestV2"
       responses:
         "200":
-          description: Comparison result (ok or drift)
+          description: Check completed (match, open drift, rerun pass/fail, etc.)
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/EnforcementCheckResponse"
+                $ref: "#/components/schemas/EnforcementFsmEnvelopeV2"
         "409":
-          description: Baseline not initialized
+          description: Baseline missing, remediation acknowledgement required, or other enforce guard
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ProblemDetails"
+                $ref: "#/components/schemas/EnforcementFsmEnvelopeV2"
   /api/v1/enforcement/accept:
     post:
       operationId: acceptEnforcementDrift
-      summary: Accept current projection as new baseline
+      summary: Procedural drift accept (action_required → rerun_required; not a verification verdict)
       security:
         - bearerAuth: []
       requestBody:
@@ -181,14 +187,20 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/EnforcementEvidenceRequestV2"
+              $ref: "#/components/schemas/EnforcementAcceptEvidenceRequestV2"
       responses:
         "200":
-          description: Drift accepted
+          description: Baseline updated; rerun POST /check required before returning to trusted-only posture
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/EnforcementStateResponse"
+                $ref: "#/components/schemas/EnforcementFsmEnvelopeV2"
+        "409":
+          description: Stale lifecycle version, hash pin mismatch, or invalid transition
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EnforcementFsmEnvelopeV2"
   /api/v1/enforcement/history:
     get:
       operationId: getEnforcementHistory
@@ -241,7 +253,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/GovernanceAuditBundleV1"
+                $ref: "#/components/schemas/GovernanceAuditBundleV2"
         "400":
           description: Invalid request
           content:
@@ -562,27 +574,31 @@ components:
           type: string
         certificate_sha256:
           type: string
-    EnforcementStateResponse:
+    EnforcementFsmEnvelopeV2:
       type: object
-      required: [schema_version, status, workflow_id]
+      description: Hosted enforcement lifecycle + verification attempt payload (schema_version 2).
+      required: [schema_version, code]
       properties:
         schema_version:
           type: integer
-          const: 1
-        status:
+          const: 2
+        code:
           type: string
-        workflow_id:
-          type: string
-    EnforcementCheckResponse:
+        quota_enforced_via_reserve:
+          type: boolean
+      additionalProperties: true
+    EnforcementAcceptEvidenceRequestV2:
       allOf:
-        - $ref: "#/components/schemas/EnforcementStateResponse"
+        - $ref: "#/components/schemas/EnforcementEvidenceRequestV2"
         - type: object
-          required: [expected_projection_hash, actual_projection_hash]
+          required: [expected_projection_hash, lifecycle_state_version]
           properties:
             expected_projection_hash:
               type: string
-            actual_projection_hash:
-              type: string
+              description: Must equal expected_projection_hash_for_accept from the open drift POST /check response.
+            lifecycle_state_version:
+              type: integer
+              description: Optimistic concurrency token; must match lifecycle_state_version from the prior response.
     EnforcementHistoryResponse:
       type: object
       required: [schema_version, workflow_id, events]
@@ -630,6 +646,58 @@ components:
           items:
             type: object
             additionalProperties: true
+    GovernanceAuditBundleV2:
+      type: object
+      description: Governance export including authoritative lifecycle FSM rows and verification decisions.
+      required: [schemaVersion, generatedAt, userId, workflowId, baseline, events]
+      properties:
+        schemaVersion:
+          type: integer
+          const: 2
+        generatedAt:
+          type: string
+          format: date-time
+        userId:
+          type: string
+        workflowId:
+          type: string
+        window:
+          type: object
+          required: [from, to]
+          properties:
+            from:
+              type: string
+              format: date-time
+            to:
+              type: string
+              format: date-time
+        lifecycle:
+          type: object
+          nullable: true
+          additionalProperties: true
+        fsmTransitions:
+          type: array
+          items:
+            type: object
+            additionalProperties: true
+        verificationDecisions:
+          type: array
+          items:
+            type: object
+            additionalProperties: true
+        baseline:
+          type: object
+          nullable: true
+          additionalProperties: true
+        events:
+          type: array
+          items:
+            type: object
+            additionalProperties: true
+        decisionEvidenceExport:
+          type: object
+          additionalProperties: true
+      additionalProperties: true
     ProblemDetails:
       type: object
       required: [type, title, status, detail]

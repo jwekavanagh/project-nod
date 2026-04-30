@@ -138,7 +138,7 @@ export async function runStatefulEnforce(args: string[]): Promise<void> {
         : wf.status === "inconsistent" ? "inconsistent"
         : "incomplete";
     }
-    const payload = {
+    const payload: Record<string, unknown> = {
       schema_version: 2,
       run_id: runId,
       workflow_id: workflowId,
@@ -147,6 +147,25 @@ export async function runStatefulEnforce(args: string[]): Promise<void> {
       certificate_sha256: canonicalCertificateSha256(certificate),
     };
 
+    if (mode === "accept-drift") {
+      const expected =
+        process.env.AGENTSKEPTIC_ENFORCE_EXPECTED_PROJECTION_HASH?.trim() ||
+        process.env.WORKFLOW_VERIFIER_ENFORCE_EXPECTED_PROJECTION_HASH?.trim();
+      const verRaw =
+        process.env.AGENTSKEPTIC_ENFORCE_LIFECYCLE_STATE_VERSION?.trim() ||
+        process.env.WORKFLOW_VERIFIER_ENFORCE_LIFECYCLE_STATE_VERSION?.trim();
+      const lifecycle_state_version =
+        verRaw !== undefined && verRaw !== "" ? Number.parseInt(verRaw, 10) : NaN;
+      if (!expected || !Number.isInteger(lifecycle_state_version)) {
+        throw new TruthLayerError(
+          CLI_OPERATIONAL_CODES.ENFORCE_USAGE,
+          "For --accept-drift, set AGENTSKEPTIC_ENFORCE_EXPECTED_PROJECTION_HASH and AGENTSKEPTIC_ENFORCE_LIFECYCLE_STATE_VERSION from the prior hosted enforce POST /check response (fields expected_projection_hash_for_accept and lifecycle_state_version).",
+        );
+      }
+      payload.expected_projection_hash = expected;
+      payload.lifecycle_state_version = lifecycle_state_version;
+    }
+
     const route =
       mode === "create-baseline" ? "/api/v1/enforcement/baselines"
       : mode === "accept-drift" ? "/api/v1/enforcement/accept"
@@ -154,22 +173,54 @@ export async function runStatefulEnforce(args: string[]): Promise<void> {
 
     const stateRes = await postEnforcementState(route, payload);
     if (!stateRes.ok) {
-      const detail =
-        typeof stateRes.body === "object" && stateRes.body !== null && "detail" in stateRes.body
-          ? String((stateRes.body as { detail?: unknown }).detail ?? `HTTP ${stateRes.status}`)
-          : `HTTP ${stateRes.status}`;
+      const o =
+        typeof stateRes.body === "object" && stateRes.body !== null ?
+          (stateRes.body as Record<string, unknown>)
+        : {};
+      const problemCode =
+        typeof o.code === "string" && o.code.trim() ? o.code : `HTTP_${stateRes.status}`;
+      const problemHint =
+        typeof o.message === "string"
+          ? o.message
+          : typeof o.detail === "string"
+            ? o.detail
+            : typeof o.next_action === "string"
+              ? o.next_action
+              : `HTTP ${stateRes.status}`;
       throw new TruthLayerError(
         CLI_OPERATIONAL_CODES.LICENSE_DENIED,
-        `${detail}${stateRes.requestId ? ` [x-request-id=${stateRes.requestId}]` : ""}`,
+        `${problemCode}: ${problemHint}${stateRes.requestId ? ` [x-request-id=${stateRes.requestId}]` : ""}`,
       );
     }
 
-    const status =
-      typeof stateRes.body === "object" && stateRes.body !== null && "status" in stateRes.body
-        ? String((stateRes.body as { status?: unknown }).status ?? "ok")
-        : "ok";
-    process.stdout.write(`${stableStringify({ schemaVersion: 1, enforce: stateRes.body })}\n`);
-    if (status === "drift") {
+    process.stdout.write(`${stableStringify({ schemaVersion: 2, enforce: stateRes.body })}\n`);
+
+    const resBody =
+      typeof stateRes.body === "object" && stateRes.body !== null ?
+        (stateRes.body as Record<string, unknown>)
+      : {};
+
+    const resultStatus =
+      typeof resBody.result_status === "string" ? String(resBody.result_status) : undefined;
+
+    if (route === "/api/v1/enforcement/check" && (resultStatus === "drift" || resultStatus === "rerun_fail")) {
+      const msg =
+        resultStatus === "rerun_fail" ? "Hosted enforce reported rerun failure against baseline." : "Drift detected.";
+      console.error(cliErrorEnvelope(CLI_OPERATIONAL_CODES.VERIFICATION_OUTPUT_LOCK_MISMATCH, msg));
+      exitAfterEnforceCliReceipt({
+        parsedBatch,
+        quick: pq,
+        exitCode: 4,
+        operationalCode: null,
+        certificate,
+        enforceExitKindDrift: true,
+      });
+    }
+
+    /** Legacy envelope (schema_version 1) surfaced `status`; keep for mocks / older gateways. */
+    const legacyStatus =
+      typeof resBody.status === "string" ? String(resBody.status ?? "ok") : "ok";
+    if (legacyStatus === "drift") {
       console.error(cliErrorEnvelope(CLI_OPERATIONAL_CODES.VERIFICATION_OUTPUT_LOCK_MISMATCH, "Drift detected."));
       exitAfterEnforceCliReceipt({
         parsedBatch,
