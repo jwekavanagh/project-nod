@@ -23,6 +23,10 @@ jobs:
   pypi:
     name: PyPI wheel (Trusted Publishing)
     runs-on: ubuntu-latest
+    # Must match GitHub environment set on the Trusted Publisher in PyPI (OIDC `environment` claim).
+    # If PyPI uses a different name (e.g. `release`), change this to match.
+    environment:
+      name: pypi
     env:
       AGENTSKEPTIC_TELEMETRY: "0"
     steps:
