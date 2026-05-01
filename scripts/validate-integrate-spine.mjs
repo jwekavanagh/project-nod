@@ -60,11 +60,13 @@ const bashPath = resolveBash();
 
 /**
  * 8.3 short path avoids MSYS/Git-Bash splitting `Program Files` argv for `node dist/cli.js …` invocations.
+ * Path is passed via env (not interpolated into the cmd line) so CodeQL does not treat it as incompletely escaped.
  */
 function windowsShortExePath(winPath) {
-  const inner = winPath.replace(/"/g, '\\"');
-  const r = spawnSync("cmd.exe", ["/d", "/s", "/c", `for %I in ("${inner}") do @echo %~sI`], {
+  const envName = "AGENTSKEPTIC_VALIDATE_INTEGRATE_SPINE_TARGET";
+  const r = spawnSync("cmd.exe", ["/d", "/s", "/c", `for %I in ("%${envName}%") do @echo %~sI`], {
     encoding: "utf8",
+    env: { ...process.env, [envName]: winPath },
   });
   if (r.status === 0 && r.stdout) {
     const lines = String(r.stdout)
