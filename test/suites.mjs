@@ -21,6 +21,8 @@ export const sqliteNodeTestFiles = [
   "test/resolve-telemetry-source.test.mjs",
   "test/github-workflows-agentskeptic-telemetry-env.test.mjs",
   "test/github-workflows-release-contract.test.mjs",
+  "test/assert-root-version-tags-ref.contract.test.mjs",
+  "test/ci-scope-light-path.test.mjs",
   "test/version-integrity.test.mjs",
   "test/verify-release-distribution.test.mjs",
   "test/release-preview-paths.test.mjs",
