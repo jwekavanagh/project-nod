@@ -35,6 +35,13 @@ No other flags in v1 beyond the shared **`BootstrapPackCli`** grammar (`--help` 
 | Optional hosted registry draft (website API, absolute schema `$ref` / AJV order, commercial harness) | [registry-draft.md](registry-draft.md) |
 | Quick thresholds, `--export-registry` byte identity | [quick-verify-normative.md](quick-verify-normative.md) |
 | `verify` stdout/stderr for `WorkflowResult` | [agentskeptic.md](agentskeptic.md) + shared `runStandardVerifyWorkflowCliFlow` behavior |
+| Integrator onboarding checklist, integrate spine anchors, **`IntegrateSpineComplete`** prose | [first-run-integration.md](first-run-integration.md) |
+| v2 integrator entry / Activation overview (hosted + npm framing) | [integrate.md](integrate.md) |
+| Generated copy-paste shell commands (partner quickstart, Postgres, LangGraph oracle, **`verify-integrator-owned`**) | [partner-quickstart-commands.md](partner-quickstart-commands.md) — run **`node scripts/generate-partner-quickstart-commands.mjs`** |
+
+### Integrator spine
+
+The L0 **`scripts/templates/integrate-activation-shell.bash`** template runs **`activate`** mid-script for **PatternComplete** wiring and **`activate`** + **pack-led crossing** for **`wf_integrate_spine`**. Spine ordering, **`AGENTSKEPTIC_VERIFY_DB`**, adoption checklist IDs, and the pinned **`IntegrateSpineComplete`** contract live in **`first-run-integration.md`**; **`integrate.md`** remains the canonical integrator-facing summary that points here for **`activate`** / **`bootstrap`** detail.
 
 ---
 

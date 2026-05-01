@@ -41,9 +41,11 @@ The activation shell uses a temp `--out` and a copied DB (`$ADOPT_DB`). From the
 `node dist/cli.js activate --input test/fixtures/bootstrap-pack/input.json --db examples/demo.db --out "$OUT"`  
 then `node dist/cli.js --workflow-id wf_bootstrap_fixture --events "$OUT/events.ndjson" --registry "$OUT/tools.json" --db "$ADOPT_DB"`.
 
+**Normative (activate / bootstrap):** **[bootstrap-pack-normative.md](bootstrap-pack-normative.md)** (flags, **`--out`** staging, exit table, **`proof/`**, **`activation.manifest.json`**). Integrator-facing summary with HTTP mirrors: **[integrate.md#activation](integrate.md#activation)**.
+
 ## Step 4: Optional integrate spine and crossing
 
-On your integrator database, run **activate** and the pack-led **crossing** for `wf_integrate_spine` (see [crossing-normative.md](crossing-normative.md) and `scripts/templates/integrate-activation-shell.bash` on `main`).
+On your integrator database, run **activate** and the pack-led **crossing** for `wf_integrate_spine` (see [crossing-normative.md](crossing-normative.md) and **`scripts/templates/integrate-activation-shell.bash`**). Pack layout and **`activate`** exits for the **`examples/integrate-your-db/`** bootstrap input remain **[bootstrap-pack-normative.md](bootstrap-pack-normative.md)**.
 
 ---
 

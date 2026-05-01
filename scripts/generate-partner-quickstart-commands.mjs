@@ -51,6 +51,17 @@ After seeding with \`examples/partner-quickstart/partner.seed.sql\`:
 node dist/cli.js --workflow-id wf_partner --events examples/partner-quickstart/partner.events.ndjson --registry examples/partner-quickstart/partner.tools.json --db path/to/your.db
 \`\`\`
 
+## Activation pack (\`activate\`)
+
+Canonical onboarding pack (exportable **\`proof/\`** subtree and **\`activation.manifest.json\`** on contract terminals). Uses the same **\`--input\`**, **\`--db\`** (or **\`--postgres-url\`**), and **\`--out\`** flags as legacy **\`bootstrap\`** with **\`BootstrapPackInput\` v1** JSON. From **repository root** after **\`npm run build\`** (**\`--out\`** must **not** exist beforehand):
+
+\`\`\`bash
+ACT_OUT="$(mktemp -u "\${TMPDIR:-/tmp}/agentskeptic-act-XXXXXXXX")"
+node dist/cli.js activate --input test/fixtures/bootstrap-pack/input.json --db examples/demo.db --out "$ACT_OUT"
+\`\`\`
+
+Normative semantics: **[bootstrap-pack-normative.md](bootstrap-pack-normative.md)**. Integrator overview: **[integrate.md](integrate.md)** § Activation. Spine ordering with **\`INTEGRATE_SPINE_NODE\`** and **\`AGENTSKEPTIC_VERIFY_DB\`**: **[first-run-integration.md](first-run-integration.md)**.
+
 ## Manual CLI (Postgres)
 
 \`\`\`bash
