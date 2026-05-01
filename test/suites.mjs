@@ -25,6 +25,7 @@ export const sqliteNodeTestFiles = [
   "test/verify-release-distribution.test.mjs",
   "test/release-preview-paths.test.mjs",
   "test/release-preview.test.mjs",
+  "test/commit-analyzer-rules.test.mjs",
   "test/release-outcome-summarize.test.mjs",
   "test/maybe-emit-oss-claim-telemetry-off.test.mjs",
   "test/first-run-verify-output.integration.test.mjs",

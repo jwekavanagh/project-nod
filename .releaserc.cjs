@@ -5,7 +5,7 @@ module.exports = {
   tagFormat: "v${version}",
   plugins: [
     ["@semantic-release/commit-analyzer", commitAnalyzerRules],
-    "@semantic-release/release-notes-generator",
+    ["@semantic-release/release-notes-generator", { preset: "conventionalcommits" }],
     [
       "@semantic-release/changelog",
       {

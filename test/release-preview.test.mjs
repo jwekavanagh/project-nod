@@ -116,6 +116,40 @@ describe("scripts/release-preview.mjs", () => {
     }
   });
 
+  it("RELEASABLE major when allowlisted diff and feat! squash title", () => {
+    const repo = mkdtempSync(join(tmpdir(), "rp-major-"));
+    try {
+      seedRepoLayout(repo);
+      git(repo, ["init", "-b", "main"]);
+      git(repo, ["config", "user.email", "t@test"]);
+      git(repo, ["config", "user.name", "t"]);
+      mkdirSync(join(repo, "src"), { recursive: true });
+      writeFileSync(join(repo, "src", "x.txt"), "1", "utf8");
+      git(repo, ["add", "."]);
+      git(repo, ["commit", "-m", "chore: init"]);
+      const base = git(repo, ["rev-parse", "HEAD"]);
+      writeFileSync(join(repo, "src", "x.txt"), "2", "utf8");
+      git(repo, ["add", "src/x.txt"]);
+      git(repo, ["commit", "-m", "chore: bump"]);
+      const head = git(repo, ["rev-parse", "HEAD"]);
+
+      const r = runPreview(repo, {
+        pull_request: {
+          title: "feat!: trust-lean kernel",
+          body: "Squash-merge. BREAKING CHANGE: contract shift.",
+          base: { sha: base },
+          head: { sha: head },
+        },
+      });
+      assert.equal(r.status, 0, r.stderr);
+      const j = JSON.parse(r.stdout.trim());
+      assert.equal(j.verdict, "RELEASABLE");
+      assert.equal(j.releaseType, "major");
+    } finally {
+      rmSync(repo, { recursive: true, force: true });
+    }
+  });
+
   it("RELEASABLE when allowlisted diff and fix title", () => {
     const repo = mkdtempSync(join(tmpdir(), "rp-ok-"));
     try {

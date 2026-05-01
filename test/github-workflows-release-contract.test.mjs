@@ -33,6 +33,20 @@ describe("release workflow contract", () => {
     assert.equal(existsSync(join(root, ".releaserc.json")), false);
   });
 
+  it("commit-analyzer and release-notes use explicit conventionalcommits preset", () => {
+    const releaserc = readFileSync(join(root, ".releaserc.cjs"), "utf8");
+    assert.ok(
+      releaserc.includes("preset: \"conventionalcommits\"") ||
+        releaserc.includes("preset: 'conventionalcommits'"),
+      ".releaserc.cjs should set release-notes preset to conventionalcommits",
+    );
+    const analyzerRules = readFileSync(join(root, "release", "commit-analyzer-rules.cjs"), "utf8");
+    assert.ok(
+      analyzerRules.includes("conventionalcommits"),
+      "release/commit-analyzer-rules.cjs should set preset to conventionalcommits",
+    );
+  });
+
   it("release.yml wraps semantic-release with release-outcome-summarize.mjs", () => {
     const yml = readFileSync(join(root, ".github", "workflows", "release.yml"), "utf8");
     assert.ok(yml.includes("release-outcome-summarize.mjs"));
