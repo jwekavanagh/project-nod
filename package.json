@@ -1,7 +1,7 @@
 {
   "name": "agentskeptic",
   "version": "4.0.1",
-  "description": "AgentSkeptic compares agent claims with real downstream state — databases, APIs, object stores, and vector stores — and returns a clear verdict.",
+  "description": "Structured tool activity vs downstream state at verify time: SQL (SQLite, Postgres, MySQL), HTTP witnesses, supported vector indexes, MongoDB documents, and S3-compatible objects when configured—deterministic verdict artifacts (see verification-state-stores.md).",
   "license": "MIT",
   "type": "module",
   "workspaces": [
@@ -96,7 +96,6 @@
     "@commitlint/config-conventional": "^20.3.0",
     "@lhci/cli": "0.15.1",
     "@playwright/test": "^1.51.0",
-    "conventional-changelog-conventionalcommits": "^9.3.1",
     "@semantic-release/changelog": "^6.0.0",
     "@semantic-release/exec": "^6.0.0",
     "@semantic-release/git": "^10.0.0",
@@ -105,6 +104,7 @@
     "@types/node": "^22.10.2",
     "@types/pg": "^8.20.0",
     "@types/picomatch": "^4.0.3",
+    "conventional-changelog-conventionalcommits": "^9.3.1",
     "husky": "^9.1.7",
     "openapi-typescript": "^7.10.1",
     "semantic-release": "^25.0.0",
@@ -113,8 +113,10 @@
     "vitest": "^4.1.4"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.1041.0",
     "ajv": "^8.17.1",
     "ajv-formats": "^3.0.1",
+    "mongodb": "^6.21.0",
     "mysql2": "^3.14.0",
     "pg": "^8.20.0",
     "picomatch": "^4.0.4",

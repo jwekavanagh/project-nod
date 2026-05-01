@@ -19,7 +19,7 @@ export type VerificationSqlTarget = {
 function verificationConnectorNotShipped(kind: string): never {
   throw new TruthLayerError(
     CLI_OPERATIONAL_CODES.VERIFICATION_CONNECTOR_NOT_SHIPPED,
-    `Verification connector "${kind}" is not shipped in this OSS package build.`,
+    `Verification connector "${kind}" is not shipped in this package build.`,
   );
 }
 

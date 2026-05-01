@@ -106,7 +106,7 @@ export const supportPageMetadata = {
 export const supportPage = {
   h1: "Support and procurement",
   intro:
-    "AgentSkeptic is the commercial product surface for a read-only SQL verification engine shipped as open source from the same repository.",
+    "AgentSkeptic is the commercial product surface for the open-source verifier: structured tool outputs vs downstream state (SQL-first, optional HTTP / vector / S3 / Mongo witnesses per docs/agentskeptic.md).",
   sections: [
     {
       kind: "supportIssues" as const,
@@ -184,7 +184,7 @@ export const learnHub = {
     {
       href: "/guides/scenario-green-trace-row-missing",
       title: "LangGraph trace looks healthy — but state is wrong",
-      caption: "Catch missing or stale records and vectors after a graph run.",
+      caption: "Catch missing or stale Postgres/SQLite rows—or vector metadata when wired to Pinecone/Weaviate/Chroma.",
     },
     {
       href: "/guides/scenario-ci-green-side-effect-missing",
@@ -257,7 +257,7 @@ export const pricingBillingAndQuestionsBand = {
 export const pricingWhatYouGetPaidPlans = {
   title: "What paid plans unlock",
   bullets: [
-    "Run verification in CI and automatically fail builds on mismatch",
+    "Run verification in CI with explicit exit-code checks you wire (commercial npm reserves usage per docs/commercial.md)",
     "Use locks, enforce, the published npm CLI, and pay-as-you-go overage when you exceed included quota",
     "API keys for licensed features and usage-based billing via Stripe",
   ],
@@ -350,7 +350,7 @@ export const ctaTaxonomy = {
 export const coreValuePropTriptych = {
   problem: "Agents can report success while data is wrong.",
   solution: "Read-only verification against your actual stores.",
-  outcome: "Prevent false-green releases.",
+  outcome: "Reduce false-green deployments when enforced as an explicit gate.",
 } as const;
 
 export const whenToUseDecisionBox = {
@@ -359,7 +359,7 @@ export const whenToUseDecisionBox = {
   notDesignedHeading: "Not designed for",
   strongFitBullets: [
     "You need a release gate that verifies stored state, not just logs.",
-    "You already have queryable stores (SQL, APIs, vectors, object storage).",
+    "You already have SQL or other queryable backends (Mongo, S3, HTTP-checked endpoints, or supported vector indexes).",
     "You have seen green traces that still shipped missing or wrong data.",
     "You need CI-friendly, deterministic verification artifacts for handoffs.",
   ],
@@ -373,8 +373,8 @@ export const whenToUseDecisionBox = {
 
 export const trustStripPills = [
   "Read-only by default",
-  "No production writes",
-  "Audit-friendly outputs",
+  "Verifier does not write your stores",
+  "Structured verdict artifacts",
 ] as const;
 
 /**
@@ -482,7 +482,7 @@ export const productBriefPage = {
         label: "Use AgentSkeptic when",
         items: [
           "You emit structured tool output.",
-          "You have queryable stores (SQL, vectors, S3, Mongo, HTTP-accessible data, and similar).",
+          "You have databases (SQL preferred), MongoDB, S3-compatible object storage you can authorize for Head/Get, HTTP witness URLs, or supported vector indexes (see docs linked from Guides).",
           "You've seen green traces that still left bad or missing data behind.",
         ],
       },

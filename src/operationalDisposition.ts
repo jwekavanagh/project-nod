@@ -723,7 +723,7 @@ export const OPERATIONAL_DISPOSITION = {
   },
   [CLI_OPERATIONAL_CODES.VERIFICATION_CONNECTOR_NOT_SHIPPED]: {
     origin: "inputs",
-    summary: "Verification connector is not shipped in this OSS package build.",
+    summary: "Verification connector is not shipped in this package build.",
     actionableCategory: "bad_input",
     actionableSeverity: "high",
     recommendedAction: "correct_verification_inputs",

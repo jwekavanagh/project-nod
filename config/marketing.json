@@ -18,12 +18,12 @@
   "heroPositioning": "Post-condition verification for AI-agent workflows.",
   "siteDefaultMetadata": {
     "title": "AgentSkeptic",
-    "description": "AgentSkeptic compares agent claims with real downstream state — databases, APIs, object stores, and vector stores — and returns a clear verdict."
+    "description": "Structured tool activity vs downstream state at verify time: SQL (SQLite, Postgres, MySQL), HTTP witnesses, supported vector indexes, MongoDB documents, and S3-compatible objects when configured—deterministic verdict artifacts (see verification-state-stores.md)."
   },
   "homepageAcquisitionCtaLabel": "How it works",
   "pageMetadata": {
     "title": "Traces vs state",
-    "description": "AgentSkeptic compares agent claims with real downstream state — databases, APIs, object stores, and vector stores — and returns a clear verdict."
+    "description": "Structured tool activity vs downstream state at verify time: SQL (SQLite, Postgres, MySQL), HTTP witnesses, supported vector indexes, MongoDB documents, and S3-compatible objects when configured—deterministic verdict artifacts (see verification-state-stores.md)."
   },
   "readmeFold": {
     "templateLines": [

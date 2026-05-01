@@ -23,7 +23,7 @@ We will work with you to understand and address the report before public disclos
 
 ## Scope notes
 
-This tool runs **read-only SQL** against databases you configure and processes **local files** (events, registry, etc.). Threat models should account for **untrusted input files**, **database connectivity**, and **supply chain** (dependencies) like any Node.js CLI.
+The verifier performs **read-only SQL** reads where configured plus **bounded outbound HTTPS** for optional **HTTP witness**, **vector index**, **S3 HeadObject/GetObject**, and **MongoDB** checks. It processes **local files** (events, registry, etc.). Threat models should account for **egress URLs and credentials**, **untrusted NDJSON/registry input**, **database connectivity**, and **supply chain** (dependencies)—including `@aws-sdk/client-s3` and `mongodb`—like any Node.js CLI.
 
 For how enforced dependency pins and merge-gated Drizzle static checks are defined, see **CONTRIBUTING** under **Dependency security (merge gate vs policy)**.
 

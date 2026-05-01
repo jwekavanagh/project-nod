@@ -347,9 +347,9 @@ Relational check authoring and the mapping from product vocabulary to registry c
 
 ### Low-friction integration (runtime)
 
-Primary integration: **`AgentSkeptic.createEmitter`** + **`createDecisionGate`** (or `AgentSkeptic.gate`). Emit canonical events first, append emitted rows to the gate buffer, then run **`gate.assertEmissionQuality()`** before evaluation. Before irreversible work, call **`await assertSafeForIrreversibleAction()`** (throws **`TrustDecisionBlockedError`** carrying **`TrustDecisionRecordV1`** and a six-line human **`message`**). **`evaluate()`** returns **`WorkflowResult`**; **`evaluateCertificate()`** returns **`OutcomeCertificateV1`**.
+Primary integration: **`AgentSkeptic.createEmitter`** + **`createDecisionGate`** (or `AgentSkeptic.gate`). Emit canonical events first, append emitted rows to the gate buffer, then run **`gate.assertEmissionQuality()`** before evaluation. On the **wired** path before irreversible work, call **`await assertSafeForIrreversibleAction()`** (throws **`TrustDecisionBlockedError`** when trust is not **`safe`** — see outcome-certificate normative docs for **`unknown`** vs **`highStakesReliance`**). **`evaluate()`** returns **`WorkflowResult`**; **`evaluateCertificate()`** returns **`OutcomeCertificateV1`**.
 
-**Postgres and SQLite:** pass `databaseUrl` as either a filesystem path (SQLite) or a `postgres://` / `postgresql://` URL. **`consistencyMode: "eventual"`** is supported the same as batch verify. For **MySQL, BigQuery, Microsoft SQL Server**, vector indexes, object storage, HTTP witnesses, and MongoDB verification kinds, see the normative matrix in [`verification-state-stores.md`](verification-state-stores.md).
+**SQLite, Postgres, and MySQL URLs:** pass `databaseUrl` as a SQLite file path, **`postgres://`/`postgresql://`**, or **`mysql://`/`mysql2://`**. **`consistencyMode: "eventual"`** is supported the same as batch verify. **`bigquery://`** and **`sqlserver://`/`mssql://`** parse but do not open yet (see [`verification-state-stores.md`](verification-state-stores.md)). For **vector indexes, S3-compatible object storage, HTTP witnesses, and MongoDB** witness kinds, environment variables and limits are normative in the same file.
 
 Normative contracts:
 

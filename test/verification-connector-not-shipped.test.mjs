@@ -25,7 +25,7 @@ test("openVerificationSqlTarget rejects bigquery with VERIFICATION_CONNECTOR_NOT
       assert.ok(e && typeof e === "object");
       const err = /** @type {{ code?: unknown; message?: unknown }} */ (e);
       assert.equal(err.code, "VERIFICATION_CONNECTOR_NOT_SHIPPED");
-      assert.equal(err.message, `Verification connector "bigquery" is not shipped in this OSS package build.`);
+      assert.equal(err.message, `Verification connector "bigquery" is not shipped in this package build.`);
       return true;
     },
   );

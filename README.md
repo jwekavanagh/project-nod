@@ -68,7 +68,7 @@ npx agentskeptic activate --input ./path/to/workflow-bootstrap-input.json \
 
 1. Keep **`agentskeptic/tools.json`** in version control; update when `toolId` → SQL mapping changes.
 2. Emit observations via the canonical SDK emitter, then append emitted rows to the gate buffer. Optionally mirror the same JSON lines to **`agentskeptic/events.ndjson`** for CI replay.
-3. Immediately **before** any irreversible side effect (ship, bill, ticket close), call **`await gate.assertSafeForIrreversibleAction()`** so unsafe or unknown trust never reaches customers.
+3. On the code path **before** irreversible work you control (ship, bill, ticket close), call **`await gate.assertSafeForIrreversibleAction()`** so **unsafe** trust (or required emissions that never reached the gate) blocks **that** branch — it is not a substitute for wiring the gate everywhere it matters, and outcomes can still be **`unknown`** when **`highStakesReliance`** is not **`permitted`** (see [`docs/outcome-certificate-normative.md`](docs/outcome-certificate-normative.md)).
 
 ### Install
 
