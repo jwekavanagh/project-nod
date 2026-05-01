@@ -1,5 +1,5 @@
 /**
- * Authoritative inventory: `ci.yml`, `release.yml`, `assurance-scheduled.yml`, `deploy-vercel.yml` jobs
+ * Authoritative inventory: `ci.yml`, `release.yml`, `release-package.yml`, `assurance-scheduled.yml`, `deploy-vercel.yml` jobs
  * and AGENTSKEPTIC_TELEMETRY env rules (unified `ci.yml` — there is no separate website workflow).
  */
 import assert from "node:assert/strict";
@@ -23,8 +23,10 @@ describe("GitHub Actions AGENTSKEPTIC_TELEMETRY env", () => {
     const jobs = doc.jobs;
     const ids = Object.keys(jobs).sort();
     assert.deepEqual(ids, [
+      "ci_scope",
       "codeql",
       "commitlint",
+      "product_gate",
       "python",
       "release-preview",
       "replay_verification_truth",
@@ -47,9 +49,13 @@ describe("GitHub Actions AGENTSKEPTIC_TELEMETRY env", () => {
     const doc = loadWorkflow("release.yml");
     const jobs = doc.jobs;
     const ids = Object.keys(jobs).sort();
-    assert.deepEqual(ids, ["publish-pypi", "semantic-release"]);
+    assert.deepEqual(ids, ["semantic-release"]);
     assert.equal(jobs["semantic-release"].env.AGENTSKEPTIC_TELEMETRY, "0");
-    assert.equal(jobs["publish-pypi"].env.AGENTSKEPTIC_TELEMETRY, "0");
+  });
+
+  it("release-package.yml pypi job has telemetry env", () => {
+    const doc = loadWorkflow("release-package.yml");
+    assert.equal(doc.jobs.pypi.env.AGENTSKEPTIC_TELEMETRY, "0");
   });
 
   it("deploy-vercel.yml has no static AGENTSKEPTIC_TELEMETRY in job env (set via GITHUB_ENV when needed)", () => {

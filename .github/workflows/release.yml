@@ -4,7 +4,7 @@
 name: Release
 
 on:
-  # Path filters on the CI workflow do not apply to tag pushes; v* tag CI always runs.
+  # PyPI Trusted Publishing runs from `release-package.yml` on tag push; this file keeps semantic-release.
   workflow_run:
     workflows: [CI]
     types: [completed]
@@ -34,7 +34,8 @@ jobs:
         github.event.workflow_run.conclusion == 'success' &&
         github.event.workflow_run.event == 'push' &&
         github.event.workflow_run.head_repository.full_name == github.repository &&
-        github.event.workflow_run.head_branch == 'main') ||
+        github.event.workflow_run.head_branch == 'main' &&
+        !startsWith(format('{0}', github.event.workflow_run.display_title), 'chore(release):')) ||
       (github.event_name == 'workflow_dispatch' &&
         (inputs.dry_run == true || (inputs.dry_run == false && inputs.full_run == true)))
     runs-on: ubuntu-latest
@@ -123,78 +124,3 @@ jobs:
           set -e
           node scripts/release-outcome-summarize.mjs --log semantic-release.log --exit-code "$sr_exit"
           exit "$sr_exit"
-
-  # PyPI: after tag CI. Job if uses only GHA built-ins; first step enforces SemVer 2.0.0 (v*).
-  publish-pypi:
-    name: Publish PyPI
-    if: |
-      github.event_name == 'workflow_run' &&
-      github.event.workflow_run.conclusion == 'success' &&
-      github.event.workflow_run.event == 'push' &&
-      github.event.workflow_run.head_repository.full_name == github.repository &&
-      startsWith(github.event.workflow_run.head_branch, 'v') &&
-      !contains(github.event.workflow_run.head_branch, '/') &&
-      contains(github.event.workflow_run.head_branch, '.')
-    runs-on: ubuntu-latest
-    env:
-      AGENTSKEPTIC_TELEMETRY: "0"
-    permissions:
-      id-token: write
-      contents: read
-    steps:
-      - name: PyPI path diagnostics (tag workflow_run)
-        shell: bash
-        run: |
-          set -euo pipefail
-          b="${{ github.event.workflow_run.head_branch }}"
-          sha="${{ github.event.workflow_run.head_sha }}"
-          {
-            echo '### publish-pypi: workflow_run (tag path)'
-            echo 'This job only runs when the tag-shaped head_branch filters in publish-pypi matched.'
-            echo "- **head_branch** (expected short SemVer tag, e.g. v1.0.0): ${b}"
-            echo "- **head_sha**: ${sha}"
-            echo "- **triggering event**: ${{ github.event.workflow_run.event }}"
-            echo "- **upstream workflow name**: ${{ github.event.workflow_run.name }}"
-            echo "- **upstream run id**: ${{ github.event.workflow_run.id }}"
-            echo "- **conclusion**: ${{ github.event.workflow_run.conclusion }}"
-          } >> "$GITHUB_STEP_SUMMARY"
-          if [[ -z "$b" ]]; then
-            echo "::error::workflow_run.head_branch is empty; PyPI job condition should not have matched"
-            exit 1
-          fi
-      - name: Assert SemVer 2.0.0 v-tag (head_branch is short tag name for tag push)
-        env:
-          TAG: ${{ github.event.workflow_run.head_branch }}
-        run: |
-          set -euo pipefail
-          re='^v(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(-([0-9A-Za-z-]+)(\.[0-9A-Za-z-]+)*)?(\+([0-9A-Za-z-]+)(\.[0-9A-Za-z-]+)*)?$'
-          [[ "$TAG" =~ $re ]]
-
-      - uses: actions/checkout@v5
-        with:
-          ref: ${{ github.event.workflow_run.head_sha }}
-          fetch-depth: 0
-
-      - uses: actions/setup-python@v6
-        with:
-          python-version: "3.12"
-
-      - name: Build wheel
-        run: |
-          set -e
-          cd python && python -m pip install build -q && python -m build
-
-      - name: Publish to PyPI
-        uses: pypa/gh-action-pypi-publish@release/v1
-        with:
-          packages-dir: python/dist/
-
-      - name: Verify distribution
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GITHUB_REPOSITORY: ${{ github.repository }}
-          HEAD_BRANCH: ${{ github.event.workflow_run.head_branch }}
-        run: |
-          set -euo pipefail
-          export EXPECTED_VERSION="${HEAD_BRANCH#v}"
-          node scripts/verify-release-distribution.mjs

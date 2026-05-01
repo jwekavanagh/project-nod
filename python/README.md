@@ -23,4 +23,4 @@ Cold-path smoke (from **repository root**; copies partner fixtures + `schemas/` 
 docker build -f python/Dockerfile -t agentskeptic-py-verify .
 ```
 
-PyPI releases: the repository version is the single source of truth; the GitHub **Release** workflow (`.github/workflows/release.yml`) creates a `v*.*.*` tag and then publishes the wheel with Trusted Publishing (see root `CONTRIBUTING.md`).
+PyPI releases: the repository version is the single source of truth; **`release.yml`** runs **semantic-release** (tag + npm), then **`.github/workflows/release-package.yml`** publishes the wheel on **`v*.*.*` tag pushes** with Trusted Publishing (see root `CONTRIBUTING.md`).

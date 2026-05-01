@@ -69,10 +69,24 @@ describe("release workflow contract", () => {
     assert.ok(src.includes("RELEASE_OUTCOME="));
   });
 
-  it("publish-pypi has Verify distribution step (T6)", () => {
-    const yml = readFileSync(join(root, ".github", "workflows", "release.yml"), "utf8");
+  it("release-package.yml runs post-PyPI Verify distribution (T6)", () => {
+    const yml = readFileSync(join(root, ".github", "workflows", "release-package.yml"), "utf8");
     assert.ok(yml.includes("node scripts/verify-release-distribution.mjs"));
     assert.ok(yml.includes("GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}"));
     assert.ok(yml.includes("Verify distribution"));
+  });
+
+  it("semantic-release skips workflow_run churn from chore(release): CI completions", () => {
+    const yml = readFileSync(join(root, ".github", "workflows", "release.yml"), "utf8");
+    assert.ok(
+      yml.includes("!startsWith(format('{0}', github.event.workflow_run.display_title), 'chore(release):'))"),
+    );
+    assert.ok(!yml.includes("publish-pypi:"));
+  });
+
+  it("ci.yml invokes ci-scope-light and product_gate naming", () => {
+    const yml = readFileSync(join(root, ".github", "workflows", "ci.yml"), "utf8");
+    assert.ok(yml.includes("scripts/ci-scope-light.mjs"));
+    assert.ok(yml.includes("product_gate:"));
   });
 });
