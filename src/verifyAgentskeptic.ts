@@ -9,7 +9,7 @@ const PROJECT_LAYOUT_MISSING = "PROJECT_VERIFICATION_LAYOUT_MISSING" as const;
 
 /**
  * Thin file-replay alias: reads `agentskeptic/events.ndjson` into a DecisionGate buffer and returns the same Outcome Certificate as batch verify.
- * Prefer `createDecisionGate` for runtime integration.
+ * Prefer **`AgentSkeptic.prototype.replayFromFile`** (`src/sdk/AgentSkeptic.ts`) for integrations.
  */
 export async function verifyAgentskepticImpl(options: {
   workflowId: string;

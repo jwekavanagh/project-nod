@@ -1,21 +1,15 @@
-import { createHash } from "node:crypto";
-import { GetObjectCommand, HeadObjectCommand, S3Client } from "@aws-sdk/client-s3";
-import { MongoClient } from "mongodb";
+import { CLI_OPERATIONAL_CODES } from "./cliOperationalCodes.js";
 import { getPointer } from "./jsonPointer.js";
 import type { ReconcileOutput } from "./reconciler.js";
 import type {
   HttpWitnessVerificationRequest,
-  MongoDocumentVerificationRequest,
-  ObjectStorageVerificationRequest,
   StateWitnessRequest,
   VectorDocumentVerificationRequest,
   VerificationScalar,
 } from "./types.js";
+import { TruthLayerError } from "./truthLayerError.js";
 import { verificationScalarsEqual } from "./valueVerification.js";
 import { SQL_VERIFICATION_OUTCOME_CODE } from "./wireReasonCodes.js";
-
-const S3_DEADLINE_MS = 1900;
-const MAX_S3_BODY_HASH_BYTES = 10 * 1024 * 1024;
 
 function setupError(msg: string): ReconcileOutput {
   return {
@@ -191,93 +185,6 @@ async function reconcileVectorDocument(req: VectorDocumentVerificationRequest): 
   }
 }
 
-async function reconcileObjectStorage(req: ObjectStorageVerificationRequest): Promise<ReconcileOutput> {
-  const region = process.env.AWS_REGION ?? "us-east-1";
-  const client = new S3Client({
-    region,
-    ...(req.endpoint ? { endpoint: req.endpoint, forcePathStyle: true } : {}),
-  });
-  const started = Date.now();
-  try {
-    const head = await Promise.race([
-      client.send(new HeadObjectCommand({ Bucket: req.bucket, Key: req.key })),
-      new Promise<never>((_, rej) => setTimeout(() => rej(new Error("S3 head timeout")), S3_DEADLINE_MS)),
-    ]);
-    const contentLength = Number(head.ContentLength ?? 0);
-    if (req.expectSizeBytes !== undefined && contentLength !== req.expectSizeBytes) {
-      return {
-        status: "inconsistent",
-        reasons: [
-          {
-            code: SQL_VERIFICATION_OUTCOME_CODE.OBJECT_SIZE_MISMATCH,
-            message: `Expected size ${req.expectSizeBytes} but Content-Length is ${contentLength}`,
-          },
-        ],
-        evidenceSummary: { contentLength },
-      };
-    }
-    if (req.expectEtag !== undefined && head.ETag && head.ETag.replaceAll('"', "") !== req.expectEtag.replaceAll('"', "")) {
-      return {
-        status: "inconsistent",
-        reasons: [
-          {
-            code: SQL_VERIFICATION_OUTCOME_CODE.OBJECT_DIGEST_MISMATCH,
-            message: "ETag mismatch",
-          },
-        ],
-        evidenceSummary: {},
-      };
-    }
-    if (req.expectSha256 !== undefined) {
-      if (contentLength > MAX_S3_BODY_HASH_BYTES) {
-        return {
-          status: "inconsistent",
-          reasons: [
-            {
-              code: SQL_VERIFICATION_OUTCOME_CODE.OBJECT_TOO_LARGE_FOR_HASH,
-              message: `Object size ${contentLength} exceeds hash cap ${MAX_S3_BODY_HASH_BYTES}`,
-            },
-          ],
-          evidenceSummary: { contentLength },
-        };
-      }
-      const get = await client.send(new GetObjectCommand({ Bucket: req.bucket, Key: req.key }));
-      const body = get.Body;
-      if (!body || typeof (body as { transformToByteArray?: () => Promise<Uint8Array> }).transformToByteArray !== "function") {
-        return setupError("S3 GetObject body missing or unsupported runtime");
-      }
-      const bytes = await (body as { transformToByteArray: () => Promise<Uint8Array> }).transformToByteArray();
-      const hex = createHash("sha256").update(Buffer.from(bytes)).digest("hex");
-      if (hex !== req.expectSha256.toLowerCase()) {
-        return {
-          status: "inconsistent",
-          reasons: [{ code: SQL_VERIFICATION_OUTCOME_CODE.OBJECT_DIGEST_MISMATCH, message: "SHA-256 mismatch" }],
-          evidenceSummary: {},
-        };
-      }
-    }
-    return {
-      status: "verified",
-      reasons: [],
-      evidenceSummary: { s3: true, elapsedMs: Date.now() - started },
-    };
-  } catch (e: unknown) {
-    const msg = e instanceof Error ? e.message : String(e);
-    if (String(msg).includes("NotFound") || String(msg).includes("404")) {
-      return {
-        status: "missing",
-        reasons: [{ code: SQL_VERIFICATION_OUTCOME_CODE.OBJECT_MISSING, message: "S3 object not found" }],
-        evidenceSummary: {},
-      };
-    }
-    return {
-      status: "incomplete_verification",
-      reasons: [{ code: SQL_VERIFICATION_OUTCOME_CODE.STATE_WITNESS_SETUP_ERROR, message: msg }],
-      evidenceSummary: {},
-    };
-  }
-}
-
 async function reconcileHttpWitness(req: HttpWitnessVerificationRequest): Promise<ReconcileOutput> {
   try {
     const r = await fetchWithDeadline(
@@ -347,62 +254,22 @@ async function reconcileHttpWitness(req: HttpWitnessVerificationRequest): Promis
   }
 }
 
-async function reconcileMongo(req: MongoDocumentVerificationRequest): Promise<ReconcileOutput> {
-  const uri = process.env.AGENTSKEPTIC_MONGO_URL ?? process.env.MONGODB_URI;
-  if (!uri) {
-    return setupError("mongo_document: set AGENTSKEPTIC_MONGO_URL or MONGODB_URI");
-  }
-  const client = new MongoClient(uri);
-  try {
-    await client.connect();
-    const doc = await client.db().collection(req.collection).findOne(req.filter);
-    if (!doc) {
-      return {
-        status: "missing",
-        reasons: [{ code: SQL_VERIFICATION_OUTCOME_CODE.MONGO_DOCUMENT_MISSING, message: "No document matched filter" }],
-        evidenceSummary: {},
-      };
-    }
-    const plain = doc as Record<string, unknown>;
-    for (const [k, exp] of Object.entries(req.requiredFields)) {
-      const act = plain[k];
-      const cmp = verificationScalarsEqual(exp, act as VerificationScalar);
-      if (!cmp.ok) {
-        return {
-          status: "inconsistent",
-          reasons: [
-            {
-              code: SQL_VERIFICATION_OUTCOME_CODE.MONGO_VALUE_MISMATCH,
-              message: `${k}: expected ${cmp.expected} found ${cmp.actual}`,
-            },
-          ],
-          evidenceSummary: { field: k },
-        };
-      }
-    }
-    return { status: "verified", reasons: [], evidenceSummary: { mongo: true } };
-  } catch (e) {
-    const msg = e instanceof Error ? e.message : String(e);
-    return {
-      status: "incomplete_verification",
-      reasons: [{ code: SQL_VERIFICATION_OUTCOME_CODE.STATE_WITNESS_SETUP_ERROR, message: msg }],
-      evidenceSummary: {},
-    };
-  } finally {
-    await client.close().catch(() => {});
-  }
-}
-
 export async function reconcileStateWitness(req: StateWitnessRequest): Promise<ReconcileOutput> {
   switch (req.kind) {
     case "vector_document":
       return reconcileVectorDocument(req);
     case "object_storage_object":
-      return reconcileObjectStorage(req);
+      throw new TruthLayerError(
+        CLI_OPERATIONAL_CODES.VERIFICATION_CONNECTOR_NOT_SHIPPED,
+        `Verification connector "object_storage_object" is not shipped in this OSS package build.`,
+      );
     case "http_witness":
       return reconcileHttpWitness(req);
     case "mongo_document":
-      return reconcileMongo(req);
+      throw new TruthLayerError(
+        CLI_OPERATIONAL_CODES.VERIFICATION_CONNECTOR_NOT_SHIPPED,
+        `Verification connector "mongo_document" is not shipped in this OSS package build.`,
+      );
     default:
       return setupError("unknown state witness kind");
   }

@@ -1,8 +1,4 @@
-import {
-  buildOutcomeCertificateFromWorkflowResult,
-  loadSchemaValidator,
-  verifyWorkflow,
-} from "agentskeptic";
+import { AgentSkeptic, buildOutcomeCertificateFromWorkflowResult, loadSchemaValidator } from "agentskeptic";
 import { randomUUID } from "node:crypto";
 import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import os from "node:os";
@@ -23,7 +19,7 @@ export class BundledVerifyResultSchemaMismatchError extends Error {
 export class BundledVerifyEngineFailedError extends Error {
   readonly code = "BUNDLED_VERIFY_ENGINE_FAILED" as const;
   constructor() {
-    super("verifyWorkflow threw");
+    super("AgentSkeptic.verify threw");
     this.name = "BundledVerifyEngineFailedError";
   }
 }
@@ -52,7 +48,12 @@ export async function runBundledContractVerify(input: BundledVerifyInput): Promi
   try {
     let workflowResult;
     try {
-      workflowResult = await verifyWorkflow({
+      const agent = new AgentSkeptic({
+        registryPath: paths.toolsJson,
+        databaseUrl: paths.demoDb,
+        projectRoot: paths.examplesDir,
+      });
+      workflowResult = await agent.verify({
         workflowId: input.workflowId,
         eventsPath,
         registryPath: paths.toolsJson,
@@ -91,7 +92,7 @@ async function writePasteEventsTempFile(eventsNdjson: string): Promise<string> {
   const suffix = randomUUID().replace(/-/g, "");
   const filePath = path.join(dir, `events-${suffix}.ndjson`);
   await writeFile(filePath, eventsNdjson, "utf8");
-  // Force a readback to guarantee UTF-8 write visibility before verifyWorkflow reads.
+  // Force a readback to guarantee UTF-8 write visibility before AgentSkeptic.verify reads.
   await readFile(filePath, "utf8");
   return filePath;
 }

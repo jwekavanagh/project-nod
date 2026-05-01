@@ -36,14 +36,9 @@ export type {
 export { loadToolsRegistry, verifyRunStateFromEvents } from "./pipeline.js";
 export type { VerifyRunStateFromEventsInput } from "./pipeline.js";
 export {
-  verifyWorkflow,
-  createDecisionGate,
-  verifyAgentskeptic,
-  runQuickVerify,
-  runQuickVerifyToValidatedReport,
   assertLangGraphCheckpointProductionGate,
   createLangGraphCheckpointTrustGate,
-} from "./sdk/deprecatedPublicApi.js";
+} from "./langGraphCheckpointTrustGate.js";
 export type { CreateDecisionGateOptions, DecisionGate } from "./decisionGate.js";
 export { classifyLangGraphCheckpointTrustEligibility } from "./langGraphCheckpointTrustGate.js";
 export type {

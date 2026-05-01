@@ -1,23 +1,23 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import * as agentskeptic from "agentskeptic";
+import { AgentSkeptic } from "agentskeptic";
 import { runBundledContractVerify } from "@/lib/bundledContractVerify";
 
 describe("runBundledContractVerify", () => {
-  const verifyWorkflow = vi.spyOn(agentskeptic, "verifyWorkflow");
+  const verify = vi.spyOn(AgentSkeptic.prototype, "verify");
   const consoleError = vi.spyOn(console, "error").mockImplementation(() => {});
 
   beforeEach(() => {
-    verifyWorkflow.mockReset();
+    verify.mockReset();
     consoleError.mockClear();
   });
 
   afterEach(() => {
-    vi.mocked(verifyWorkflow).mockRestore();
+    vi.mocked(verify).mockRestore();
     consoleError.mockRestore();
   });
 
-  it("logs before BundledVerifyEngineFailedError when verifyWorkflow throws", async () => {
-    verifyWorkflow.mockRejectedValue(new Error("injected-failure"));
+  it("logs before BundledVerifyEngineFailedError when AgentSkeptic.verify throws", async () => {
+    verify.mockRejectedValue(new Error("injected-failure"));
     await expect(
       runBundledContractVerify({
         kind: "scenarioFile",

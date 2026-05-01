@@ -15,7 +15,7 @@ import { DatabaseSync } from "node:sqlite";
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const root = resolve(__dirname, "..");
 const templatePath = join(root, "scripts", "templates", "integrate-activation-shell.bash");
-const verdictPath = join(root, "artifacts", "integrate-spine-validation-verdict.json");
+const verdictPath = join(root, "artifacts", "generated", "integrate-spine-validation-verdict.json");
 const examplesIntegrateDir = join(root, "examples", "integrate-your-db");
 const bootstrapInput = join(examplesIntegrateDir, "bootstrap-input.json");
 const requiredSql = join(examplesIntegrateDir, "required-sqlite-state.sql");

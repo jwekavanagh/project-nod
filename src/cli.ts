@@ -71,7 +71,6 @@ import { classifyQuickVerifyWorkload } from "./commercial/verifyWorkloadClassify
 import { LICENSE_PREFLIGHT_ENABLED } from "./generated/commercialBuildFlags.js";
 import { formatDistributionFooter } from "./distributionFooter.js";
 import { postPublicVerificationReport } from "./shareReport/postPublicVerificationReport.js";
-import { runRegistryDraftCliAndExit } from "./registryDraft/runRegistryDraftCli.js";
 import { runActivateSubcommand, runBootstrapSubcommand } from "./bootstrap/runBootstrapSubcommand.js";
 import { runBatchVerifyWithTelemetrySubcommand } from "./verify/batchVerifyTelemetrySubcommand.js";
 import { runCrossingSubcommand } from "./crossing/runCrossingSubcommand.js";
@@ -141,9 +140,6 @@ function usageVerify(): string {
 
   agentskeptic quick --input <path> (--postgres-url <url> | --db <sqlitePath>) --export-registry <path> [--emit-events <path>] [--workflow-id <id>]
     (advanced/specialized path; structured tool activity + read-only SQL; see docs/quick-verify-normative.md)
-
-  agentskeptic registry-draft --provider hosted_openai|local_ollama --request <registry-draft-request.json> [--out <dir>]
-    (DraftEngine assisted draft tools.json + deterministic quick-ingest NDJSON JSON to stdout — see docs/registry-draft.md)
 
   agentskeptic crossing --bootstrap-input <path> --pack-out <path> (--db <sqlitePath> | --postgres-url <url>) [--no-human-report]
   agentskeptic crossing --workflow-id <id> --events <path> --registry <path> (--db <sqlitePath> | --postgres-url <url>) [--no-human-report]
@@ -1410,10 +1406,6 @@ async function main(): Promise<void> {
   }
   if (args[0] === "bootstrap") {
     await runBootstrapSubcommand(args.slice(1));
-    return;
-  }
-  if (args[0] === "registry-draft") {
-    await runRegistryDraftCliAndExit(args.slice(1));
     return;
   }
   if (args[0] === "verify-bundle-signature") {

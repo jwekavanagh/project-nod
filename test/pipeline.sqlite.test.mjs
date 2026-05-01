@@ -7,7 +7,7 @@ import { fileURLToPath } from "node:url";
 import { dirname } from "node:path";
 import { DatabaseSync } from "node:sqlite";
 import { verifyWorkflow } from "../dist/pipeline.js";
-import { createDecisionGate } from "../dist/index.js";
+import { AgentSkeptic } from "../dist/index.js";
 import { formatWorkflowTruthReport } from "../dist/workflowTruthReport.js";
 import { loadSchemaValidator } from "../dist/schemaLoad.js";
 import { loadEventsForWorkflow } from "../dist/loadEvents.js";
@@ -418,11 +418,13 @@ describe("verifyWorkflow integration", () => {
     }
     assert.ok(ev);
     const received = [];
-    const gate = createDecisionGate({
-      workflowId: "wf_complete",
+    const agent = new AgentSkeptic({
       registryPath,
       databaseUrl: dbPath,
       projectRoot: root,
+    });
+    const gate = agent.gate({
+      workflowId: "wf_complete",
       logStep: noopLog,
       truthReport: (s) => received.push(s),
     });

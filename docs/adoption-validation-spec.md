@@ -15,10 +15,10 @@ This document defines how the repository proves the **adoption golden path**: de
 | DOC_BOUNDARY | `adoption-docs-boundary.test.mjs` |
 | GOLDEN_PATH_EXECUTABLE | `docs-golden-path-pointer-only.test.mjs` |
 | ARTIFACT_REGISTRY | `adoption_validation_spec_registry_matches_plan` |
-| ADOPTION_COMPLETE_PATTERN | `node scripts/validate-adoption-complete.mjs` — PatternComplete bootstrap + verify on temp paths; writes `artifacts/adoption-complete-validation-verdict.json` |
+| ADOPTION_COMPLETE_PATTERN | `node scripts/validate-adoption-complete.mjs` — PatternComplete bootstrap + verify on temp paths; writes `artifacts/generated/adoption-complete-validation-verdict.json` |
 | VERDICT | `npm test` runs `npm run build`, Vitest, pinned SQLite `node:test`, `node scripts/first-run.mjs`, `node scripts/validate-adoption-complete.mjs`, `npm run partner-quickstart`, `node scripts/validate-integrate-spine.mjs`, `node dist/cli.js assurance run --manifest examples/assurance/manifest.json`, `node scripts/commercial-enforce-test-harness.mjs`, then `npm run build` again (restore OSS `dist/` after the commercial harness), then `npm run validate-ttfv` — **no** Postgres |
-| INTEGRATE_SPINE | `node scripts/validate-integrate-spine.mjs` — full L0 bash E2E, classifier `non_bundled`, missing-env negative, DB-mismatch negative (bootstrap non-zero when contract row absent); writes `artifacts/integrate-spine-validation-verdict.json` |
-| ADOPTION_EPISTEMICS_CONTRACT | `adoption-epistemics-contract.test.mjs` — asserts `artifacts/commercial-validation-verdict.json` `layers` shape (`playwrightCommercialE2e`, no `funnel`) and anchor SSOT links |
+| INTEGRATE_SPINE | `node scripts/validate-integrate-spine.mjs` — full L0 bash E2E, classifier `non_bundled`, missing-env negative, DB-mismatch negative (bootstrap non-zero when contract row absent); writes `artifacts/generated/integrate-spine-validation-verdict.json` |
+| ADOPTION_EPISTEMICS_CONTRACT | `adoption-epistemics-contract.test.mjs` — asserts `artifacts/generated/commercial-validation-verdict.json` `layers` shape (`playwrightCommercialE2e`, no `funnel`) and anchor SSOT links |
 | REGISTRY_NO_STEPS | `src/registryValidation.test.ts` |
 
 ## ADOPTION_ARTIFACT_PROOF (registry TSV)
@@ -26,10 +26,10 @@ This document defines how the repository proves the **adoption golden path**: de
 Canonical registry: exactly **63** data rows (`relpath<TAB>op`), UTF-16 lexicographic order on `relpath`, no header row.
 
 ```adoption-registry
-artifacts/adoption-complete-validation-verdict.json	add
-artifacts/adoption-validation-verdict.json	add
-artifacts/commercial-validation-verdict.json	modify
-artifacts/integrate-spine-validation-verdict.json	add
+artifacts/generated/adoption-complete-validation-verdict.json	add
+artifacts/generated/adoption-validation-verdict.json	add
+artifacts/generated/commercial-validation-verdict.json	modify
+artifacts/generated/integrate-spine-validation-verdict.json	add
 config/epistemic-contract-structure.json	add
 docs/adoption-epistemics.md	add
 docs/adoption-validation-spec.md	modify
@@ -92,4 +92,4 @@ website/src/generated/integrateActivationShellStatic.ts	modify
 website/src/generated/integratorDocsEmbedded.ts	modify
 ```
 
-After a successful `npm test`, that chain (see VERDICT row) has exercised the onboarding smoke (`scripts/first-run.mjs`), **PatternComplete** proof (`scripts/validate-adoption-complete.mjs`), **IntegrateSpine** proof (`scripts/validate-integrate-spine.mjs`), `assurance run` against `examples/assurance/manifest.json`, the commercial enforce harness (rebuilds commercial `dist/`; minimal CI enforcement, `enforce` tests, and `assurance` CLI regression tests), a final **`npm run build`** to restore the default OSS `dist/` (commercial **`quick`**/`verify` requires a license server, so TTFV must run on OSS), then TTFV validation. Optional legacy scripts `scripts/record-adoption-verdict.mjs` and `scripts/verify-adoption-verdict.mjs` can still record `artifacts/adoption-validation-verdict.json` manually; they are **not** invoked by the default `npm test` script.
+After a successful `npm test`, that chain (see VERDICT row) has exercised the onboarding smoke (`scripts/first-run.mjs`), **PatternComplete** proof (`scripts/validate-adoption-complete.mjs`), **IntegrateSpine** proof (`scripts/validate-integrate-spine.mjs`), `assurance run` against `examples/assurance/manifest.json`, the commercial enforce harness (rebuilds commercial `dist/`; minimal CI enforcement, `enforce` tests, and `assurance` CLI regression tests), a final **`npm run build`** to restore the default OSS `dist/` (commercial **`quick`**/`verify` requires a license server, so TTFV must run on OSS), then TTFV validation. Optional legacy scripts `scripts/record-adoption-verdict.mjs` and `scripts/verify-adoption-verdict.mjs` can still record `artifacts/generated/adoption-validation-verdict.json` manually; they are **not** invoked by the default `npm test` script.

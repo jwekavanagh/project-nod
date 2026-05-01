@@ -1,26 +1,10 @@
 import { describe, it, expect, vi, afterEach } from "vitest";
-
-const s3Send = vi.hoisted(() => vi.fn());
-
-vi.mock("@aws-sdk/client-s3", () => ({
-  S3Client: class MockS3Client {
-    send = s3Send;
-  },
-  HeadObjectCommand: class HeadObjectCommand {
-    constructor(public readonly input: unknown) {}
-  },
-  GetObjectCommand: class GetObjectCommand {
-    constructor(public readonly input: unknown) {}
-  },
-}));
-
 import { reconcileStateWitness } from "./stateWitness.js";
 
 describe("reconcileStateWitness", () => {
   afterEach(() => {
     vi.unstubAllGlobals();
     vi.restoreAllMocks();
-    s3Send.mockReset();
   });
 
   describe("http_witness", () => {
@@ -90,43 +74,20 @@ describe("reconcileStateWitness", () => {
     });
   });
 
-  describe("object_storage_object", () => {
-    it("returns verified when HeadObject matches size and ETag", async () => {
-      s3Send.mockResolvedValueOnce({ ContentLength: 3, ETag: '"abc"' });
-      const out = await reconcileStateWitness({
-        kind: "object_storage_object",
-        bucket: "b",
-        key: "k",
-        expectSizeBytes: 3,
-        expectEtag: "abc",
+  describe("object_storage_object connector not shipped", () => {
+    it("rejects TruthLayerError synchronously before AWS imports", async () => {
+      await expect(
+        reconcileStateWitness({
+          kind: "object_storage_object",
+          bucket: "b",
+          key: "k",
+          expectSizeBytes: 1,
+          expectEtag: "a",
+        }),
+      ).rejects.toMatchObject({
+        code: "VERIFICATION_CONNECTOR_NOT_SHIPPED",
+        message: 'Verification connector "object_storage_object" is not shipped in this OSS package build.',
       });
-      expect(out.status).toBe("verified");
-      expect(s3Send).toHaveBeenCalledTimes(1);
-    });
-
-    it("returns inconsistent on ETag mismatch", async () => {
-      s3Send.mockResolvedValueOnce({ ContentLength: 3, ETag: '"wrong"' });
-      const out = await reconcileStateWitness({
-        kind: "object_storage_object",
-        bucket: "b",
-        key: "k",
-        expectEtag: "expected",
-      });
-      expect(out.status).toBe("inconsistent");
-      expect(out.reasons[0]?.code).toBe("OBJECT_DIGEST_MISMATCH");
-    });
-
-    it("returns inconsistent when full-object hash requested over byte cap", async () => {
-      const big = 11 * 1024 * 1024;
-      s3Send.mockResolvedValueOnce({ ContentLength: big, ETag: '"x"' });
-      const out = await reconcileStateWitness({
-        kind: "object_storage_object",
-        bucket: "b",
-        key: "k",
-        expectSha256: "a".repeat(64),
-      });
-      expect(out.status).toBe("inconsistent");
-      expect(out.reasons[0]?.code).toBe("OBJECT_TOO_LARGE_FOR_HASH");
     });
   });
 });

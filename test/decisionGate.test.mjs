@@ -11,7 +11,6 @@ import { dirname } from "node:path";
 import { DatabaseSync } from "node:sqlite";
 import * as api from "../dist/index.js";
 import { verifyWorkflow } from "../dist/pipeline.js";
-import { createDecisionGate } from "../dist/index.js";
 import { loadSchemaValidator } from "../dist/schemaLoad.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -51,8 +50,8 @@ describe("DecisionGate", () => {
   const noopLog = () => {};
 
   it("public export surface", () => {
-    assert.equal(Object.hasOwn(api, "createDecisionGate"), true);
-    assert.equal(typeof api.createDecisionGate, "function");
+    assert.equal(Object.hasOwn(api, "AgentSkeptic"), true);
+    assert.equal(typeof api.AgentSkeptic, "function");
     assert.equal(Object.hasOwn(api, "formatWorkflowTruthReport"), true);
     assert.equal(typeof api.formatWorkflowTruthReport, "function");
     assert.equal(Object.hasOwn(api, "STEP_STATUS_TRUTH_LABELS"), true);
@@ -77,8 +76,7 @@ describe("DecisionGate", () => {
       truthReport: () => {},
       verificationPolicy: policy,
     });
-    const gate = createDecisionGate({
-      workflowId: "wf_complete",
+    const agent = new api.AgentSkeptic({
       registryPath,
       databaseUrl: dbPath,
       projectRoot: root,
@@ -86,6 +84,7 @@ describe("DecisionGate", () => {
       truthReport: () => {},
       verificationPolicy: policy,
     });
+    const gate = agent.gate("wf_complete");
     for (const ev of eventsForWorkflow(eventsPath, "wf_complete")) {
       gate.appendRunEvent(ev);
     }
@@ -104,14 +103,14 @@ describe("DecisionGate", () => {
         logStep: noopLog,
         truthReport: () => {},
       });
-      const gate = createDecisionGate({
-        workflowId: wf,
+      const agent = new api.AgentSkeptic({
         registryPath,
         databaseUrl: dbPath,
         projectRoot: root,
         logStep: noopLog,
         truthReport: () => {},
       });
+      const gate = agent.gate(wf);
       for (const ev of events) {
         gate.appendRunEvent(ev);
       }
@@ -147,14 +146,14 @@ describe("DecisionGate", () => {
       logStep: noopLog,
       truthReport: () => {},
     });
-    const gate = createDecisionGate({
-      workflowId: "wf_wrap_order",
+    const agent = new api.AgentSkeptic({
       registryPath,
       databaseUrl: dbPath,
       projectRoot: root,
       logStep: noopLog,
       truthReport: () => {},
     });
+    const gate = agent.gate("wf_wrap_order");
     gate.appendRunEvent(evLate);
     gate.appendRunEvent(evFirst);
     const gateResult = await gate.evaluate();
@@ -163,14 +162,14 @@ describe("DecisionGate", () => {
   });
 
   it("non-object appendRunEvent → MALFORMED_EVENT_LINE, incomplete, no steps", async () => {
-    const gate = createDecisionGate({
-      workflowId: "wf_complete",
+    const agent = new api.AgentSkeptic({
       registryPath,
       databaseUrl: dbPath,
       projectRoot: root,
       logStep: noopLog,
       truthReport: () => {},
     });
+    const gate = agent.gate("wf_complete");
     gate.appendRunEvent("not-json-line");
     const result = await gate.evaluate();
     assert.equal(result.status, "incomplete");
@@ -179,14 +178,14 @@ describe("DecisionGate", () => {
   });
 
   it("invalid object appendRunEvent → MALFORMED_EVENT_LINE", async () => {
-    const gate = createDecisionGate({
-      workflowId: "wf_complete",
+    const agent = new api.AgentSkeptic({
       registryPath,
       databaseUrl: dbPath,
       projectRoot: root,
       logStep: noopLog,
       truthReport: () => {},
     });
+    const gate = agent.gate("wf_complete");
     gate.appendRunEvent({});
     const result = await gate.evaluate();
     assert.equal(result.status, "incomplete");
@@ -197,14 +196,14 @@ describe("DecisionGate", () => {
   it("wrong workflowId on event is skipped", async () => {
     const good = eventsForWorkflow(eventsPath, "wf_complete")[0];
     const other = eventsForWorkflow(eventsPath, "wf_missing")[0];
-    const gate = createDecisionGate({
-      workflowId: "wf_complete",
+    const agent = new api.AgentSkeptic({
       registryPath,
       databaseUrl: dbPath,
       projectRoot: root,
       logStep: noopLog,
       truthReport: () => {},
     });
+    const gate = agent.gate("wf_complete");
     gate.appendRunEvent(other);
     gate.appendRunEvent(good);
     const result = await gate.evaluate();
@@ -230,14 +229,14 @@ describe("DecisionGate", () => {
       logStep: noopLog,
       truthReport: () => {},
     });
-    const gate = createDecisionGate({
-      workflowId: "wf_dup_seq",
+    const agent = new api.AgentSkeptic({
       registryPath,
       databaseUrl: dbPath,
       projectRoot: root,
       logStep: noopLog,
       truthReport: () => {},
     });
+    const gate = agent.gate("wf_dup_seq");
     assert.equal(gate.appendRunEvent(events[0]), undefined);
     assert.equal(gate.appendRunEvent(events[1]), undefined);
     const result = await gate.evaluate();
@@ -248,14 +247,14 @@ describe("DecisionGate", () => {
 
   it("success path WorkflowResult validates workflow-result schema", async () => {
     const ev = eventsForWorkflow(eventsPath, "wf_complete")[0];
-    const gate = createDecisionGate({
-      workflowId: "wf_complete",
+    const agent = new api.AgentSkeptic({
       registryPath,
       databaseUrl: dbPath,
       projectRoot: root,
       logStep: noopLog,
       truthReport: () => {},
     });
+    const gate = agent.gate("wf_complete");
     gate.appendRunEvent(ev);
     const result = await gate.evaluate();
     const validateResult = loadSchemaValidator("workflow-result");

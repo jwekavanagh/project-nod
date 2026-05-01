@@ -29,7 +29,7 @@ const extra = [
 
 const all = [...new Set([...unique, ...extra])].sort();
 
-const defaultRemed = "See docs/migrate-2.md and the AgentSkeptic 2.0 integrator guide (docs/integrate.md).";
+const defaultRemed = "See docs/migrate-2.md (v4 API) and docs/integrate.md.";
 
 const entries = all.map((code) => {
   const isLicense =

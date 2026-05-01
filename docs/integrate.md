@@ -60,7 +60,7 @@ npx agentskeptic init --framework none --database sqlite --yes
 - `AgentSkepticError` — unified errors with stable codes (`schemas/agentskeptic-error-codes.json`)
 - `agentskeptic/next` — `createNextRouteHandler` for App Router POST handlers
 
-Legacy exports (`createDecisionGate`, `verifyWorkflow`, …) remain **deprecated** wrappers; see [`docs/migrate-2.md`](migrate-2.md).
+Integrations should **`import { AgentSkeptic } from "agentskeptic"`**; legacy root-callable helpers were removed in **v4**. See [`migrate-2.md`](migrate-2.md) for replacements.
 
 ### Next.js (App Router)
 

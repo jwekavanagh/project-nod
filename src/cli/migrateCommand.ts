@@ -1,6 +1,5 @@
-import { readdirSync, writeFileSync } from "node:fs";
+import { readFileSync, readdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
-import { Node, Project } from "ts-morph";
 
 const DEPRECATED_CALLS = new Set([
   "createDecisionGate",
@@ -33,7 +32,7 @@ function walk(dir: string, out: string[]): void {
 
 /**
  * Scans for deprecated v1 API call expressions. With `--write`, appends a one-line migration hint to the file
- * once (marker `// @agentskeptic-migrate-v2 processed`) — conservative; full AST rewrites are manual (see docs/migrate-2.md).
+ * once (marker `// @agentskeptic-migrate processed`) — conservative; full AST rewrites are manual (see docs/migrate-2.md).
  */
 export function runMigrateCommand(args: string[]): void {
   const paths = args.filter((a) => !a.startsWith("-") && a.length > 0);
@@ -42,7 +41,7 @@ export function runMigrateCommand(args: string[]): void {
   if (args.includes("--help") || args.includes("-h")) {
     process.stdout.write(`Usage: agentskeptic migrate [rootDir] [--write]
 
-Reports lines using deprecated AgentSkeptic 1.x APIs that should migrate to AgentSkeptic and AgentSkepticError (v2).
+Reports lines referencing removed root APIs that should migrate to AgentSkeptic (see docs/migrate-2.md).
 With --write, marks each file once with a comment pointing at docs/migrate-2.md (does not rewrite call sites).
 
 `);
@@ -51,25 +50,28 @@ With --write, marks each file once with a comment pointing at docs/migrate-2.md 
 
   const files: string[] = [];
   walk(root, files);
-  const project = new Project({});
-  for (const f of files) {
-    try {
-      project.addSourceFileAtPath(f);
-    } catch {
-      /* skip unreadable */
-    }
-  }
 
   const matches: { file: string; line: number; name: string }[] = [];
-  for (const sf of project.getSourceFiles()) {
-    sf.forEachDescendant((node) => {
-      if (!Node.isCallExpression(node)) return;
-      const expr = node.getExpression();
-      if (!Node.isIdentifier(expr)) return;
-      const name = expr.getText();
-      if (!DEPRECATED_CALLS.has(name)) return;
-      matches.push({ file: sf.getFilePath(), line: node.getStartLineNumber(), name });
-    });
+  for (const abs of files) {
+    /** skip obvious generated */
+    const baseName = abs.split(/[/\\]/).pop() ?? "";
+    if (baseName.endsWith(".generated.ts")) continue;
+
+    let text: string;
+    try {
+      text = readFileSync(abs, "utf8");
+    } catch {
+      continue;
+    }
+    const lines = text.split(/\r?\n/);
+    for (let i = 0; i < lines.length; i++) {
+      const lineText = lines[i] ?? "";
+      for (const name of DEPRECATED_CALLS) {
+        const escaped = name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+        const re = new RegExp(`\\b${escaped}\\s*\\(`);
+        if (re.test(lineText)) matches.push({ file: abs, line: i + 1, name });
+      }
+    }
   }
 
   for (const m of matches) {
@@ -80,11 +82,10 @@ With --write, marks each file once with a comment pointing at docs/migrate-2.md 
     const touched = new Set<string>();
     for (const m of matches) touched.add(m.file);
     for (const file of touched) {
-      const sf = project.getSourceFile(file);
-      if (!sf) continue;
-      const text = sf.getFullText();
-      if (text.includes("@agentskeptic-migrate-v2 processed")) continue;
-      const banner = `\n// @agentskeptic-migrate-v2 processed — see docs/migrate-2.md for AgentSkeptic v2 rewrites.\n`;
+      let text = readFileSync(file, "utf8");
+      if (text.includes("@agentskeptic-migrate processed") || text.includes("@agentskeptic-migrate-v2 processed"))
+        continue;
+      const banner = `\n// @agentskeptic-migrate processed — see docs/migrate-2.md for AgentSkeptic v4 API mapping.\n`;
       writeFileSync(file, text.trimEnd() + banner, "utf8");
     }
   }

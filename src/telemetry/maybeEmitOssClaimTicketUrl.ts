@@ -1,8 +1,6 @@
 import { randomBytes } from "node:crypto";
 import { LICENSE_PREFLIGHT_ENABLED } from "../generated/commercialBuildFlags.js";
 import { newActivationHttpCorrelationId } from "../commercial/activationCorrelation.js";
-import { openHandoffUrlInOsBrowser } from "./openHandoffUrlInOsBrowser.js";
-import { postOssClaimContinuation } from "./postOssClaimContinuation.js";
 import { postOssClaimTicket } from "./postOssClaimTicket.js";
 
 export async function maybeEmitOssClaimTicketUrlToStderr(input: {
@@ -11,11 +9,11 @@ export async function maybeEmitOssClaimTicketUrlToStderr(input: {
   workload_class: "bundled_examples" | "non_bundled";
   subcommand: "batch_verify" | "quick_verify" | "verify_integrator_owned";
   build_profile: "oss" | "commercial";
-  /** When set, reused for claim-ticket + claim-continuation HTTP `x-request-id`. */
+  /** When set, reused for claim-ticket HTTP `x-request-id`. */
   xRequestId?: string;
 }): Promise<void> {
   if (LICENSE_PREFLIGHT_ENABLED) return;
-  if (process.env.AGENTSKEPTIC_OSS_CLAIM_STDERR?.trim() === "0") return;
+  if (process.env.AGENTSKEPTIC_OSS_CLAIM?.trim() !== "1") return;
   if (process.env.AGENTSKEPTIC_TELEMETRY?.trim() === "0") return;
 
   const claim_secret = randomBytes(32).toString("hex");
@@ -35,12 +33,6 @@ export async function maybeEmitOssClaimTicketUrlToStderr(input: {
     xRequestId,
   });
   if (r.outcome === "ok") {
-    if (interactiveHuman) {
-      const { ok } = await openHandoffUrlInOsBrowser(r.handoff_url);
-      if (ok) {
-        await postOssClaimContinuation(claim_secret, xRequestId);
-      }
-    }
     console.error(
       `[agentskeptic] Link this verification run to your account: ${r.handoff_url} — open the link, then sign in with email when prompted.`,
     );

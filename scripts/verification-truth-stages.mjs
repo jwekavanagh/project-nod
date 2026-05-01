@@ -74,6 +74,8 @@ export const phases = {
   playwrightInstall: () => run("npx playwright install chromium"),
   playwright: () => run("npm run test:debug-ui"),
   rebuildOss: () => run("npm run build"),
+  verificationConnectorNotShipped: () =>
+    run("node --test --test-force-exit test/verification-connector-not-shipped.test.mjs"),
   validateTtfv: () => run("npm run validate-ttfv"),
   relatedExists: () => run("node scripts/related-exists-export-user-outcome.mjs"),
   ciWorkflowTruthSingle: () =>
@@ -108,6 +110,7 @@ export const profileCiTail = [
   "commercialEnforcePostgres",
   "playwright",
   "rebuildOss",
+  "verificationConnectorNotShipped",
   "validateTtfv",
   "relatedExists",
   "ciWorkflowTruthSingle",

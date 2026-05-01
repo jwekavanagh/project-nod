@@ -20,7 +20,12 @@ function run(cmd) {
  */
 export function runRepoPolicyAndApiGuards() {
   run(
-    "node scripts/align-esbuild-kit-lock-nested.mjs && " +
+    "node scripts/assert-ci-json-parse.mjs && " +
+      "node scripts/assert-artifacts-generated-not-tracked.mjs && " +
+      "node scripts/assert-npm-footprint-improved.mjs && " +
+      "node scripts/assert-v4-copy-invariants.mjs && " +
+      "node scripts/assert-no-browser-open-in-kernel.mjs && " +
+      "node scripts/align-esbuild-kit-lock-nested.mjs && " +
       "node scripts/assert-version-integrity.mjs && " +
       "node scripts/assert-dependency-security-pins.mjs && " +
       "node scripts/assert-no-legacy-verify-surface.mjs && " +
@@ -28,11 +33,11 @@ export function runRepoPolicyAndApiGuards() {
       "node scripts/assert-openapi-covers-activation-routes.mjs && " +
       "node scripts/assert-trust-major-export-surface.mjs && " +
       "node scripts/assert-commercial-trust-ingest-rules.mjs && " +
+      "node scripts/assert-public-api-v4.mjs && " +
       "node scripts/check-agentskeptic-compare-delegation.mjs && " +
       "node scripts/assert-no-adhoc-fetch-for-activation.mjs && " +
       "node scripts/assert-error-code-parity.mjs && " +
       "node scripts/assert-pydantic-matches-openapi.mjs && " +
-      "node scripts/assert-deprecations-still-export.mjs && " +
       "node scripts/assert-python-httpx-scope.mjs && " +
       "node scripts/assert-no-verification-receipt-bypass-env.mjs",
   );

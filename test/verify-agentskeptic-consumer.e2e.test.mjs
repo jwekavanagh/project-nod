@@ -116,8 +116,9 @@ test("consumer E2E: verifyAgentskeptic scenarios via packed tarball", async () =
 
     writeFileSync(join(asDir, "events.ndjson"), `${JSON.stringify(eventOk)}\n`);
 
-    const runnerA = `import { verifyAgentskeptic } from 'agentskeptic';
-const certificate = await verifyAgentskeptic({ workflowId: 'e2e_ok', databaseUrl: 'app.db' });
+    const runnerA = `import { AgentSkeptic } from 'agentskeptic';
+const agent = new AgentSkeptic({ registryPath: 'agentskeptic/tools.json', databaseUrl: 'app.db', projectRoot: process.cwd(), logStep: () => {}, truthReport: () => {} });
+const certificate = await agent.replayFromFile({ workflowId: 'e2e_ok' });
 if (certificate.stateRelation !== 'matches_expectations' || certificate.highStakesReliance !== 'permitted') process.exit(2);
 process.exit(0);
 `;
@@ -136,8 +137,9 @@ process.exit(0);
     };
     writeFileSync(join(asDir, "events.ndjson"), `${JSON.stringify(eventBad)}\n`);
 
-    const runnerB = `import { verifyAgentskeptic } from 'agentskeptic';
-const certificate = await verifyAgentskeptic({ workflowId: 'e2e_bad', databaseUrl: 'app.db' });
+    const runnerB = `import { AgentSkeptic } from 'agentskeptic';
+const agent = new AgentSkeptic({ registryPath: 'agentskeptic/tools.json', databaseUrl: 'app.db', projectRoot: process.cwd(), logStep: () => {}, truthReport: () => {} });
+const certificate = await agent.replayFromFile({ workflowId: 'e2e_bad' });
 if (certificate.stateRelation !== 'does_not_match' || certificate.highStakesReliance !== 'prohibited') process.exit(3);
 if (!certificate.explanation.details.some((d) => d.code === 'ROW_ABSENT')) process.exit(4);
 process.exit(0);
@@ -154,9 +156,10 @@ process.exit(0);
     unlinkSync(join(asDir, "tools.json"));
 
     const expectedToolsPath = normalize(join(consumerDir, "agentskeptic", "tools.json"));
-    const runnerC = `import { verifyAgentskeptic, TruthLayerError } from 'agentskeptic';
+    const runnerC = `import { AgentSkeptic, TruthLayerError } from 'agentskeptic';
 try {
-  await verifyAgentskeptic({ workflowId: 'e2e_ok', databaseUrl: 'app.db' });
+  const agent = new AgentSkeptic({ registryPath: 'agentskeptic/tools.json', databaseUrl: 'app.db', projectRoot: process.cwd(), logStep: () => {}, truthReport: () => {} });
+  await agent.replayFromFile({ workflowId: 'e2e_ok' });
   process.exit(5);
 } catch (e) {
   if (!(e instanceof TruthLayerError)) process.exit(6);
@@ -243,8 +246,9 @@ test("consumer E2E: canonical Postgres verification scenario", async (t) => {
     };
 
     writeFileSync(join(asDir, "events.ndjson"), `${JSON.stringify(eventOk)}\n`);
-    const runnerA = `import { verifyAgentskeptic } from 'agentskeptic';
-const certificate = await verifyAgentskeptic({ workflowId: 'e2e_pg_ok', databaseUrl: ${JSON.stringify(databaseUrl)} });
+    const runnerA = `import { AgentSkeptic } from 'agentskeptic';
+const agent = new AgentSkeptic({ registryPath: 'agentskeptic/tools.json', databaseUrl: ${JSON.stringify(databaseUrl)}, projectRoot: process.cwd(), logStep: () => {}, truthReport: () => {} });
+const certificate = await agent.replayFromFile({ workflowId: 'e2e_pg_ok' });
 if (certificate.stateRelation !== 'matches_expectations' || certificate.highStakesReliance !== 'permitted') process.exit(2);
 process.exit(0);
 `;
@@ -257,8 +261,9 @@ process.exit(0);
     assert.equal(a.status, 0, a.stderr || a.stdout);
 
     writeFileSync(join(asDir, "events.ndjson"), `${JSON.stringify(eventBad)}\n`);
-    const runnerB = `import { verifyAgentskeptic } from 'agentskeptic';
-const certificate = await verifyAgentskeptic({ workflowId: 'e2e_pg_bad', databaseUrl: ${JSON.stringify(databaseUrl)} });
+    const runnerB = `import { AgentSkeptic } from 'agentskeptic';
+const agent = new AgentSkeptic({ registryPath: 'agentskeptic/tools.json', databaseUrl: ${JSON.stringify(databaseUrl)}, projectRoot: process.cwd(), logStep: () => {}, truthReport: () => {} });
+const certificate = await agent.replayFromFile({ workflowId: 'e2e_pg_bad' });
 if (certificate.stateRelation !== 'does_not_match' || certificate.highStakesReliance !== 'prohibited') process.exit(3);
 if (!certificate.explanation.details.some((d) => d.code === 'ROW_ABSENT')) process.exit(4);
 process.exit(0);

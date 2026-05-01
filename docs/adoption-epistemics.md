@@ -18,14 +18,14 @@ Four different notions are often conflated. They are **not interchangeable**.
 
 | Layer | What it proves | Primary evidence in this repo |
 |-------|----------------|--------------------------------|
-| **PatternComplete** | Mechanical contract `verify` on **temp** artifact paths and a **SQLite DB copy under the OS temp directory** (not bundled example paths on the verify invocation); checklist IDs `AC-TRUST-*` / `AC-OPS-*`. | `node scripts/validate-adoption-complete.mjs` → [`artifacts/adoption-complete-validation-verdict.json`](../artifacts/adoption-complete-validation-verdict.json) |
-| **IntegrateSpineComplete** | Full L0 bash from [`scripts/templates/integrate-activation-shell.bash`](../scripts/templates/integrate-activation-shell.bash): demo + mid-script PatternComplete-shaped segment + **final** `node dist/cli.js activate` and **`node dist/cli.js crossing`** (PATH pins Node via `INTEGRATE_SPINE_NODE`) + integrator-supplied `AGENTSKEPTIC_VERIFY_DB` (final verify may **not** satisfy AC-OPS-03 by design). | `node scripts/validate-integrate-spine.mjs` → [`artifacts/integrate-spine-validation-verdict.json`](../artifacts/integrate-spine-validation-verdict.json) |
+| **PatternComplete** | Mechanical contract `verify` on **temp** artifact paths and a **SQLite DB copy under the OS temp directory** (not bundled example paths on the verify invocation); checklist IDs `AC-TRUST-*` / `AC-OPS-*`. | `node scripts/validate-adoption-complete.mjs` → [`artifacts/generated/adoption-complete-validation-verdict.json`](../artifacts/generated/adoption-complete-validation-verdict.json) |
+| **IntegrateSpineComplete** | Full L0 bash from [`scripts/templates/integrate-activation-shell.bash`](../scripts/templates/integrate-activation-shell.bash): demo + mid-script PatternComplete-shaped segment + **final** `node dist/cli.js activate` and **`node dist/cli.js crossing`** (PATH pins Node via `INTEGRATE_SPINE_NODE`) + integrator-supplied `AGENTSKEPTIC_VERIFY_DB` (final verify may **not** satisfy AC-OPS-03 by design). | `node scripts/validate-integrate-spine.mjs` → [`artifacts/generated/integrate-spine-validation-verdict.json`](../artifacts/generated/integrate-spine-validation-verdict.json) |
 | **ProductionComplete** | Contract verification (and/or bootstrap) against **the integrator’s** authoritative SQLite or Postgres and **their** structured tool activity / registry—ongoing ownership. | **Not** asserted by default `npm test`. Satisfied only when the integrator completes [Step 4](first-run-integration.md#step-4-bootstrap-when-you-have-your-own-tool_calls-and-a-db-url) (or equivalent) per [`first-run-integration.md`](first-run-integration.md). |
 | **Telemetry KPIs** | **Operator observation** of anonymous or licensed beacons in Postgres—correlation and rolling rates per [`growth-metrics.md`](growth-metrics.md). | Production telemetry DB + queries; **not** proof of user-side correctness (see [User outcome vs telemetry capture](funnel-observability.md#user-outcome-vs-telemetry-capture-operator)). |
 
 **Structural vs empirical (pointer):** The four-way table below is **structural** (definitions and repo proofs). **Where users drop off in production** is **empirical**—normative definitions and proxy vocabulary live only in [`epistemic-contract.md`](epistemic-contract.md).
 
-## Commercial validation verdict (`artifacts/commercial-validation-verdict.json`)
+## Commercial validation verdict (`artifacts/generated/commercial-validation-verdict.json`)
 
 Written by [`scripts/validate-commercial-funnel.mjs`](../scripts/validate-commercial-funnel.mjs).
 
@@ -82,7 +82,7 @@ Use this checklist when a human operator assists an integrator to reach **Produc
 
 ## Negative validation (what “not solved” means here)
 
-- Treating **`layers.playwrightCommercialE2e: false`** in [`artifacts/commercial-validation-verdict.json`](../artifacts/commercial-validation-verdict.json) as evidence that **operator funnel conversion** is low — **invalid** reading.
+- Treating **`layers.playwrightCommercialE2e: false`** in [`artifacts/generated/commercial-validation-verdict.json`](../artifacts/generated/commercial-validation-verdict.json) as evidence that **operator funnel conversion** is low — **invalid** reading.
 - Claiming **`npm test` green** implies a specific customer reached **ProductionComplete** — **invalid** unless that customer’s Step 4 evidence exists outside this repo.
 - Inferring **no verification ran** from **missing** `verify_outcome` telemetry alone — **invalid** without ruling out opt-out, transport failure, split deployment, or missing `funnel_anon_id` per [`growth-metrics.md`](growth-metrics.md) and [`funnel-observability.md`](funnel-observability.md).
 - Treating the **lowest** rolling cross-surface rate in [`growth-metrics.md`](growth-metrics.md) as proof of **which funnel stage loses the most mass** for real users — **invalid** without time-bounded telemetry and context outside this repository; see [`epistemic-contract.md`](epistemic-contract.md).

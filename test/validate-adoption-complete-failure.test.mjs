@@ -20,7 +20,7 @@ describe("validate-adoption-complete failure injection", () => {
     });
     assert.equal(r.status, 1, "expected exit 1");
     assert.ok((r.stderr || "").includes("adoption-complete: VERIFY_FAILED"), "stderr marker");
-    const verdictPath = join(root, "artifacts", "adoption-complete-validation-verdict.json");
+    const verdictPath = join(root, "artifacts", "generated", "adoption-complete-validation-verdict.json");
     const j = JSON.parse(readFileSync(verdictPath, "utf8"));
     assert.equal(j.status, "not_solved");
     assert.equal(j.failure?.code, "VERIFY_FAILED");

@@ -26,9 +26,17 @@ export class AgentSkeptic {
   constructor(private readonly opts: AgentSkepticOptions) {}
 
   /** Build a decision gate for a single workflow id (buffers events then evaluates against DB + registry). */
-  gate(workflowIdOrOpts: string | { workflowId: string }): DecisionGate {
-    const workflowId = typeof workflowIdOrOpts === "string" ? workflowIdOrOpts : workflowIdOrOpts.workflowId;
-    return createDecisionGateImpl({ ...this.opts, workflowId });
+  gate(
+    workflowIdOrOpts:
+      | string
+      | (Pick<CreateDecisionGateOptions, "workflowId"> &
+          Partial<Omit<CreateDecisionGateOptions, "workflowId" | "registryPath" | "databaseUrl">>),
+  ): DecisionGate {
+    if (typeof workflowIdOrOpts === "string") {
+      return createDecisionGateImpl({ ...this.opts, workflowId: workflowIdOrOpts });
+    }
+    const { workflowId, ...rest } = workflowIdOrOpts;
+    return createDecisionGateImpl({ ...this.opts, workflowId, ...rest });
   }
 
   /** Batch verify from events file + registry (same as `verifyWorkflow`). */

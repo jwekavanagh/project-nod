@@ -817,16 +817,17 @@ export const productCopy = {
   ossClaimPage: {
     title: "Claim this run",
     introUnauthenticated:
-      "Sign in with your email to connect this verification run to your account. Open the HTTPS claim link printed on stderr after verify (one navigation registers the handoff); then sign in when prompted (your magic link may open in a new tab).",
+      "Sign in with your email to connect this verification run to your account. OSS CLI account linking is opt-in: set AGENTSKEPTIC_OSS_CLAIM=1, run verify, then open the HTTPS link printed on stderr once before signing in (your magic link may open in a new tab).",
     signInCta: "Continue with email",
     redeeming: "Linking this run to your account…",
     pendingHandoffMissing:
-      "We could not complete the account link automatically. Open the original claim link from your terminal again on this device, sign in when prompted, and stay on this site. If it has been more than 15 minutes, run your verification again to get a fresh link.",
+      "We could not complete the account link automatically. Open the original claim link from your terminal again on this device, sign in when prompted, and stay on this site. If it has been more than 15 minutes, run verify again with AGENTSKEPTIC_OSS_CLAIM=1 to get a fresh link.",
     handoffInvalid:
-      "This account link is not valid (it may have expired, been replaced by a newer link, or mistyped). Run verify again in your terminal to print a fresh link, then open it once on this device.",
+      "This account link is not valid (expired, replaced, or mistyped). With CLI linking enabled (AGENTSKEPTIC_OSS_CLAIM=1), run verify again to print a fresh link, then open it once on this device.",
     handoffUsed:
-      "This account link was already opened once. Run verify again (or repeat the claim step from your terminal) so the CLI can print a new link, then open that link once before signing in.",
-    claimFailed: "This claim link could not be completed. Request a new link by running the CLI again.",
+      "This account link was already opened once. With CLI linking enabled, run verify again so the CLI can print a new link, then open that link once before signing in.",
+    claimFailed:
+      "This claim link could not be completed. With CLI linking enabled, run verify again to request a new link.",
     rateLimitedClaimPending:
       "Too many claim link opens from this network. Wait up to an hour and try again, or use a different connection.",
     rateLimitedRedeem: "Too many claim attempts for this account. Wait up to an hour and try again.",

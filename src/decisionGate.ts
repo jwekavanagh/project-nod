@@ -45,7 +45,7 @@ export type DecisionGate = {
 
 /**
  * Runtime integration: buffer structured run events, evaluate against the registry + DB, assert before irreversible work.
- * Prefer the public `createDecisionGate` export from the package root (deprecated wrapper) or `AgentSkeptic` in v2+.
+ * Integrators construct gates via **`new AgentSkeptic({ … }).gate({ workflowId, … })`** (see **`AgentSkeptic`** in **`src/sdk/AgentSkeptic.ts`**).
  */
 export function createDecisionGateImpl(options: CreateDecisionGateOptions): DecisionGate {
   const projectRoot = path.resolve(options.projectRoot ?? process.cwd());

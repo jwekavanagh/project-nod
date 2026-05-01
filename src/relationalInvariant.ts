@@ -1,6 +1,5 @@
 import type { DatabaseSync } from "node:sqlite";
 import type { Pool as Mysql2Pool } from "mysql2/promise";
-import sql from "mssql";
 import { formatOperationalMessage } from "./failureCatalog.js";
 import { compareUtf16Id } from "./resolveExpectation.js";
 import type { ResolvedRelationalCheck } from "./types.js";
@@ -411,18 +410,3 @@ export async function reconcileRelationalMysql2(pool: Mysql2Pool, check: Resolve
   }, check);
 }
 
-type MssqlConnectionPool = Awaited<ReturnType<typeof sql.connect>>;
-
-export async function reconcileRelationalMssql(
-  pool: MssqlConnectionPool,
-  check: ResolvedRelationalCheck,
-): Promise<ReconcileOutput> {
-  return reconcileRelationalQuery("mssql", async (t, v) => {
-    const req = pool.request();
-    for (let i = 0; i < v.length; i++) {
-      req.input(`p${i + 1}`, sql.NVarChar(sql.MAX), v[i]!);
-    }
-    const res = await req.query(t);
-    return { rows: res.recordset };
-  }, check);
-}

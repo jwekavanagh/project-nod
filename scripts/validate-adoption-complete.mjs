@@ -19,8 +19,8 @@ const root = resolve(__dirname, "..");
 const cliPath = join(root, "dist", "cli.js");
 const demoDb = join(root, "examples", "demo.db");
 const bootstrapInput = join(root, "test", "fixtures", "bootstrap-pack", "input.json");
-const verdictPath = join(root, "artifacts", "adoption-complete-validation-verdict.json");
-const verdictTmp = join(root, "artifacts", "adoption-complete-validation-verdict.json.tmp");
+const verdictPath = join(root, "artifacts", "generated", "adoption-complete-validation-verdict.json");
+const verdictTmp = join(root, "artifacts", "generated", "adoption-complete-validation-verdict.json.tmp");
 
 const FIXED_RECORDED_AT = "1970-01-01T00:00:00.000Z";
 const FIXED_COMMIT = "unknown";

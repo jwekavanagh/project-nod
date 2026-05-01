@@ -912,7 +912,7 @@ export type LoadEventsResult = {
   eventFileAggregateCounts: EventFileAggregateCounts;
 };
 
-/** Batch / CLI verification target (`verifyWorkflow`) and `createDecisionGate` (`databaseUrl`). */
+/** Batch / CLI verification targets **`AgentSkeptic.prototype.verify`** and decision gates (**`AgentSkeptic.prototype.gate`**); URLs/paths resolve under **`databaseUrl`** + **`projectRoot`**. */
 export type VerificationDatabase =
   | { kind: "sqlite"; path: string }
   | { kind: "postgres"; connectionString: string }

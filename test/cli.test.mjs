@@ -24,12 +24,7 @@ const cliJs = join(root, "dist", "cli.js");
 describe("CLI agentskeptic", () => {
   let dir;
   let dbPath;
-  /** Preserve env: golden stderr assertions exclude optional OSS claim lines. */
-  let prevOssClaimStderr;
-
   before(() => {
-    prevOssClaimStderr = process.env.AGENTSKEPTIC_OSS_CLAIM_STDERR;
-    process.env.AGENTSKEPTIC_OSS_CLAIM_STDERR = "0";
     dir = mkdtempSync(join(tmpdir(), "etl-cli-"));
     dbPath = join(dir, "test.db");
     const sql = readFileSync(join(root, "examples", "seed.sql"), "utf8");
@@ -39,8 +34,6 @@ describe("CLI agentskeptic", () => {
   });
 
   after(() => {
-    if (prevOssClaimStderr === undefined) delete process.env.AGENTSKEPTIC_OSS_CLAIM_STDERR;
-    else process.env.AGENTSKEPTIC_OSS_CLAIM_STDERR = prevOssClaimStderr;
     rmSync(dir, { recursive: true, force: true });
   });
 

@@ -1,0 +1,25 @@
+{
+  "version": 1,
+  "patterns": [
+    {
+      "name": "posix_open_http_url",
+      "regex": "(?:open|xdg-open)\\s*[\\(\\`\"'](?:[^)\\`\"']*https?:\\/\\/[^)\\`\"']+)",
+      "description": "Shell open helper invoked with literal http(s) URL"
+    },
+    {
+      "name": "windows_start_http_url",
+      "regex": "start\\s+[\"']?[a-z]+:https?:\\/\\/\\S",
+      "description": "Windows start launcher with explicit URL scheme segment"
+    },
+    {
+      "name": "shell_open_external",
+      "regex": "openExternal\\s*\\(\\s*[`'\"`](?:https?:\\/\\/)[^`'\"]+[`'\"`]",
+      "description": "Electron/shell-style openExternal with http(s) literal"
+    },
+    {
+      "name": "child_process_spawn_open_url",
+      "regex": "(?:exec(?:File)?|spawn)\\s*\\([^)]*['\"`]open['\"`]",
+      "description": "child_process spawning open executable"
+    }
+  ]
+}

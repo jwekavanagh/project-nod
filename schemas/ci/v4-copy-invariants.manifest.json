@@ -1,0 +1,42 @@
+{
+  "globRoots": ["docs/**/*.md", "README.md", "CONTRIBUTING.md", "website/src/**/*.{tsx,ts,md,mdx}"],
+  "ignoredPathSubstrings": ["**/node_modules/**"],
+  "symbolHistoricalAllowFiles": ["docs/migrate-2.md", "docs/quick-verify-normative.md", "CHANGELOG.md"],
+  "patterns": [
+    {
+      "name": "registry_draft_phrase",
+      "regex": "agentskeptic registry-draft",
+      "description": "Deprecated registry-draft prose pattern"
+    },
+    {
+      "name": "registry_draft_export_path",
+      "regex": "\\./registryDraft",
+      "description": "npm registryDraft export path"
+    },
+    {
+      "name": "bare_artifacts_validation_verdict",
+      "regex": "artifacts\\/(?!generated\\/)[^\\n\\r\\s]+\\-validation\\-verdict\\.json",
+      "description": "Validation verdict JSON filenames must live under artifacts/generated/"
+    },
+    {
+      "name": "oss_claim_stderr_env_token",
+      "regex": "AGENTSKEPTIC_OSS_CLAIM_STDERR",
+      "description": "Removed stderr env knob name"
+    },
+    {
+      "name": "first_five_checklist_relative_export",
+      "regex": "\\./firstFiveMinutesChecklist",
+      "description": "Removed firstFiveMinutesChecklist export path"
+    },
+    {
+      "name": "first_five_pkg_export_string",
+      "regex": "\\\"agentskeptic/firstFiveMinutesChecklist\\\"",
+      "description": "Removed npm subpath export string"
+    },
+    {
+      "name": "cli_opens_browser_hype",
+      "regex": "CLI opens browser",
+      "description": "Hyperbolic auto-navigation wording"
+    }
+  ]
+}

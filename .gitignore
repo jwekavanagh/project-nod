@@ -38,6 +38,9 @@ website/.env.local
 
 examples/.canonical-verify-run/
 
+# Generated machine verdict outputs (never commit)
+artifacts/generated/
+
 # Operator-local verification receipts (gitignored)
 artifacts/agentskeptic-receipts/
 

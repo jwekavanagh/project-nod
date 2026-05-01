@@ -14,13 +14,13 @@ Normative contract for converting **anonymous OSS CLI verification** into an **i
 |---------|--------|------|------|
 | Register claim ticket | `POST` | `/api/oss/claim-ticket` | None (CLI headers + JSON body) |
 | Browser handoff (mint pending cookie) | `GET` | `/verify/link` | None (opaque query token `h` only) |
-| CLI spawn ack (interactive human only) | `POST` | `/api/oss/claim-continuation` | None (CLI headers + JSON `claim_secret`) |
+| Interactive-human browser-open ack | `POST` | `/api/oss/claim-continuation` | CLI product headers + JSON **`claim_secret`** (OSS **`agentskeptic` 4.x** does **not** post here; cohort fields remain for compatibility / tests) |
 | Redeem ticket | `POST` | `/api/oss/claim-redeem` | Session (NextAuth) |
 | Claim UI | `GET` | `/claim` | None (static shell + client behavior) |
 
 **CLI POST origin (v1):** `resolveOssClaimApiOrigin()` in the CLI package returns **only** `PUBLIC_CANONICAL_SITE_ORIGIN` from anchor sync ([`src/publicDistribution.generated.ts`](../src/publicDistribution.generated.ts)), trailing slash stripped. **No** `AGENTSKEPTIC_TELEMETRY_ORIGIN`, **no** `LICENSE_API_BASE_URL`, **no** env override.
 
-**stderr URL (OSS only):** After a successful quick or batch verify, when license preflight is disabled, stderr claim emission is enabled, and **`AGENTSKEPTIC_TELEMETRY` is not `0`**, the CLI prints one line with the **server-issued** HTTPS **`handoff_url`** (never a `#fragment`):
+**stderr URL (OSS only):** After a successful quick or batch verify, when license preflight is disabled, **`AGENTSKEPTIC_OSS_CLAIM=1`** (opt-in account linking), and **`AGENTSKEPTIC_TELEMETRY` is not `0`**, the OSS CLI prints one line with the **server-issued** HTTPS **`handoff_url`** (never a `#fragment`):
 
 `[agentskeptic] Link this verification run to your account: <handoff_url> — open the link, then sign in with email when prompted.`
 

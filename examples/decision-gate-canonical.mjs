@@ -7,7 +7,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { DatabaseSync } from "node:sqlite";
-import { createDecisionGate } from "../dist/index.js";
+import { AgentSkeptic } from "../dist/index.js";
 
 const runRoot = join(fileURLToPath(new URL(".", import.meta.url)), ".canonical-verify-run");
 mkdirSync(runRoot, { recursive: true });
@@ -39,14 +39,14 @@ try {
   );
   db.close();
 
-  const gate = createDecisionGate({
-    workflowId: "wf_demo",
+  const agent = new AgentSkeptic({
     registryPath: join("agentskeptic", "tools.json"),
     databaseUrl: "app.db",
     projectRoot,
     logStep: () => {},
     truthReport: () => {},
   });
+  const gate = agent.gate("wf_demo");
   gate.appendRunEvent({
     schemaVersion: 1,
     workflowId: "wf_demo",

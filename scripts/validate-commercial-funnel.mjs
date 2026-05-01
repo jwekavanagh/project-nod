@@ -3,7 +3,7 @@
  * Commercial validation: regression harness, then optional Playwright commercial browser E2E.
  * Always runs pack-smoke (commercial build + npm pack) then restores OSS `dist/` via `npm run build`.
  * Set COMMERCIAL_LICENSE_API_BASE_URL for pack-smoke (defaults to https://pack-smoke.example.com).
- * Writes artifacts/commercial-validation-verdict.json
+ * Writes artifacts/generated/commercial-validation-verdict.json
  *
  * Website step: `DATABASE_URL` / `TELEMETRY_DATABASE_URL` must be disposable local Postgres (see
  * assert-destructive-postgres-urls). `NEXT_PUBLIC_APP_URL` is set to the committed canonical public
@@ -26,7 +26,7 @@ const require = createRequire(import.meta.url);
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const artifactDir = path.join(root, "artifacts");
-const verdictPath = path.join(artifactDir, "commercial-validation-verdict.json");
+const verdictPath = path.join(artifactDir, "generated", "commercial-validation-verdict.json");
 const validateCommercialLockPath = path.join(artifactDir, "validate-commercial.lock");
 
 function acquireValidateCommercialLock() {
@@ -309,24 +309,13 @@ process.exit(solved ? 0 : 1);
  * REGISTRY_DRAFT_OUTCOME_HARNESS — root `node:test` proofs (see docs/registry-draft.md).
  * Must run only after OSS `dist/` restore (`PHASE:postPackSmokeOssRestoreBuild` above).
  */
-function runRegistryDraftOutcomeHarness(r) {
+function runRegistryDraftOutcomeHarness(_r) {
   // REGISTRY_DRAFT_OUTCOME_HARNESS
-  const tests = [
-    "test/validate-commercial-funnel-registry-draft-harness.test.mjs",
-    "test/registry-draft-contract.test.mjs",
-    "test/registry-draft-outcome-chain-import-guard.test.mjs",
-    "test/registry-draft-outcome-chain.test.mjs",
-  ];
-  for (const rel of tests) {
-    if (!runNode(["--test", path.join(r, rel)])) {
-      return false;
-    }
-  }
-  return true;
+  return runShell("npm run test:vitest -w agentskeptic-web -- __tests__/registry-draft");
 }
 
 function writeVerdict(status, lyr) {
-  mkdirSync(artifactDir, { recursive: true });
+  mkdirSync(path.join(artifactDir, "generated"), { recursive: true });
   const body = {
     schemaVersion: 1,
     status,

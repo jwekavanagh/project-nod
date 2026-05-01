@@ -364,7 +364,7 @@ Full integrator SSOT: [`decision-gate.md`](decision-gate.md).
 
 ### Postgres verification (batch and CLI)
 
-- **Library:** `await verifyWorkflow({ workflowId, eventsPath, registryPath, database: { kind: "postgres", connectionString }, … })`. One **`pg.Client`** per invocation: `connect()` → **`applyPostgresVerificationSessionGuards`** (runs **`SET SESSION CHARACTERISTICS AS TRANSACTION READ ONLY`**) → **`SELECT 1`** on that client → per-step parameterized verification `SELECT`s → `client.end()` in `finally` (cleanup errors must not mask the primary failure).
+- **Library:** Construct **`const agent = new AgentSkeptic({ registryPath, databaseUrl, projectRoot, … })`** with the same resolved paths as CLI batch verify, then **`await agent.verify({ workflowId, eventsPath, registryPath, database: { kind: "postgres", connectionString }, … })`**. One **`pg.Client`** per invocation: `connect()` → **`applyPostgresVerificationSessionGuards`** (runs **`SET SESSION CHARACTERISTICS AS TRANSACTION READ ONLY`**) → **`SELECT 1`** on that client → per-step parameterized verification `SELECT`s → `client.end()` in `finally` (cleanup errors must not mask the primary failure).
 - **CLI:** Exactly one of `--db <sqlitePath>` or **`--postgres-url <url>`**. Connection, guard, or I/O failure before a verdict: the CLI prints **one line** of JSON to **stderr** (see [CLI operational errors](#cli-operational-errors)) and exits **3** with **no** workflow JSON on stdout.
 - **Safety evidence in CI:** Tests assert (1) after session guards, **`INSERT` into `readonly_probe`** fails with **read-only transaction** (`25006`), and (2) role **`verifier_ro`** has **SELECT only** on verification tables (`INSERT` denied `42501`). Operators should still use a **least-privilege DB user** and TLS (`sslmode` in the URL) in real environments.
 
@@ -1462,6 +1462,8 @@ For each run index `i`, build the **set** of `recurrenceSignature` values from *
 | Manual verification steps ↓, time-to-confirm ↓, trust / re-runs | No | Metrics & study (define counters in ops) |
 
 **Engineering MVP “solved”:** `npm test` and **`npm run test:ci`** pass; CLI obeys exit codes; contracts match this document.
+
+- **Footprint regression.** Merge-branch **`npm pack`** tarball size is compared to the frozen v3.7.0 baseline (allow **≤~3%** growth); production **`npm install`** file counts must be **strictly smaller** than that baseline. CI does not assert byte identity against the tarball downloaded from npm after Trusted Publishing.
 
 ## CI enforcement (`enforce`)
 

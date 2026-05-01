@@ -4,7 +4,7 @@ import { readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import pg from "pg";
-import { verifyAgentskeptic } from "../../../dist/index.js";
+import { AgentSkeptic } from "../../../dist/index.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const exampleRoot = join(__dirname, "..");
@@ -54,22 +54,28 @@ async function seedDatabase() {
 
 async function runPassCase(databaseUrl) {
   writeFileSync(eventsPath, passEvents);
-  const certificate = await verifyAgentskeptic({
-    workflowId: "wf_golden_pass",
+  const agent = new AgentSkeptic({
+    registryPath: join("agentskeptic", "tools.json"),
     databaseUrl,
     projectRoot: exampleRoot,
+    logStep: () => {},
+    truthReport: () => {},
   });
+  const certificate = await agent.replayFromFile({ workflowId: "wf_golden_pass" });
   assert.equal(certificate.stateRelation, "matches_expectations");
   assert.equal(certificate.highStakesReliance, "permitted");
 }
 
 async function runFailCase(databaseUrl) {
   writeFileSync(eventsPath, failEvents);
-  const certificate = await verifyAgentskeptic({
-    workflowId: "wf_golden_fail",
+  const agent = new AgentSkeptic({
+    registryPath: join("agentskeptic", "tools.json"),
     databaseUrl,
     projectRoot: exampleRoot,
+    logStep: () => {},
+    truthReport: () => {},
   });
+  const certificate = await agent.replayFromFile({ workflowId: "wf_golden_fail" });
   assert.equal(certificate.stateRelation, "does_not_match");
   assert.equal(certificate.highStakesReliance, "prohibited");
   assert.equal(

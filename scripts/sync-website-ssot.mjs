@@ -20,6 +20,8 @@ function runNode(scriptRel) {
   }
 }
 
+runNode("scripts/materialize-first-five-minutes.mjs");
+
 function runNpmScript(name) {
   const r = spawnSync(`npm run ${name}`, {
     cwd: root,

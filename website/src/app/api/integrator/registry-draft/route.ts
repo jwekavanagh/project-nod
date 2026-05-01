@@ -7,7 +7,7 @@ import {
   getRegistryDraftResponseEnvelopeValidator,
   getToolsRegistryArrayValidator,
   parseAndNormalizeRegistryDraftRequest,
-} from "agentskeptic/registryDraft";
+} from "@/lib/registry-draft";
 import { db } from "@/db/client";
 import { isFunnelSurfaceRequestOriginAllowed } from "@/lib/funnelRequestOriginAllowed";
 import { extractClientIpKey } from "@/lib/magicLinkSendGate";

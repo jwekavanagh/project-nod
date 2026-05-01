@@ -10,10 +10,10 @@ import { fileURLToPath } from "node:url";
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const root = join(__dirname, "..");
 
-const EXPECTED = `artifacts/adoption-complete-validation-verdict.json	add
-artifacts/adoption-validation-verdict.json	add
-artifacts/commercial-validation-verdict.json	modify
-artifacts/integrate-spine-validation-verdict.json	add
+const EXPECTED = `artifacts/generated/adoption-complete-validation-verdict.json	add
+artifacts/generated/adoption-validation-verdict.json	add
+artifacts/generated/commercial-validation-verdict.json	modify
+artifacts/generated/integrate-spine-validation-verdict.json	add
 config/epistemic-contract-structure.json	add
 docs/adoption-epistemics.md	add
 docs/adoption-validation-spec.md	modify

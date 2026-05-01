@@ -1,6 +1,13 @@
-import { FIRST_FIVE_MINUTES_CHECKLIST } from "../firstFiveMinutesChecklist.js";
+import { readFileSync } from "node:fs";
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
 import { loadSchemaValidator } from "../schemaLoad.js";
 import type { AssuranceRunReportV1 } from "./runAssurance.js";
+
+const pkgRoot = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
+const firstFive = JSON.parse(
+  readFileSync(join(pkgRoot, "config", "first-five-minutes.json"), "utf8"),
+) as { checklist: string[]; telemetryIcingLine?: string };
 
 export type AssuranceOutputStaleV1 = {
   schemaVersion: 1;
@@ -40,7 +47,7 @@ export function formatStaleOperatorLine(
 }
 
 function checklistCopy(): string[] {
-  return [...FIRST_FIVE_MINUTES_CHECKLIST];
+  return [...firstFive.checklist];
 }
 
 export function buildAssuranceStaleOutput(input: {

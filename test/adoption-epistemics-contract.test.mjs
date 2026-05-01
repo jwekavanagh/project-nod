@@ -24,7 +24,10 @@ const LINK_EPISTEMIC = "epistemic-contract.md";
 
 describe("adoption epistemics contract", () => {
   it("commercial_validation_verdict_layers_shape", () => {
-    const raw = readFileSync(join(root, "artifacts", "commercial-validation-verdict.json"), "utf8");
+    const raw = readFileSync(
+      join(root, "test", "fixtures", "validation-verdicts", "commercial-validation-verdict.layers.json"),
+      "utf8",
+    );
     const v = JSON.parse(raw);
     assert.equal(v.schemaVersion, 1);
     assert.ok(v.layers && typeof v.layers === "object");

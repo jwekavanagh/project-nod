@@ -1,6 +1,6 @@
 {
   "name": "agentskeptic",
-  "version": "3.7.0",
+  "version": "4.0.0",
   "description": "AgentSkeptic compares agent claims with real downstream state — databases, APIs, object stores, and vector stores — and returns a clear verdict.",
   "license": "MIT",
   "type": "module",
@@ -18,19 +18,15 @@
       "types": "./dist/sdk/frameworks/next.d.ts"
     },
     "./schemaLoad": "./dist/schemaLoad.js",
-    "./registryDraft": "./dist/registryDraft/index.js",
-    "./registryDraft/engine": "./dist/registryDraft/engine.js",
-    "./registryDraft/providers/hosted_openai": "./dist/registryDraft/providers/hosted_openai.js",
     "./bootstrapPackSynthesis": "./dist/bootstrap/bootstrapPackSynthesis.js",
     "./verificationHypothesisContract": "./dist/telemetry/verificationHypothesisContract.js",
-    "./firstFiveMinutesChecklist": "./dist/firstFiveMinutesChecklist.js",
     "./decisionEvidenceBundle": "./dist/decisionEvidenceBundle/index.js"
   },
   "scripts": {
     "prepublishOnly": "node scripts/build-commercial.mjs",
     "codegen:types": "openapi-typescript schemas/openapi-commercial-v1.yaml -o src/sdk/_generated/openapi-types.ts",
     "codegen:error-codes": "node scripts/generate-agentskeptic-error-codes.mjs",
-    "build": "node scripts/write-commercial-build-flags.mjs --oss && node scripts/sync-failure-origin-from-schema.mjs && tsc && node scripts/write-execution-identity.mjs && node scripts/copy-cli-init-assets.mjs && node scripts/copy-debug-ui.mjs && node scripts/write-discovery-payload.mjs",
+    "build": "node scripts/materialize-first-five-minutes.mjs && node scripts/write-commercial-build-flags.mjs --oss && node scripts/sync-failure-origin-from-schema.mjs && tsc && node scripts/write-execution-identity.mjs && node scripts/copy-cli-init-assets.mjs && node scripts/copy-debug-ui.mjs && node scripts/write-discovery-payload.mjs",
     "build:commercial": "node scripts/build-commercial.mjs",
     "start": "npm run build && node scripts/demo.mjs",
     "dev": "npm run dev -w agentskeptic-web",
@@ -48,10 +44,6 @@
     "golden:path": "node examples/golden-next-postgres/scripts/run-reference.mjs",
     "example:workflow-hook": "npm run build && node examples/workflow-runner.mjs",
     "agentskeptic": "node dist/cli.js",
-    "migrate:workflow-result-v11": "npm run build && node scripts/migrate-workflow-result-v11.mjs",
-    "migrate:workflow-result-v12": "node scripts/migrate-workflow-result-v12.mjs",
-    "migrate:workflow-result-v13": "npm run build && node scripts/migrate-workflow-result-v13.mjs",
-    "migrate:workflow-result-v15": "npm run build && node scripts/migrate-workflow-result-v15.mjs",
     "check:commercial-plans": "node scripts/check-commercial-plans.mjs",
     "stripe-bootstrap": "node scripts/stripe-bootstrap.mjs",
     "validate-commercial": "node scripts/validate-commercial-funnel.mjs",
@@ -120,12 +112,8 @@
     "vitest": "^4.1.4"
   },
   "dependencies": {
-    "@aws-sdk/client-s3": "^3.1034.0",
-    "@google-cloud/bigquery": "^8.1.1",
     "ajv": "^8.17.1",
     "ajv-formats": "^3.0.1",
-    "mongodb": "^6.12.0",
-    "mssql": "^11.0.1",
     "mysql2": "^3.14.0",
     "pg": "^8.20.0",
     "picomatch": "^4.0.4",
@@ -165,6 +153,7 @@
     "scripts/origin.cjs",
     "scripts/public-product-anchors.cjs",
     "config/marketing.json",
+    "config/first-five-minutes.json",
     "scripts/render-discovery-ci.mjs"
   ],
   "keywords": [

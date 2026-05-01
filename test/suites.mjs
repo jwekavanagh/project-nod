@@ -83,6 +83,7 @@ export const sqliteNodeTestFiles = [
   "test/contract-manifest.adversarial-manifest-edit.test.mjs",
   "test/contract-manifest.history-monotonic.test.mjs",
   "test/contract-manifest.bump-required.test.mjs",
+  "test/v4-deprecated-export-absent.test.mjs",
   "test/openapi-contract-pointer.test.mjs",
   "test/contract-pointers.discovery.test.mjs",
   "test/no-stale-contract-prose.test.mjs",
@@ -99,12 +100,6 @@ export const sqliteNodeTestFiles = [
   "test/integrate-spine-step3-chain.happy.test.mjs",
   "test/integrate-spine-step3-chain.negative.test.mjs",
   "test/no-handrolled-node-test-lists.mjs",
-  "test/registry-draft-contract.test.mjs",
-  "test/registry-draft-no-dual-contract.test.mjs",
-  "test/draft-corpus-gate.test.mjs",
-  "test/registry-draft-fault-matrix.test.mjs",
-  "test/registry-draft-outcome-chain-import-guard.test.mjs",
-  "test/registry-draft-outcome-chain.test.mjs",
   "test/suite-coverage.mjs",
   "test/sync-buyer-authority-fences.test.mjs",
   "test/validate-commercial-funnel-registry-draft-harness.test.mjs",
@@ -137,8 +132,11 @@ export const commercialPostgresHarnessNodeTestFiles = [
   "test/ci-workflow-truth-postgres-enforce.test.mjs",
 ];
 
-/** Not run in the sqlite node --test batch: ordering with validate-adoption stages in verification-truth journeys. */
-export const nodeTestScheduledByVerificationTruth = ["test/validate-adoption-complete-failure.test.mjs"];
+/** Not run in the sqlite node --test batch: ordering with validate-adoption stages or post-rebuild OSS checks in verification-truth journeys. */
+export const nodeTestScheduledByVerificationTruth = [
+  "test/validate-adoption-complete-failure.test.mjs",
+  "test/verification-connector-not-shipped.test.mjs",
+];
 
 /** Top-level `test/*.mjs` run only via `scripts/verification-truth-stages.mjs` (not `node --test` batch), besides suites.mjs. */
 export const mjsAtTestRootRunByVerificationTruthOnly = ["test/partner-quickstart.adversarial.mjs"];

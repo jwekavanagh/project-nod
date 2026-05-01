@@ -5,7 +5,7 @@ import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
-const path = join(root, "artifacts", "adoption-validation-verdict.json");
+const path = join(root, "artifacts", "generated", "adoption-validation-verdict.json");
 let raw;
 try {
   raw = readFileSync(path, "utf8");

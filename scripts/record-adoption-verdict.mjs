@@ -5,7 +5,7 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
-const outPath = join(root, "artifacts", "adoption-validation-verdict.json");
+const outPath = join(root, "artifacts", "generated", "adoption-validation-verdict.json");
 const commit = execSync("git rev-parse HEAD", { cwd: root, encoding: "utf8" }).trim();
 if (!/^[0-9a-f]{40}$/.test(commit)) {
   console.error("record-adoption-verdict: invalid commit from git rev-parse HEAD");

@@ -7,672 +7,679 @@
       "category": "operational",
       "httpStatus": null,
       "retryable": false,
-      "remediation": "See docs/migrate-2.md and the AgentSkeptic 2.0 integrator guide (docs/integrate.md)."
+      "remediation": "See docs/migrate-2.md (v4 API) and docs/integrate.md."
     },
     {
       "code": "ASSURANCE_MANIFEST_JSON_SYNTAX",
       "category": "operational",
       "httpStatus": null,
       "retryable": false,
-      "remediation": "See docs/migrate-2.md and the AgentSkeptic 2.0 integrator guide (docs/integrate.md)."
+      "remediation": "See docs/migrate-2.md (v4 API) and docs/integrate.md."
     },
     {
       "code": "ASSURANCE_MANIFEST_PATH_MISSING",
       "category": "operational",
       "httpStatus": null,
       "retryable": false,
-      "remediation": "See docs/migrate-2.md and the AgentSkeptic 2.0 integrator guide (docs/integrate.md)."
+      "remediation": "See docs/migrate-2.md (v4 API) and docs/integrate.md."
     },
     {
       "code": "ASSURANCE_MANIFEST_READ_FAILED",
       "category": "operational",
       "httpStatus": null,
       "retryable": false,
-      "remediation": "See docs/migrate-2.md and the AgentSkeptic 2.0 integrator guide (docs/integrate.md)."
+      "remediation": "See docs/migrate-2.md (v4 API) and docs/integrate.md."
     },
     {
       "code": "ASSURANCE_MANIFEST_SCHEMA_INVALID",
       "category": "operational",
       "httpStatus": null,
       "retryable": false,
-      "remediation": "See docs/migrate-2.md and the AgentSkeptic 2.0 integrator guide (docs/integrate.md)."
+      "remediation": "See docs/migrate-2.md (v4 API) and docs/integrate.md."
     },
     {
       "code": "ASSURANCE_REPORT_ISSUED_AT_FUTURE_SKEW",
       "category": "operational",
       "httpStatus": null,
       "retryable": false,
-      "remediation": "See docs/migrate-2.md and the AgentSkeptic 2.0 integrator guide (docs/integrate.md)."
+      "remediation": "See docs/migrate-2.md (v4 API) and docs/integrate.md."
     },
     {
       "code": "ASSURANCE_REPORT_JSON_SYNTAX",
       "category": "operational",
       "httpStatus": null,
       "retryable": false,
-      "remediation": "See docs/migrate-2.md and the AgentSkeptic 2.0 integrator guide (docs/integrate.md)."
+      "remediation": "See docs/migrate-2.md (v4 API) and docs/integrate.md."
     },
     {
       "code": "ASSURANCE_REPORT_READ_FAILED",
       "category": "operational",
       "httpStatus": null,
       "retryable": false,
-      "remediation": "See docs/migrate-2.md and the AgentSkeptic 2.0 integrator guide (docs/integrate.md)."
+      "remediation": "See docs/migrate-2.md (v4 API) and docs/integrate.md."
     },
     {
       "code": "ASSURANCE_REPORT_SCHEMA_INVALID",
       "category": "operational",
       "httpStatus": null,
       "retryable": false,
-      "remediation": "See docs/migrate-2.md and the AgentSkeptic 2.0 integrator guide (docs/integrate.md)."
+      "remediation": "See docs/migrate-2.md (v4 API) and docs/integrate.md."
     },
     {
       "code": "ASSURANCE_REPO_ROOT_NOT_FOUND",
       "category": "operational",
       "httpStatus": null,
       "retryable": false,
-      "remediation": "See docs/migrate-2.md and the AgentSkeptic 2.0 integrator guide (docs/integrate.md)."
+      "remediation": "See docs/migrate-2.md (v4 API) and docs/integrate.md."
     },
     {
       "code": "ASSURANCE_STALE_USAGE",
       "category": "operational",
       "httpStatus": null,
       "retryable": false,
-      "remediation": "See docs/migrate-2.md and the AgentSkeptic 2.0 integrator guide (docs/integrate.md)."
+      "remediation": "See docs/migrate-2.md (v4 API) and docs/integrate.md."
     },
     {
       "code": "ASSURANCE_USAGE",
       "category": "operational",
       "httpStatus": null,
       "retryable": false,
-      "remediation": "See docs/migrate-2.md and the AgentSkeptic 2.0 integrator guide (docs/integrate.md)."
+      "remediation": "See docs/migrate-2.md (v4 API) and docs/integrate.md."
     },
     {
       "code": "BOOTSTRAP_INPUT_INVALID",
       "category": "operational",
       "httpStatus": null,
       "retryable": false,
-      "remediation": "See docs/migrate-2.md and the AgentSkeptic 2.0 integrator guide (docs/integrate.md)."
+      "remediation": "See docs/migrate-2.md (v4 API) and docs/integrate.md."
     },
     {
       "code": "BOOTSTRAP_NO_EXPORTABLE_TOOLS",
       "category": "operational",
       "httpStatus": null,
       "retryable": false,
-      "remediation": "See docs/migrate-2.md and the AgentSkeptic 2.0 integrator guide (docs/integrate.md)."
+      "remediation": "See docs/migrate-2.md (v4 API) and docs/integrate.md."
     },
     {
       "code": "BOOTSTRAP_NO_TOOL_CALLS",
       "category": "operational",
       "httpStatus": null,
       "retryable": false,
-      "remediation": "See docs/migrate-2.md and the AgentSkeptic 2.0 integrator guide (docs/integrate.md)."
+      "remediation": "See docs/migrate-2.md (v4 API) and docs/integrate.md."
     },
     {
       "code": "BOOTSTRAP_OUT_EXISTS",
       "category": "operational",
       "httpStatus": null,
       "retryable": false,
-      "remediation": "See docs/migrate-2.md and the AgentSkeptic 2.0 integrator guide (docs/integrate.md)."
+      "remediation": "See docs/migrate-2.md (v4 API) and docs/integrate.md."
     },
     {
       "code": "BOOTSTRAP_QUICK_NOT_PASS",
       "category": "operational",
       "httpStatus": null,
       "retryable": false,
-      "remediation": "See docs/migrate-2.md and the AgentSkeptic 2.0 integrator guide (docs/integrate.md)."
+      "remediation": "See docs/migrate-2.md (v4 API) and docs/integrate.md."
     },
     {
       "code": "BOOTSTRAP_TOOL_CALL_ARGUMENTS_INVALID",
       "category": "operational",
       "httpStatus": null,
       "retryable": false,
-      "remediation": "See docs/migrate-2.md and the AgentSkeptic 2.0 integrator guide (docs/integrate.md)."
+      "remediation": "See docs/migrate-2.md (v4 API) and docs/integrate.md."
     },
     {
       "code": "BOOTSTRAP_USAGE",
       "category": "operational",
       "httpStatus": null,
       "retryable": false,
-      "remediation": "See docs/migrate-2.md and the AgentSkeptic 2.0 integrator guide (docs/integrate.md)."
+      "remediation": "See docs/migrate-2.md (v4 API) and docs/integrate.md."
     },
     {
       "code": "CAPTURE_ORDER_NOT_MONOTONIC_IN_SEQ",
       "category": "operational",
       "httpStatus": null,
       "retryable": false,
-      "remediation": "See docs/migrate-2.md and the AgentSkeptic 2.0 integrator guide (docs/integrate.md)."
+      "remediation": "See docs/migrate-2.md (v4 API) and docs/integrate.md."
     },
     {
       "code": "CI_LOCK_SCHEMA_INVALID",
       "category": "operational",
       "httpStatus": null,
       "retryable": false,
-      "remediation": "See docs/migrate-2.md and the AgentSkeptic 2.0 integrator guide (docs/integrate.md)."
+      "remediation": "See docs/migrate-2.md (v4 API) and docs/integrate.md."
     },
     {
       "code": "CLI_USAGE",
       "category": "operational",
       "httpStatus": null,
       "retryable": false,
-      "remediation": "See docs/migrate-2.md and the AgentSkeptic 2.0 integrator guide (docs/integrate.md)."
+      "remediation": "See docs/migrate-2.md (v4 API) and docs/integrate.md."
     },
     {
       "code": "COMPARE_CERTIFICATE_BUILD_FAILED",
       "category": "operational",
       "httpStatus": null,
       "retryable": false,
-      "remediation": "See docs/migrate-2.md and the AgentSkeptic 2.0 integrator guide (docs/integrate.md)."
+      "remediation": "See docs/migrate-2.md (v4 API) and docs/integrate.md."
     },
     {
       "code": "COMPARE_EVENTS_LOAD_FAILED",
       "category": "operational",
       "httpStatus": null,
       "retryable": false,
-      "remediation": "See docs/migrate-2.md and the AgentSkeptic 2.0 integrator guide (docs/integrate.md)."
+      "remediation": "See docs/migrate-2.md (v4 API) and docs/integrate.md."
     },
     {
       "code": "COMPARE_INPUT_JSON_SYNTAX",
       "category": "operational",
       "httpStatus": null,
       "retryable": false,
-      "remediation": "See docs/migrate-2.md and the AgentSkeptic 2.0 integrator guide (docs/integrate.md)."
+      "remediation": "See docs/migrate-2.md (v4 API) and docs/integrate.md."
     },
     {
       "code": "COMPARE_INPUT_READ_FAILED",
       "category": "operational",
       "httpStatus": null,
       "retryable": false,
-      "remediation": "See docs/migrate-2.md and the AgentSkeptic 2.0 integrator guide (docs/integrate.md)."
+      "remediation": "See docs/migrate-2.md (v4 API) and docs/integrate.md."
     },
     {
       "code": "COMPARE_INPUT_RUN_LEVEL_INCONSISTENT",
       "category": "operational",
       "httpStatus": null,
       "retryable": false,
-      "remediation": "See docs/migrate-2.md and the AgentSkeptic 2.0 integrator guide (docs/integrate.md)."
+      "remediation": "See docs/migrate-2.md (v4 API) and docs/integrate.md."
     },
     {
       "code": "COMPARE_INPUT_SCHEMA_INVALID",
       "category": "operational",
       "httpStatus": null,
       "retryable": false,
-      "remediation": "See docs/migrate-2.md and the AgentSkeptic 2.0 integrator guide (docs/integrate.md)."
+      "remediation": "See docs/migrate-2.md (v4 API) and docs/integrate.md."
     },
     {
       "code": "COMPARE_INSUFFICIENT_RUNS",
       "category": "operational",
       "httpStatus": null,
       "retryable": false,
-      "remediation": "See docs/migrate-2.md and the AgentSkeptic 2.0 integrator guide (docs/integrate.md)."
+      "remediation": "See docs/migrate-2.md (v4 API) and docs/integrate.md."
     },
     {
       "code": "COMPARE_MANIFEST_READ_FAILED",
       "category": "operational",
       "httpStatus": null,
       "retryable": false,
-      "remediation": "See docs/migrate-2.md and the AgentSkeptic 2.0 integrator guide (docs/integrate.md)."
+      "remediation": "See docs/migrate-2.md (v4 API) and docs/integrate.md."
     },
     {
       "code": "COMPARE_MANIFEST_SCHEMA_INVALID",
       "category": "operational",
       "httpStatus": null,
       "retryable": false,
-      "remediation": "See docs/migrate-2.md and the AgentSkeptic 2.0 integrator guide (docs/integrate.md)."
+      "remediation": "See docs/migrate-2.md (v4 API) and docs/integrate.md."
     },
     {
       "code": "COMPARE_REGRESSION_ARTIFACT_INVALID",
       "category": "operational",
       "httpStatus": null,
       "retryable": false,
-      "remediation": "See docs/migrate-2.md and the AgentSkeptic 2.0 integrator guide (docs/integrate.md)."
+      "remediation": "See docs/migrate-2.md (v4 API) and docs/integrate.md."
     },
     {
       "code": "COMPARE_RESOLVE_PATH_FAILED",
       "category": "operational",
       "httpStatus": null,
       "retryable": false,
-      "remediation": "See docs/migrate-2.md and the AgentSkeptic 2.0 integrator guide (docs/integrate.md)."
+      "remediation": "See docs/migrate-2.md (v4 API) and docs/integrate.md."
     },
     {
       "code": "COMPARE_RUN_COMPARISON_REPORT_INVALID",
       "category": "operational",
       "httpStatus": null,
       "retryable": false,
-      "remediation": "See docs/migrate-2.md and the AgentSkeptic 2.0 integrator guide (docs/integrate.md)."
+      "remediation": "See docs/migrate-2.md (v4 API) and docs/integrate.md."
     },
     {
       "code": "COMPARE_USAGE",
       "category": "operational",
       "httpStatus": null,
       "retryable": false,
-      "remediation": "See docs/migrate-2.md and the AgentSkeptic 2.0 integrator guide (docs/integrate.md)."
+      "remediation": "See docs/migrate-2.md (v4 API) and docs/integrate.md."
     },
     {
       "code": "COMPARE_WORKFLOW_ID_MISMATCH",
       "category": "operational",
       "httpStatus": null,
       "retryable": false,
-      "remediation": "See docs/migrate-2.md and the AgentSkeptic 2.0 integrator guide (docs/integrate.md)."
+      "remediation": "See docs/migrate-2.md (v4 API) and docs/integrate.md."
     },
     {
       "code": "COMPARE_WORKFLOW_TRUTH_MISMATCH",
       "category": "operational",
       "httpStatus": null,
       "retryable": false,
-      "remediation": "See docs/migrate-2.md and the AgentSkeptic 2.0 integrator guide (docs/integrate.md)."
+      "remediation": "See docs/migrate-2.md (v4 API) and docs/integrate.md."
     },
     {
       "code": "CROSSING_USAGE",
       "category": "operational",
       "httpStatus": null,
       "retryable": false,
-      "remediation": "See docs/migrate-2.md and the AgentSkeptic 2.0 integrator guide (docs/integrate.md)."
+      "remediation": "See docs/migrate-2.md (v4 API) and docs/integrate.md."
     },
     {
       "code": "EMIT_LANGGRAPH_CHECKPOINT_INVALID",
       "category": "operational",
       "httpStatus": null,
       "retryable": false,
-      "remediation": "See docs/migrate-2.md and the AgentSkeptic 2.0 integrator guide (docs/integrate.md)."
+      "remediation": "See docs/migrate-2.md (v4 API) and docs/integrate.md."
     },
     {
       "code": "EMIT_LINT_FAILED",
       "category": "operational",
       "httpStatus": null,
       "retryable": false,
-      "remediation": "See docs/migrate-2.md and the AgentSkeptic 2.0 integrator guide (docs/integrate.md)."
+      "remediation": "See docs/migrate-2.md (v4 API) and docs/integrate.md."
     },
     {
       "code": "EMIT_LINT_USAGE",
       "category": "operational",
       "httpStatus": null,
       "retryable": false,
-      "remediation": "See docs/migrate-2.md and the AgentSkeptic 2.0 integrator guide (docs/integrate.md)."
+      "remediation": "See docs/migrate-2.md (v4 API) and docs/integrate.md."
     },
     {
       "code": "EMIT_RETRIEVAL_SOURCE_INVALID",
       "category": "operational",
       "httpStatus": null,
       "retryable": false,
-      "remediation": "See docs/migrate-2.md and the AgentSkeptic 2.0 integrator guide (docs/integrate.md)."
+      "remediation": "See docs/migrate-2.md (v4 API) and docs/integrate.md."
     },
     {
       "code": "EMIT_TOOL_ID_INVALID",
       "category": "operational",
       "httpStatus": null,
       "retryable": false,
-      "remediation": "See docs/migrate-2.md and the AgentSkeptic 2.0 integrator guide (docs/integrate.md)."
+      "remediation": "See docs/migrate-2.md (v4 API) and docs/integrate.md."
     },
     {
       "code": "EMIT_WORKFLOW_ID_INVALID",
       "category": "operational",
       "httpStatus": null,
       "retryable": false,
-      "remediation": "See docs/migrate-2.md and the AgentSkeptic 2.0 integrator guide (docs/integrate.md)."
+      "remediation": "See docs/migrate-2.md (v4 API) and docs/integrate.md."
     },
     {
       "code": "ENFORCEMENT_REQUIRES_PAID_PLAN",
       "category": "license",
       "httpStatus": null,
       "retryable": false,
-      "remediation": "See docs/migrate-2.md and the AgentSkeptic 2.0 integrator guide (docs/integrate.md)."
+      "remediation": "See docs/migrate-2.md (v4 API) and docs/integrate.md."
     },
     {
       "code": "ENFORCE_REQUIRES_COMMERCIAL_BUILD",
       "category": "operational",
       "httpStatus": null,
       "retryable": false,
-      "remediation": "See docs/migrate-2.md and the AgentSkeptic 2.0 integrator guide (docs/integrate.md)."
+      "remediation": "See docs/migrate-2.md (v4 API) and docs/integrate.md."
     },
     {
       "code": "ENFORCE_USAGE",
       "category": "operational",
       "httpStatus": null,
       "retryable": false,
-      "remediation": "See docs/migrate-2.md and the AgentSkeptic 2.0 integrator guide (docs/integrate.md)."
+      "remediation": "See docs/migrate-2.md (v4 API) and docs/integrate.md."
     },
     {
       "code": "EVENTS_READ_FAILED",
       "category": "config",
       "httpStatus": null,
       "retryable": false,
-      "remediation": "See docs/migrate-2.md and the AgentSkeptic 2.0 integrator guide (docs/integrate.md)."
+      "remediation": "See docs/migrate-2.md (v4 API) and docs/integrate.md."
     },
     {
       "code": "EVENTUAL_MODE_NOT_SUPPORTED_IN_PROCESS_HOOK",
       "category": "operational",
       "httpStatus": null,
       "retryable": false,
-      "remediation": "See docs/migrate-2.md and the AgentSkeptic 2.0 integrator guide (docs/integrate.md)."
+      "remediation": "See docs/migrate-2.md (v4 API) and docs/integrate.md."
     },
     {
       "code": "EXECUTION_IDENTITY_MISMATCH",
       "category": "operational",
       "httpStatus": null,
       "retryable": false,
-      "remediation": "See docs/migrate-2.md and the AgentSkeptic 2.0 integrator guide (docs/integrate.md)."
+      "remediation": "See docs/migrate-2.md (v4 API) and docs/integrate.md."
     },
     {
       "code": "EXECUTION_IDENTITY_USAGE",
       "category": "operational",
       "httpStatus": null,
       "retryable": false,
-      "remediation": "See docs/migrate-2.md and the AgentSkeptic 2.0 integrator guide (docs/integrate.md)."
+      "remediation": "See docs/migrate-2.md (v4 API) and docs/integrate.md."
     },
     {
       "code": "EXECUTION_TRACE_USAGE",
       "category": "operational",
       "httpStatus": null,
       "retryable": false,
-      "remediation": "See docs/migrate-2.md and the AgentSkeptic 2.0 integrator guide (docs/integrate.md)."
+      "remediation": "See docs/migrate-2.md (v4 API) and docs/integrate.md."
     },
     {
       "code": "HTTP_CLIENT_ERROR",
       "category": "operational",
       "httpStatus": null,
       "retryable": false,
-      "remediation": "See docs/migrate-2.md and the AgentSkeptic 2.0 integrator guide (docs/integrate.md)."
+      "remediation": "See docs/migrate-2.md (v4 API) and docs/integrate.md."
     },
     {
       "code": "INTERNAL_ERROR",
       "category": "operational",
       "httpStatus": null,
       "retryable": false,
-      "remediation": "See docs/migrate-2.md and the AgentSkeptic 2.0 integrator guide (docs/integrate.md)."
+      "remediation": "See docs/migrate-2.md (v4 API) and docs/integrate.md."
     },
     {
       "code": "LANGGRAPH_CHECKPOINT_TRUST_GENERIC_MODE_CONFLICT",
       "category": "operational",
       "httpStatus": null,
       "retryable": false,
-      "remediation": "See docs/migrate-2.md and the AgentSkeptic 2.0 integrator guide (docs/integrate.md)."
+      "remediation": "See docs/migrate-2.md (v4 API) and docs/integrate.md."
     },
     {
       "code": "LANGGRAPH_CHECKPOINT_TRUST_NON_V3_TOOL_OBSERVED",
       "category": "operational",
       "httpStatus": null,
       "retryable": false,
-      "remediation": "See docs/migrate-2.md and the AgentSkeptic 2.0 integrator guide (docs/integrate.md)."
+      "remediation": "See docs/migrate-2.md (v4 API) and docs/integrate.md."
     },
     {
       "code": "LICENSE_DENIED",
       "category": "license",
       "httpStatus": null,
       "retryable": false,
-      "remediation": "See docs/migrate-2.md and the AgentSkeptic 2.0 integrator guide (docs/integrate.md)."
+      "remediation": "See docs/migrate-2.md (v4 API) and docs/integrate.md."
     },
     {
       "code": "LICENSE_KEY_MISSING",
       "category": "license",
       "httpStatus": null,
       "retryable": false,
-      "remediation": "See docs/migrate-2.md and the AgentSkeptic 2.0 integrator guide (docs/integrate.md)."
+      "remediation": "See docs/migrate-2.md (v4 API) and docs/integrate.md."
     },
     {
       "code": "LICENSE_USAGE_UNAVAILABLE",
       "category": "license",
       "httpStatus": null,
       "retryable": true,
-      "remediation": "See docs/migrate-2.md and the AgentSkeptic 2.0 integrator guide (docs/integrate.md)."
+      "remediation": "See docs/migrate-2.md (v4 API) and docs/integrate.md."
     },
     {
       "code": "MALFORMED_EVENT_LINE",
       "category": "operational",
       "httpStatus": null,
       "retryable": false,
-      "remediation": "See docs/migrate-2.md and the AgentSkeptic 2.0 integrator guide (docs/integrate.md)."
+      "remediation": "See docs/migrate-2.md (v4 API) and docs/integrate.md."
     },
     {
       "code": "NO_STEPS_FOR_WORKFLOW",
       "category": "operational",
       "httpStatus": null,
       "retryable": false,
-      "remediation": "See docs/migrate-2.md and the AgentSkeptic 2.0 integrator guide (docs/integrate.md)."
+      "remediation": "See docs/migrate-2.md (v4 API) and docs/integrate.md."
     },
     {
       "code": "PLAN_PATH_OUTSIDE_REPO",
       "category": "operational",
       "httpStatus": null,
       "retryable": false,
-      "remediation": "See docs/migrate-2.md and the AgentSkeptic 2.0 integrator guide (docs/integrate.md)."
+      "remediation": "See docs/migrate-2.md (v4 API) and docs/integrate.md."
     },
     {
       "code": "PLAN_TRANSITION_BAD_REF",
       "category": "operational",
       "httpStatus": null,
       "retryable": false,
-      "remediation": "See docs/migrate-2.md and the AgentSkeptic 2.0 integrator guide (docs/integrate.md)."
+      "remediation": "See docs/migrate-2.md (v4 API) and docs/integrate.md."
     },
     {
       "code": "PLAN_TRANSITION_GIT_FAILED",
       "category": "operational",
       "httpStatus": null,
       "retryable": false,
-      "remediation": "See docs/migrate-2.md and the AgentSkeptic 2.0 integrator guide (docs/integrate.md)."
+      "remediation": "See docs/migrate-2.md (v4 API) and docs/integrate.md."
     },
     {
       "code": "PLAN_TRANSITION_GIT_PARSE",
       "category": "operational",
       "httpStatus": null,
       "retryable": false,
-      "remediation": "See docs/migrate-2.md and the AgentSkeptic 2.0 integrator guide (docs/integrate.md)."
+      "remediation": "See docs/migrate-2.md (v4 API) and docs/integrate.md."
     },
     {
       "code": "PLAN_TRANSITION_GIT_TOO_OLD",
       "category": "operational",
       "httpStatus": null,
       "retryable": false,
-      "remediation": "See docs/migrate-2.md and the AgentSkeptic 2.0 integrator guide (docs/integrate.md)."
+      "remediation": "See docs/migrate-2.md (v4 API) and docs/integrate.md."
     },
     {
       "code": "PLAN_TRANSITION_USAGE",
       "category": "operational",
       "httpStatus": null,
       "retryable": false,
-      "remediation": "See docs/migrate-2.md and the AgentSkeptic 2.0 integrator guide (docs/integrate.md)."
+      "remediation": "See docs/migrate-2.md (v4 API) and docs/integrate.md."
     },
     {
       "code": "PLAN_VALIDATION_AMBIGUOUS_BODY_RULES",
       "category": "operational",
       "httpStatus": null,
       "retryable": false,
-      "remediation": "See docs/migrate-2.md and the AgentSkeptic 2.0 integrator guide (docs/integrate.md)."
+      "remediation": "See docs/migrate-2.md (v4 API) and docs/integrate.md."
     },
     {
       "code": "PLAN_VALIDATION_INSUFFICIENT_SPEC",
       "category": "operational",
       "httpStatus": null,
       "retryable": false,
-      "remediation": "See docs/migrate-2.md and the AgentSkeptic 2.0 integrator guide (docs/integrate.md)."
+      "remediation": "See docs/migrate-2.md (v4 API) and docs/integrate.md."
     },
     {
       "code": "PLAN_VALIDATION_INVALID_PATTERN",
       "category": "operational",
       "httpStatus": null,
       "retryable": false,
-      "remediation": "See docs/migrate-2.md and the AgentSkeptic 2.0 integrator guide (docs/integrate.md)."
+      "remediation": "See docs/migrate-2.md (v4 API) and docs/integrate.md."
     },
     {
       "code": "PLAN_VALIDATION_NO_FRONT_MATTER",
       "category": "operational",
       "httpStatus": null,
       "retryable": false,
-      "remediation": "See docs/migrate-2.md and the AgentSkeptic 2.0 integrator guide (docs/integrate.md)."
+      "remediation": "See docs/migrate-2.md (v4 API) and docs/integrate.md."
     },
     {
       "code": "PLAN_VALIDATION_SCHEMA_INVALID",
       "category": "operational",
       "httpStatus": null,
       "retryable": false,
-      "remediation": "See docs/migrate-2.md and the AgentSkeptic 2.0 integrator guide (docs/integrate.md)."
+      "remediation": "See docs/migrate-2.md (v4 API) and docs/integrate.md."
     },
     {
       "code": "PLAN_VALIDATION_YAML_INVALID",
       "category": "operational",
       "httpStatus": null,
       "retryable": false,
-      "remediation": "See docs/migrate-2.md and the AgentSkeptic 2.0 integrator guide (docs/integrate.md)."
+      "remediation": "See docs/migrate-2.md (v4 API) and docs/integrate.md."
     },
     {
       "code": "POSTGRES_CLIENT_SETUP_FAILED",
       "category": "operational",
       "httpStatus": null,
       "retryable": false,
-      "remediation": "See docs/migrate-2.md and the AgentSkeptic 2.0 integrator guide (docs/integrate.md)."
+      "remediation": "See docs/migrate-2.md (v4 API) and docs/integrate.md."
     },
     {
       "code": "PROBLEM_DETAILS",
       "category": "operational",
       "httpStatus": null,
       "retryable": false,
-      "remediation": "See docs/migrate-2.md and the AgentSkeptic 2.0 integrator guide (docs/integrate.md)."
+      "remediation": "See docs/migrate-2.md (v4 API) and docs/integrate.md."
     },
     {
       "code": "PROJECT_VERIFICATION_LAYOUT_MISSING",
       "category": "operational",
       "httpStatus": null,
       "retryable": false,
-      "remediation": "See docs/migrate-2.md and the AgentSkeptic 2.0 integrator guide (docs/integrate.md)."
+      "remediation": "See docs/migrate-2.md (v4 API) and docs/integrate.md."
     },
     {
       "code": "RECEIPT_PERSIST_FAILED",
       "category": "operational",
       "httpStatus": null,
       "retryable": false,
-      "remediation": "See docs/migrate-2.md and the AgentSkeptic 2.0 integrator guide (docs/integrate.md)."
+      "remediation": "See docs/migrate-2.md (v4 API) and docs/integrate.md."
     },
     {
       "code": "RECEIPT_SCHEMA_INVALID",
       "category": "operational",
       "httpStatus": null,
       "retryable": false,
-      "remediation": "See docs/migrate-2.md and the AgentSkeptic 2.0 integrator guide (docs/integrate.md)."
+      "remediation": "See docs/migrate-2.md (v4 API) and docs/integrate.md."
     },
     {
       "code": "REGISTRY_DUPLICATE_TOOL_ID",
       "category": "config",
       "httpStatus": null,
       "retryable": false,
-      "remediation": "See docs/migrate-2.md and the AgentSkeptic 2.0 integrator guide (docs/integrate.md)."
+      "remediation": "See docs/migrate-2.md (v4 API) and docs/integrate.md."
     },
     {
       "code": "REGISTRY_JSON_SYNTAX",
       "category": "config",
       "httpStatus": null,
       "retryable": false,
-      "remediation": "See docs/migrate-2.md and the AgentSkeptic 2.0 integrator guide (docs/integrate.md)."
+      "remediation": "See docs/migrate-2.md (v4 API) and docs/integrate.md."
     },
     {
       "code": "REGISTRY_READ_FAILED",
       "category": "config",
       "httpStatus": null,
       "retryable": false,
-      "remediation": "See docs/migrate-2.md and the AgentSkeptic 2.0 integrator guide (docs/integrate.md)."
+      "remediation": "See docs/migrate-2.md (v4 API) and docs/integrate.md."
     },
     {
       "code": "REGISTRY_SCHEMA_INVALID",
       "category": "config",
       "httpStatus": null,
       "retryable": false,
-      "remediation": "See docs/migrate-2.md and the AgentSkeptic 2.0 integrator guide (docs/integrate.md)."
+      "remediation": "See docs/migrate-2.md (v4 API) and docs/integrate.md."
     },
     {
       "code": "RESERVE_INVALID_KEY",
       "category": "operational",
       "httpStatus": null,
       "retryable": false,
-      "remediation": "See docs/migrate-2.md and the AgentSkeptic 2.0 integrator guide (docs/integrate.md)."
+      "remediation": "See docs/migrate-2.md (v4 API) and docs/integrate.md."
     },
     {
       "code": "RESERVE_QUOTA_EXCEEDED",
       "category": "operational",
       "httpStatus": null,
       "retryable": false,
-      "remediation": "See docs/migrate-2.md and the AgentSkeptic 2.0 integrator guide (docs/integrate.md)."
+      "remediation": "See docs/migrate-2.md (v4 API) and docs/integrate.md."
     },
     {
       "code": "RESERVE_SERVER_ERROR",
       "category": "operational",
       "httpStatus": null,
       "retryable": true,
-      "remediation": "See docs/migrate-2.md and the AgentSkeptic 2.0 integrator guide (docs/integrate.md)."
+      "remediation": "See docs/migrate-2.md (v4 API) and docs/integrate.md."
     },
     {
       "code": "SHARE_REPORT_FAILED",
       "category": "operational",
       "httpStatus": null,
       "retryable": true,
-      "remediation": "See docs/migrate-2.md and the AgentSkeptic 2.0 integrator guide (docs/integrate.md)."
+      "remediation": "See docs/migrate-2.md (v4 API) and docs/integrate.md."
     },
     {
       "code": "SQLITE_DATABASE_OPEN_FAILED",
       "category": "operational",
       "httpStatus": null,
       "retryable": false,
-      "remediation": "See docs/migrate-2.md and the AgentSkeptic 2.0 integrator guide (docs/integrate.md)."
+      "remediation": "See docs/migrate-2.md (v4 API) and docs/integrate.md."
     },
     {
       "code": "TRACE_DUPLICATE_RUN_EVENT_ID",
       "category": "operational",
       "httpStatus": null,
       "retryable": false,
-      "remediation": "See docs/migrate-2.md and the AgentSkeptic 2.0 integrator guide (docs/integrate.md)."
+      "remediation": "See docs/migrate-2.md (v4 API) and docs/integrate.md."
     },
     {
       "code": "TRACE_PARENT_FORWARD_REFERENCE",
       "category": "operational",
       "httpStatus": null,
       "retryable": false,
-      "remediation": "See docs/migrate-2.md and the AgentSkeptic 2.0 integrator guide (docs/integrate.md)."
+      "remediation": "See docs/migrate-2.md (v4 API) and docs/integrate.md."
     },
     {
       "code": "TRACE_UNKNOWN_PARENT_RUN_EVENT_ID",
       "category": "operational",
       "httpStatus": null,
       "retryable": false,
-      "remediation": "See docs/migrate-2.md and the AgentSkeptic 2.0 integrator guide (docs/integrate.md)."
+      "remediation": "See docs/migrate-2.md (v4 API) and docs/integrate.md."
     },
     {
       "code": "VALIDATE_REGISTRY_USAGE",
       "category": "operational",
       "httpStatus": null,
       "retryable": false,
-      "remediation": "See docs/migrate-2.md and the AgentSkeptic 2.0 integrator guide (docs/integrate.md)."
+      "remediation": "See docs/migrate-2.md (v4 API) and docs/integrate.md."
+    },
+    {
+      "code": "VERIFICATION_CONNECTOR_NOT_SHIPPED",
+      "category": "operational",
+      "httpStatus": null,
+      "retryable": false,
+      "remediation": "See docs/migrate-2.md (v4 API) and docs/integrate.md."
     },
     {
       "code": "VERIFICATION_OUTPUT_LOCK_MISMATCH",
       "category": "operational",
       "httpStatus": null,
       "retryable": false,
-      "remediation": "See docs/migrate-2.md and the AgentSkeptic 2.0 integrator guide (docs/integrate.md)."
+      "remediation": "See docs/migrate-2.md (v4 API) and docs/integrate.md."
     },
     {
       "code": "VERIFICATION_POLICY_INVALID",
       "category": "operational",
       "httpStatus": null,
       "retryable": false,
-      "remediation": "See docs/migrate-2.md and the AgentSkeptic 2.0 integrator guide (docs/integrate.md)."
+      "remediation": "See docs/migrate-2.md (v4 API) and docs/integrate.md."
     },
     {
       "code": "VERIFICATION_REQUIRES_SUBSCRIPTION",
       "category": "license",
       "httpStatus": null,
       "retryable": false,
-      "remediation": "See docs/migrate-2.md and the AgentSkeptic 2.0 integrator guide (docs/integrate.md)."
+      "remediation": "See docs/migrate-2.md (v4 API) and docs/integrate.md."
     },
     {
       "code": "WORKFLOW_RESULT_RUN_LEVEL_CODES_MISMATCH",
       "category": "operational",
       "httpStatus": null,
       "retryable": false,
-      "remediation": "See docs/migrate-2.md and the AgentSkeptic 2.0 integrator guide (docs/integrate.md)."
+      "remediation": "See docs/migrate-2.md (v4 API) and docs/integrate.md."
     },
     {
       "code": "WORKFLOW_RESULT_SCHEMA_INVALID",
       "category": "operational",
       "httpStatus": null,
       "retryable": false,
-      "remediation": "See docs/migrate-2.md and the AgentSkeptic 2.0 integrator guide (docs/integrate.md)."
+      "remediation": "See docs/migrate-2.md (v4 API) and docs/integrate.md."
     }
   ]
 }

@@ -3,7 +3,7 @@ import path from "path";
 import { COMMERCIAL_SITE_SECURITY_HEADERS } from "./src/lib/httpSecurityHeaders";
 import { ACCOUNT_PAGE_OUTPUT_FILE_TRACING_GLOBS } from "./src/lib/accountPageFileTracingGlobs";
 import { DEMO_VERIFY_OUTPUT_FILE_TRACING_GLOBS } from "./src/lib/demoVerifyOutputFileTracingGlobs";
-import { REGISTRY_DRAFT_API_FILE_TRACING_GLOBS } from "./src/lib/registryDraft/registryDraftApiFileTracingGlobs";
+import { REGISTRY_DRAFT_API_FILE_TRACING_GLOBS } from "./src/lib/registry-draft/registryDraftApiFileTracingGlobs";
 
 import { createRequire } from "node:module";
 

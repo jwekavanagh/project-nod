@@ -1,11 +1,11 @@
 "use client";
 
-import {
-  FIRST_FIVE_MINUTES_CHECKLIST,
-  TELEMETRY_ICING_LINE,
-} from "agentskeptic/firstFiveMinutesChecklist";
+import firstFive from "@/content/first-five-minutes.json";
 import Link from "next/link";
 import "./FirstFiveMinutesCallout.css";
+
+const FIRST_FIVE_MINUTES_CHECKLIST = firstFive.checklist;
+const TELEMETRY_ICING_LINE = firstFive.telemetryIcingLine;
 
 export type FirstFiveMinutesCalloutProps = {
   /** Shorter on `/` so policy detail does not interrupt the product story. */
@@ -51,7 +51,9 @@ export function FirstFiveMinutesCallout({ homeTeaser = false }: FirstFiveMinutes
         <summary>Telemetry and checklist details</summary>
         <p className="first-five-minutes-sub">What we may send on this page (anonymous surface impression):</p>
         <ul className="first-five-minutes-list">
-          <li>Surface label (acquisition vs integrate), optional UTM fields, landing path, same-origin referrer path.</li>
+          <li>
+            Surface label (acquisition vs integrate), optional UTM fields, landing path, same-origin referrer path.
+          </li>
           <li>
             A pseudonymous funnel_anon_id (UUID) after the server mints or confirms one — no account email in this
             beacon.

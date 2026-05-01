@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { getOpenAiRegistryDraftLlmResponseJsonSchemaRoot } from "agentskeptic/registryDraft";
-import { callHostedOpenAiRegistryDraftJson } from "agentskeptic/registryDraft/providers/hosted_openai";
+import { getOpenAiRegistryDraftLlmResponseJsonSchemaRoot } from "@/lib/registry-draft/openAiLlmResponseSchema";
+import { callHostedOpenAiRegistryDraftJson } from "@/lib/registry-draft/providers/hosted_openai";
 
 const fetchMock = vi.fn();
 

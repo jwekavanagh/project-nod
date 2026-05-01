@@ -7,7 +7,7 @@ import { join, dirname } from "node:path";
 import { tmpdir } from "node:os";
 import { fileURLToPath } from "node:url";
 import { DatabaseSync } from "node:sqlite";
-import { createDecisionGate } from "../dist/index.js";
+import { AgentSkeptic } from "../dist/index.js";
 import { loadSchemaValidator } from "../dist/schemaLoad.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -28,14 +28,14 @@ try {
   const firstLine = readFileSync(eventsPath, "utf8").split(/\r?\n/).filter((l) => l.trim().length > 0)[0];
   const ev = JSON.parse(firstLine);
 
-  const gate = createDecisionGate({
-    workflowId: "wf_complete",
+  const agent = new AgentSkeptic({
     registryPath,
     databaseUrl: dbPath,
     projectRoot: root,
     logStep: () => {},
     truthReport: () => {},
   });
+  const gate = agent.gate("wf_complete");
   gate.appendRunEvent(ev);
   const result = await gate.evaluate();
 

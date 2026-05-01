@@ -63,7 +63,8 @@ export default function IntegratePage() {
         </a>
       </p>
       <p className="lede muted">
-        <Link href="#agentskeptic-first-five-minutes">First five minutes</Link> — browser id, CLI join, verify, and
+        <Link href="#agentskeptic-first-five-minutes">First five minutes</Link> — anonymous id (browser where applicable),
+        CLI join, verify, and
         optional telemetry (same checklist appears at the top of beacon-eligible pages).
       </p>
 

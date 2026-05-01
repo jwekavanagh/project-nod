@@ -1,3 +1,17 @@
+# [4.0.0](https://github.com/jwekavanagh/agentskeptic/compare/v3.7.0...v4.0.0) (2026-04-30)
+
+### ⚠ BREAKING CHANGES
+
+* **api:** Remove deprecated root exports (`createDecisionGate`, `verifyWorkflow`, `verifyAgentskeptic`, `runQuickVerify`, `runQuickVerifyToValidatedReport`, `Gate`) and deprecation shims — use **`AgentSkeptic`** from **`agentskeptic`** (`gate`, `verify`, `replayFromFile`, `quick`).
+* **cli:** Drop **`agentskeptic registry-draft`**; registry drafting is **`POST /api/integrator/registry-draft`** (**website** **`website/src/lib/registry-draft/`**) plus guided flows.
+* **deps:** Remove BigQuery / MSSQL / Mongo / S3 client libraries from OSS; connectors return **`VERIFICATION_CONNECTOR_NOT_SHIPPED`**.
+* **telemetry:** OSS account-link **`fetch`** + stderr **`handoff_url`** require **`AGENTSKEPTIC_OSS_CLAIM=1`**; remove automatic browser continuation POSTs from the OSS CLI path.
+* **artifacts:** Adoption and commercial validators write **`artifacts/generated/*-validation-verdict.json`** (untracked); delete committed legacy verdict JSON at repo **`artifacts/`** root.
+
+### Features
+
+* **ci:** npm footprint regression compares merge-branch **`npm pack`** size (within **≤3%** of frozen **v3.7.0** tarball bytes) and production **`npm install`** file count (**strict improvement** vs v3.7.0).
+
 # [3.7.0](https://github.com/jwekavanagh/agentskeptic/compare/v3.6.0...v3.7.0) (2026-05-01)
 
 
