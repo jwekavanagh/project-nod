@@ -54,3 +54,12 @@ Inline suppressions use the line-before **`// codeql[js/<rule-id>]: …`** form 
 URL-substring, stack-trace, and double-escaping findings are addressed primarily by **test and runtime refactors**. For example, HTML normalization in [`website/__tests__/marketing-public-routes.dom.test.ts`](website/__tests__/marketing-public-routes.dom.test.ts) uses **JSDOM** parsing instead of manual entity replacement, which avoids **`js/double-escaping`** alerts without a suppression.
 
 The **only** inline suppression in this repository documents a scanner false positive where the rule does not match the intended threat model: **`js/insufficient-password-hash`** on the SHA-256 lookup fingerprint in [`website/src/lib/apiKeyCrypto.ts`](website/src/lib/apiKeyCrypto.ts) (indexed lookup only; possession is verified with **scrypt** in **`verifyApiKey`**).
+
+### Duplicate `CodeQL` status (default setup vs Actions)
+
+GitHub may report two different checks with similar names: a **`CodeQL`** conclusion from **`github-advanced-security`** (repository **Code scanning** default setup) and **`CodeQL (javascript-typescript)`** from **`github-actions`** (the `codeql` job in `.github/workflows/ci.yml`). Keeping both enabled commonly produces a **`CodeQL` failure while the Actions job passes** (`upload: never` avoids mixed SARIF uploads; see the comment in CI). Protected branches must not require the wrong one.
+
+**Merge unblocking** (pick one):
+
+1. Repository **Settings → Code security and analysis**: turn off CodeQL **default setup** so only the Actions workflow performs analysis; **or**
+2. Branch protection **required checks**: require **`CodeQL (javascript-typescript)`** (exact Actions job name) instead of **`CodeQL`** from advanced security.
