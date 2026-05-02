@@ -138,12 +138,14 @@ function parseWorkflowResult(stdout) {
   return obj;
 }
 
-/** stdout is Outcome Certificate v1 (schemaVersion 1), not legacy WorkflowResult (schemaVersion 15). */
-function isOutcomeCertificateV1Stdout(obj) {
+/** stdout is Outcome Certificate v1/v2, not legacy WorkflowResult (schemaVersion 15). */
+function isOutcomeCertificateWireStdout(obj) {
   return (
     obj !== null &&
     typeof obj === "object" &&
-    obj.schemaVersion === 1 &&
+    typeof obj.schemaVersion === "number" &&
+    obj.schemaVersion >= 1 &&
+    obj.schemaVersion <= 2 &&
     typeof obj.stateRelation === "string" &&
     "humanReport" in obj
   );
@@ -151,7 +153,7 @@ function isOutcomeCertificateV1Stdout(obj) {
 
 function assertVerifiedStdout(stdout) {
   const obj = parseWorkflowResult(stdout);
-  if (isOutcomeCertificateV1Stdout(obj)) {
+  if (isOutcomeCertificateWireStdout(obj)) {
     if (obj.stateRelation !== "matches_expectations") {
       throw new Error(
         "langgraph-reference-verify: OPERATIONAL: expected certificate stateRelation matches_expectations, got " +
@@ -190,7 +192,7 @@ function assertVerifiedStdout(stdout) {
 
 function assertNegativeStdout(stdout) {
   const obj = parseWorkflowResult(stdout);
-  if (isOutcomeCertificateV1Stdout(obj)) {
+  if (isOutcomeCertificateWireStdout(obj)) {
     if (obj.stateRelation !== "does_not_match") {
       throw new Error(
         "langgraph-reference-verify: NEGATIVE_PHASE: expected certificate stateRelation does_not_match, got " +
