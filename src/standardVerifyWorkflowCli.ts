@@ -7,6 +7,7 @@ import {
 } from "./failureCatalog.js";
 import {
   buildOutcomeCertificateFromWorkflowResult,
+  truthCheckVerdictFromCertificate,
   type OutcomeCertificateV1,
 } from "./outcomeCertificate.js";
 import type { WorkflowResult } from "./types.js";
@@ -123,6 +124,8 @@ export async function runStandardVerifyWorkflowCliToTerminalResult(options: {
   /** When set, human stderr is deferred until after a successful POST to this origin. */
   shareReportOrigin?: string;
   io?: Partial<StandardVerifyWorkflowCliIo>;
+  /** When true, prefix stderr human output with `truth_check_verdict:` (agentskeptic check). */
+  truthCheckInvoked?: boolean;
 }): Promise<{ certificate: OutcomeCertificateV1; workflowResult: WorkflowResult }> {
   const io = { ...defaultIo, ...options.io };
   const writeCliError = (code: string, message: string): void => {
@@ -205,6 +208,9 @@ export async function runStandardVerifyWorkflowCliToTerminalResult(options: {
           `share_report_origin=${origin} http_status=${String(shareRes.status)} detail=${shareRes.bodySnippet}`,
         ),
       );
+    }
+    if (options.truthCheckInvoked === true) {
+      io.stderrLine(`truth_check_verdict: ${truthCheckVerdictFromCertificate(certificate)}`);
     }
     io.stderrLine(formatContractVerifyStderrForStderrLine(certificate));
   }

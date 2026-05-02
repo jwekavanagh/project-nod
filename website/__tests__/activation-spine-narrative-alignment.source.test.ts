@@ -7,9 +7,9 @@ const __dirname = fileURLToPath(new URL(".", import.meta.url));
 const root = path.resolve(__dirname, "..", "..");
 
 describe("activation spine narrative vs shell template", () => {
-  it("shell and first-run-integration.md share ordered spine through Step 4", () => {
+  it("shell and integrate.md share ordered spine through Step 4", () => {
     const shellPath = path.join(root, "scripts", "templates", "integrate-activation-shell.bash");
-    const docPath = path.join(root, "docs", "first-run-integration.md");
+    const docPath = path.join(root, "docs", "integrate.md");
     const shell = readFileSync(shellPath, "utf8");
     const doc = readFileSync(docPath, "utf8");
 
@@ -25,10 +25,10 @@ describe("activation spine narrative vs shell template", () => {
     expect(idxBootstrapShell).toBeGreaterThan(idxVerifyShell);
     expect(idxWfBootShell).toBeGreaterThan(idxBootstrapShell);
 
-    const step1 = doc.indexOf("## Step 1:");
-    const step2 = doc.indexOf("## Step 2:");
-    const step3 = doc.indexOf("## Step 3:");
-    const step4 = doc.indexOf("## Step 4:");
+    const step1 = doc.indexOf("### Step 1:");
+    const step2 = doc.indexOf("### Step 2:");
+    const step3 = doc.indexOf("### Step 3:");
+    const step4 = doc.indexOf("### Step 4:");
     expect(step1).toBeGreaterThanOrEqual(0);
     expect(step2).toBeGreaterThan(step1);
     expect(step3).toBeGreaterThan(step2);
@@ -46,7 +46,7 @@ describe("activation spine narrative vs shell template", () => {
     expect(step3Body.indexOf("wf_bootstrap_fixture")).toBeGreaterThanOrEqual(0);
     expect(step3Body.indexOf("test/fixtures/bootstrap-pack/input.json")).toBeGreaterThanOrEqual(0);
 
-    const step2Line = doc.split(/\r?\n/).find((line) => /^##\s+Step\s+2:/i.test(line));
+    const step2Line = doc.split(/\r?\n/).find((line) => /^###\s+Step\s+2:/i.test(line));
     expect(step2Line).toBeDefined();
     expect(step2Line!.toLowerCase()).toContain("first-run-verify");
     expect(step2Line!.toLowerCase()).not.toContain("partner-quickstart");

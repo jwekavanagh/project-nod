@@ -1,16 +1,18 @@
-# Golden integration path (Next.js + Postgres)
+# Production reference: Next.js + Postgres
 
-This is the single canonical onboarding path for AgentSkeptic:
+Executable reference stack for **deployable** AgentSkeptic integration:
 
 - Stack: **Next.js (App Router) + Postgres**
-- Goal: reach a real verification outcome on your own system in one sitting
+- Goal: run deterministic pass/fail verification against a real database in one sitting
 - Contract: if you follow these steps, you will get either a trusted pass or an actionable mismatch
 
-All other stack combinations are contract-based only and are out of scope for this first-run path.
+**First truth check (minimum path):** use **`agentskeptic check`** and **`AgentSkeptic.check`** — see [integrate.md](integrate.md#first-truth-check).
 
-Default decision-gate path reference: [README — Default path: DecisionGate before you act](../README.md#default-path-decisiongate-before-you-act).
+All other stack combinations are contract-based only and are out of scope for this golden reference tree.
 
-The CLI reference app’s golden path aligns with **`agentskeptic activate`** for pack-led proofs: deterministic contract outcomes plus exportable **`proof/`** bundles when you rehearse workflows against a real database.
+Reference for irreversible / activation rehearsal: [README — Exportable activation](../README.md) and **`agentskeptic activate`** ([bootstrap-pack-normative.md](bootstrap-pack-normative.md)).
+
+The golden reference app can rehearse **`agentskeptic activate`** for pack-led proofs: deterministic contract outcomes plus exportable **`proof/`** bundles against a real database.
 
 <!-- epistemic-contract:consumer:golden-path -->
 **Epistemic framing (pointer only):** [`epistemic-contract.md`](epistemic-contract.md) — then follow adoption and product SSOT below.

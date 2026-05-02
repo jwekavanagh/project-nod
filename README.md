@@ -54,15 +54,19 @@ steps:
 <!-- discovery-acquisition-fold:end -->
 
 <!-- adoption-canonical:start -->
-## Default path: DecisionGate before you act
+## Default path: one truth check
 
-Canonical **activation** from `BootstrapPackInput` v1 + a readable database URL (`agentskeptic activate` writes `proof/` under `--out` on exits 0–2; **`agentskeptic bootstrap`** is the legacy verb with the same kernel but no proof subtree — see [`docs/bootstrap-pack-normative.md`](docs/bootstrap-pack-normative.md)):
+Compare recorded tool activity to your database and get an **Outcome Certificate** (stdout) plus a **`truth_check_verdict`** line on stderr:
 
 ```bash
-npx agentskeptic activate --input ./path/to/workflow-bootstrap-input.json \
-  --db ./path/to/readable.sqlite \
-  --out ./path/to/agent-pack
+npx agentskeptic check --workflow-id wf_example \
+  --project ./path/to/your-app \
+  --db ./path/to/readable.sqlite
 ```
+
+With the conventional layout, **`--registry`** and **`--events`** default to **`./path/to/your-app/agentskeptic/tools.json`** and **`events.ndjson`**. Pass them explicitly when your paths differ. Full reference: [`docs/integrate.md`](integrate.md).
+
+**Exportable activation (advanced):** `BootstrapPackInput` v1 + **`agentskeptic activate`** (writes **`proof/`** under **`--out`** on exits 0–2; **`bootstrap`** is legacy — [`docs/bootstrap-pack-normative.md`](docs/bootstrap-pack-normative.md)).
 
 ### Lifecycle
 
@@ -84,29 +88,22 @@ npx agentskeptic init --framework none --database sqlite --yes
 
 ```ts
 import { join } from "node:path";
-import { AgentSkeptic, BufferSink } from "agentskeptic";
+import { AgentSkeptic } from "agentskeptic";
 
 const skeptic = new AgentSkeptic({
   registryPath: join("agentskeptic", "tools.json"),
   databaseUrl: join(process.cwd(), "demo.db"),
 });
 
-const gate = skeptic.gate({ workflowId: "wf_complete" });
-const sink = new BufferSink();
-const emitter = skeptic.createEmitter({
+const certificate = await skeptic.check({
   workflowId: "wf_complete",
-  sink,
-  defaultToolObservedSchemaVersion: 2,
+  observations: [
+    {
+      toolId: "crm.upsert_contact",
+      params: { recordId: "c_ok", fields: { name: "Alice", status: "active" } },
+    },
+  ],
 });
-await emitter.emitToolObserved({
-  toolId: "crm.upsert_contact",
-  params: { recordId: "c_ok", fields: { name: "Alice", status: "active" } },
-});
-await emitter.finalizeRun();
-for (const ev of sink.snapshot()) gate.appendRunEvent(ev);
-gate.assertEmissionQuality();
-// Before an irreversible action:
-await gate.assertSafeForIrreversibleAction();
 ```
 
 See **[`docs/integrate.md`](docs/integrate.md)** (v2 integrator SSOT) and [`docs/migrate-2.md`](docs/migrate-2.md) for 1.x → 2.0 renames.

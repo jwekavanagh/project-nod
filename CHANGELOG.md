@@ -1,5 +1,9 @@
 ## [4.1.1](https://github.com/jwekavanagh/agentskeptic/compare/v4.1.0...v4.1.1) (2026-05-01)
 
+### Features
+
+* **cli / sdk:** primary truth check is **`agentskeptic check`** and **`AgentSkeptic.check()`**; bare positional batch verify remains supported for compatibility.
+
 ### Bug Fixes
 
 * **release-package:** declare pypi GitHub environment for Trusted Publishing OIDC ([#46](https://github.com/jwekavanagh/agentskeptic/issues/46)) ([5bff57d](https://github.com/jwekavanagh/agentskeptic/commit/5bff57d7a453b3068a6bf55f4f32c564e308925d))

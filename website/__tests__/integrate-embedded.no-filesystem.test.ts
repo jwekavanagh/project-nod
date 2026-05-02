@@ -7,7 +7,7 @@ import {
 /** R6: /integrate content is available without runtime repo docs/ (build-embedded). */
 describe("integrate embedded SSOT", () => {
   it("includes full first-run title and no unavailable fallback copy", () => {
-    expect(embeddedFirstRunIntegrationMd).toContain("# First-run integration (SSOT)");
+    expect(embeddedFirstRunIntegrationMd).toContain("# AgentSkeptic integrator guide");
     expect(embeddedFirstRunIntegrationMd.toLowerCase()).not.toContain("integration guide unavailable");
   });
 

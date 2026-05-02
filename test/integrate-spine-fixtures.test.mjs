@@ -12,9 +12,9 @@ const root = join(__dirname, "..");
 
 describe("integrate spine SSOT golden fixtures", () => {
   it("first_run_integration_contains_pinned_integratespine_block", () => {
-    const doc = readFileSync(join(root, "docs", "first-run-integration.md"), "utf8");
+    const doc = readFileSync(join(root, "docs", "integrate.md"), "utf8");
     const pinned = readFileSync(join(root, "test", "fixtures", "integrate-spine-first-run-pinned.txt"), "utf8").trim();
-    assert.ok(doc.includes(pinned), "first-run-integration.md must contain pinned IntegrateSpineComplete bullet");
+    assert.ok(doc.includes(pinned), "integrate.md must contain pinned IntegrateSpineComplete bullet");
   });
 
   it("adoption_epistemics_contains_pinned_integratespine_row", () => {

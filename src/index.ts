@@ -20,6 +20,7 @@ export {
   deriveHighStakesReliance,
   assertOutcomeCertificateInvariants,
   formatOutcomeCertificateHuman,
+  truthCheckVerdictFromCertificate,
   workflowResultToStateRelation,
   LANGGRAPH_CHECKPOINT_TRUST_INELIGIBLE_HEADLINE,
 } from "./outcomeCertificate.js";
@@ -32,6 +33,7 @@ export type {
   OutcomeCertificateExplanationDetail,
   OutcomeCertificateCheckpointVerdict,
   BuildQuickOutcomeCertificateOptions,
+  TruthCheckVerdictLabel,
 } from "./outcomeCertificate.js";
 export { loadToolsRegistry, verifyRunStateFromEvents } from "./pipeline.js";
 export type { VerifyRunStateFromEventsInput } from "./pipeline.js";
@@ -94,7 +96,7 @@ export { TruthLayerError } from "./truthLayerError.js";
 export { AgentSkepticError, agentSkepticErrorEntries, lookupErrorCodeMeta } from "./sdk/errors.js";
 export type { ErrorCodeEntry, AgentSkepticErrorCode } from "./sdk/errors.js";
 export { AgentSkeptic } from "./sdk/AgentSkeptic.js";
-export type { AgentSkepticOptions } from "./sdk/AgentSkeptic.js";
+export type { AgentSkepticCheckOptions, AgentSkepticOptions } from "./sdk/AgentSkeptic.js";
 export { CanonicalEventEmitter, BufferSink, NdjsonFileSink } from "./sdk/events/index.js";
 export type { EventSink, EventEmitterInit } from "./sdk/events/index.js";
 export {

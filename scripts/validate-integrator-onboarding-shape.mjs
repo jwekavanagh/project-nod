@@ -16,6 +16,10 @@ function fail(msg) {
 
 const marketingPath = join(root, "config", "marketing.json");
 const marketingRaw = JSON.parse(readFileSync(marketingPath, "utf8"));
+const tcc = marketingRaw.integratePage?.truthCheckCommand;
+if (typeof tcc !== "string" || !tcc.includes("agentskeptic check")) {
+  fail("config/marketing.json integratePage.truthCheckCommand must include the substring agentskeptic check");
+}
 const plc = marketingRaw.integratePage?.packLedCommand;
 if (typeof plc !== "string" || !plc.includes("agentskeptic activate")) {
   fail("config/marketing.json integratePage.packLedCommand must include the substring agentskeptic activate");
@@ -36,22 +40,28 @@ if (/\bintegrateActivation\b/.test(pc)) {
   fail("productCopy.ts must not export integrateActivation (use config/marketing.json for /integrate)");
 }
 
-const firstRun = readFileSync(join(root, "docs", "first-run-integration.md"), "utf8");
-const bannedFirstRun = [
+const integrateSsot = readFileSync(join(root, "docs", "integrate.md"), "utf8");
+const bannedIntegratePrimary = [
   "## Bootstrap and verify on your sources",
   "Then run contract verification on **your** paths",
   "```bash\nagentskeptic verify-integrator-owned",
 ];
-for (const b of bannedFirstRun) {
-  if (firstRun.includes(b)) fail(`first-run-integration.md contains banned fragment: ${JSON.stringify(b)}`);
+for (const b of bannedIntegratePrimary) {
+  if (integrateSsot.includes(b)) fail(`integrate.md contains banned fragment: ${JSON.stringify(b)}`);
 }
 
 const page = readFileSync(join(root, "website", "src", "app", "integrate", "page.tsx"), "utf8");
 if (!page.includes("marketing.integratePage")) {
   fail("integrate/page.tsx must read pack-led copy from marketing.integratePage");
 }
+if (!page.includes("truthCheckCommand")) fail("integrate/page.tsx must reference truthCheckCommand");
 if (!page.includes("packLedCommand")) fail("integrate/page.tsx must render packLedCommand");
-if (!page.includes("<pre")) fail("integrate/page.tsx must contain a <pre> for the pack-led command");
+if (!page.includes("<pre")) fail("integrate/page.tsx must contain a <pre> for commands");
+const truthIdx = page.indexOf("truthCheckCommand");
+const packIdx = page.indexOf("packLedCommand");
+if (truthIdx === -1 || packIdx === -1 || truthIdx >= packIdx) {
+  fail("integrate/page.tsx must reference truthCheckCommand before packLedCommand");
+}
 if (page.includes("IntegrateActivationBlock") || page.includes("IntegrateCrossingCommands")) {
   fail("integrate/page.tsx must not import legacy IntegrateActivationBlock / IntegrateCrossingCommands");
 }

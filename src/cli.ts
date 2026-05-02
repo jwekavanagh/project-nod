@@ -12,7 +12,13 @@ import { buildRegressionArtifactFromCompareManifest, stringifyRegressionArtifact
 import { assertValidRunEventParentGraph, buildExecutionTraceView, formatExecutionTraceText } from "./executionTrace.js";
 import { loadEventsForWorkflow } from "./loadEvents.js";
 import { verifyWorkflow } from "./pipeline.js";
-import { argValue, argValues, parseBatchVerifyCliArgs, parseQuickCliArgs } from "./cliArgv.js";
+import {
+  argValue,
+  argValues,
+  expandTruthCheckCliArgs,
+  parseBatchVerifyCliArgs,
+  parseQuickCliArgs,
+} from "./cliArgv.js";
 import { exitAfterQuickVerifyReceipt, exitAfterVerifyCliReceipt } from "./cliExecutionFinalize.js";
 import { runExecutionIdentityVerifyCli } from "./executionIdentityVerifyCli.js";
 import { runEnforce } from "./enforceCli.js";
@@ -126,7 +132,57 @@ Exit codes:
   --help, -h  print this message and exit 0`;
 }
 
-function usageVerify(): string {
+function usagePrimaryHelp(): string {
+  return `AgentSkeptic — read-only verification: compare tool claims to stored state.
+
+Primary path (truth check):
+  agentskeptic check --workflow-id <id> --events <path> --registry <path> (--db <sqlitePath> | --postgres-url <url>)
+  agentskeptic check --workflow-id <id> --project <root> (--db <sqlitePath> | --postgres-url <url>)
+    With --project, defaults:
+      --registry  <root>/agentskeptic/tools.json
+      --events    <root>/agentskeptic/events.ndjson
+    --workflow-id is always required (never inferred).
+  Optional: --proof <dir>  (decision evidence bundle; same as --write-decision-bundle)
+  Integrator guide: docs/integrate.md
+
+More commands:
+  agentskeptic help advanced    activate, loop, quick, crossing, enforce, compatibility verify, …
+  agentskeptic init
+  agentskeptic migrate
+
+Exit codes (check): 0 trusted match, 1 mismatch, 2 incomplete/unknown, 3 operational (stderr JSON)
+
+  --version, -V   print CLI semver
+  --help, -h      print this message`;
+}
+
+function usageHelp(): string {
+  return `Usage: agentskeptic help <topic>
+
+Topics:
+  advanced    Full CLI reference (subcommands and compatibility batch verify)
+
+  --help, -h   print this message`;
+}
+
+function usageCheck(): string {
+  return `Usage:
+  agentskeptic check --workflow-id <id> --events <path> --registry <path> (--db <sqlitePath> | --postgres-url <url>)
+  agentskeptic check --workflow-id <id> --project <root> (--db <sqlitePath> | --postgres-url <url>)
+
+With --project, optional --registry / --events default to <root>/agentskeptic/tools.json and <root>/agentskeptic/events.ndjson.
+--workflow-id is always required.
+
+Optional: --proof <dir>  Decision evidence bundle (docs/decision-evidence-bundle.md). Same additional flags as batch verify.
+
+Stderr begins with truth_check_verdict: trusted|not_trusted|unknown on verdict exits (unless --no-human-report omits human layer but keeps the verdict line).
+
+Exit codes: 0 match, 1 mismatch, 2 incomplete, 3 operational
+
+  --help, -h   print this message`;
+}
+
+function usageVerifyAdvanced(): string {
   return `Usage:
   agentskeptic activate --input <path> (--db <sqlitePath> | --postgres-url <url>) --out <path>
     (canonical activation: BootstrapPackInput v1 + proof/ subtree on exits 0–2; normative docs/bootstrap-pack-normative.md)
@@ -136,7 +192,7 @@ function usageVerify(): string {
 
   agentskeptic loop --workflow-id <id> --events <path> --registry <path> (--db <sqlitePath> | --postgres-url <url>)
     [--consistency strong|eventual] [--verification-window-ms <int>] [--poll-interval-ms <int>] [--max-history-runs <int>]
-    (recommended default local truth loop; emits TRUSTED | NOT TRUSTED | UNKNOWN + auto-compare + run history)
+    (advanced local truth loop; emits TRUSTED | NOT TRUSTED | UNKNOWN + auto-compare + run history)
 
   agentskeptic quick --input <path> (--postgres-url <url> | --db <sqlitePath>) --export-registry <path> [--emit-events <path>] [--workflow-id <id>]
     (advanced/specialized path; structured tool activity + read-only SQL; see docs/quick-verify-normative.md)
@@ -1324,6 +1380,44 @@ async function main(): Promise<void> {
     console.log(AGENTSKEPTIC_CLI_SEMVER);
     process.exit(0);
   }
+  if (args[0] === "help") {
+    const rest = args.slice(1);
+    if (rest.includes("--help") || rest.includes("-h") || rest.length === 0) {
+      console.log(usageHelp());
+      process.exit(0);
+    }
+    if (rest[0] === "advanced") {
+      console.log(usageVerifyAdvanced());
+      process.exit(0);
+    }
+    writeCliError(
+      CLI_OPERATIONAL_CODES.CLI_USAGE,
+      "Unknown help topic. Use: agentskeptic help advanced",
+    );
+    process.exit(3);
+  }
+  if (args[0] === "check") {
+    const rest = args.slice(1);
+    if (rest.includes("--help") || rest.includes("-h")) {
+      console.log(usageCheck());
+      process.exit(0);
+    }
+    let batchArgs: string[];
+    try {
+      batchArgs = expandTruthCheckCliArgs(rest);
+    } catch (e) {
+      if (e instanceof TruthLayerError) {
+        writeCliError(e.code, e.message);
+        process.exit(3);
+      }
+      throw e;
+    }
+    await runBatchVerifyWithTelemetrySubcommand(batchArgs, {
+      telemetrySubcommand: "batch_verify",
+      rejectBundled: false,
+    });
+    return;
+  }
   if (args[0] === "decision-bundle") {
     const rest = args.slice(1);
     if (rest[0] === "validate") {
@@ -1452,7 +1546,7 @@ async function main(): Promise<void> {
     if (leadIsIntegratorOwned) {
       console.log(usageVerifyIntegratorOwned());
     } else {
-      console.log(usageVerify());
+      console.log(usagePrimaryHelp());
     }
     process.exit(0);
   }

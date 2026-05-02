@@ -19,9 +19,9 @@ const NEEDLES = [
 ];
 
 describe("adoption complete surface parity", () => {
-  it("first_run_integration_doc_contains_needles", () => {
-    const t = readFileSync(join(root, "docs", "first-run-integration.md"), "utf8");
-    for (const n of NEEDLES) assert.ok(t.includes(n), `missing in first-run-integration.md: ${n}`);
+  it("integrate_doc_contains_needles", () => {
+    const t = readFileSync(join(root, "docs", "integrate.md"), "utf8");
+    for (const n of NEEDLES) assert.ok(t.includes(n), `missing in integrate.md: ${n}`);
   });
 
   it("integrate_activation_shell_template_contains_needles", () => {

@@ -2,7 +2,7 @@
 
 # First run — commands
 
-All copy-paste shell commands for a first run live in this file. Narrative and guarantees: [first-run-integration.md](first-run-integration.md).
+All copy-paste shell commands for a first run live in this file. Narrative and guarantees: [integrate.md](integrate.md).
 
 ## Prerequisites
 
@@ -18,7 +18,7 @@ From the **repository root**:
 npm run partner-quickstart
 ```
 
-This seeds a temporary SQLite database, runs verification, asserts stdout JSON, then checks **OSS `--output-lock`** bytes against the committed golden `examples/partner-quickstart/partner.ci-lock-v1.json`, and exits non-zero on failure.
+This seeds a temporary SQLite database, runs `agentskeptic check`, asserts stdout JSON (Outcome Certificate), and exits non-zero on failure.
 
 ## Postgres (single env var)
 
@@ -34,7 +34,7 @@ npm run partner-quickstart
 After seeding with `examples/partner-quickstart/partner.seed.sql`:
 
 ```bash
-node dist/cli.js --workflow-id wf_partner --events examples/partner-quickstart/partner.events.ndjson --registry examples/partner-quickstart/partner.tools.json --db path/to/your.db
+node dist/cli.js check --workflow-id wf_partner --events examples/partner-quickstart/partner.events.ndjson --registry examples/partner-quickstart/partner.tools.json --db path/to/your.db
 ```
 
 ## Activation pack (`activate`)
@@ -46,12 +46,12 @@ ACT_OUT="$(mktemp -u "${TMPDIR:-/tmp}/agentskeptic-act-XXXXXXXX")"
 node dist/cli.js activate --input test/fixtures/bootstrap-pack/input.json --db examples/demo.db --out "$ACT_OUT"
 ```
 
-Normative semantics: **[bootstrap-pack-normative.md](bootstrap-pack-normative.md)**. Integrator overview: **[integrate.md](integrate.md)** § Activation. Spine ordering with **`INTEGRATE_SPINE_NODE`** and **`AGENTSKEPTIC_VERIFY_DB`**: **[first-run-integration.md](first-run-integration.md)**.
+Normative semantics: **[bootstrap-pack-normative.md](bootstrap-pack-normative.md)**. Integrator overview: **[integrate.md](integrate.md)** § Activation. Adoption spine ordering with **`INTEGRATE_SPINE_NODE`** and **`AGENTSKEPTIC_VERIFY_DB`**: **[integrate.md](integrate.md)** (Integrate spine).
 
 ## Manual CLI (Postgres)
 
 ```bash
-node dist/cli.js --workflow-id wf_partner --events examples/partner-quickstart/partner.events.ndjson --registry examples/partner-quickstart/partner.tools.json --postgres-url "$PARTNER_POSTGRES_URL"
+node dist/cli.js check --workflow-id wf_partner --events examples/partner-quickstart/partner.events.ndjson --registry examples/partner-quickstart/partner.tools.json --postgres-url "$PARTNER_POSTGRES_URL"
 ```
 
 ## LangGraph reference (emit events, then verify)
@@ -66,7 +66,7 @@ EVENTS="$(mktemp)"
 node test/fixtures/langgraph-node-oracle/run.mjs "$EVENTS"
 DB="$(mktemp).db"
 sqlite3 "$DB" < examples/partner-quickstart/partner.seed.sql
-node dist/cli.js --workflow-id wf_partner --events "$EVENTS" --registry examples/partner-quickstart/partner.tools.json --db "$DB" --langgraph-checkpoint-trust
+node dist/cli.js check --workflow-id wf_partner --events "$EVENTS" --registry examples/partner-quickstart/partner.tools.json --db "$DB" --langgraph-checkpoint-trust
 ```
 
 Postgres (same `PARTNER_POSTGRES_URL` contract as above; apply the seed with your usual SQL client, then verify against the emitted file):
@@ -75,7 +75,7 @@ Postgres (same `PARTNER_POSTGRES_URL` contract as above; apply the seed with you
 npm ci --prefix test/fixtures/langgraph-node-oracle
 EVENTS="$(mktemp)"
 node test/fixtures/langgraph-node-oracle/run.mjs "$EVENTS"
-node dist/cli.js --workflow-id wf_partner --events "$EVENTS" --registry examples/partner-quickstart/partner.tools.json --postgres-url "$PARTNER_POSTGRES_URL" --langgraph-checkpoint-trust
+node dist/cli.js check --workflow-id wf_partner --events "$EVENTS" --registry examples/partner-quickstart/partner.tools.json --postgres-url "$PARTNER_POSTGRES_URL" --langgraph-checkpoint-trust
 ```
 
 ## Integrator-owned gate
@@ -92,4 +92,4 @@ sqlite3 "$TMP/db.sqlite" < examples/partner-quickstart/partner.seed.sql
 node dist/cli.js verify-integrator-owned --workflow-id wf_partner --events "$TMP/events.ndjson" --registry "$TMP/tools.json" --db "$TMP/db.sqlite"
 ```
 
-Normative semantics: [first-run-integration.md](first-run-integration.md) and [agentskeptic.md](agentskeptic.md) (Integrator-owned gate).
+Normative semantics: [integrate.md](integrate.md) and [agentskeptic.md](agentskeptic.md) (Integrator-owned gate).

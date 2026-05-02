@@ -337,6 +337,19 @@ export function formatOutcomeCertificateHuman(certificate: OutcomeCertificateV1)
   return certificate.humanReport;
 }
 
+/** User-facing truth-check verdict for CLI `agentskeptic check` stderr prefix. */
+export type TruthCheckVerdictLabel = "trusted" | "not_trusted" | "unknown";
+
+export function truthCheckVerdictFromCertificate(certificate: OutcomeCertificateV1): TruthCheckVerdictLabel {
+  if (certificate.stateRelation === "matches_expectations" && certificate.highStakesReliance === "permitted") {
+    return "trusted";
+  }
+  if (certificate.stateRelation === "does_not_match") {
+    return "not_trusted";
+  }
+  return "unknown";
+}
+
 export function assertOutcomeCertificateInvariants(certificate: OutcomeCertificateV1): void {
   const expected = deriveHighStakesReliance(certificate.runKind, certificate.stateRelation);
   if (certificate.highStakesReliance !== expected) {

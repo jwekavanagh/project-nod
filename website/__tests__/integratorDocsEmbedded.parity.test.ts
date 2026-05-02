@@ -10,8 +10,8 @@ const repoRoot = path.resolve(__dirname, "..", "..");
 const lf = (s: string) => s.replace(/\r\n/g, "\n");
 
 describe("integratorDocsEmbedded parity vs docs SSOT", () => {
-  it("embeddedFirstRunIntegrationMd matches docs/first-run-integration.md", () => {
-    const disk = readFileSync(path.join(repoRoot, "docs", "first-run-integration.md"), "utf8");
+  it("embeddedFirstRunIntegrationMd matches docs/integrate.md", () => {
+    const disk = readFileSync(path.join(repoRoot, "docs", "integrate.md"), "utf8");
     expect(lf(embeddedFirstRunIntegrationMd)).toBe(lf(disk));
   });
 

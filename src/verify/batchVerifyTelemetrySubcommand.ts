@@ -31,6 +31,7 @@ import { classifyWorkflowLineage } from "../funnel/workflowLineageClassify.js";
 import { postProductActivationEvent } from "../telemetry/postProductActivationEvent.js";
 import {
   buildOutcomeCertificateLangGraphCheckpointTrustFromWorkflowResult,
+  truthCheckVerdictFromCertificate,
   type OutcomeCertificateV1,
 } from "../outcomeCertificate.js";
 import { loadSchemaValidator } from "../schemaLoad.js";
@@ -178,7 +179,7 @@ export async function runBatchVerifyWithTelemetrySubcommand(
   if (opts.rejectBundled && batchWorkloadClass === "bundled_examples") {
     process.stderr.write(
       "INTEGRATOR_OWNED_GATE: integrator-owned contract verify rejects workload_class=bundled_examples (shipped example paths).\n" +
-        "bundled_examples: use standard batch verify for demos, or pass integrator-owned --events, --registry, and --db paths. See docs/first-run-integration.md.\n",
+        "bundled_examples: use standard batch verify for demos, or pass integrator-owned --events, --registry, and --db paths. See docs/integrate.md.\n",
     );
     return exitAfterVerifyCliReceipt({
       parsedBatch,
@@ -247,6 +248,11 @@ export async function runBatchVerifyWithTelemetrySubcommand(
 
   const projectRoot = path.resolve(process.cwd());
 
+  function writeTruthCheckVerdictPrefixIfNeeded(certificate: OutcomeCertificateV1): void {
+    if (!parsedBatch.invokedViaCheck) return;
+    process.stderr.write(`truth_check_verdict: ${truthCheckVerdictFromCertificate(certificate)}\n`);
+  }
+
   async function finishCertificateTelemetryAndExit(
     certificate: OutcomeCertificateV1,
     workflowResultForStderrHook: WorkflowResult | undefined,
@@ -273,14 +279,21 @@ export async function runBatchVerifyWithTelemetrySubcommand(
             operationalCode: CLI_OPERATIONAL_CODES.SHARE_REPORT_FAILED,
           });
         }
+        writeTruthCheckVerdictPrefixIfNeeded(certificate);
         if (!parsedBatch.noHumanReport) {
           console.error(formatContractVerifyStderrForStderrLine(certificate));
         }
       } else if (!parsedBatch.noHumanReport) {
+        writeTruthCheckVerdictPrefixIfNeeded(certificate);
         process.stderr.write(formatContractVerifyStderrForStderrWrite(certificate));
+      } else {
+        writeTruthCheckVerdictPrefixIfNeeded(certificate);
       }
     } else if (!parsedBatch.noHumanReport && parsedBatch.shareReportOrigin === undefined) {
+      writeTruthCheckVerdictPrefixIfNeeded(certificate);
       process.stderr.write(formatContractVerifyStderrForStderrWrite(certificate));
+    } else if (parsedBatch.noHumanReport && parsedBatch.shareReportOrigin === undefined) {
+      writeTruthCheckVerdictPrefixIfNeeded(certificate);
     }
     const terminalStatus = terminalStatusFromCertificate(certificate);
     await postProductActivationEvent({
@@ -344,6 +357,7 @@ export async function runBatchVerifyWithTelemetrySubcommand(
   try {
     const { certificate, workflowResult } = await runStandardVerifyWorkflowCliToTerminalResult({
       shareReportOrigin: parsedBatch.shareReportOrigin,
+      truthCheckInvoked: parsedBatch.invokedViaCheck,
       runVerify: parsedBatch.langgraphCheckpointTrust
         ? undefined
         : () =>

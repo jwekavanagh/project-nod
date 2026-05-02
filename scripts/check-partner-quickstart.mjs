@@ -24,14 +24,14 @@ if (gen.status !== 0) {
   process.exit(gen.status ?? 1);
 }
 
-const prosePath = path.join(root, "docs", "first-run-integration.md");
-if (!existsSync(prosePath)) fail("missing docs/first-run-integration.md");
+const prosePath = path.join(root, "docs", "integrate.md");
+if (!existsSync(prosePath)) fail("missing docs/integrate.md");
 const prose = readFileSync(prosePath, "utf8");
 
 const toolsPath = path.join(root, "examples", "partner-quickstart", "partner.tools.json");
 const T = JSON.stringify(JSON.parse(readFileSync(toolsPath, "utf8")));
 if (prose.includes(T)) {
-  fail("first-run-integration.md must not embed minified partner.tools.json (substring T)");
+  fail("integrate.md must not embed minified partner.tools.json (substring T)");
 }
 
 const linkNeedle = "[partner-quickstart-commands.md](partner-quickstart-commands.md)";
@@ -109,7 +109,7 @@ if (!prose.includes(lgBacklink)) {
   fail(`docs/first-run-integration.md must include backlink substring: ${lgBacklink}`);
 }
 if (prose.includes("| Artifact | Owns |") || prose.includes("| Must not own |")) {
-  fail("docs/first-run-integration.md must not duplicate SSOT artifact table headers");
+  fail("docs/integrate.md must not duplicate SSOT artifact table headers");
 }
 
 console.log("check-partner-quickstart: ok");

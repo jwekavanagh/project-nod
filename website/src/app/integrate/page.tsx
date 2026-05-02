@@ -36,7 +36,7 @@ export default function IntegratePage() {
           <Link className="btn" href="/integrate/guided" data-testid="integrate-guided-link">
             Guided: generate registry and quick input
           </Link>{" "}
-          — generate artifacts quickly, then follow the canonical Next.js + Postgres golden path for production onboarding.
+          — generate artifacts quickly, then follow the production Next.js + Postgres reference (golden-path.md).
         </p>
       </section>
       <p className="lede integrate-benefit-lede">
@@ -46,17 +46,33 @@ export default function IntegratePage() {
         Run a single verification that compares what your agents and tools claimed against your actual stored state.
       </p>
       <p className="lede">Get a clear, binary verdict before you ship, bill, or hand off to customers.</p>
+      <h2>Truth check (primary)</h2>
+      <p>
+        Run <code>agentskeptic check</code> against your registry, events file, and database. Stderr begins with{" "}
+        <code>truth_check_verdict:</code>; stdout is the Outcome Certificate JSON. Full guide:{" "}
+        <a href={p.githubDeepLink} rel="noopener noreferrer" target="_blank">
+          docs/integrate.md
+        </a>
+        .
+      </p>
+      <pre
+        id="integrate-truth-check-commands"
+        className="integrate-pack-command"
+        data-testid="integrate-truth-check-commands"
+      >
+        {p.truthCheckCommand}
+      </pre>
       <p className="lede">
-        <strong>Golden path:</strong> Next.js (App Router) + Postgres. Use the executable{" "}
+        <strong>Production reference:</strong> Next.js (App Router) + Postgres —{" "}
         <a href="https://github.com/jwekavanagh/agentskeptic/blob/main/docs/golden-path.md" rel="noopener noreferrer" target="_blank">
           golden-path.md
         </a>{" "}
-        and reference app for first-run onboarding.
+        (deployable app; use after your first truth check).
       </p>
       <p className="home-cta-row">
         <a
           className="btn"
-          href="#integrate-crossing-commands"
+          href="#integrate-truth-check-commands"
           data-cta-priority={conversionSpine.ctaPriorityPrimaryValue}
         >
           {conversionSpine.dominantByRoute["/integrate"]}
@@ -68,7 +84,7 @@ export default function IntegratePage() {
         optional telemetry (same checklist appears at the top of beacon-eligible pages).
       </p>
 
-      <h2>Activate to proof (canonical)</h2>
+      <h2 id="integrate-crossing-commands-heading">Exportable activation and packs (advanced)</h2>
       <p>
         Use <code>agentskeptic activate</code> with BootstrapPackInput v1 JSON and your database URL. It progresses through
         provisional inference, contract verification, and writes exportable bundles under <code>proof/</code> in your{" "}

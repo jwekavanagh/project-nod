@@ -1,3 +1,4 @@
+import path from "node:path";
 import { CLI_OPERATIONAL_CODES } from "./cliOperationalCodes.js";
 import { TruthLayerError } from "./truthLayerError.js";
 import type { VerificationDatabase, VerificationPolicy } from "./types.js";
@@ -111,6 +112,8 @@ export type ParsedBatchVerifyCli = {
   writeDecisionBundleDir: string | undefined;
   decisionAttestationPath: string | undefined;
   decisionNextActionPath: string | undefined;
+  /** When true, stderr includes truth_check_verdict for primary product path (agentskeptic check). */
+  invokedViaCheck?: boolean;
 };
 
 /**
@@ -151,7 +154,8 @@ export function parseBatchVerifyCliArgs(args: string[]): ParsedBatchVerifyCli {
     );
   }
 
-  const writeDecisionBundleDir = argValue(args, "--write-decision-bundle");
+  const proofDir = argValue(args, "--proof");
+  const writeDecisionBundleDir = argValue(args, "--write-decision-bundle") ?? proofDir;
   const decisionAttestationPath = argValue(args, "--decision-attestation");
   const decisionNextActionPath = argValue(args, "--decision-next-action");
 
@@ -172,7 +176,52 @@ export function parseBatchVerifyCliArgs(args: string[]): ParsedBatchVerifyCli {
     writeDecisionBundleDir,
     decisionAttestationPath,
     decisionNextActionPath,
+    invokedViaCheck: args.includes("--internal-invoked-via-check"),
   };
+}
+
+/**
+ * Expand `agentskeptic check` argv into batch-verify argv (no `check` token).
+ * Maps `--proof <dir>` → `--write-decision-bundle`; applies `--project` conventional paths.
+ * @throws TruthLayerError CLI_USAGE
+ */
+export function expandTruthCheckCliArgs(rest: string[]): string[] {
+  const args = [...rest];
+  const out: string[] = [];
+  for (let i = 0; i < args.length; i++) {
+    const a = args[i]!;
+    if (a === "--proof") {
+      const v = args[i + 1];
+      if (v === undefined) {
+        throw new TruthLayerError(CLI_OPERATIONAL_CODES.CLI_USAGE, "--proof requires a directory argument.");
+      }
+      out.push("--write-decision-bundle", v);
+      i++;
+      continue;
+    }
+    out.push(a);
+  }
+
+  const projectRaw = argValue(out, "--project");
+  if (projectRaw !== undefined) {
+    const wf = argValue(out, "--workflow-id");
+    if (!wf) {
+      throw new TruthLayerError(
+        CLI_OPERATIONAL_CODES.CLI_USAGE,
+        "--workflow-id is required with --project (workflow id is never inferred).",
+      );
+    }
+    const projectAbs = path.resolve(projectRaw);
+    if (!argValue(out, "--registry")) {
+      out.push("--registry", path.join(projectAbs, "agentskeptic", "tools.json"));
+    }
+    if (!argValue(out, "--events")) {
+      out.push("--events", path.join(projectAbs, "agentskeptic", "events.ndjson"));
+    }
+  }
+
+  out.push("--internal-invoked-via-check");
+  return out;
 }
 
 export type ParsedQuickCli = {

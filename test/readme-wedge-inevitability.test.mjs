@@ -15,6 +15,7 @@ export const WEDGE_HEADING_LINE = "## Buy vs build: why not only SQL checks";
 export const WEDGE_FRAGMENT = "buy-vs-build-why-not-only-sql-checks";
 export const README_WEDGE_LINK = `../README.md#${WEDGE_FRAGMENT}`;
 export const README_DEFAULT_PATH_LINK = "../README.md#default-path-decisiongate-before-you-act";
+export const INTEGRATE_FIRST_TRUTH_LINK = "integrate.md#first-truth-check";
 
 /** Minimum concepts: drift, ownership, shared contract/registry, CI or audit gates */
 const ANTI_SCRIPT_TOKENS = [/drift/i, /ownership/i, /registry/i, /\bCI\b|audit/i];
@@ -64,8 +65,8 @@ describe("readme adoption + wedge", () => {
     assert.equal(before.includes("npm start"), false);
   });
 
-  it("O5 first-run-integration: README wedge link before first bash block containing npm start", () => {
-    const p = join(root, "docs", "first-run-integration.md");
+  it("O5 integrate: README wedge link before first bash block containing npm start", () => {
+    const p = join(root, "docs", "integrate.md");
     const s = readFileSync(p, "utf8").replace(/\r\n/g, "\n");
     const iLink = s.indexOf(`README.md#${WEDGE_FRAGMENT}`);
     assert.ok(iLink >= 0, "README.md#wedge fragment link missing");
@@ -74,15 +75,15 @@ describe("readme adoption + wedge", () => {
     assert.ok(iLink < iNpmStartBlock, "prerequisite link must precede npm start demo block");
   });
 
-  it("O6 golden-path: first markdown link is README default path fragment", () => {
+  it("O6 golden-path: first markdown link is integrate first-truth anchor", () => {
     const s = readFileSync(join(root, "docs", "golden-path.md"), "utf8");
     const m = s.match(/\[([^\]]*)\]\(([^)]+)\)/);
     assert.ok(m, "no markdown link found");
-    assert.equal(m[2], README_DEFAULT_PATH_LINK, "first link must be README default path anchor");
+    assert.equal(m[2], INTEGRATE_FIRST_TRUTH_LINK, "first link must be integrate.md#first-truth-check");
   });
 
-  it("O7 first-run: commercial anchors after first npm start instruction", () => {
-    const s = readFileSync(join(root, "docs", "first-run-integration.md"), "utf8");
+  it("O7 integrate: commercial anchors after first npm start instruction", () => {
+    const s = readFileSync(join(root, "docs", "integrate.md"), "utf8");
     const iDemo = s.indexOf("npm start");
     assert.ok(iDemo >= 0, "npm start missing");
     const iStripe = s.toLowerCase().indexOf("stripe");

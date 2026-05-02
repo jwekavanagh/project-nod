@@ -48,6 +48,7 @@ const workflowId = "wf_partner";
 function runCli(dbArg, extraArgs = []) {
   const args = [
     cliPath,
+    "check",
     "--workflow-id",
     workflowId,
     "--events",

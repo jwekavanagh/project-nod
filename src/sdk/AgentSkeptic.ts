@@ -15,15 +15,56 @@ import {
 import type { WorkflowResult } from "../types.js";
 import type { OutcomeCertificateV1 } from "../outcomeCertificate.js";
 import { CanonicalEventEmitter } from "./events/CanonicalEventEmitter.js";
+import { BufferSink } from "./events/index.js";
 import type { EventSink } from "./events/types.js";
 
 export type AgentSkepticOptions = Omit<CreateDecisionGateOptions, "workflowId">;
+
+/** Primary SDK truth-check: live observations or replay events from the project layout. */
+export type AgentSkepticCheckOptions = {
+  workflowId: string;
+  databaseUrl?: string;
+  projectRoot?: string;
+  /** When set, emits tool_observed events and evaluates (same outcome as compose gate + emitter). When omitted, replays agentskeptic/events.ndjson via replayFromFile. */
+  observations?: Array<{ toolId: string; params: Record<string, unknown> }>;
+  defaultToolObservedSchemaVersion?: 1 | 2;
+};
 
 /**
  * AgentSkeptic v2 SDK facade: one entry for gating, verify, quick verify, license preflight, and usage.
  */
 export class AgentSkeptic {
   constructor(private readonly opts: AgentSkepticOptions) {}
+
+  /**
+   * Primary product path: return an Outcome Certificate for this workflow.
+   * With `observations`, buffers canonical events then evaluates; otherwise replays `agentskeptic/events.ndjson`.
+   */
+  async check(options: AgentSkepticCheckOptions): Promise<OutcomeCertificateV1> {
+    if (options.observations !== undefined) {
+      const sink = new BufferSink();
+      const emitter = this.createEmitter({
+        workflowId: options.workflowId,
+        sink,
+        defaultToolObservedSchemaVersion: options.defaultToolObservedSchemaVersion ?? 2,
+      });
+      for (const obs of options.observations) {
+        await emitter.emitToolObserved({ toolId: obs.toolId, params: obs.params });
+      }
+      await emitter.finalizeRun();
+      const gate = this.gate({ workflowId: options.workflowId });
+      for (const ev of sink.snapshot()) {
+        gate.appendRunEvent(ev);
+      }
+      gate.assertEmissionQuality();
+      return gate.evaluateCertificate();
+    }
+    return this.replayFromFile({
+      workflowId: options.workflowId,
+      databaseUrl: options.databaseUrl,
+      projectRoot: options.projectRoot,
+    });
+  }
 
   /** Build a decision gate for a single workflow id (buffers events then evaluates against DB + registry). */
   gate(
