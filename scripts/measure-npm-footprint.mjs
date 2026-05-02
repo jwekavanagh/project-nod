@@ -106,8 +106,8 @@ const installRoot = join(stage, "consumer");
 mkdirSync(installRoot, { recursive: true });
 const innerPack = npmPackTarballAbsPath();
 const destName = innerPack.split(/[/\\]/).pop() ?? "pack.tgz";
-const destTgz = join(stage, destName);
-copyFileSync(innerPack, destTgz);
+const localTgz = join(installRoot, destName);
+copyFileSync(innerPack, localTgz);
 try {
   unlinkSync(innerPack);
 } catch {
@@ -119,19 +119,22 @@ writeFileSync(
   JSON.stringify({ name: "footprint-consumer", private: true, type: "module" }, null, 2),
 );
 const t0 = performance.now();
-const inst = spawnSync("npm", ["install", destTgz, "--omit=dev", "--no-audit", "--no-fund"], {
+// Relative tarball spec: avoids npm 11+ treating some absolute paths as invalid specifiers on Linux CI.
+// HUSKY=0: installing from pack must not run husky/git hooks setup in an ephemeral consumer dir.
+const instEnv = { ...process.env, HUSKY: "0" };
+const relSpec = `./${destName}`;
+const inst = spawnSync("npm", ["install", relSpec, "--omit=dev", "--no-audit", "--no-fund"], {
   cwd: installRoot,
   encoding: "utf8",
+  env: instEnv,
   // Must not inherit stdout: this script emits exactly one JSON line to stdout for assert-npm-footprint-improved.mjs.
   stdio: ["ignore", "pipe", "pipe"],
   shell: process.platform === "win32",
 });
 const wallMs = Math.round(performance.now() - t0);
 if (inst.status !== 0) {
-  console.error(
-    "[measure-npm-footprint] npm install failed in temp consumer:",
-    inst.stderr || inst.stdout || "",
-  );
+  const detail = `${inst.stderr || ""}${inst.stdout || ""}`.trim() || "(no npm output captured)";
+  console.error("[measure-npm-footprint] npm install failed in temp consumer:", detail);
   process.exit(1);
 }
 
