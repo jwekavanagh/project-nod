@@ -56,6 +56,7 @@ export const sqliteNodeTestFiles = [
   "test/removed-script-names-ban.test.mjs",
   "test/docs-workflow-result-normative-prose.test.mjs",
   "test/evidence-completeness-anchor-source.contract.test.mjs",
+  "test/no-legacy-decision-blocker.contract.test.mjs",
   "test/integrate-md-quick-first-heading.contract.test.mjs",
   "test/enforce-oss-forbidden.test.mjs",
   "test/enforce-cli.hosted-response-shape.test.mjs",

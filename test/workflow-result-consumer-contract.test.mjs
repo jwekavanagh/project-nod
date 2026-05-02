@@ -55,7 +55,7 @@ describe("Outcome Certificate consumer contract (CLI stdout)", () => {
     const parsed = JSON.parse(r.stdout.trim());
     const validateResult = loadSchemaValidator("outcome-certificate-v2");
     assert.equal(validateResult(parsed), true, JSON.stringify(validateResult.errors ?? []));
-    assert.equal(parsed.schemaVersion, 1);
+    assert.equal(parsed.schemaVersion, 2);
     assert.equal(typeof parsed.workflowId, "string");
     assert.equal(parsed.workflowId, "wf_complete");
     assert.equal(parsed.runKind, "contract_sql");

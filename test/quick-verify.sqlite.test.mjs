@@ -76,7 +76,7 @@ describe("Quick Verify SQLite", () => {
       inputUtf8: passLine,
       sqlitePath: dbPath,
     });
-    assert.equal(report.schemaVersion, 4);
+    assert.equal(report.schemaVersion, 5);
     const expectedPartial =
       report.exportableRegistry.tools.length > 0 && report.units.some((u) => !u.contractEligible);
     assert.deepEqual(report.productTruth, buildQuickVerifyProductTruth(expectedPartial));
