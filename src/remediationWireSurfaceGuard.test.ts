@@ -13,6 +13,7 @@ const ALLOWLIST = new Set([
   "src/operationalDisposition.ts",
   "src/workflowTruthReport.ts",
   "src/runComparison.ts",
+  "src/evidenceCompleteness.ts",
 ]);
 
 function listProductionTsFiles(dir: string, out: string[] = []): string[] {
