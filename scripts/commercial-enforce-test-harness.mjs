@@ -71,8 +71,8 @@ const server = createServer((req, res) => {
       }
       const workflowId = typeof body.workflow_id === "string" ? body.workflow_id : "";
       const projectionHash = typeof body.material_truth_sha256 === "string" ? body.material_truth_sha256 : "";
-      if (!workflowId || !projectionHash || body.schema_version !== 2) {
-        json(res, 400, { detail: "schema_version=2, workflow_id and material_truth_sha256 are required" });
+      if (!workflowId || !projectionHash || body.schema_version !== 3) {
+        json(res, 400, { detail: "schema_version=3, workflow_id and material_truth_sha256 are required" });
         return;
       }
       if (req.url === "/api/v1/enforcement/baselines" || req.url === "/api/v1/enforcement/accept") {
