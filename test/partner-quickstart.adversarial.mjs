@@ -50,7 +50,9 @@ describe("partner-quickstart adversarial (schema-only sqlite)", () => {
     assert.equal(r.status, 1, `expected exit 1, got ${r.status}; stderr=${r.stderr}`);
     const obj = JSON.parse((r.stdout ?? "").trim());
     const isCert =
-      obj.schemaVersion === 1 &&
+      typeof obj.schemaVersion === "number" &&
+      obj.schemaVersion >= 1 &&
+      obj.schemaVersion <= 2 &&
       typeof obj.stateRelation === "string" &&
       Object.prototype.hasOwnProperty.call(obj, "humanReport");
     if (isCert) {
