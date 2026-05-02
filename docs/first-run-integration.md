@@ -5,3 +5,5 @@ The integrator **SSOT** moved to **[integrate.md](integrate.md)** — including 
 **Quick link:** [Truth check (primary)](integrate.md#first-truth-check)
 
 This file remains at a stable URL for inbound links; normative content is no longer duplicated here.
+
+Epistemic framing: [adoption-epistemics.md](adoption-epistemics.md), canonical definitions [epistemic-contract.md](epistemic-contract.md).

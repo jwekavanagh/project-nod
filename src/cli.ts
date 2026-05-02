@@ -135,6 +135,7 @@ Exit codes:
 function usagePrimaryHelp(): string {
   return `AgentSkeptic — read-only verification: compare tool claims to stored state.
 
+Usage:
 Primary path (truth check):
   agentskeptic check --workflow-id <id> --events <path> --registry <path> (--db <sqlitePath> | --postgres-url <url>)
   agentskeptic check --workflow-id <id> --project <root> (--db <sqlitePath> | --postgres-url <url>)
