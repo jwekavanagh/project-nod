@@ -59,14 +59,14 @@
       "Keep the registry the contract for what each tool implies in SQL.",
       "Quick Verify can help early exploration, but contract mode is the durable story when legal or SRE review asks what was checked.",
       "Share private /r/ links only for ticket context; indexed discovery lives on these guides and the acquisition page.",
-      "Operational discipline is to run read-only checks against the same schema version you ship, with credentials scoped to SELECT, and to archive the workflow result JSON alongside the human report for later diffing."
+      "Operational discipline is to run read-only checks against the same schema version you ship, with credentials scoped to SELECT, and to archive the Outcome Certificate JSON (contract stdout, schemaVersion 2) and the human report for later diffing."
     ]
   },
   "ai-agent-wrong-crm-data": {
     "requiredSubstrings": [
       "AI agent wrong CRM data read-only check Green dashboards still happen when an AI agent writes wrong CRM data and you need read-only SQL before you trust the row.",
       "When dashboards stay green, AgentSkeptic still answers with read-only SELECTs against your SQLite or Postgres—comparing structured tool parameters to persisted rows at verification time.",
-      "Start from /integrate to emit NDJSON observations and run contract verification locally; keep private share links on /r/ (noindex) while you iterate.",
+      "Start from /integrate: use quick for inferred checks on raw tool activity, then move to contract verification with a registry when reviews require decision-grade results; keep private share links on /r/ (noindex) while you iterate.",
       "Capture structured tool activity from the CRM path your agent touched (IDs and fields in JSON or NDJSON).",
       "Map each toolId to a registry entry or use Quick Verify for inferred checks, then run read-only SQL verification before you trust customer-facing state.",
       "What to do next Follow /integrate for the copy-paste activation block.",

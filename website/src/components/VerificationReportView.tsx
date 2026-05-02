@@ -22,7 +22,7 @@ function machineJsonFromPayload(payload: PublicReportEnvelope): string {
 }
 
 function kindLabel(payload: PublicReportEnvelope): string {
-  if ("schemaVersion" in payload && payload.schemaVersion === 2) return "outcome_certificate_v2";
+  if ("schemaVersion" in payload && payload.schemaVersion === 3) return "outcome_certificate";
   if ("kind" in payload) return payload.kind;
   return "unknown";
 }

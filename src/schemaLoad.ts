@@ -207,6 +207,7 @@ export function loadSchemaValidator(name: SchemaValidatorName): ValidateFunction
       return compileSchemaFile(name, "assurance-output-v1.schema.json");
     case "public-verification-report-v1":
       ensureWorkflowEmittedDependencies();
+      compileSchemaFile("evidence-completeness-v1", "evidence-completeness-v1.schema.json");
       compileSchemaFile("workflow-result", "workflow-result.schema.json");
       compileSchemaFile("quick-verify-report", "quick-verify-report.schema.json");
       return compileSchemaFile(name, "public-verification-report-v1.schema.json");
@@ -225,6 +226,7 @@ export function loadSchemaValidator(name: SchemaValidatorName): ValidateFunction
       compileSchemaFile("outcome-certificate-v1", "outcome-certificate-v1.schema.json");
       return compileSchemaFile(name, "public-verification-report-v2.schema.json");
     case "public-verification-report-v3":
+      compileSchemaFile("evidence-completeness-v1", "evidence-completeness-v1.schema.json");
       compileSchemaFile("outcome-certificate-v2", "outcome-certificate-v2.schema.json");
       return compileSchemaFile(name, "public-verification-report-v3.schema.json");
     case "openai-function-tool-call-item-v1":
