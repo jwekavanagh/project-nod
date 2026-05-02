@@ -14,7 +14,7 @@ import { runQuickVerify } from "../dist/quickVerify/runQuickVerify.js";
 import { canonicalToolsArrayUtf8 } from "../dist/quickVerify/canonicalJson.js";
 import { loadSchemaValidator } from "../dist/schemaLoad.js";
 
-const validateOutcomeCertificate = loadSchemaValidator("outcome-certificate-v1");
+const validateOutcomeCertificate = loadSchemaValidator("outcome-certificate-v2");
 
 /** Last stdout line that looks like a single JSON object (Outcome Certificate from `quick` / batch verify). */
 function parseOutcomeCertificateStdout(stdout) {
@@ -76,7 +76,7 @@ describe("Quick Verify SQLite", () => {
       inputUtf8: passLine,
       sqlitePath: dbPath,
     });
-    assert.equal(report.schemaVersion, 4);
+    assert.equal(report.schemaVersion, 5);
     const expectedPartial =
       report.exportableRegistry.tools.length > 0 && report.units.some((u) => !u.contractEligible);
     assert.deepEqual(report.productTruth, buildQuickVerifyProductTruth(expectedPartial));

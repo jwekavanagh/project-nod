@@ -56,7 +56,7 @@ export async function POST(req: NextRequest) {
     userId: authn.principal.userId,
     workflowId: body.workflow_id,
     runId: body.run_id,
-    certificate: body.outcome_certificate_v1,
+    certificate: body.outcome_certificate,
     certificateSha256: verified.certificateSha256,
     materialTruth: verified.materialTruth,
     materialTruthSha256: verified.materialTruthSha256,

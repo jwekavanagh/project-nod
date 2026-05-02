@@ -67,7 +67,7 @@ export const shareReportInvalidResponseCopy: DemoVerifyErrorUserCopy = FALLBACK;
 
 export const shareReportPublicOffCopy = {
   announcement:
-    "Public report sharing is off in this environment. A shareable JSON envelope (schema v2) is on your clipboard.",
+    "Public report sharing is off in this environment. A shareable JSON envelope (schema v3) is on your clipboard.",
 } as const;
 
 export const shareReportClipboardErrorCopy: DemoVerifyErrorUserCopy = {

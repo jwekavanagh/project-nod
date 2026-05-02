@@ -16,13 +16,14 @@ const OUTCOME_SEGMENT_RE =
   /<!-- ci:outcome-certificate-normative-prose:start -->([\s\S]*?)<!-- ci:outcome-certificate-normative-prose:end -->/g;
 
 const REQUIRED_OUTCOME_PHRASES = [
-  "schemas/outcome-certificate-v1.schema.json",
-  "`schemaVersion` 1",
+  "schemas/outcome-certificate-v2.schema.json",
+  "`schemaVersion` 2",
   "**`WorkflowResult`** (`schemaVersion` **15**)",
+  "evidenceCompleteness",
   "outcome-certificate-normative.md",
 ];
 
-const MARKER_OUTCOME_1 = "<!-- ci:normative-outcome-certificate-schemaVersion:1 -->";
+const MARKER_OUTCOME_2 = "<!-- ci:normative-outcome-certificate-schemaVersion:2 -->";
 
 describe("docs agentskeptic normative prose (outcome certificate + engine)", () => {
   it("workflow-result.schema.json const is 15 (engine wire)", () => {
@@ -30,9 +31,9 @@ describe("docs agentskeptic normative prose (outcome certificate + engine)", () 
     assert.strictEqual(j.properties?.schemaVersion?.const, 15);
   });
 
-  it("ETL doc contains outcome certificate schemaVersion:1 anchor comment", () => {
+  it("ETL doc contains outcome certificate schemaVersion:2 anchor comment", () => {
     const doc = readFileSync(etlPath, "utf8");
-    assert.ok(doc.includes(MARKER_OUTCOME_1), "missing ci:normative-outcome-certificate-schemaVersion:1 marker");
+    assert.ok(doc.includes(MARKER_OUTCOME_2), "missing ci:normative-outcome-certificate-schemaVersion:2 marker");
   });
 
   it("outcome certificate normative segments contain required integrator contract phrases", () => {

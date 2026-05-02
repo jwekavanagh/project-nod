@@ -2,11 +2,28 @@
 
 from __future__ import annotations
 
-from typing import Any, Literal, Optional
+from typing import Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
 PlanName = Literal["starter", "individual", "team", "business", "enterprise"]
+
+EvidenceGapPrimary = Literal[
+    "none",
+    "preview_lane",
+    "ingest_empty",
+    "ingest_unstructured",
+    "registry_unknown_tool",
+    "registry_resolution",
+    "database_access",
+    "timing_or_window",
+    "witness_unavailable",
+    "state_mismatch",
+    "verification_incomplete",
+    "event_sequence",
+    "control_flow_context",
+    "unclassified",
+]
 
 
 class ProblemDetails(BaseModel):
@@ -57,11 +74,11 @@ class UsageCurrentV1(BaseModel):
     estimated_overage_usd: str
 
 
-class EnforcementEvidenceRequestV2(BaseModel):
-    schema_version: Literal[2] = 2
+class EnforcementEvidenceRequestV3(BaseModel):
+    schema_version: Literal[3] = 3
     run_id: str
     workflow_id: str
-    outcome_certificate_v1: dict[str, Any]
+    outcome_certificate: dict[str, Any]
     material_truth_sha256: str
     certificate_sha256: str
 
@@ -76,7 +93,7 @@ class EnforcementFsmEnvelopeV2(BaseModel):
     quota_enforced_via_reserve: bool | None = None
 
 
-class EnforcementAcceptEvidenceRequestV2(EnforcementEvidenceRequestV2):
+class EnforcementAcceptEvidenceRequestV3(EnforcementEvidenceRequestV3):
     expected_projection_hash: str
     lifecycle_state_version: int
 
@@ -113,15 +130,19 @@ class GovernanceAuditBundleV2(BaseModel):
     decisionEvidenceExport: dict[str, Any] | None = None
 
 
-class VerifyOutcomeRequestV2(BaseModel):
-    schema_version: Literal[2] = 2
+class VerifyOutcomeRequestV3(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    schema_version: Literal[3] = 3
     run_id: str = Field(max_length=256)
     workflow_id: str = Field(max_length=512)
     trust_decision: Literal["safe", "unsafe", "unknown"]
+    evidence_gap_primary: EvidenceGapPrimary
     reason_codes: list[str] = Field(max_length=8)
     terminal_status: Literal["complete", "inconsistent", "incomplete"]
     workload_class: Literal["bundled_examples", "non_bundled"]
-    subcommand: Literal["batch_verify", "quick_verify", "verify_integrator_owned"]
+    subcommand: Literal["batch_verify", "quick_verify", "verify_integrator_owned", "activate"]
+    activation: dict[str, Any] | None = None
 
 
 class OssClaimTicketRequest(BaseModel):
@@ -159,7 +180,7 @@ class PublicVerificationReportCreate(BaseModel):
 
 class PublicVerificationReportCreated(BaseModel):
     model_config = ConfigDict(extra="forbid")
-    schemaVersion: Literal[2] = 2
+    schemaVersion: Literal[3] = 3
     id: str
     url: str
 
@@ -220,4 +241,4 @@ class TrustDecisionRecordRequestV1(BaseModel):
     gate_kind: Literal["contract_sql_irreversible", "langgraph_checkpoint_terminal"]
     routing: TrustDecisionRoutingV1
     certificate_snapshot: TrustCertificateSnapshotRequestV1
-    human_blocker_lines: list[str] = Field(min_length=6, max_length=6)
+    human_blocker_lines: list[str] = Field(min_length=1, max_length=48)

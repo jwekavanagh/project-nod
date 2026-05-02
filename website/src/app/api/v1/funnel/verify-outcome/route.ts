@@ -62,6 +62,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     workload_class,
     subcommand,
     activation,
+    evidence_gap_primary,
   } = parsed.data;
 
   const resvRows = await db
@@ -122,6 +123,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
                   workflow_id,
                   trust_decision,
                   reason_codes,
+                  evidence_gap_primary,
                   activation: activation!,
                 }
               : {
@@ -131,6 +133,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
                   workflow_id,
                   trust_decision,
                   reason_codes,
+                  evidence_gap_primary,
                 },
           ),
         },

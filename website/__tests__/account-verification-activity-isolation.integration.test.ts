@@ -32,6 +32,7 @@ describe.skipIf(!hasDatabaseUrl)("loadAccountPageVerificationActivity (integrati
       workflow_id: "wf_iso",
       trust_decision: "safe",
       reason_codes: [],
+      evidence_gap_primary: "none",
     });
     const tA1 = new Date(Date.UTC(2026, 3, 5, 10, 0, 0));
     const tA2 = new Date(Date.UTC(2026, 3, 8, 10, 0, 0));

@@ -20,7 +20,7 @@ describe("shareDemoOutcomeCertificate", () => {
       vi.fn().mockResolvedValue({
         status: 201,
         json: async () => ({
-          schemaVersion: 2,
+          schemaVersion: 3,
           id: "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee",
           url: "https://example.com/r/aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee",
         }),
@@ -42,7 +42,7 @@ describe("shareDemoOutcomeCertificate", () => {
     expect(writeText).toHaveBeenCalledWith(buildPublicReportV2ClipboardString(cert));
     const written = writeText.mock.calls[0][0] as string;
     expect(written).toBe(
-      JSON.stringify({ schemaVersion: 2, certificate: cert, createdFrom: "website-demo" }, null, 2),
+      JSON.stringify({ schemaVersion: 3, certificate: cert, createdFrom: "website-demo" }, null, 2),
     );
   });
 
@@ -51,7 +51,7 @@ describe("shareDemoOutcomeCertificate", () => {
       "fetch",
       vi.fn().mockResolvedValue({
         status: 201,
-        json: async () => ({ schemaVersion: 2, id: "x" }),
+        json: async () => ({ schemaVersion: 3, id: "x" }),
       } as Response),
     );
     const out = await shareDemoOutcomeCertificate(cert, { openWindow: open, writeClipboard: writeText });

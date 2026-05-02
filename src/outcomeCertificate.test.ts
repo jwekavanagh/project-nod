@@ -55,7 +55,7 @@ describe("outcomeCertificate", () => {
         truthReport: () => {},
       });
       const certificate = buildOutcomeCertificateFromWorkflowResult(result, "contract_sql");
-      const validate = loadSchemaValidator("outcome-certificate-v1");
+      const validate = loadSchemaValidator("outcome-certificate-v2");
       expect(validate(certificate)).toBe(true);
       assertOutcomeCertificateInvariants(certificate);
       expect(formatOutcomeCertificateHuman(certificate)).toBe(certificate.humanReport);

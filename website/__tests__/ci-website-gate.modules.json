@@ -1,4 +1,5 @@
 [
+  "./site-claims-outcome-certificate-v2.contract.test.ts",
   "./funnelVerifyOutcome.contract.test.ts",
   "./langgraph-reference-primacy.dom.test.tsx",
   "./langgraph-lct-stories.contract.test.tsx",

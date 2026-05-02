@@ -1,6 +1,6 @@
 # AgentSkeptic CLI (MVP) — Single Source of Truth
 
-**Integrators — public verification artifact:** Outcome Certificate v1 is defined in [`outcome-certificate-normative.md`](outcome-certificate-normative.md); usage and CLI contracts in [`outcome-certificate-integrator.md`](outcome-certificate-integrator.md). **Decision evidence bundle** (retained proof directory: `--write-decision-bundle`, `decision-bundle validate`): [`decision-evidence-bundle.md`](decision-evidence-bundle.md). This document is the **engine / wire / reconciliation** SSOT (`WorkflowResult`, NDJSON, registry SQL semantics).
+**Integrators — public verification artifact:** Outcome Certificate v2 (**`schemaVersion` 2**, required **`evidenceCompleteness`**) is defined in [`outcome-certificate-normative.md`](outcome-certificate-normative.md); usage and CLI contracts in [`outcome-certificate-integrator.md`](outcome-certificate-integrator.md). **Decision evidence bundle** (retained proof directory: `--write-decision-bundle`, `decision-bundle validate`): [`decision-evidence-bundle.md`](decision-evidence-bundle.md). This document is the **engine / wire / reconciliation** SSOT (`WorkflowResult`, NDJSON, registry SQL semantics).
 Stateful commercial governance (evidence-native enforcement, baselines, drift, shared visibility, export) is specified in [`governance.md`](governance.md).
 
 **Primary path (product):** **`agentskeptic check`** — wraps contract batch verify ([`integrate.md`](integrate.md)); **`truth_check_verdict`** stderr prefix on primary runs; **`agentskeptic help advanced`** lists activation, loop, quick, crossing, compatibility positional verify, enforce, and all other subcommands.
@@ -414,11 +414,11 @@ node dist/cli.js --workflow-id <id> --events <path> --registry <path> --postgres
 
 **`--help` / `-h`:** Prints usage to **stdout** and exits **0** (not a verification run).
 
-**I/O order (CLI — verdict paths 0/1/2):** **`verifyWorkflow`** may emit structured truth to an internal **`truthReport`** callback; the **integrator-facing** contract is **stderr (`certificate.humanReport` + optional distribution footer) → stdout (Outcome Certificate JSON)** after the engine completes. If the CLI is invoked with **`--no-human-report`**, **stderr** is **empty** for exits **0–2** (no human report and no footer). **stdout** is always one **Outcome Certificate v1** JSON line on verdict exits **0–2**. Exit **3** is unchanged (see [CLI operational errors](#cli-operational-errors)).
+**I/O order (CLI — verdict paths 0/1/2):** **`verifyWorkflow`** may emit structured truth to an internal **`truthReport`** callback; the **integrator-facing** contract is **stderr (`certificate.humanReport` + optional distribution footer) → stdout (Outcome Certificate JSON)** after the engine completes. If the CLI is invoked with **`--no-human-report`**, **stderr** is **empty** for exits **0–2** (no human report and no footer). **stdout** is always one **Outcome Certificate v2** JSON line on verdict exits **0–2**. Exit **3** is unchanged (see [CLI operational errors](#cli-operational-errors)).
 
-<!-- ci:normative-outcome-certificate-schemaVersion:1 -->
+<!-- ci:normative-outcome-certificate-schemaVersion:2 -->
 <!-- ci:outcome-certificate-normative-prose:start -->
-**stdout:** Single JSON object matching [`schemas/outcome-certificate-v1.schema.json`](../schemas/outcome-certificate-v1.schema.json) (**`schemaVersion` 1**). Required fields: **`workflowId`**, **`runKind`** (`contract_sql` for batch replay, `quick_preview` for Quick Verify), **`stateRelation`** (`matches_expectations` \| `does_not_match` \| `not_established`), **`highStakesReliance`** (`permitted` \| `prohibited`) with mandatory **`relianceRationale`**, **`intentSummary`**, **`explanation`** (`headline` + `details[]` with stable `code` / `message`), **`steps`**, and **`humanReport`**. Product semantics and derivation table: [`outcome-certificate-normative.md`](outcome-certificate-normative.md). The engine still materializes an internal **`WorkflowResult`** (`schemaVersion` **15**) for reconciliation and bundles; that shape is **not** the integrator stdout contract.
+**stdout:** Single JSON object matching [`schemas/outcome-certificate-v2.schema.json`](../schemas/outcome-certificate-v2.schema.json) (**`schemaVersion` 2**). Required fields include **`workflowId`**, **`runKind`** (`contract_sql` for batch replay, `quick_preview` for Quick Verify), **`stateRelation`** (`matches_expectations` \| `does_not_match` \| `not_established`), **`highStakesReliance`** (`permitted` \| `prohibited`) with mandatory **`relianceRationale`**, **`intentSummary`**, **`explanation`** (`headline` + `details[]` with stable `code` / `message`), **`steps`**, **`humanReport`**, and **`evidenceCompleteness`** (canonical completeness object defined in **`schemas/evidence-completeness-v1.schema.json`** — answers verified vs blocked, missing actionable inputs, next actions; low-cardinality blocker category aligns with **`evidence_gap_primary`** on licensed **`POST /api/v1/funnel/verify-outcome`** beacons). Product semantics and derivation table: [`outcome-certificate-normative.md`](outcome-certificate-normative.md). The engine still materializes an internal **`WorkflowResult`** (`schemaVersion` **15**) for reconciliation and bundles; that shape is **not** the integrator stdout contract.
 
 **Verification policy (CLI):** Default is **`strong`** (single read per check). For **`eventual`**, pass **`--consistency eventual`** plus required **`--verification-window-ms`** and **`--poll-interval-ms`** (integers ≥ 1, **`pollIntervalMs` ≤ `verificationWindowMs`**). With **`strong`**, do not pass the millisecond flags. See [Verification policy (normative)](#verification-policy-normative).
 
@@ -430,7 +430,7 @@ node dist/cli.js --workflow-id <id> --events <path> --registry <path> --postgres
 
 This subsection is **normative** for CI and for any automation that treats **`agentskeptic`** as the sole machine-facing verification surface. The **only** structured artifacts for verification from the CLI are:
 
-- **Exits 0–2:** one JSON object on **stdout** matching **`schemas/outcome-certificate-v1.schema.json`** (see **stdout** above).
+- **Exits 0–2:** one JSON object on **stdout** matching **`schemas/outcome-certificate-v2.schema.json`** (see **stdout** above).
 - **Exit 3:** **stdout** empty; **stderr** exactly one JSON line with **`kind`:** **`execution_truth_layer_error`** (see [CLI operational errors](#cli-operational-errors)).
 
 There is **no** separate CI-only report format. Integrators should parse **stdout** for verdicts **0–2** and **stderr** for exit **3**, not the human report text when **`--no-human-report`** is used.
@@ -445,7 +445,7 @@ There is **no** separate CI-only report format. Integrators should parse **stdou
 |------------|----------|
 | argv | `--workflow-id wf_complete --events <examples/events.ndjson> --registry <examples/tools.json> --postgres-url <POSTGRES_VERIFICATION_URL> --no-human-report` |
 | Exit code | **0** |
-| **stdout** | One line; valid **Outcome Certificate v1**; **`schemaVersion`** **1**; **`workflowId`** **`wf_complete`**; **`runKind`** **`contract_sql`**; **`stateRelation`** **`matches_expectations`**; **`highStakesReliance`** **`permitted`**; non-empty **`steps`** for this fixture |
+| **stdout** | One line; valid **Outcome Certificate v2**; **`schemaVersion`** **2**; **`workflowId`** **`wf_complete`**; **`runKind`** **`contract_sql`**; **`stateRelation`** **`matches_expectations`**; **`highStakesReliance`** **`permitted`**; **`evidenceCompleteness`** present; non-empty **`steps`** for this fixture |
 | **stderr** | Empty |
 
 **Case 2 — Postgres determinate failure (exit 1)**
@@ -454,7 +454,7 @@ There is **no** separate CI-only report format. Integrators should parse **stdou
 |------------|----------|
 | argv | Same as case 1 with **`--workflow-id wf_missing`** |
 | Exit code | **1** |
-| **stdout** | One line; valid **Outcome Certificate v1**; **`workflowId`** **`wf_missing`**; **`stateRelation`** **`does_not_match`**; **`highStakesReliance`** **`prohibited`** |
+| **stdout** | One line; valid **Outcome Certificate v2**; **`workflowId`** **`wf_missing`**; **`stateRelation`** **`does_not_match`**; **`highStakesReliance`** **`prohibited`**; **`evidenceCompleteness`** present |
 | **stderr** | Empty |
 
 **Case 3 — Operational failure before verification (exit 3)**
@@ -484,7 +484,7 @@ When the CLI exits **3**, **stderr** is exactly **one** UTF-8 line: a JSON objec
 
 ### Share report origin (`--share-report-origin`)
 
-Optional on **batch verify** and **`quick`** (non-enforce): **`--share-report-origin <origin>`** where **`<origin>`** is an **`https:`** URL with no path (e.g. **`https://agentskeptic.com`**). When set, the CLI **does not** write the human report to stderr during the engine run; after verification succeeds and the **Outcome Certificate** validates, the CLI **POST**s the **v2** share envelope to **`{origin}/api/public/verification-reports`**. On **HTTP 201**, the CLI then writes **`certificate.humanReport`** and distribution footer to stderr, then one **Outcome Certificate** JSON line to stdout, then exits **0 / 1 / 2** as usual. On POST failure (non-201, network error, or oversize), the CLI exits **3** with **stdout empty** and stderr exactly one **`cliErrorEnvelope`** line with **`code` `SHARE_REPORT_FAILED`**; **`message`** includes **`share_report_origin=`** and the origin host. Full contract: **[`docs/shareable-verification-reports.md`](shareable-verification-reports.md)**.
+Optional on **batch verify** and **`quick`** (non-enforce): **`--share-report-origin <origin>`** where **`<origin>`** is an **`https:`** URL with no path (e.g. **`https://agentskeptic.com`**). When set, the CLI **does not** write the human report to stderr during the engine run; after verification succeeds and the **Outcome Certificate** validates, the CLI **POST**s the **v3** share envelope (**`schemas/public-verification-report-v3.schema.json`**) to **`{origin}/api/public/verification-reports`**. On **HTTP 201**, the CLI then writes **`certificate.humanReport`** and distribution footer to stderr, then one **Outcome Certificate** JSON line to stdout, then exits **0 / 1 / 2** as usual. On POST failure (non-201, network error, or oversize), the CLI exits **3** with **stdout empty** and stderr exactly one **`cliErrorEnvelope`** line with **`code` `SHARE_REPORT_FAILED`**; **`message`** includes **`share_report_origin=`** and the origin host. Full contract: **[`docs/shareable-verification-reports.md`](shareable-verification-reports.md)**.
 
 ### Commercial license preflight (commercial CLI build)
 

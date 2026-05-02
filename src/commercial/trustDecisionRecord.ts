@@ -1,5 +1,6 @@
 import type { OutcomeCertificateV1 } from "../outcomeCertificate.js";
-import { firstProblemStepForCertificate, formatDecisionBlockerForHumans } from "../decisionBlocker.js";
+import { firstProblemStepForCertificate } from "../decisionBlocker.js";
+import { formatEvidenceCompletenessHuman } from "../formatEvidenceCompletenessHuman.js";
 import { trustDecisionFromCertificate, type TrustDecision } from "../trustDecision.js";
 
 export type TrustGateKind = "contract_sql_irreversible" | "langgraph_checkpoint_terminal";
@@ -85,7 +86,10 @@ export function buildTrustDecisionRecordV1(params: {
   routingOpts: BuildTrustDecisionRecordRoutingOpts;
 }): TrustDecisionRecordV1 {
   const { certificate, gateKind } = params;
-  const { lines } = formatDecisionBlockerForHumans(certificate);
+  const human_blocker_lines = formatEvidenceCompletenessHuman(certificate.evidenceCompleteness, {
+    runKind: certificate.runKind,
+    highStakesReliance: certificate.highStakesReliance,
+  }).split("\n");
   const routing_key = params.routingOpts.ownerRoutingKey ?? params.routingOpts.workflowIdFallback;
   const routing: TrustDecisionRecordV1["routing"] = { routing_key };
   if (params.routingOpts.routingTeam !== undefined && params.routingOpts.routingTeam.length > 0) {
@@ -101,7 +105,7 @@ export function buildTrustDecisionRecordV1(params: {
     gate_kind: gateKind,
     routing,
     certificate_snapshot: buildCertificateSnapshotV1(certificate),
-    human_blocker_lines: lines,
+    human_blocker_lines,
   };
 
   const size = Buffer.byteLength(JSON.stringify(record), "utf8");

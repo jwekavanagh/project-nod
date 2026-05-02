@@ -172,7 +172,7 @@ export function createLangGraphCheckpointTrustGate(
       truthReport,
     });
     const certificate = buildOutcomeCertificateLangGraphCheckpointTrustFromWorkflowResult(result);
-    const validateCert = loadSchemaValidator("outcome-certificate-v1");
+    const validateCert = loadSchemaValidator("outcome-certificate-v2");
     if (!validateCert(certificate)) {
       throw new TruthLayerError(
         CLI_OPERATIONAL_CODES.WORKFLOW_RESULT_SCHEMA_INVALID,

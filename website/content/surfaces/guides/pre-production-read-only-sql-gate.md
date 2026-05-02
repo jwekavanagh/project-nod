@@ -20,7 +20,7 @@ Schedule verification after replay or after the live workflow when stakes are hi
 
 Keep the registry the contract for what each tool implies in SQL. Quick Verify can help early exploration, but contract mode is the durable story when legal or SRE review asks what was checked. Share private /r/ links only for ticket context; indexed discovery lives on these guides and the acquisition page.
 
-Operational discipline is to run read-only checks against the same schema version you ship, with credentials scoped to SELECT, and to archive the workflow result JSON alongside the human report for later diffing.
+Operational discipline is to run read-only checks against the same schema version you ship, with credentials scoped to SELECT, and to archive the Outcome Certificate JSON (contract stdout, schemaVersion 2) and the human report for later diffing.
 
 ## What to do next
 

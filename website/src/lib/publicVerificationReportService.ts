@@ -5,7 +5,7 @@ import { loadSchemaValidator } from "agentskeptic/schemaLoad";
 
 const MAX_BODY_BYTES = 393216;
 
-const validateEnvelopeV2 = loadSchemaValidator("public-verification-report-v2");
+const validateEnvelopeV3 = loadSchemaValidator("public-verification-report-v3");
 
 export type PublicReportEnvelope =
   | {
@@ -22,7 +22,7 @@ export type PublicReportEnvelope =
       humanReportText: string;
     }
   | {
-      schemaVersion: 2;
+      schemaVersion: 3;
       certificate: Record<string, unknown>;
       cliVersion?: string;
       createdFrom?: string;
@@ -38,7 +38,7 @@ export function assertBodySizeWithinLimit(rawUtf8: string): void {
 }
 
 export function parseAndValidateEnvelope(raw: unknown): PublicReportEnvelope {
-  if (!validateEnvelopeV2(raw)) {
+  if (!validateEnvelopeV3(raw)) {
     const err = new Error("ENVELOPE_INVALID");
     (err as Error & { status: number }).status = 400;
     throw err;
@@ -52,10 +52,10 @@ export function derivedFieldsFromEnvelope(env: PublicReportEnvelope): {
   reportStatusToken: string;
   humanText: string;
 } {
-  if (env.schemaVersion === 2) {
+  if (env.schemaVersion === 3) {
     const c = env.certificate as { workflowId: string; stateRelation: string; humanReport: string };
     return {
-      kind: "outcome_certificate_v2",
+      kind: "outcome_certificate",
       reportWorkflowId: c.workflowId,
       reportStatusToken: c.stateRelation,
       humanText: c.humanReport,

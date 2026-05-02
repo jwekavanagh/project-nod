@@ -14,6 +14,8 @@ evaluatorLens: false
 
 Verification compares **declared structured tool activity** to **read-only `SELECT` results at verification time** under your registry rules. A **green** verdict means observed SQL **matched expectations then**—not that a particular HTTP request **caused** a row, and not that the database will stay unchanged afterward. **Quick** outputs are not interchangeable with **contract Outcome Certificates** for high-stakes reliance; use **contract mode** when a human decision depends on the artifact. Normative field semantics and **`highStakesReliance`**: **`docs/outcome-certificate-normative.md`**. Integrator streams and share surfaces: **`docs/outcome-certificate-integrator.md`**.
 
+Contract Outcome Certificate JSON uses schemaVersion 2 and includes evidenceCompleteness: verified vs unverified claims, blockers, missing inputs, and next actions in one object. Quick remains preview-only for high-stakes reliance (see highStakesReliance in the normative doc).
+
 ## What to do next
 
 - Follow the mechanical path on [`/integrate`](/integrate) with your prepared database.

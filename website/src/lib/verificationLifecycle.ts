@@ -355,7 +355,7 @@ export function evaluateAccept(input: AcceptEvaluationInput): AcceptEvaluation {
       httpStatus: 409,
       responseCode: "ENFORCE_DECISION_GRADE_REQUIRED",
       message:
-        "Accept requires decision-grade outcome_certificate_v1.run_kind.",
+        "Accept requires decision-grade outcome_certificate.run_kind.",
     };
   }
   return {

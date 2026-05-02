@@ -14,7 +14,9 @@ evaluatorLens: false
 
 Clone the repository, run the bundled demo, then execute **`npm run first-run-verify`** with the environment variables described on [`/integrate`](/integrate). The commercial API contract lives at [`/openapi-commercial-v1.yaml`](/openapi-commercial-v1.yaml) when you are ready to meter usage after local proof.
 
-When you finish a first-run verify, you should see crossing output aligned with the integrate spine checklist—a mechanical checkpoint that read-only SQL ran against your prepared database file, not a claim that production emitters are complete.
+Lowest-friction path: run agentskeptic quick on captured tool activity first (see /integrate), then graduate to contract check with exported tools.json and events when you need decision-grade highStakesReliance permitted results.
+
+When you finish a first-run verify, you should see crossing output aligned with the integrate spine checklist—a mechanical checkpoint that read-only SQL ran against your prepared database file, not a claim that production emitters are complete. Contract stdout is an Outcome Certificate (schemaVersion 2) that includes evidenceCompleteness.
 
 ## What to do next
 

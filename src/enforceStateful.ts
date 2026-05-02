@@ -139,10 +139,10 @@ export async function runStatefulEnforce(args: string[]): Promise<void> {
         : "incomplete";
     }
     const payload: Record<string, unknown> = {
-      schema_version: 2,
+      schema_version: 3,
       run_id: runId,
       workflow_id: workflowId,
-      outcome_certificate_v1: certificate,
+      outcome_certificate: certificate,
       material_truth_sha256: materialTruthSha256(certificate),
       certificate_sha256: canonicalCertificateSha256(certificate),
     };

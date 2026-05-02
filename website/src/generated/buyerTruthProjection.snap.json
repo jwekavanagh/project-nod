@@ -8,7 +8,7 @@
   "canon_commercial_boundary_href": "https://github.com/jwekavanagh/agentskeptic/blob/main/docs/commercial.md#programmatic-verification-vs-licensed-cli",
   "canon_commercial_ssot_doc_href": "https://github.com/jwekavanagh/agentskeptic/blob/main/docs/commercial.md",
   "canon_verification_semantics_href": "https://github.com/jwekavanagh/agentskeptic/blob/main/docs/outcome-certificate-normative.md",
-  "contracts_terms": "Limits and semantics: OpenAPI at /openapi-commercial-v1.yaml, plans JSON at /api/v1/commercial/plans, and entitlement docs on GitHub main.",
+  "contracts_terms": "Limits and semantics: OpenAPI at /openapi-commercial-v1.yaml (Outcome Certificate v2 + evidence completeness fields; enforcement ingestion schema_version 3; share envelope schemaVersion 3), plans JSON at /api/v1/commercial/plans, and entitlement docs on GitHub main.",
   "enforcement_terms": "CI locks, the enforce command, and quick verify with lock flags require a paid plan (not Starter) and the same active subscription and metering model.",
   "framework_footnote": "CrewAI: supported. LangGraph: supported. AutoGen: removed (not shipped in current Python integration tracks). Any framework able to emit structured tool activity can integrate.",
   "home_commercial_lead": "Open-source CLI is unmetered locally. Published npm installs use the commercial build — API key and successful POST /api/v1/usage/reserve apply for licensed CLI runs as described in docs/commercial.md. In-process createDecisionGate stays local and does not call the usage API.",

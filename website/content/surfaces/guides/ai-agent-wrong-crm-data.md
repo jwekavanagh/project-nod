@@ -16,11 +16,11 @@ Green dashboards still happen when an AI agent writes wrong CRM data and you nee
 
 When dashboards stay green, AgentSkeptic still answers with read-only `SELECT`s against your SQLite or Postgres—comparing structured tool parameters to persisted rows at verification time.
 
-Start from `/integrate` to emit NDJSON observations and run contract verification locally; keep private share links on `/r/` (noindex) while you iterate.
+Start from /integrate: use quick for inferred checks on raw tool activity, then move to contract verification with a registry when reviews require decision-grade results; keep private share links on `/r/` (noindex) while you iterate.
 
 Capture structured tool activity from the CRM path your agent touched (IDs and fields in JSON or NDJSON).
 
-Map each `toolId` to a registry entry or use Quick Verify for inferred checks, then run read-only SQL verification before you trust customer-facing state.
+Map each `toolId` to a registry entry or use Quick Verify for inferred checks, then run read-only SQL verification before you trust customer-facing state. The evidenceCompleteness block on quick stdout states whether SQL verification ran or ingest/mapping blocked it.
 
 ## What to do next
 

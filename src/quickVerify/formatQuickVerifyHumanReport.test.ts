@@ -8,18 +8,23 @@ import {
 import { HUMAN_REPORT_BEGIN, HUMAN_REPORT_END, verdictLine } from "./quickVerifyHumanCopy.js";
 import { DEFAULT_QUICK_VERIFY_SCOPE } from "./quickVerifyScope.js";
 import { buildQuickVerifyProductTruth } from "./quickVerifyProductTruth.js";
+import { buildEvidenceCompletenessFromQuickReport } from "../evidenceCompleteness.js";
 import type { QuickVerifyReport } from "./runQuickVerify.js";
 
 function minimalReport(verdict: "pass" | "fail" | "uncertain"): QuickVerifyReport {
+  const ingest = { reasonCodes: ["INGEST_NO_ACTIONS"], malformedLineCount: 0 };
+  const units: QuickVerifyReport["units"] = [];
+  const evidenceCompleteness = buildEvidenceCompletenessFromQuickReport({ verdict, ingest, units });
   return {
-    schemaVersion: 4,
+    schemaVersion: 5,
     verdict,
     summary: `Inferred provisional check — rollup ${verdict} is not a production-safety or audit-final verdict. 0 unit(s).`,
     verificationMode: "inferred",
     scope: { ...DEFAULT_QUICK_VERIFY_SCOPE },
     productTruth: buildQuickVerifyProductTruth(false),
-    ingest: { reasonCodes: ["INGEST_NO_ACTIONS"], malformedLineCount: 0 },
-    units: [],
+    ingest,
+    evidenceCompleteness,
+    units,
     exportableRegistry: { tools: [] },
   };
 }

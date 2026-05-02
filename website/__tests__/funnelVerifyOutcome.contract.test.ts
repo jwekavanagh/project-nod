@@ -9,10 +9,11 @@ const activateStages = [
 ] as const;
 
 const baseBody = {
-  schema_version: 2 as const,
+  schema_version: 3 as const,
   run_id: "run-test",
   workflow_id: "wf_t",
   trust_decision: "safe" as const,
+  evidence_gap_primary: "none" as const,
   reason_codes: ["A"] as string[],
   terminal_status: "complete" as const,
   workload_class: "non_bundled" as const,

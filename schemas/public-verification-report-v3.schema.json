@@ -1,0 +1,15 @@
+{
+  "$id": "https://agentskeptic.com/schemas/public-verification-report-v3.schema.json",
+  "title": "PublicVerificationReportEnvelopeV3",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "certificate"],
+  "properties": {
+    "schemaVersion": { "type": "integer", "const": 3 },
+    "certificate": {
+      "$ref": "https://agentskeptic.com/schemas/outcome-certificate-v2.schema.json"
+    },
+    "cliVersion": { "type": "string", "maxLength": 128 },
+    "createdFrom": { "type": "string", "maxLength": 256 }
+  }
+}

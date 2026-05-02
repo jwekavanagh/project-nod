@@ -1,3 +1,21 @@
+## [5.0.0](https://github.com/jwekavanagh/agentskeptic/compare/v4.2.0...v5.0.0) (2026-05-02)
+
+### ⚠ BREAKING CHANGES
+
+* **certificate:** Outcome Certificate **`schemaVersion` 2** with required **`evidenceCompleteness`**; human stderr uses anchored **`=== evidence_completeness ===`** block via a single formatter (legacy **`formatDecisionBlockerForHumans`** export removed).
+* **share:** **`POST /api/public/verification-reports`** accepts **envelope `schemaVersion` 3** only (inner Outcome Certificate v2).
+* **governance:** enforcement ingestion payloads use **`schema_version` 3** and **`outcome_certificate`** (**`schema_version` 2** / **`outcome_certificate_v1`** rejected).
+* **beacon:** licensed **`POST /api/v1/funnel/verify-outcome`** requires **`schema_version` 3** and **`evidence_gap_primary`** (mirror of **`evidenceCompleteness.blockerCategory`**).
+* **material truth:** governance projection bumps to **material-truth v2** (includes **`evidenceGapPrimary`**); customers pinning **`material_truth_sha256`** must re-baseline once.
+
+### Features
+
+* **quick:** **`QuickVerifyReport` `schemaVersion` 5** carries the same **`evidenceCompleteness`** shape as certificates for drift-free rollup signals.
+
+### Bug Fixes
+
+* **docs/ci:** tighten normative anchors, integrate quick-first ladder, and OpenAPI / Python parity for commercial request schemas.
+
 ## [4.2.0](https://github.com/jwekavanagh/agentskeptic/compare/v4.1.1...v4.2.0) (2026-05-02)
 
 ### Features

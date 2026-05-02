@@ -162,6 +162,7 @@ describe("activate CLI matrix", () => {
     assert.ok(body.activation);
     assert.equal(body.activation.stages.length, 4);
     assert.equal(body.activation.trust_terminal, "decision_ready");
-    assert.equal(body.schema_version, 2);
+    assert.equal(body.schema_version, 3);
+    assert.equal(body.evidence_gap_primary, "none");
   });
 });

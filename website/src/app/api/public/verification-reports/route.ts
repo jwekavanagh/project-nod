@@ -72,9 +72,9 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     const origin = getCanonicalSiteOrigin();
     const url = `${origin.replace(/\/$/, "")}/r/${id}`;
     const kind =
-      "schemaVersion" in envelope && envelope.schemaVersion === 2 ? "outcome_certificate_v2" : envelope.kind;
+      "schemaVersion" in envelope && envelope.schemaVersion === 3 ? "outcome_certificate" : envelope.kind;
     await logFunnelEvent({ event: "report_share_created", metadata: { id, kind } });
-    return activationJson(req, { schemaVersion: 2, id, url }, 201);
+    return activationJson(req, { schemaVersion: 3, id, url }, 201);
   } catch (e) {
     const status = (e as Error & { status?: number }).status;
     if (status === 400) {

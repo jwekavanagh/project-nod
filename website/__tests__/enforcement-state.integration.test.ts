@@ -41,6 +41,31 @@ const state = vi.hoisted(() => ({
 
 const fsmRows = vi.hoisted(() => ({ map: new Map<string, MockFsmRow>() }));
 
+function testOutcomeCertificateV2(workflowId: string) {
+  return {
+    schemaVersion: 2,
+    workflowId,
+    runKind: "contract_sql",
+    stateRelation: "matches_expectations",
+    highStakesReliance: "permitted",
+    relianceRationale: "r",
+    intentSummary: "s",
+    explanation: { headline: "h", details: [{ code: "X", message: "x" }] },
+    steps: [],
+    humanReport:
+      "minimal\n\n=== evidence_completeness ===\nBlocker: none\nQuick signal: na\nNext:\n- No further action required.\nTrust boundary: runKind=contract_sql highStakesReliance=permitted (see certificate fields for normative meaning).\n=== end evidence_completeness ===",
+    evidenceCompleteness: {
+      schemaVersion: 1,
+      blockerCategory: "none",
+      quickSignal: "na",
+      verifiedClaims: [],
+      unverifiedClaims: [],
+      missingInputs: [],
+      nextActions: [{ id: "none", text: "No further action required." }],
+    },
+  };
+}
+
 function getFsmRow(wf: string): MockFsmRow {
   if (!fsmRows.map.has(wf)) {
     fsmRows.map.set(wf, {
@@ -107,28 +132,28 @@ function parseGovernanceBody(body: unknown) {
   if (!body || typeof body !== "object") return null;
   const b = body as Record<string, unknown>;
   if (
-    b.schema_version !== 2 ||
+    b.schema_version !== 3 ||
     typeof b.run_id !== "string" ||
     typeof b.workflow_id !== "string" ||
     typeof b.material_truth_sha256 !== "string" ||
     typeof b.certificate_sha256 !== "string" ||
-    !Object.prototype.hasOwnProperty.call(b, "outcome_certificate_v1")
+    !Object.prototype.hasOwnProperty.call(b, "outcome_certificate")
   ) {
     return null;
   }
   return {
-    schema_version: 2 as const,
+    schema_version: 3 as const,
     run_id: b.run_id as string,
     workflow_id: b.workflow_id as string,
     material_truth_sha256: b.material_truth_sha256 as string,
     certificate_sha256: b.certificate_sha256 as string,
-    outcome_certificate_v1: b.outcome_certificate_v1,
+    outcome_certificate: b.outcome_certificate,
   };
 }
 
 vi.mock("@/lib/enforcementFsmPersistence", () => ({
   executeFsmCheck: vi.fn(async (params: {
-    body: { workflow_id: string; run_id: string; outcome_certificate_v1: { runKind: string } };
+    body: { workflow_id: string; run_id: string; outcome_certificate: { runKind: string } };
     verified: { materialTruthSha256: string; certificateSha256: string };
   }) => {
     const { body, verified } = params;
@@ -212,14 +237,14 @@ vi.mock("@/lib/enforcementFsmPersistence", () => ({
   }),
 
   executeFsmCreateBaseline: vi.fn(async (params: {
-    body: { workflow_id: string; run_id: string; outcome_certificate_v1: { runKind: string } };
+    body: { workflow_id: string; run_id: string; outcome_certificate: { runKind: string } };
     verified: { materialTruthSha256: string; certificateSha256: string };
   }) => {
     const { body, verified } = params;
     const r = getFsmRow(body.workflow_id);
     const ver = evaluateCreateBaseline({
       lifecycleBefore: r.lifecycle,
-      runKind: body.outcome_certificate_v1.runKind,
+      runKind: body.outcome_certificate.runKind,
     });
     if (!ver.ok) {
       return {
@@ -258,7 +283,7 @@ vi.mock("@/lib/enforcementFsmPersistence", () => ({
       run_id: string;
       expected_projection_hash: string;
       lifecycle_state_version: number;
-      outcome_certificate_v1: { runKind: string };
+      outcome_certificate: { runKind: string };
     };
     verified: { materialTruthSha256: string; certificateSha256: string };
   }) => {
@@ -270,7 +295,7 @@ vi.mock("@/lib/enforcementFsmPersistence", () => ({
       requestLifecycleVersion: body.lifecycle_state_version,
       requestExpectedProjectionHash: body.expected_projection_hash,
       pendingAcceptProjectionHash: r.pendingAccept,
-      runKind: body.outcome_certificate_v1.runKind,
+      runKind: body.outcome_certificate.runKind,
     });
     if (!ae.ok) {
       return ae.responseCode === "BAD_REQUEST"
@@ -357,19 +382,12 @@ describe("enforcement state lifecycle", () => {
         method: "POST",
         headers: { authorization: "Bearer wf_sk_test", "content-type": "application/json" },
         body: JSON.stringify({
-          schema_version: 2,
+          schema_version: 3,
           run_id: run,
           workflow_id: "wf-a",
           material_truth_sha256: hash,
           certificate_sha256: `c_${hash}`,
-          outcome_certificate_v1: {
-            schemaVersion: 1,
-            workflowId: "wf-a",
-            runKind: "contract_sql",
-            stateRelation: "matches_expectations",
-            explanation: { details: [{ code: "X", message: "x" }] },
-            steps: [],
-          },
+          outcome_certificate: testOutcomeCertificateV2("wf-a"),
         }),
       });
 
@@ -399,21 +417,14 @@ describe("enforcement state lifecycle", () => {
         method: "POST",
         headers: { authorization: "Bearer wf_sk_test", "content-type": "application/json" },
         body: JSON.stringify({
-          schema_version: 2,
+          schema_version: 3,
           run_id: "r4",
           workflow_id: "wf-a",
           material_truth_sha256: "h2",
           certificate_sha256: "c_h2",
           expected_projection_hash: dj.expected_projection_hash_for_accept,
           lifecycle_state_version: dj.lifecycle_state_version,
-          outcome_certificate_v1: {
-            schemaVersion: 1,
-            workflowId: "wf-a",
-            runKind: "contract_sql",
-            stateRelation: "matches_expectations",
-            explanation: { details: [{ code: "X", message: "x" }] },
-            steps: [],
-          },
+          outcome_certificate: testOutcomeCertificateV2("wf-a"),
         }),
       }),
     );
@@ -441,19 +452,12 @@ describe("enforcement state lifecycle", () => {
         method: "POST",
         headers: { authorization: "Bearer wf_sk_test", "content-type": "application/json" },
         body: JSON.stringify({
-          schema_version: 2,
+          schema_version: 3,
           run_id: "r-legacy",
           workflow_id: "wf-legacy",
           material_truth_sha256: "h-old",
           certificate_sha256: "c-old",
-          outcome_certificate_v1: {
-            schemaVersion: 1,
-            workflowId: "wf-legacy",
-            runKind: "contract_sql",
-            stateRelation: "matches_expectations",
-            explanation: { details: [{ code: "X", message: "x" }] },
-            steps: [],
-          },
+          outcome_certificate: testOutcomeCertificateV2("wf-legacy"),
         }),
       }),
     );
@@ -475,40 +479,26 @@ describe("enforcement API entitlement and quota semantics", () => {
         method: "POST",
         headers: { authorization: "Bearer wf_sk_test", "content-type": "application/json" },
         body: JSON.stringify({
-          schema_version: 2,
+          schema_version: 3,
           run_id: "r1",
           workflow_id: "wf-ent",
           material_truth_sha256: "h-ent",
           certificate_sha256: "c-ent",
-          outcome_certificate_v1: {
-            schemaVersion: 1,
-            workflowId: "wf-ent",
-            runKind: "contract_sql",
-            stateRelation: "matches_expectations",
-            explanation: { details: [{ code: "X", message: "x" }] },
-            steps: [],
-          },
+          outcome_certificate: testOutcomeCertificateV2("wf-ent"),
         }),
       });
     const acceptReq = new NextRequest("http://localhost/api/v1/enforcement/accept", {
       method: "POST",
       headers: { authorization: "Bearer wf_sk_test", "content-type": "application/json" },
       body: JSON.stringify({
-        schema_version: 2,
+        schema_version: 3,
         run_id: "r1a",
         workflow_id: "wf-ent",
         material_truth_sha256: "h-ent",
         certificate_sha256: "c-ent",
         expected_projection_hash: "x",
         lifecycle_state_version: 1,
-        outcome_certificate_v1: {
-          schemaVersion: 1,
-          workflowId: "wf-ent",
-          runKind: "contract_sql",
-          stateRelation: "matches_expectations",
-          explanation: { details: [{ code: "X", message: "x" }] },
-          steps: [],
-        },
+        outcome_certificate: testOutcomeCertificateV2("wf-ent"),
       }),
     });
     for (const fn of [createBaseline, check]) {
@@ -532,19 +522,12 @@ describe("enforcement API entitlement and quota semantics", () => {
         method: "POST",
         headers: { authorization: "Bearer wf_sk_test", "content-type": "application/json" },
         body: JSON.stringify({
-          schema_version: 2,
+          schema_version: 3,
           run_id: "r2",
           workflow_id: "wf-ent",
           material_truth_sha256: "h-ent2",
           certificate_sha256: "c-ent2",
-          outcome_certificate_v1: {
-            schemaVersion: 1,
-            workflowId: "wf-ent",
-            runKind: "contract_sql",
-            stateRelation: "matches_expectations",
-            explanation: { details: [{ code: "X", message: "x" }] },
-            steps: [],
-          },
+          outcome_certificate: testOutcomeCertificateV2("wf-ent"),
         }),
       }),
     );
@@ -562,19 +545,12 @@ describe("enforcement API entitlement and quota semantics", () => {
         method: "POST",
         headers: { authorization: "Bearer wf_sk_test", "content-type": "application/json" },
         body: JSON.stringify({
-          schema_version: 2,
+          schema_version: 3,
           run_id: "r3",
           workflow_id: "wf-ent",
           material_truth_sha256: "h-ent3",
           certificate_sha256: "c-ent3",
-          outcome_certificate_v1: {
-            schemaVersion: 1,
-            workflowId: "wf-ent",
-            runKind: "contract_sql",
-            stateRelation: "matches_expectations",
-            explanation: { details: [{ code: "X", message: "x" }] },
-            steps: [],
-          },
+          outcome_certificate: testOutcomeCertificateV2("wf-ent"),
         }),
       }),
     );

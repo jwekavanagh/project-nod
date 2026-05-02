@@ -1,5 +1,14 @@
 import type { QuickVerifyReport } from "./quickVerify/runQuickVerify.js";
 import { formatQuickVerifyHumanReport } from "./quickVerify/formatQuickVerifyHumanReport.js";
+import {
+  buildEvidenceCompletenessForIneligibleLangGraph,
+  buildEvidenceCompletenessFromWorkflowResult,
+  type EvidenceCompletenessJson,
+} from "./evidenceCompleteness.js";
+import {
+  EVIDENCE_COMPLETENESS_BEGIN,
+  formatEvidenceCompletenessHuman,
+} from "./formatEvidenceCompletenessHuman.js";
 import type { Reason, StepOutcome, WorkflowResult, WorkflowTruthStep } from "./types.js";
 import { formatWorkflowTruthReportStruct } from "./workflowTruthReport.js";
 
@@ -35,9 +44,12 @@ export type OutcomeCertificateCheckpointVerdict = {
   productionMeaning: string;
 };
 
-/** Public verification artifact (v1). Normative: docs/outcome-certificate-normative.md */
-export type OutcomeCertificateV1 = {
-  schemaVersion: 1;
+/**
+ * Normative JSON shape: schemas/outcome-certificate-v2.schema.json (`schemaVersion` 2 + `evidenceCompleteness`).
+ * Type name retained as OutcomeCertificateV1 for semver-stable imports.
+ */
+export type OutcomeCertificateV2 = {
+  schemaVersion: 2;
   workflowId: string;
   runKind: OutcomeCertificateRunKind;
   stateRelation: OutcomeCertificateStateRelation;
@@ -50,8 +62,11 @@ export type OutcomeCertificateV1 = {
   };
   steps: OutcomeCertificateStep[];
   humanReport: string;
+  evidenceCompleteness: EvidenceCompletenessJson;
   checkpointVerdicts?: OutcomeCertificateCheckpointVerdict[];
 };
+
+export type OutcomeCertificateV1 = OutcomeCertificateV2;
 
 export function deriveHighStakesReliance(
   runKind: OutcomeCertificateRunKind,
@@ -104,7 +119,15 @@ function buildRelianceRationale(
   return "Verification could not be completed or could not establish a determinate match (incomplete registry, empty capture, indeterminate window, or connector issue). Do not treat absence of a mismatch as proof of success.";
 }
 
-function buildExplanationFromWorkflowResult(result: WorkflowResult): OutcomeCertificateV1["explanation"] {
+function appendEvidenceCompletenessHuman(
+  baseHuman: string,
+  ec: EvidenceCompletenessJson,
+  ctx: { runKind: OutcomeCertificateRunKind; highStakesReliance: OutcomeCertificateHighStakesReliance },
+): string {
+  return `${baseHuman}\n\n${formatEvidenceCompletenessHuman(ec, ctx)}`;
+}
+
+function buildExplanationFromWorkflowResult(result: WorkflowResult): OutcomeCertificateV2["explanation"] {
   const truth = result.workflowTruthReport;
   const details: OutcomeCertificateExplanationDetail[] = [];
   for (const step of truth.steps) {
@@ -186,7 +209,7 @@ export const LANGGRAPH_CHECKPOINT_TRUST_INELIGIBLE_HEADLINE =
 export function buildIneligibleLangGraphCheckpointTrustCertificate(
   workflowId: string,
   runLevelReasons: Reason[],
-): OutcomeCertificateV1 {
+): OutcomeCertificateV2 {
   const runKind = "contract_sql_langgraph_checkpoint_trust";
   const stateRelation: OutcomeCertificateStateRelation = "not_established";
   const highStakesReliance = deriveHighStakesReliance(runKind, stateRelation);
@@ -201,12 +224,20 @@ export function buildIneligibleLangGraphCheckpointTrustCertificate(
               "No schema-valid schemaVersion 3 tool_observed lines for this workflow in LangGraph checkpoint trust mode.",
           },
         ];
-  const humanReport =
+  const humanBase =
     runLevelReasons.length > 0
       ? `${ineligibleHeadline}\n${runLevelReasons.map((r) => `${r.code}: ${r.message}`).join("\n")}`
       : `${ineligibleHeadline}\n${details[0]!.code}: ${details[0]!.message}`;
-  const cert: OutcomeCertificateV1 = {
-    schemaVersion: 1,
+  const evidenceCompleteness = buildEvidenceCompletenessForIneligibleLangGraph({
+    headline: ineligibleHeadline,
+    details,
+  });
+  const humanReport = appendEvidenceCompletenessHuman(humanBase, evidenceCompleteness, {
+    runKind,
+    highStakesReliance,
+  });
+  const cert: OutcomeCertificateV2 = {
+    schemaVersion: 2,
     workflowId,
     runKind,
     stateRelation,
@@ -216,6 +247,7 @@ export function buildIneligibleLangGraphCheckpointTrustCertificate(
     explanation: { headline: ineligibleHeadline, details },
     steps: [],
     humanReport,
+    evidenceCompleteness,
   };
   assertOutcomeCertificateInvariants(cert);
   return cert;
@@ -223,7 +255,7 @@ export function buildIneligibleLangGraphCheckpointTrustCertificate(
 
 export function buildOutcomeCertificateLangGraphCheckpointTrustFromWorkflowResult(
   result: WorkflowResult,
-): OutcomeCertificateV1 {
+): OutcomeCertificateV2 {
   const runKind = "contract_sql_langgraph_checkpoint_trust";
   const stateRelation = workflowResultToStateRelation(result);
   const highStakesReliance = deriveHighStakesReliance(runKind, stateRelation);
@@ -231,14 +263,19 @@ export function buildOutcomeCertificateLangGraphCheckpointTrustFromWorkflowResul
   const steps = truth.steps.map(truthStepToCertificateStep);
   const checkpointVerdicts = computeCheckpointVerdictsFromWorkflowResult(result);
   const baseHuman = formatWorkflowTruthReportStruct(truth);
-  const humanReport =
+  const workflowHuman =
     checkpointVerdicts.length === 0
       ? baseHuman
       : `${baseHuman}\n\nlanggraph_checkpoint_verdicts:\n${checkpointVerdicts
           .map((c) => `${c.checkpointKey}\t${c.verdict}\t${c.productionMeaning}`)
           .join("\n")}`;
-  const cert: OutcomeCertificateV1 = {
-    schemaVersion: 1,
+  const evidenceCompleteness = buildEvidenceCompletenessFromWorkflowResult(result);
+  const humanReport = appendEvidenceCompletenessHuman(workflowHuman, evidenceCompleteness, {
+    runKind,
+    highStakesReliance,
+  });
+  const cert: OutcomeCertificateV2 = {
+    schemaVersion: 2,
     workflowId: result.workflowId,
     runKind,
     stateRelation,
@@ -248,6 +285,7 @@ export function buildOutcomeCertificateLangGraphCheckpointTrustFromWorkflowResul
     explanation: buildExplanationFromWorkflowResult(result),
     steps,
     humanReport,
+    evidenceCompleteness,
     checkpointVerdicts,
   };
   assertOutcomeCertificateInvariants(cert);
@@ -260,14 +298,18 @@ export function buildOutcomeCertificateLangGraphCheckpointTrustFromWorkflowResul
 export function buildOutcomeCertificateFromWorkflowResult(
   result: WorkflowResult,
   runKind: "contract_sql",
-): OutcomeCertificateV1 {
+): OutcomeCertificateV2 {
   const stateRelation = workflowResultToStateRelation(result);
   const highStakesReliance = deriveHighStakesReliance(runKind, stateRelation);
   const truth = result.workflowTruthReport;
   const steps = truth.steps.map(truthStepToCertificateStep);
-  const humanReport = formatWorkflowTruthReportStruct(truth);
-  const cert: OutcomeCertificateV1 = {
-    schemaVersion: 1,
+  const evidenceCompleteness = buildEvidenceCompletenessFromWorkflowResult(result);
+  const humanReport = appendEvidenceCompletenessHuman(formatWorkflowTruthReportStruct(truth), evidenceCompleteness, {
+    runKind,
+    highStakesReliance,
+  });
+  const cert: OutcomeCertificateV2 = {
+    schemaVersion: 2,
     workflowId: result.workflowId,
     runKind,
     stateRelation,
@@ -277,6 +319,7 @@ export function buildOutcomeCertificateFromWorkflowResult(
     explanation: buildExplanationFromWorkflowResult(result),
     steps,
     humanReport,
+    evidenceCompleteness,
   };
   assertOutcomeCertificateInvariants(cert);
   return cert;
@@ -294,12 +337,17 @@ export type BuildQuickOutcomeCertificateOptions = {
   humanReportOptions: Parameters<typeof formatQuickVerifyHumanReport>[1];
 };
 
-export function buildOutcomeCertificateFromQuickReport(options: BuildQuickOutcomeCertificateOptions): OutcomeCertificateV1 {
+export function buildOutcomeCertificateFromQuickReport(options: BuildQuickOutcomeCertificateOptions): OutcomeCertificateV2 {
   const { report, workflowId, humanReportOptions } = options;
   const runKind = "quick_preview" as const;
   const stateRelation = quickVerdictToStateRelation(report.verdict);
   const highStakesReliance = deriveHighStakesReliance(runKind, stateRelation);
-  const humanReport = formatQuickVerifyHumanReport(report, humanReportOptions);
+  const evidenceCompleteness = report.evidenceCompleteness;
+  const humanReport = appendEvidenceCompletenessHuman(
+    formatQuickVerifyHumanReport(report, humanReportOptions),
+    evidenceCompleteness,
+    { runKind, highStakesReliance },
+  );
   const details: OutcomeCertificateExplanationDetail[] = [];
   for (const u of report.units) {
     if (u.verdict !== "verified") {
@@ -309,8 +357,8 @@ export function buildOutcomeCertificateFromQuickReport(options: BuildQuickOutcom
       });
     }
   }
-  const cert: OutcomeCertificateV1 = {
-    schemaVersion: 1,
+  const cert: OutcomeCertificateV2 = {
+    schemaVersion: 2,
     workflowId,
     runKind,
     stateRelation,
@@ -328,19 +376,20 @@ export function buildOutcomeCertificateFromQuickReport(options: BuildQuickOutcom
       observedOutcome: u.reconciliation.observed_database,
     })),
     humanReport,
+    evidenceCompleteness,
   };
   assertOutcomeCertificateInvariants(cert);
   return cert;
 }
 
-export function formatOutcomeCertificateHuman(certificate: OutcomeCertificateV1): string {
+export function formatOutcomeCertificateHuman(certificate: OutcomeCertificateV2): string {
   return certificate.humanReport;
 }
 
 /** User-facing truth-check verdict for CLI `agentskeptic check` stderr prefix. */
 export type TruthCheckVerdictLabel = "trusted" | "not_trusted" | "unknown";
 
-export function truthCheckVerdictFromCertificate(certificate: OutcomeCertificateV1): TruthCheckVerdictLabel {
+export function truthCheckVerdictFromCertificate(certificate: OutcomeCertificateV2): TruthCheckVerdictLabel {
   if (certificate.stateRelation === "matches_expectations" && certificate.highStakesReliance === "permitted") {
     return "trusted";
   }
@@ -350,12 +399,24 @@ export function truthCheckVerdictFromCertificate(certificate: OutcomeCertificate
   return "unknown";
 }
 
-export function assertOutcomeCertificateInvariants(certificate: OutcomeCertificateV1): void {
+export function assertOutcomeCertificateInvariants(certificate: OutcomeCertificateV2): void {
   const expected = deriveHighStakesReliance(certificate.runKind, certificate.stateRelation);
+  if (certificate.schemaVersion !== 2) {
+    throw new Error(`outcome_certificate: schemaVersion ${certificate.schemaVersion} !== 2`);
+  }
   if (certificate.highStakesReliance !== expected) {
     throw new Error(
       `outcome_certificate: highStakesReliance ${certificate.highStakesReliance} !== derived ${expected} for runKind=${certificate.runKind} stateRelation=${certificate.stateRelation}`,
     );
+  }
+  if (
+    certificate.evidenceCompleteness.schemaVersion !== 1 ||
+    certificate.evidenceCompleteness.blockerCategory === undefined
+  ) {
+    throw new Error("outcome_certificate: evidenceCompleteness malformed");
+  }
+  if (!certificate.humanReport.includes(EVIDENCE_COMPLETENESS_BEGIN)) {
+    throw new Error("outcome_certificate: humanReport must contain evidence_completeness anchors");
   }
   if (formatOutcomeCertificateHuman(certificate) !== certificate.humanReport) {
     throw new Error("outcome_certificate: humanReport must equal formatOutcomeCertificateHuman(certificate)");

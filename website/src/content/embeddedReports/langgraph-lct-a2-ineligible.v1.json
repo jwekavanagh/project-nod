@@ -1,5 +1,5 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "workflowId": "wf_partner",
   "runKind": "contract_sql_langgraph_checkpoint_trust",
   "stateRelation": "not_established",
@@ -16,5 +16,26 @@
     ]
   },
   "steps": [],
-  "humanReport": "LangGraph checkpoint trust: ineligible\nMALFORMED_EVENT_LINE: Event line was missing, invalid JSON, or failed schema validation for a tool observation."
+  "humanReport": "LangGraph checkpoint trust: ineligible\nMALFORMED_EVENT_LINE: Event line was missing, invalid JSON, or failed schema validation for a tool observation.\n\n=== evidence_completeness ===\nBlocker: verification_incomplete\nQuick signal: na\nNot verified:\n- LangGraph checkpoint trust: ineligible\nMissing input:\n- MALFORMED_EVENT_LINE: Event line was missing, invalid JSON, or failed schema validation for a tool observation.\nNext:\n- Repair NDJSON capture so checkpoint trust receives schema-valid schemaVersion 3 tool_observed lines for this workflow, then rerun verify.\nTrust boundary: runKind=contract_sql_langgraph_checkpoint_trust highStakesReliance=prohibited (see certificate fields for normative meaning).\n=== end evidence_completeness ===",
+  "evidenceCompleteness": {
+    "schemaVersion": 1,
+    "blockerCategory": "verification_incomplete",
+    "quickSignal": "na",
+    "verifiedClaims": [],
+    "unverifiedClaims": [
+      "LangGraph checkpoint trust: ineligible"
+    ],
+    "missingInputs": [
+      {
+        "code": "MALFORMED_EVENT_LINE",
+        "hint": "Event line was missing, invalid JSON, or failed schema validation for a tool observation."
+      }
+    ],
+    "nextActions": [
+      {
+        "id": "fix_langgraph_eligibility",
+        "text": "Repair NDJSON capture so checkpoint trust receives schema-valid schemaVersion 3 tool_observed lines for this workflow, then rerun verify."
+      }
+    ]
+  }
 }

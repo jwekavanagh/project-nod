@@ -121,8 +121,12 @@ export async function runQuickVerifyPostbuildGate(opts) {
         stderrSummary: stderrParts.join("; "),
       };
     }
-    if (cert?.schemaVersion !== 1 || typeof cert?.stateRelation !== "string") {
-      stderrParts.push("validate-ttfv: stdout is not an Outcome Certificate (schemaVersion 1)");
+    const schemaLoadUrl = pathToFileURL(join(root, "dist", "schemaLoad.js")).href;
+    const { loadSchemaValidator } = await import(schemaLoadUrl);
+    const validateOutcome = loadSchemaValidator("outcome-certificate-v2");
+    if (!validateOutcome(cert)) {
+      const errLite = JSON.stringify(validateOutcome.errors ?? []).slice(0, 1024);
+      stderrParts.push(`validate-ttfv: quick stdout is not schema-valid Outcome Certificate v2 (${errLite})`);
       return {
         exitCode: 1,
         elapsedMs,

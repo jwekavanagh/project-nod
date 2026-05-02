@@ -45,10 +45,11 @@ function sortedReasonCodesFromCertificate(certificate: OutcomeCertificateV1, max
 
 export function buildVerifyOutcomeBeaconBodyV2(input: BuildVerifyOutcomeBeaconBodyV2Input): Record<string, unknown> {
   const baseRecord: Record<string, unknown> = {
-    schema_version: 2,
+    schema_version: 3,
     run_id: input.run_id,
     workflow_id: input.certificate.workflowId.slice(0, 512),
     outcome_certificate_run_kind: input.certificate.runKind,
+    evidence_gap_primary: input.certificate.evidenceCompleteness.blockerCategory,
     trust_decision: trustDecisionFromCertificate(input.certificate),
     reason_codes: sortedReasonCodesFromCertificate(input.certificate, 8),
     terminal_status: input.terminal_status,

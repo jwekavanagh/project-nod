@@ -12,10 +12,11 @@
     "ingest",
     "units",
     "exportableRegistry",
-    "productTruth"
+    "productTruth",
+    "evidenceCompleteness"
   ],
   "properties": {
-    "schemaVersion": { "type": "integer", "const": 4 },
+    "schemaVersion": { "type": "integer", "const": 5 },
     "verdict": { "type": "string", "enum": ["pass", "fail", "uncertain"] },
     "summary": { "type": "string", "minLength": 1 },
     "verificationMode": { "type": "string", "const": "inferred" },
@@ -246,6 +247,9 @@
         "quickVerifyProvisional": { "type": "boolean", "const": true },
         "contractReplayPartialCoverage": { "type": "boolean" }
       }
+    },
+    "evidenceCompleteness": {
+      "$ref": "https://agentskeptic.com/schemas/evidence-completeness-v1.schema.json"
     }
   }
 }

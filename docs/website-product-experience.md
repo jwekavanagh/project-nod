@@ -4,7 +4,7 @@ This document explains how the commercial Next.js site works and points to **nor
 
 ## Engineer
 
-- **Bundled verifier SSOT:** [`website/src/lib/bundledContractVerify.ts`](../website/src/lib/bundledContractVerify.ts) — `runBundledContractVerify` is the single path for bundled verification (`paste` and `scenarioFile`), calling `verifyWorkflow` from `agentskeptic`, then building + validating Outcome Certificate v1.
+- **Bundled verifier SSOT:** [`website/src/lib/bundledContractVerify.ts`](../website/src/lib/bundledContractVerify.ts) — `runBundledContractVerify` is the single path for bundled verification (`paste` and `scenarioFile`), calling `verifyWorkflow` from `agentskeptic`, then building + validating Outcome Certificate v2.
 - **Fixture resolution:** [`website/src/lib/resolveRepoExamples.ts`](../website/src/lib/resolveRepoExamples.ts) — probes `examples/` under `process.cwd()` and parent (supports dev from `website/` or repo root).
 - **HTTP APIs:** [`website/src/app/api/verify/route.ts`](../website/src/app/api/verify/route.ts) and [`website/src/app/api/demo/verify/route.ts`](../website/src/app/api/demo/verify/route.ts) — both return the same success JSON shape and include `x-request-id`.
 - **Browser demo surface:** [`website/src/app/verify/page.tsx`](../website/src/app/verify/page.tsx) — canonical paste-run-render experience. Homepage `#try-it` is CTA-only and links here.

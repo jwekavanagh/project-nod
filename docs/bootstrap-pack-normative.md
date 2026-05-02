@@ -30,7 +30,7 @@ No other flags in v1 beyond the shared **`BootstrapPackCli`** grammar (`--help` 
 |-------|-------------------------|
 | `activate` / `bootstrap` flags, I/O, exit codes, staging, success definition, **`proof/`** | **This file** |
 | Disk manifest schema | `schemas/activation-manifest-v1.schema.json` |
-| Verify-outcome beacon **`activation`** (HTTP) | `schemas/openapi-commercial-v1.yaml` → **`VerifyOutcomeRequestV2`** |
+| Verify-outcome beacon **`activation`** (HTTP) | `schemas/openapi-commercial-v1.yaml` → **`VerifyOutcomeRequestV3`** |
 | `BootstrapPackInput` v1 JSON | This file **Contract appendix** + `schemas/bootstrap-pack-input-v1.schema.json` (schema must not contradict the appendix) |
 | Optional hosted registry draft (website API, absolute schema `$ref` / AJV order, commercial harness) | [registry-draft.md](registry-draft.md) |
 | Quick thresholds, `--export-registry` byte identity | [quick-verify-normative.md](quick-verify-normative.md) |
@@ -67,8 +67,8 @@ The L0 **`scripts/templates/integrate-activation-shell.bash`** template runs **`
 |------|------|--------|-----------------------|
 | `0` (`pack_ready`) | **`activate`** | **`agentskeptic_activate_result`** envelope | Three **`AGENTSKEPTIC_ACTIVATION …`** machine lines (**no** trailing human stderr on this path today) |
 | `0` (`pack_ready`) | **`bootstrap`** | **`agentskeptic_bootstrap_result`** envelope | Empty |
-| `1`–`2` (`verify_terminal`) | **`activate`** | Outcome Certificate v1 (**same stdout** semantics as **`verify`**) | Machine **`AGENTSKEPTIC_ACTIVATION`** block first, **`proof/`** subtree present, **then** the normal human truth report + footer |
-| `1`–`2` (`verify_terminal`) | **`bootstrap`** | Outcome Certificate v1 (**same stdout** semantics as **`verify`**) | Human truth report + footer **only** (no proof subtree) |
+| `1`–`2` (`verify_terminal`) | **`activate`** | Outcome Certificate v2 (**same stdout** semantics as **`verify`**) | Machine **`AGENTSKEPTIC_ACTIVATION`** block first, **`proof/`** subtree present, **then** the normal human truth report + footer |
+| `1`–`2` (`verify_terminal`) | **`bootstrap`** | Outcome Certificate v2 (**same stdout** semantics as **`verify`**) | Human truth report + footer **only** (no proof subtree) |
 | `2b` / `3` (bootstrap CLI operational) | **`activate`** | Empty (or operational envelope policy per code) | For quick-path blocks: **`AGENTSKEPTIC_ACTIVATION stage=provisional_infer trust_terminal=blocked`** + JSON **`cliErrorEnvelope`** when applicable |
 | `2b` / `3` (bootstrap CLI operational) | **`bootstrap`** | per legacy table | **`cliErrorEnvelope`** |
 

@@ -9,8 +9,8 @@ import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 
-/** v3.7.0 tarball anchor; slack allows modest publishable growth (e.g. bundled witness connectors) without moving the entry-count baseline. */
-const TAR_PACK_SLACK_VS_V37 = 0.035;
+/** v3.7.0 tarball anchor; slack allows modest publishable growth (schemas / OpenAPI / bundled surfaces on majors); entry-count invariant stays vs same baseline. */
+const TAR_PACK_SLACK_VS_V37 = 0.055;
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const root = join(__dirname, "..");
 const baselinePath = join(root, "test", "fixtures", "npm-footprint", "v3.7.0-baseline.json");

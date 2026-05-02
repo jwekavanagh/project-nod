@@ -15,8 +15,8 @@ Written only when **`--write-decision-bundle <dir>`** is passed (opt-in).
 
 | File | Role |
 |------|------|
-| `outcome-certificate.json` | A1 — [`OutcomeCertificateV1`](../schemas/outcome-certificate-v1.schema.json) |
-| `exit.json` | A2 — exit code convention `outcome_certificate_v1` |
+| `outcome-certificate.json` | A1 — [`OutcomeCertificateV2`](../schemas/outcome-certificate-v2.schema.json) |
+| `exit.json` | A2 — exit code convention `outcome_certificate_v2` (CLI stdout certificate schema generation) |
 | `human-layer.json` | A3 — human report text or `suppressed` when `--no-human-report` |
 | `attestation.json` | Optional A4 — [`decision-evidence-attestation-v1`](../schemas/decision-evidence-attestation-v1.schema.json) via `--decision-attestation` |
 | `next-action.json` | Optional A5 — [`decision-evidence-next-action-v1`](../schemas/decision-evidence-next-action-v1.schema.json) via `--decision-next-action` |

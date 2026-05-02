@@ -64,9 +64,9 @@
     },
     "human_blocker_lines": {
       "type": "array",
-      "minItems": 6,
-      "maxItems": 6,
-      "items": { "type": "string", "maxLength": 4096 }
+      "minItems": 1,
+      "maxItems": 48,
+      "items": { "type": "string", "maxLength": 8192 }
     }
   }
 }

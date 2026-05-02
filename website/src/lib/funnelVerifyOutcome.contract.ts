@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { evidenceGapPrimarySchema } from "./evidenceGapPrimaryZod";
 
 const activationStageSchema = z.object({
   id: z.enum(["ingest_input", "provisional_infer", "contract_verify", "proof_export"]),
@@ -19,10 +20,11 @@ const activationWireSchema = z.object({
 
 export const verifyOutcomeRequestSchema = z
   .object({
-    schema_version: z.literal(2),
+    schema_version: z.literal(3),
     run_id: z.string().min(1).max(256),
     workflow_id: z.string().min(1).max(512),
     trust_decision: z.enum(["safe", "unsafe", "unknown"]),
+    evidence_gap_primary: evidenceGapPrimarySchema,
     reason_codes: z
       .array(z.string().min(1).max(64))
       .max(8)

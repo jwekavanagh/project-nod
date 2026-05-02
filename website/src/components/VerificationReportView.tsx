@@ -9,7 +9,7 @@ type Props = {
 };
 
 function machineJsonFromPayload(payload: PublicReportEnvelope): string {
-  if ("schemaVersion" in payload && payload.schemaVersion === 2) {
+  if ("schemaVersion" in payload && payload.schemaVersion === 3) {
     return JSON.stringify(payload.certificate, null, 2);
   }
   if ("kind" in payload && payload.kind === "workflow") {
@@ -22,7 +22,7 @@ function machineJsonFromPayload(payload: PublicReportEnvelope): string {
 }
 
 function kindLabel(payload: PublicReportEnvelope): string {
-  if ("schemaVersion" in payload && payload.schemaVersion === 2) return "outcome_certificate_v2";
+  if ("schemaVersion" in payload && payload.schemaVersion === 3) return "outcome_certificate";
   if ("kind" in payload) return payload.kind;
   return "unknown";
 }
@@ -31,9 +31,9 @@ export function VerificationReportView({ humanText, payload, variant }: Props) {
   const machineJson = machineJsonFromPayload(payload);
   const kind = kindLabel(payload);
   const langPanel =
-    "schemaVersion" in payload && payload.schemaVersion === 2
+    "schemaVersion" in payload && payload.schemaVersion === 3
       ? maybeLangGraphPanelFromCertificate(
-          (payload as { schemaVersion: 2; certificate: unknown }).certificate,
+          (payload as { schemaVersion: 3; certificate: unknown }).certificate,
         )
       : null;
   if (variant === "embed") {

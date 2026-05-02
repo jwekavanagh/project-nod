@@ -48,7 +48,7 @@ describe("DecisionGate.assertSafeForIrreversibleAction", () => {
     await expect(gate.assertSafeForIrreversibleAction()).rejects.toSatisfy((e: unknown) => {
       if (!(e instanceof TrustDecisionBlockedError)) return false;
       if (e.trustDecision !== "unsafe") return false;
-      return e.message.split("\n").length === 6;
+      return e.message.includes("=== evidence_completeness ===");
     });
   });
 });

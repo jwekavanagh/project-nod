@@ -107,7 +107,7 @@ export async function GET(req: NextRequest) {
   let certificateValid = false;
   const rawCert = latestEvidenceRows[0]?.certificateJson;
   if (rawCert !== null && rawCert !== undefined && typeof rawCert === "object") {
-    const validateCert = loadSchemaValidator("outcome-certificate-v1");
+    const validateCert = loadSchemaValidator("outcome-certificate-v2");
     if (validateCert(rawCert)) {
       certificateValid = true;
       certificate = rawCert as OutcomeCertificateV1;

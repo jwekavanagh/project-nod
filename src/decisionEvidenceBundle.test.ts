@@ -2,6 +2,11 @@ import { describe, expect, it } from "vitest";
 import { mkdirSync, readFileSync, rmSync } from "node:fs";
 import path from "node:path";
 import type { OutcomeCertificateV1 } from "./outcomeCertificate.js";
+import { minimalEvidenceCompletenessFixture } from "./evidenceCompleteness.js";
+import {
+  EVIDENCE_COMPLETENESS_BEGIN,
+  formatEvidenceCompletenessHuman,
+} from "./formatEvidenceCompletenessHuman.js";
 import { writeDecisionEvidenceBundle } from "./decisionEvidenceBundle/writeDecisionEvidenceBundle.js";
 import {
   formatValidationStdout,
@@ -9,17 +14,26 @@ import {
 } from "./decisionEvidenceBundle/validateDecisionEvidenceBundle.js";
 
 function minimalCertificate(stateRelation: OutcomeCertificateV1["stateRelation"]): OutcomeCertificateV1 {
+  const ec = minimalEvidenceCompletenessFixture(
+    stateRelation === "matches_expectations" ?
+      { blockerCategory: "none" }
+    : { blockerCategory: "state_mismatch" },
+  );
+  const rl = stateRelation === "matches_expectations" ? "permitted" : ("prohibited" as const);
+  const hr = `${"human"}\n\n${formatEvidenceCompletenessHuman(ec, { runKind: "contract_sql", highStakesReliance: rl })}`;
+  if (!hr.includes(EVIDENCE_COMPLETENESS_BEGIN)) throw new Error("fixture humanReport missing anchors");
   return {
-    schemaVersion: 1,
+    schemaVersion: 2,
     workflowId: "wf_test",
     runKind: "contract_sql",
     stateRelation,
-    highStakesReliance: stateRelation === "matches_expectations" ? "permitted" : "prohibited",
+    highStakesReliance: rl,
     relianceRationale: "r",
     intentSummary: "s",
     explanation: { headline: "h", details: [] },
+    evidenceCompleteness: ec,
     steps: [],
-    humanReport: "human",
+    humanReport: hr,
   };
 }
 

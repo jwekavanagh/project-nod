@@ -26,6 +26,7 @@ export {
 } from "./outcomeCertificate.js";
 export type {
   OutcomeCertificateV1,
+  OutcomeCertificateV2,
   OutcomeCertificateRunKind,
   OutcomeCertificateStateRelation,
   OutcomeCertificateHighStakesReliance,
@@ -50,7 +51,7 @@ export type {
 } from "./langGraphCheckpointTrustGate.js";
 export { trustDecisionFromCertificate } from "./trustDecision.js";
 export type { TrustDecision } from "./trustDecision.js";
-export { formatDecisionBlockerForHumans, firstProblemStepForCertificate } from "./decisionBlocker.js";
+export { firstProblemStepForCertificate } from "./decisionBlocker.js";
 export { TrustDecisionBlockedError } from "./trustDecisionBlockedError.js";
 export type {
   TrustDecisionRecordV1,

@@ -330,7 +330,7 @@ describe("operational success: no stderr envelope (Module A negative)", () => {
     expect(r.status).toBe(0);
     expect(r.stderr).toBe("");
     const parsed = JSON.parse(r.stdout.trim()) as Record<string, unknown>;
-    const validateResult = loadSchemaValidator("outcome-certificate-v1");
+    const validateResult = loadSchemaValidator("outcome-certificate-v2");
     expect(validateResult(parsed)).toBe(true);
     expect(parsed.workflowId).toBe("wf_complete");
     expect(parsed.stateRelation).toBe("matches_expectations");

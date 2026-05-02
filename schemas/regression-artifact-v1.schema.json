@@ -82,7 +82,7 @@
             "enum": ["contract_sql", "contract_sql_langgraph_checkpoint_trust"]
           },
           "certificateCanonicalDigest": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
-          "certificate": { "$ref": "https://agentskeptic.com/schemas/outcome-certificate-v1.schema.json" }
+          "certificate": { "$ref": "https://agentskeptic.com/schemas/outcome-certificate-v2.schema.json" }
         }
       }
     },

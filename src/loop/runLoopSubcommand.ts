@@ -5,7 +5,6 @@ import { runBatchVerifyToValidatedCertificate } from "../standardVerifyWorkflowC
 import { verifyWorkflow } from "../pipeline.js";
 import { TruthLayerError } from "../truthLayerError.js";
 import { cliErrorEnvelope, CLI_OPERATIONAL_CODES, formatOperationalMessage } from "../failureCatalog.js";
-import { buildFailureHint } from "./failureHints.js";
 import { renderLoopOperationalUnknown, renderLoopTerminalContract } from "./loopOutput.js";
 import { latestCompatiblePriorRun, storeLoopRun } from "./localRunStore.js";
 import { normalizeToEmittedWorkflowResult } from "../workflowResultNormalize.js";
@@ -93,7 +92,6 @@ export async function runLoopSubcommand(args: string[]): Promise<void> {
       certificate,
       runRef: runRef(parsed.workflowId, current.runDir, current.capturedAt),
       compare,
-      failureHint: buildFailureHint(certificate),
     });
     process.stdout.write(`${output}\n`);
 

@@ -1,16 +1,23 @@
 import { describe, expect, it } from "vitest";
 import type { OutcomeCertificateV1 } from "./outcomeCertificate.js";
-import { canonicalCertificateSha256, materialTruthProjectionV1, materialTruthSha256 } from "./governanceEvidence.js";
+import { minimalEvidenceCompletenessFixture } from "./evidenceCompleteness.js";
+import {
+  canonicalCertificateSha256,
+  materialTruthProjectionFromCertificate,
+  materialTruthSha256,
+} from "./governanceEvidence.js";
 
 function fixture(overrides?: Partial<OutcomeCertificateV1>): OutcomeCertificateV1 {
+  const ec = minimalEvidenceCompletenessFixture({ blockerCategory: "none" });
   return {
-    schemaVersion: 1,
+    schemaVersion: 2,
     workflowId: "wf_test",
     runKind: "contract_sql",
     stateRelation: "matches_expectations",
     highStakesReliance: "permitted",
     relianceRationale: "rationale",
     intentSummary: "summary",
+    evidenceCompleteness: ec,
     explanation: {
       headline: "headline",
       details: [
@@ -33,7 +40,7 @@ function fixture(overrides?: Partial<OutcomeCertificateV1>): OutcomeCertificateV
         observedOutcome: "observed 1",
       },
     ],
-    humanReport: "human body",
+    humanReport: "human body\n\n=== evidence_completeness ===\nstub\n=== end evidence_completeness ===",
     checkpointVerdicts: [
       {
         checkpointKey: "cp_b",
@@ -54,8 +61,9 @@ function fixture(overrides?: Partial<OutcomeCertificateV1>): OutcomeCertificateV
 
 describe("governanceEvidence", () => {
   it("builds stable, normalized material truth projection", () => {
-    const p = materialTruthProjectionV1(fixture());
+    const p = materialTruthProjectionFromCertificate(fixture());
     expect(p.reasonCodes).toEqual(["CODE_A", "CODE_B"]);
+    expect(p.evidenceGapPrimary).toBe("none");
     expect(p.steps.map((s) => s.seq)).toEqual([1, 2]);
     expect(p.steps[0]?.toolId).toBe("");
     expect(p.checkpointVerdicts.map((c) => c.checkpointKey)).toEqual(["cp_a", "cp_b"]);
@@ -74,6 +82,10 @@ describe("governanceEvidence", () => {
           { code: "CODE_A", message: "different message a" },
         ],
       },
+      evidenceCompleteness: minimalEvidenceCompletenessFixture({
+        blockerCategory: "none",
+        unverifiedClaims: ["other"],
+      }),
     });
     expect(materialTruthSha256(a)).toBe(materialTruthSha256(b));
     expect(canonicalCertificateSha256(a)).not.toBe(canonicalCertificateSha256(b));

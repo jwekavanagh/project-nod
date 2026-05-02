@@ -4,10 +4,11 @@ import { db } from "@/db/client";
 import { enforcementBaselines, enforcementEvents, governanceEvidence } from "@/db/schema";
 
 type OutcomeCertificate = {
-  schemaVersion: 1;
+  schemaVersion: 2;
   workflowId: string;
   runKind: "contract_sql" | "contract_sql_langgraph_checkpoint_trust" | "quick_preview";
   stateRelation: "matches_expectations" | "does_not_match" | "not_established";
+  evidenceCompleteness: { schemaVersion: 1; blockerCategory: string };
   explanation: { details: Array<{ code: string; message: string }> };
   steps: Array<{
     seq: number;
@@ -20,10 +21,10 @@ type OutcomeCertificate = {
 };
 
 export type EnforcementEvidenceInput = {
-  schema_version: 2;
+  schema_version: 3;
   run_id: string;
   workflow_id: string;
-  outcome_certificate_v1: OutcomeCertificate;
+  outcome_certificate: OutcomeCertificate;
   material_truth_sha256: string;
   certificate_sha256: string;
 };
@@ -46,7 +47,7 @@ function sha256Hex(input: string): string {
   return createHash("sha256").update(input, "utf8").digest("hex");
 }
 
-function materialTruthProjectionV1(c: OutcomeCertificate): Record<string, unknown> {
+function materialTruthProjectionFromCertificate(c: OutcomeCertificate): Record<string, unknown> {
   const reasonCodes = [...new Set(c.explanation.details.map((d) => d.code))].sort((a, b) => a.localeCompare(b));
   const steps = [...c.steps]
     .map((s) => ({
@@ -65,11 +66,12 @@ function materialTruthProjectionV1(c: OutcomeCertificate): Record<string, unknow
     }))
     .sort((a, b) => a.checkpointKey.localeCompare(b.checkpointKey));
   return {
-    schemaVersion: 1,
+    schemaVersion: 2,
     workflowId: c.workflowId,
     runKind: c.runKind,
     stateRelation: c.stateRelation,
     reasonCodes,
+    evidenceGapPrimary: c.evidenceCompleteness.blockerCategory,
     steps,
     checkpointVerdicts,
   };
@@ -83,9 +85,9 @@ export function parseGovernanceEvidenceInput(body: unknown): EnforcementEvidence
   const workflow_id = typeof b.workflow_id === "string" ? b.workflow_id.trim() : "";
   const material_truth_sha256 = typeof b.material_truth_sha256 === "string" ? b.material_truth_sha256.trim() : "";
   const certificate_sha256 = typeof b.certificate_sha256 === "string" ? b.certificate_sha256.trim() : "";
-  const oc = b.outcome_certificate_v1;
+  const oc = b.outcome_certificate;
   if (
-    schema_version !== 2 ||
+    schema_version !== 3 ||
     !run_id ||
     !workflow_id ||
     !material_truth_sha256 ||
@@ -96,18 +98,21 @@ export function parseGovernanceEvidenceInput(body: unknown): EnforcementEvidence
     return null;
   }
   const cert = oc as OutcomeCertificate;
+  const ec = cert.evidenceCompleteness as { schemaVersion?: unknown; blockerCategory?: unknown } | undefined;
   if (
-    cert.schemaVersion !== 1 ||
+    cert.schemaVersion !== 2 ||
     typeof cert.workflowId !== "string" ||
     typeof cert.runKind !== "string" ||
     typeof cert.stateRelation !== "string" ||
     !Array.isArray(cert.steps) ||
     !cert.explanation ||
-    !Array.isArray(cert.explanation.details)
+    !Array.isArray(cert.explanation.details) ||
+    ec?.schemaVersion !== 1 ||
+    typeof ec?.blockerCategory !== "string"
   ) {
     return null;
   }
-  return { schema_version: 2, run_id, workflow_id, outcome_certificate_v1: cert, material_truth_sha256, certificate_sha256 };
+  return { schema_version: 3, run_id, workflow_id, outcome_certificate: cert, material_truth_sha256, certificate_sha256 };
 }
 
 export function parseAcceptEvidenceInput(body: unknown): EnforcementAcceptEvidenceInput | null {
@@ -131,8 +136,8 @@ export function verifyEvidenceHashes(input: EnforcementEvidenceInput): {
   materialTruthSha256: string;
   materialTruth: Record<string, unknown>;
 } | null {
-  const certificateSha256 = sha256Hex(stableStringify(input.outcome_certificate_v1));
-  const materialTruth = materialTruthProjectionV1(input.outcome_certificate_v1);
+  const certificateSha256 = sha256Hex(stableStringify(input.outcome_certificate));
+  const materialTruth = materialTruthProjectionFromCertificate(input.outcome_certificate);
   const materialTruthSha256 = sha256Hex(stableStringify(materialTruth));
   if (
     certificateSha256 !== input.certificate_sha256 ||

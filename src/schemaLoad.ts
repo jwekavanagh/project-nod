@@ -85,7 +85,10 @@ export type SchemaValidatorName =
   | "assurance-output-v1"
   | "public-verification-report-v1"
   | "public-verification-report-v2"
+  | "public-verification-report-v3"
+  | "evidence-completeness-v1"
   | "outcome-certificate-v1"
+  | "outcome-certificate-v2"
   | "compare-run-manifest-v1"
   | "regression-artifact-v1"
   | "bootstrap-pack-input-v1"
@@ -95,6 +98,7 @@ export type SchemaValidatorName =
   | "trust-decision-record-v1"
   | "trust-certificate-snapshot-v1"
   | "material-truth-v1"
+  | "material-truth-v2"
   | "decision-evidence-bundle-manifest-v1"
   | "decision-evidence-human-layer-v1"
   | "decision-evidence-exit-v1"
@@ -181,7 +185,13 @@ export function loadSchemaValidator(name: SchemaValidatorName): ValidateFunction
       return compileSchemaFile(name, "registry-validation-result.schema.json");
     case "plan-validation-core":
       return compileSchemaFile(name, "plan-validation-core.schema.json");
+    case "evidence-completeness-v1":
+      return compileSchemaFile(name, "evidence-completeness-v1.schema.json");
+    case "outcome-certificate-v2":
+      compileSchemaFile("evidence-completeness-v1", "evidence-completeness-v1.schema.json");
+      return compileSchemaFile(name, "outcome-certificate-v2.schema.json");
     case "quick-verify-report":
+      compileSchemaFile("evidence-completeness-v1", "evidence-completeness-v1.schema.json");
       ensureWorkflowEmittedDependencies();
       return compileSchemaFile(name, "quick-verify-report.schema.json");
     case "tools-registry-export":
@@ -197,6 +207,7 @@ export function loadSchemaValidator(name: SchemaValidatorName): ValidateFunction
       return compileSchemaFile(name, "assurance-output-v1.schema.json");
     case "public-verification-report-v1":
       ensureWorkflowEmittedDependencies();
+      compileSchemaFile("evidence-completeness-v1", "evidence-completeness-v1.schema.json");
       compileSchemaFile("workflow-result", "workflow-result.schema.json");
       compileSchemaFile("quick-verify-report", "quick-verify-report.schema.json");
       return compileSchemaFile(name, "public-verification-report-v1.schema.json");
@@ -205,7 +216,8 @@ export function loadSchemaValidator(name: SchemaValidatorName): ValidateFunction
     case "compare-run-manifest-v1":
       return compileSchemaFile(name, "compare-run-manifest-v1.schema.json");
     case "regression-artifact-v1":
-      compileSchemaFile("outcome-certificate-v1", "outcome-certificate-v1.schema.json");
+      compileSchemaFile("evidence-completeness-v1", "evidence-completeness-v1.schema.json");
+      compileSchemaFile("outcome-certificate-v2", "outcome-certificate-v2.schema.json");
       ensureWorkflowTruthForWireRefs();
       compileSchemaFile("run-comparison-report", "run-comparison-report.schema.json");
       compileSchemaFile("execution-trace-view", "execution-trace-view.schema.json");
@@ -213,6 +225,10 @@ export function loadSchemaValidator(name: SchemaValidatorName): ValidateFunction
     case "public-verification-report-v2":
       compileSchemaFile("outcome-certificate-v1", "outcome-certificate-v1.schema.json");
       return compileSchemaFile(name, "public-verification-report-v2.schema.json");
+    case "public-verification-report-v3":
+      compileSchemaFile("evidence-completeness-v1", "evidence-completeness-v1.schema.json");
+      compileSchemaFile("outcome-certificate-v2", "outcome-certificate-v2.schema.json");
+      return compileSchemaFile(name, "public-verification-report-v3.schema.json");
     case "openai-function-tool-call-item-v1":
       return compileSchemaFile(name, "openai-function-tool-call-item-v1.schema.json");
     case "bootstrap-pack-input-v1":
@@ -229,6 +245,8 @@ export function loadSchemaValidator(name: SchemaValidatorName): ValidateFunction
       return compileSchemaFile(name, "trust-decision-record-v1.schema.json");
     case "material-truth-v1":
       return compileSchemaFile(name, "material-truth-v1.schema.json");
+    case "material-truth-v2":
+      return compileSchemaFile(name, "material-truth-v2.schema.json");
     case "decision-evidence-bundle-manifest-v1":
       return compileSchemaFile(name, "decision-evidence-bundle-manifest-v1.schema.json");
     case "decision-evidence-human-layer-v1":

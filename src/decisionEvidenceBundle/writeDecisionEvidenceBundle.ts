@@ -53,7 +53,7 @@ export function writeDecisionEvidenceBundle(options: WriteDecisionEvidenceBundle
   const resolved = path.resolve(options.outDir);
   mkdirSync(resolved, { recursive: true });
 
-  const validateCert = loadSchemaValidator("outcome-certificate-v1");
+  const validateCert = loadSchemaValidator("outcome-certificate-v2");
   if (!validateCert(options.certificate)) {
     throw new TruthLayerError(
       CLI_OPERATIONAL_CODES.INTERNAL_ERROR,
@@ -72,7 +72,7 @@ export function writeDecisionEvidenceBundle(options: WriteDecisionEvidenceBundle
   const exitPayload = {
     schemaVersion: 1 as const,
     exitCode: exitCodeFromOutcomeCertificate(options.certificate),
-    cliConvention: "outcome_certificate_v1" as const,
+    cliConvention: "outcome_certificate_v2" as const,
   };
   validateOptional("decision-evidence-exit-v1", "exit", exitPayload);
   const exitUtf8 = `${JSON.stringify(exitPayload)}\n`;

@@ -1,5 +1,6 @@
 import { createHash } from "node:crypto";
 import type { OutcomeCertificateV1 } from "./outcomeCertificate.js";
+import type { EvidenceCompletenessJson } from "./evidenceCompleteness.js";
 import { stableStringify } from "./jsonStableStringify.js";
 import { loadSchemaValidator } from "./schemaLoad.js";
 import { TruthLayerError } from "./truthLayerError.js";
@@ -19,21 +20,25 @@ type MaterialTruthCheckpointVerdict = {
   seqs: number[];
 };
 
-export type MaterialTruthV1 = {
-  schemaVersion: 1;
+export type MaterialTruthV2 = {
+  schemaVersion: 2;
   workflowId: string;
   runKind: OutcomeCertificateV1["runKind"];
   stateRelation: OutcomeCertificateV1["stateRelation"];
   reasonCodes: string[];
+  evidenceGapPrimary: EvidenceCompletenessJson["blockerCategory"];
   steps: MaterialTruthStep[];
   checkpointVerdicts: MaterialTruthCheckpointVerdict[];
 };
+
+/** @deprecated Prefer `MaterialTruthV2` / `materialTruthProjectionFromCertificate`. */
+export type MaterialTruthV1 = MaterialTruthV2;
 
 function sortedUniqueStrings(values: string[]): string[] {
   return [...new Set(values)].sort((a, b) => a.localeCompare(b));
 }
 
-function buildMaterialTruthProjectionV1(certificate: OutcomeCertificateV1): MaterialTruthV1 {
+function buildMaterialTruthProjectionFromCertificate(certificate: OutcomeCertificateV1): MaterialTruthV2 {
   const reasonCodes = sortedUniqueStrings(certificate.explanation.details.map((d) => d.code));
   const steps = [...certificate.steps]
     .map((s) => ({
@@ -51,16 +56,17 @@ function buildMaterialTruthProjectionV1(certificate: OutcomeCertificateV1): Mate
       seqs: [...new Set(v.seqs)].sort((a, b) => a - b),
     }))
     .sort((a, b) => a.checkpointKey.localeCompare(b.checkpointKey));
-  const out: MaterialTruthV1 = {
-    schemaVersion: 1,
+  const out: MaterialTruthV2 = {
+    schemaVersion: 2,
     workflowId: certificate.workflowId,
     runKind: certificate.runKind,
     stateRelation: certificate.stateRelation,
     reasonCodes,
+    evidenceGapPrimary: certificate.evidenceCompleteness.blockerCategory,
     steps,
     checkpointVerdicts,
   };
-  const validate = loadSchemaValidator("material-truth-v1");
+  const validate = loadSchemaValidator("material-truth-v2");
   if (!validate(out)) {
     throw new TruthLayerError(
       CLI_OPERATIONAL_CODES.WORKFLOW_RESULT_SCHEMA_INVALID,
@@ -78,10 +84,15 @@ export function canonicalCertificateSha256(certificate: OutcomeCertificateV1): s
   return sha256HexUtf8(stableStringify(certificate));
 }
 
-export function materialTruthProjectionV1(certificate: OutcomeCertificateV1): MaterialTruthV1 {
-  return buildMaterialTruthProjectionV1(certificate);
+export function materialTruthProjectionFromCertificate(certificate: OutcomeCertificateV1): MaterialTruthV2 {
+  return buildMaterialTruthProjectionFromCertificate(certificate);
+}
+
+/** @deprecated Use `materialTruthProjectionFromCertificate`. */
+export function materialTruthProjectionV1(certificate: OutcomeCertificateV1): MaterialTruthV2 {
+  return buildMaterialTruthProjectionFromCertificate(certificate);
 }
 
 export function materialTruthSha256(certificate: OutcomeCertificateV1): string {
-  return sha256HexUtf8(stableStringify(buildMaterialTruthProjectionV1(certificate)));
+  return sha256HexUtf8(stableStringify(buildMaterialTruthProjectionFromCertificate(certificate)));
 }

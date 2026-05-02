@@ -84,10 +84,11 @@ describe.skipIf(!hasDatabaseUrl)("funnel north star — verify-outcome", () => {
 
   function beaconBody(runId: string) {
     return {
-      schema_version: 2 as const,
+      schema_version: 3 as const,
       run_id: runId,
       workflow_id: "wf_north_star",
       trust_decision: "safe" as const,
+      evidence_gap_primary: "none" as const,
       reason_codes: [] as string[],
       terminal_status: "complete" as const,
       workload_class: "non_bundled" as const,

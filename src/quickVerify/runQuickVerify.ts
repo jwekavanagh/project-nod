@@ -30,9 +30,10 @@ import { buildQuickUnitReconciliation } from "../reconciliationPresentation.js";
 import { buildSyntheticRowParams } from "./buildSyntheticRowParams.js";
 import { flatKeyToJsonPointer } from "./flatKeyToJsonPointer.js";
 import { normalizedSqlRowRequestFingerprint } from "./verificationRequestFingerprint.js";
+import { buildEvidenceCompletenessFromQuickReport, type EvidenceCompletenessJson } from "../evidenceCompleteness.js";
 
 export type QuickVerifyReport = {
-  schemaVersion: 4;
+  schemaVersion: 5;
   verdict: "pass" | "fail" | "uncertain";
   summary: string;
   verificationMode: "inferred";
@@ -41,6 +42,7 @@ export type QuickVerifyReport = {
   ingest: { reasonCodes: string[]; malformedLineCount: number };
   ingestWarnings?: Array<{ code: string; actionKey?: string }>;
   runHeaderReasonCodes?: string[];
+  evidenceCompleteness: EvidenceCompletenessJson;
   units: Array<{
     unitId: string;
     kind: "row" | "related_exists";
@@ -147,14 +149,21 @@ export async function runQuickVerify(opts: RunQuickVerifyOptions): Promise<RunQu
 
   if (ingest.inputTooLarge) {
     const units: QuickVerifyReport["units"] = [];
+    const verdict = "uncertain" as const;
+    const evidenceCompleteness = buildEvidenceCompletenessFromQuickReport({
+      verdict,
+      ingest: ingestBlock,
+      units: [],
+    });
     const report: QuickVerifyReport = {
-      schemaVersion: 4,
-      verdict: "uncertain",
+      schemaVersion: 5,
+      verdict,
       summary: buildSummary("uncertain", units, ingestBlock),
       verificationMode: "inferred",
       scope: { ...DEFAULT_QUICK_VERIFY_SCOPE },
       productTruth: buildQuickVerifyProductTruth(false),
       ingest: ingestBlock,
+      evidenceCompleteness,
       units,
       exportableRegistry: { tools: [] },
     };
@@ -480,8 +489,20 @@ export async function runQuickVerify(opts: RunQuickVerifyOptions): Promise<RunQu
     const anyNotContractEligible = units.some((u) => !u.contractEligible);
     const contractReplayPartialCoverage = exportTools.length > 0 && anyNotContractEligible;
 
+    const evidenceCompleteness = buildEvidenceCompletenessFromQuickReport({
+      verdict,
+      ingest: ingestBlock,
+      units: units.map((u) => ({
+        unitId: u.unitId,
+        verdict: u.verdict,
+        reasonCodes: u.reasonCodes,
+        sourceAction: u.sourceAction,
+        reconciliation: u.reconciliation,
+        verification: u.verification,
+      })),
+    });
     const report: QuickVerifyReport = {
-      schemaVersion: 4,
+      schemaVersion: 5,
       verdict,
       summary: buildSummary(verdict, units, ingestBlock),
       verificationMode: "inferred",
@@ -490,6 +511,7 @@ export async function runQuickVerify(opts: RunQuickVerifyOptions): Promise<RunQu
       ingest: ingestBlock,
       ...(ingestWarnings ? { ingestWarnings } : {}),
       ...(runHeaderReasonCodes.length ? { runHeaderReasonCodes } : {}),
+      evidenceCompleteness,
       units,
       exportableRegistry: { tools: exportTools },
     };

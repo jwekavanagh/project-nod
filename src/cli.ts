@@ -224,7 +224,7 @@ Provide exactly one of --db or --postgres-url.
 
 Optional output:
   --no-human-report   For verdict exits 0–2, do not print certificate.humanReport or distribution footer to stderr (stderr empty). stdout Outcome Certificate JSON is unchanged. Exit 3 stderr is unchanged (single-line JSON envelope).
-  --share-report-origin <https://host>   After successful verification, POST a shareable report (v2 envelope) to that origin (https only, origin with no path), then print human report + footer to stderr and Outcome Certificate JSON to stdout. On POST failure: exit 3, stdout empty, stderr single-line JSON envelope (code SHARE_REPORT_FAILED). See docs/shareable-verification-reports.md.
+  --share-report-origin <https://host>   After successful verification, POST a shareable report (v3 envelope) to that origin (https only, origin with no path), then print human report + footer to stderr and Outcome Certificate JSON to stdout. On POST failure: exit 3, stdout empty, stderr single-line JSON envelope (code SHARE_REPORT_FAILED). See docs/shareable-verification-reports.md.
 
 Exit codes:
   0  workflow status complete

@@ -92,7 +92,7 @@ function appendEnforcementEventTx(tx: DbTx, input: {
   });
 }
 
-function classificationFromCert(cert: EnforcementEvidenceInput["outcome_certificate_v1"]): {
+function classificationFromCert(cert: EnforcementEvidenceInput["outcome_certificate"]): {
   classificationCode: string;
   recommendedAction: string;
   automationSafe: boolean;
@@ -175,7 +175,7 @@ async function persistTrustBlockedSideEffects(
   input: {
     apiKeyId: string;
     userId: string;
-    certificate: EnforcementEvidenceInput["outcome_certificate_v1"];
+    certificate: EnforcementEvidenceInput["outcome_certificate"];
     decisionReasonCode: string;
     attemptId: string;
   },
@@ -250,7 +250,7 @@ export async function executeFsmCheck(params: {
       baselineNeedsRebaseline: baselineRow?.needsRebaseline ?? false,
       observedMaterialTruthSha256: verified.materialTruthSha256,
     });
-    const cls = classificationFromCert(body.outcome_certificate_v1);
+    const cls = classificationFromCert(body.outcome_certificate);
     const attemptId = randomUUID();
     const fromState = lifeRowStart.currentState as LifecycleState;
     const lifecycleAfter = evalResult.lifecycleAfter;
@@ -266,7 +266,7 @@ export async function executeFsmCheck(params: {
       ? await persistTrustBlockedSideEffects(tx, {
           apiKeyId: principal.keyId,
           userId: principal.userId,
-          certificate: body.outcome_certificate_v1,
+          certificate: body.outcome_certificate,
           decisionReasonCode: evalResult.decisionReasonCode,
           attemptId,
         })
@@ -307,7 +307,7 @@ export async function executeFsmCheck(params: {
         metadata: {
           attempt_id: attemptId,
           decision_reason_code: evalResult.decisionReasonCode,
-          run_kind: body.outcome_certificate_v1.runKind,
+          run_kind: body.outcome_certificate.runKind,
         },
       })
       .returning({ id: enforcementFsmTransition.id });
@@ -346,7 +346,7 @@ export async function executeFsmCheck(params: {
       evidenceId,
       metadata: {
         certificate_sha256: verified.certificateSha256,
-        run_kind: body.outcome_certificate_v1.runKind,
+        run_kind: body.outcome_certificate.runKind,
         attempt_id: attemptId,
       },
     });
@@ -412,7 +412,7 @@ export async function executeFsmCreateBaseline(params: {
 
     const verdict = evaluateCreateBaseline({
       lifecycleBefore: lifeRow.currentState as LifecycleState,
-      runKind: body.outcome_certificate_v1.runKind,
+      runKind: body.outcome_certificate.runKind,
     });
     if (!verdict.ok) {
       return {
@@ -506,7 +506,7 @@ export async function executeFsmCreateBaseline(params: {
       evidenceId,
       metadata: {
         certificate_sha256: verified.certificateSha256,
-        run_kind: body.outcome_certificate_v1.runKind,
+        run_kind: body.outcome_certificate.runKind,
         attempt_id: attemptId,
       },
     });
@@ -554,7 +554,7 @@ export async function executeFsmAcceptDrift(params: {
       requestLifecycleVersion: body.lifecycle_state_version,
       requestExpectedProjectionHash: body.expected_projection_hash,
       pendingAcceptProjectionHash: lifeRow.pendingAcceptProjectionHash,
-      runKind: body.outcome_certificate_v1.runKind,
+      runKind: body.outcome_certificate.runKind,
     });
     if (!acceptEv.ok) {
       return {
@@ -599,7 +599,7 @@ export async function executeFsmAcceptDrift(params: {
         evidenceId,
         metadata: {
           certificate_sha256: verified.certificateSha256,
-          run_kind: body.outcome_certificate_v1.runKind,
+          run_kind: body.outcome_certificate.runKind,
         },
       })
       .returning({ id: enforcementFsmTransition.id });
@@ -635,7 +635,7 @@ export async function executeFsmAcceptDrift(params: {
       evidenceId,
       metadata: {
         certificate_sha256: verified.certificateSha256,
-        run_kind: body.outcome_certificate_v1.runKind,
+        run_kind: body.outcome_certificate.runKind,
       },
     });
 

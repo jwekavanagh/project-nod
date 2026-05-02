@@ -60,7 +60,9 @@ try {
   }
   const batch = JSON.parse(r2.stdout.trim());
   const isOutcomeCert =
-    batch.schemaVersion === 1 &&
+    typeof batch.schemaVersion === "number" &&
+    batch.schemaVersion >= 1 &&
+    batch.schemaVersion <= 2 &&
     typeof batch.stateRelation === "string" &&
     Object.prototype.hasOwnProperty.call(batch, "humanReport");
   if (isOutcomeCert) {

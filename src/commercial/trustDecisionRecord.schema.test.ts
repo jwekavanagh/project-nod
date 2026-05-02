@@ -1,10 +1,11 @@
 import { describe, expect, it } from "vitest";
 import { loadSchemaValidator } from "../schemaLoad.js";
 import type { OutcomeCertificateV1 } from "../outcomeCertificate.js";
+import { minimalEvidenceCompletenessFixture } from "../evidenceCompleteness.js";
 import { buildTrustDecisionRecordV1 } from "./trustDecisionRecord.js";
 
 const minimalCertNoSafe: OutcomeCertificateV1 = {
-  schemaVersion: 1,
+  schemaVersion: 2,
   workflowId: "wf_x",
   runKind: "contract_sql",
   stateRelation: "does_not_match",
@@ -12,6 +13,7 @@ const minimalCertNoSafe: OutcomeCertificateV1 = {
   relianceRationale: "x",
   intentSummary: "x",
   explanation: { headline: "h", details: [{ code: "C", message: "m" }] },
+  evidenceCompleteness: minimalEvidenceCompletenessFixture({ blockerCategory: "state_mismatch" }),
   steps: [
     {
       seq: 0,
@@ -21,7 +23,7 @@ const minimalCertNoSafe: OutcomeCertificateV1 = {
       observedOutcome: "o",
     },
   ],
-  humanReport: "r",
+  humanReport: "r\n\n=== evidence_completeness ===\nx\n=== end evidence_completeness ===",
 };
 
 describe("trust decision record ingest shape", () => {

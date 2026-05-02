@@ -192,7 +192,7 @@ function main() {
   }
 
   const outLine = (verify.stdout || "").trim().split(/\r?\n/).filter(Boolean).pop();
-  /** Batch verify stdout: Outcome Certificate v1 (current) or legacy one-line WorkflowResult. */
+  /** Batch verify stdout: Outcome Certificate v1/v2 or legacy one-line WorkflowResult. */
   let verifyStdoutOk = false;
   if (outLine?.includes('"status":"complete"')) {
     verifyStdoutOk = true;
@@ -202,7 +202,8 @@ function main() {
       if (
         o &&
         typeof o === "object" &&
-        o.schemaVersion === 1 &&
+        typeof o.schemaVersion === "number" &&
+        o.schemaVersion >= 1 &&
         o.stateRelation === "matches_expectations" &&
         o.workflowId === workflowId
       ) {
@@ -215,7 +216,7 @@ function main() {
   if (!verifyStdoutOk) {
     fail(
       "VERIFY_STDOUT",
-      "expected terminal Outcome Certificate v1 (schemaVersion 1, stateRelation matches_expectations, matching workflowId) or legacy WorkflowResult with status complete on stdout",
+      "expected terminal Outcome Certificate (schemaVersion >= 1, stateRelation matches_expectations, matching workflowId) or legacy WorkflowResult with status complete on stdout",
       checklistBase,
     );
   }

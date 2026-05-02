@@ -20,7 +20,7 @@ When your graph finishes with a green step list, you still need a read-only chec
 
 AgentSkeptic ingests structured tool activity as NDJSON or JSON, derives expected row identity from your registry, and runs read-only SQL. A missing row surfaces as inconsistent with reason ROW_ABSENT even when the trace narrative looked successful. Use this pattern after LangGraph runs, before you treat outcomes as safe for customers or downstream automation.
 
-Start from the bundled demo contrast (wf_complete vs wf_missing), then wire your own tool IDs and tables. First-run on your database is documented at /integrate; contract mode with a registry is the audit-grade path when you need explicit per-tool expectations rather than inferred checks from Quick Verify.
+Start from the bundled demo contrast (wf_complete vs wf_missing), then wire your own tool IDs and tables. First-run on your database is documented at /integrate; contract mode with a registry is the audit-grade path when you need explicit per-tool expectations rather than inferred checks from Quick Verify. Contract Outcome Certificates (schemaVersion 2) include evidenceCompleteness so operators can see mismatches versus setup blockers in one JSON object.
 
 Operational teams often discover this gap only after a silent failure: the ticket never moved, the contact never landed, or analytics disagrees with CRM. Running verification as a gate catches that class before release trains or compliance sign-off, without pretending the trace proves causality.
 

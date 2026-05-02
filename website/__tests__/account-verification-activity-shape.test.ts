@@ -13,6 +13,7 @@ describe("shapeAccountPageActivityRows", () => {
         workflow_id: "wf_test",
         trust_decision: "safe",
         reason_codes: [],
+        evidence_gap_primary: "none",
       }),
     }) as const;
 

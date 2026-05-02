@@ -8,6 +8,6 @@
   "properties": {
     "schemaVersion": { "const": 1 },
     "exitCode": { "type": "integer", "minimum": 0, "maximum": 3 },
-    "cliConvention": { "const": "outcome_certificate_v1" }
+    "cliConvention": { "const": "outcome_certificate_v2" }
   }
 }

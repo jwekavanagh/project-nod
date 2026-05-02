@@ -8,9 +8,9 @@ import { cleanup, render, screen, within } from "@testing-library/react";
 import { afterEach, describe, expect, it } from "vitest";
 import { VerificationReportView } from "@/components/VerificationReportView";
 
-function asV2(cert: object) {
+function asV3(cert: object) {
   return {
-    schemaVersion: 2 as const,
+    schemaVersion: 3 as const,
     certificate: cert as Record<string, unknown>,
   };
 }
@@ -23,7 +23,7 @@ describe("LangGraph certificate panel (contract)", () => {
   it("embed shows langgraph-certificate-panel and checkpoint table for B", () => {
     const human = typeof b.humanReport === "string" ? b.humanReport : "";
     const { container } = render(
-      <VerificationReportView humanText={human} payload={asV2(b)} variant="embed" />,
+      <VerificationReportView humanText={human} payload={asV3(b)} variant="embed" />,
     );
     expect(maybeLangGraphPanelFromCertificate(b)).not.toBeNull();
     expect(container.querySelector('[data-testid="langgraph-certificate-panel"]')).toBeTruthy();
@@ -32,7 +32,7 @@ describe("LangGraph certificate panel (contract)", () => {
 
   it("A2 shows no checkpoint table (rollups line only)", () => {
     const human = typeof a2.humanReport === "string" ? a2.humanReport : "";
-    render(<VerificationReportView humanText={human} payload={asV2(a2)} variant="embed" />);
+    render(<VerificationReportView humanText={human} payload={asV3(a2)} variant="embed" />);
     const panel = screen.getByTestId("langgraph-certificate-panel");
     expect(within(panel).queryByTestId("langgraph-checkpoint-table")).toBeNull();
     expect(panel.textContent).toMatch(/No checkpoint rollups/);
@@ -41,7 +41,7 @@ describe("LangGraph certificate panel (contract)", () => {
   it("D shows checkpoint table", () => {
     const human = typeof d.humanReport === "string" ? d.humanReport : "";
     const { container } = render(
-      <VerificationReportView humanText={human} payload={asV2(d)} variant="embed" />,
+      <VerificationReportView humanText={human} payload={asV3(d)} variant="embed" />,
     );
     expect(container.querySelector('[data-testid="langgraph-checkpoint-table"]')).toBeTruthy();
   });

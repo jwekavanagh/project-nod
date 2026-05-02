@@ -17,9 +17,9 @@ const STORIES: { id: "a2" | "b" | "c" | "d"; label: string; cert: LctCert; testI
   { id: "d", label: "D Incomplete", cert: dCert, testId: "langgraph-lct-tab-d" },
 ];
 
-function toV2Envelope(cert: LctCert): PublicReportEnvelope {
+function toV3Envelope(cert: LctCert): PublicReportEnvelope {
   return {
-    schemaVersion: 2,
+    schemaVersion: 3,
     certificate: cert as unknown as Record<string, unknown>,
   };
 }
@@ -46,7 +46,7 @@ export function LangGraphCheckpointTrustStories() {
           </button>
         ))}
       </div>
-      <VerificationReportView humanText={humanText} payload={toV2Envelope(story.cert)} variant="embed" />
+      <VerificationReportView humanText={humanText} payload={toV3Envelope(story.cert)} variant="embed" />
     </div>
   );
 }

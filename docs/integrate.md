@@ -1,10 +1,18 @@
 # AgentSkeptic integrator guide (v2 SSOT)
 
-**Start here:** run **one truth check** — compare captured tool activity to your database with `agentskeptic check` (CLI) or `AgentSkeptic.check` (TypeScript), then read the **Outcome Certificate** (stdout / return value) and the **`truth_check_verdict`** line on stderr.
+**Start here:** run **`agentskeptic quick`** first for a cheap, preview-only read on captured activity when you can, then run **one contract truth check** — compare structured tool activity to your database with **`agentskeptic check`** (CLI) or **`AgentSkeptic.check`** (TypeScript). Read the **Outcome Certificate** on stdout (**v2**, includes **`evidenceCompleteness`**) and the **`truth_check_verdict`** line on stderr.
 
 Optional accelerator: [/integrate/guided](https://agentskeptic.com/integrate/guided) in the hosted app (this file is the raw integrator SSOT).
 
 Hosted trust capture (blocked-decision records + alerts) lives in **[trust-authority-layer.md](trust-authority-layer.md)**.
+
+## Zero-ceremony first pass (quick)
+
+**Goal:** answer “what happened on the wire?” before you invest in registry authoring.
+
+- Run **`agentskeptic quick`** on your capture (SQLite or Postgres) and read **`QuickVerifyReport`** stdout (**`schemaVersion` 5**). The same **`evidenceCompleteness`** shape appears on quick output and on contract certificates — use it for blocker category, missing actionable inputs, **`quickSignal`** (“did SQL verification run meaningfully?” vs ingest/mapping stalls), and **`nextActions`**.
+- Human stderr includes the quick anchor block plus the shared **`=== evidence_completeness ===`** section (see **`docs/outcome-certificate-integrator.md`**).
+- **Preview boundary:** `quick_preview` stays **`highStakesReliance: prohibited`**; graduate to contract **`check`** below when reviews need decision-grade permission.
 
 ## Truth check (primary)
 
@@ -172,7 +180,7 @@ On contract-terminated exits (**0 / 1 / 2**), **`activate`** writes **`${out}/pr
 
 Quick-path bootstrap failures (**quick ≠ pass**, no exportable tools, empty **`tool_calls`**, pack write failures) emit a single **`AGENTSKEPTIC_ACTIVATION stage=provisional_infer trust_terminal=blocked`** line for **`activate`**, then the existing bootstrap JSON **`stderr`** envelope (no **`proof/`**).
 
-HTTP contract (reference): [`schemas/openapi-commercial-v1.yaml`](../schemas/openapi-commercial-v1.yaml) — **`VerifyOutcomeRequestV2.activation`**.
+HTTP contract (reference): [`schemas/openapi-commercial-v1.yaml`](../schemas/openapi-commercial-v1.yaml) — **`VerifyOutcomeRequestV3.activation`** ( **`schema_version` 3**, required **`evidence_gap_primary`**).
 
 Disk manifest schema: [`schemas/activation-manifest-v1.schema.json`](../schemas/activation-manifest-v1.schema.json).
 

@@ -1,12 +1,12 @@
 {
   "name": "agentskeptic-web",
-  "version": "4.2.0",
+  "version": "5.0.0",
   "private": true,
   "engines": {
     "node": "22.x || 24.x"
   },
   "scripts": {
-    "codegen:buyer-truth": "tsx scripts/codegen-buyer-truth-surfaces.ts",
+    "codegen:buyer-truth": "node ../node_modules/tsx/dist/cli.mjs scripts/codegen-buyer-truth-surfaces.ts",
     "prebuild": "node ../scripts/sync-website-ssot.mjs",
     "dev": "next dev --turbopack",
     "build": "next build --webpack",

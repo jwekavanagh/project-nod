@@ -40,7 +40,7 @@ export async function runBatchVerifyToValidatedCertificate(
 ): Promise<{ workflowResult: WorkflowResult; certificate: OutcomeCertificateV1 }> {
   const workflowResult = await runBatchVerifyToValidatedResult(runVerify);
   const certificate = buildOutcomeCertificateFromWorkflowResult(workflowResult, "contract_sql");
-  const validateCert = loadSchemaValidator("outcome-certificate-v1");
+  const validateCert = loadSchemaValidator("outcome-certificate-v2");
   if (!validateCert(certificate)) {
     throw new TruthLayerError(
       CLI_OPERATIONAL_CODES.WORKFLOW_RESULT_SCHEMA_INVALID,
@@ -146,7 +146,7 @@ export async function runStandardVerifyWorkflowCliToTerminalResult(options: {
           JSON.stringify(validateWf.errors ?? []),
         );
       }
-      const validateCert = loadSchemaValidator("outcome-certificate-v1");
+      const validateCert = loadSchemaValidator("outcome-certificate-v2");
       if (!validateCert(certificate)) {
         throw new TruthLayerError(
           CLI_OPERATIONAL_CODES.WORKFLOW_RESULT_SCHEMA_INVALID,

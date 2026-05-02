@@ -57,7 +57,9 @@ export async function loadReliabilitySignalsForUser(userId: string): Promise<Rel
   const parsedRows: LicensedMeta[] = [];
   for (const r of rows) {
     const p = licensedVerifyOutcomeMetadataSchema.safeParse(r.metadata);
-    if (!p.success || p.data.schema_version !== 2) continue;
+    if (!p.success) continue;
+    const sv = p.data.schema_version;
+    if (sv !== 4 && sv !== 5) continue;
     parsedRows.push(p.data);
   }
 

@@ -13,7 +13,6 @@ export function renderLoopTerminalContract(input: {
   certificate: OutcomeCertificateV1;
   runRef: string;
   compare: { kind: "no_local_regression_anchor" } | { kind: "summary"; artifact: RegressionArtifactV1 };
-  failureHint?: { likelyCause: string; nextAction: string };
 }): string {
   const verdict = normalizedVerdict(input.certificate);
   const lines: string[] = [];
@@ -28,11 +27,10 @@ export function renderLoopTerminalContract(input: {
     );
   }
   if (verdict !== "TRUSTED") {
-    if (input.failureHint) {
-      lines.push(`NEXT_ACTION: ${input.failureHint.nextAction} Likely cause: ${input.failureHint.likelyCause}`);
-    } else {
-      lines.push("NEXT_ACTION: Fix the reported verification mismatch/incompleteness and rerun `agentskeptic loop`.");
-    }
+    const nextPrimary =
+      input.certificate.evidenceCompleteness.nextActions[0]?.text ??
+      "Fix the reported verification mismatch/incompleteness and rerun `agentskeptic loop`.";
+    lines.push(`NEXT_ACTION: ${nextPrimary}`);
   }
   lines.push(`RUN_REF: ${input.runRef}`);
   return lines.join("\n");

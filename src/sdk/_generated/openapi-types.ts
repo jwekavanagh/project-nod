@@ -171,7 +171,7 @@ export interface paths {
         put?: never;
         /**
          * Licensed verify-outcome beacon (idempotent per API key + run_id)
-         * @description POST after a successful `POST /api/v1/usage/reserve` for the same `run_id`. Success is HTTP 204 with an empty body. Requires Bearer API key. Body schemaVersion must be 2.
+         * @description POST after a successful `POST /api/v1/usage/reserve` for the same `run_id`. Success is HTTP 204 with an empty body. Requires Bearer API key. Body `schema_version` must be 3 (`VerifyOutcomeRequestV3`). `evidence_gap_primary` duplicates `certificate.evidenceCompleteness.blockerCategory` at CLI emission time.
          */
         post: operations["postVerifyOutcomeBeacon"];
         delete?: never;
@@ -278,18 +278,19 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
-        EnforcementEvidenceRequestV2: {
+        EnforcementEvidenceRequestV3: {
             /** @constant */
-            schema_version: 2;
+            schema_version: 3;
             run_id: string;
             workflow_id: string;
-            outcome_certificate_v1: {
+            /** @description Outcome Certificate v2 JSON (schemaVersion 2) including evidenceCompleteness */
+            outcome_certificate: {
                 [key: string]: unknown;
             };
             material_truth_sha256: string;
             certificate_sha256: string;
         };
-        /** @description Hosted enforcement lifecycle + verification attempt payload (schema_version 2). */
+        /** @description Hosted enforcement lifecycle response envelope for POST /check | /baselines | /accept (schema_version 2 on responses; distinct from evidence ingestion schema_version 3). */
         EnforcementFsmEnvelopeV2: {
             /** @constant */
             schema_version: 2;
@@ -298,7 +299,7 @@ export interface components {
         } & {
             [key: string]: unknown;
         };
-        EnforcementAcceptEvidenceRequestV2: components["schemas"]["EnforcementEvidenceRequestV2"] & {
+        EnforcementAcceptEvidenceRequestV3: components["schemas"]["EnforcementEvidenceRequestV3"] & {
             /** @description Must equal expected_projection_hash_for_accept from the open drift POST /check response. */
             expected_projection_hash: string;
             /** @description Optimistic concurrency token; must match lifecycle_state_version from the prior response. */
@@ -376,20 +377,29 @@ export interface components {
             instance?: string;
             code?: string;
         };
-        VerifyOutcomeRequestV2: {
+        VerifyOutcomeRequestV3: {
             /** @constant */
-            schema_version: 2;
+            schema_version: 3;
             run_id: string;
             workflow_id: string;
             /** @enum {string} */
             trust_decision: "safe" | "unsafe" | "unknown";
+            /**
+             * @description Mirrors Outcome Certificate evidenceCompleteness.blockerCategory at CLI emission time
+             * @enum {string}
+             */
+            evidence_gap_primary: "none" | "preview_lane" | "ingest_empty" | "ingest_unstructured" | "registry_unknown_tool" | "registry_resolution" | "database_access" | "timing_or_window" | "witness_unavailable" | "state_mismatch" | "verification_incomplete" | "event_sequence" | "control_flow_context" | "unclassified";
             reason_codes: string[];
             /** @enum {string} */
             terminal_status: "complete" | "inconsistent" | "incomplete";
             /** @enum {string} */
             workload_class: "bundled_examples" | "non_bundled";
             /** @enum {string} */
-            subcommand: "batch_verify" | "quick_verify" | "verify_integrator_owned";
+            subcommand: "batch_verify" | "quick_verify" | "verify_integrator_owned" | "activate";
+            /** @description Present only when subcommand is activate (mirrors ActivationManifest-derived wire) */
+            activation?: {
+                [key: string]: unknown;
+            } | null;
         };
         TrustDecisionRecordRequestV1: {
             /** @constant */
@@ -453,13 +463,13 @@ export interface components {
         OssClaimContinuationRequest: {
             claim_secret: string;
         };
-        /** @description POST accepts schemaVersion 2 only: { "schemaVersion": 2, "certificate": <OutcomeCertificateV1> } per schemas/public-verification-report-v2.schema.json. Legacy v1 envelopes are rejected with HTTP 400. */
+        /** @description POST accepts schemaVersion 3 only: { "schemaVersion": 3, "certificate": <OutcomeCertificateV2> } per schemas/public-verification-report-v3.schema.json. Legacy envelope POST bodies return HTTP 400. */
         PublicVerificationReportCreate: {
             [key: string]: unknown;
         };
         PublicVerificationReportCreated: {
             /** @constant */
-            schemaVersion: 2;
+            schemaVersion: 3;
             /** Format: uuid */
             id: string;
             /**
@@ -701,7 +711,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["EnforcementEvidenceRequestV2"];
+                "application/json": components["schemas"]["EnforcementEvidenceRequestV3"];
             };
         };
         responses: {
@@ -752,7 +762,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["EnforcementEvidenceRequestV2"];
+                "application/json": components["schemas"]["EnforcementEvidenceRequestV3"];
             };
         };
         responses: {
@@ -785,7 +795,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["EnforcementAcceptEvidenceRequestV2"];
+                "application/json": components["schemas"]["EnforcementAcceptEvidenceRequestV3"];
             };
         };
         responses: {
@@ -943,7 +953,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["VerifyOutcomeRequestV2"];
+                "application/json": components["schemas"]["VerifyOutcomeRequestV3"];
             };
         };
         responses: {
