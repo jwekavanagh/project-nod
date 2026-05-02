@@ -1,3 +1,13 @@
+## [4.2.0](https://github.com/jwekavanagh/agentskeptic/compare/v4.1.1...v4.2.0) (2026-05-02)
+
+### Features
+
+* **cli:** primary truth check path ([#47](https://github.com/jwekavanagh/agentskeptic/issues/47)) ([b582920](https://github.com/jwekavanagh/agentskeptic/commit/b582920f1ee0a526603eb2fb696667b2a4b54021))
+
+### Bug Fixes
+
+* **ci:** stabilize npm footprint consumer install ([#48](https://github.com/jwekavanagh/agentskeptic/issues/48)) ([9a7c113](https://github.com/jwekavanagh/agentskeptic/commit/9a7c113a95b668b9b553b0d923e2220f96685aea))
+
 ## [4.1.1](https://github.com/jwekavanagh/agentskeptic/compare/v4.1.0...v4.1.1) (2026-05-01)
 
 ### Features
