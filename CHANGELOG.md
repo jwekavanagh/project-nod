@@ -1,3 +1,9 @@
+## [6.0.1](https://github.com/jwekavanagh/agentskeptic/compare/v6.0.0...v6.0.1) (2026-05-03)
+
+### Bug Fixes
+
+* **emit:** add Cursor Cloud specific instructions to AGENTS.md ([#51](https://github.com/jwekavanagh/agentskeptic/issues/51)) ([2d6d316](https://github.com/jwekavanagh/agentskeptic/commit/2d6d316a9f36fd1c5b81819f5f18999ba2b847cc))
+
 ## [6.0.0](https://github.com/jwekavanagh/agentskeptic/compare/v5.0.0...v6.0.0) (2026-05-03)
 
 ### ⚠ BREAKING CHANGES
