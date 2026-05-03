@@ -1,3 +1,13 @@
+## [6.0.0](https://github.com/jwekavanagh/agentskeptic/compare/v5.0.0...v6.0.0) (2026-05-03)
+
+### ⚠ BREAKING CHANGES
+
+* unified failure spine (Outcome Certificate v3) (#50)
+
+### Features
+
+* unified failure spine (Outcome Certificate v3) ([#50](https://github.com/jwekavanagh/agentskeptic/issues/50)) ([25fc34b](https://github.com/jwekavanagh/agentskeptic/commit/25fc34bec70c176c9d5d9a73de1f651d71f10a4a))
+
 ## [5.0.0](https://github.com/jwekavanagh/agentskeptic/compare/v4.2.0...v5.0.0) (2026-05-03)
 
 ### ⚠ BREAKING CHANGES
