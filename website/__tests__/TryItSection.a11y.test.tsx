@@ -3,7 +3,9 @@
 import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { VerifyPageClient } from "@/app/verify/VerifyPageClient";
+import minimalShare from "@/content/embeddedReports/minimal-share-v2.json";
 import { EXAMPLE_WF_MISSING_NDJSON } from "@/lib/verifyDefaultSample";
+import { bundledOutcomeCertificateSchema } from "@/lib/verifyBundled.contract";
 
 function mockFetch(implementation: (input: string, init?: RequestInit) => Promise<Response>) {
   vi.stubGlobal("fetch", vi.fn(implementation) as unknown as typeof fetch);
@@ -48,17 +50,17 @@ describe("VerifyPageClient a11y", () => {
   });
 
   it("renders contradiction headline on successful default response", async () => {
+    const certificate = bundledOutcomeCertificateSchema.parse(
+      (minimalShare as { certificate: unknown }).certificate,
+    );
     mockFetch(
       async () =>
         new Response(
           JSON.stringify({
             ok: true,
             workflowId: "wf_missing",
-            humanReport: "ROW_ABSENT: expected row is missing.",
-            certificate: {
-              stateRelation: "does_not_match",
-              explanation: { headline: "Expected row is missing.", details: [{ code: "ROW_ABSENT" }] },
-            },
+            humanReport: certificate.humanReport,
+            certificate,
           }),
           { status: 200, headers: { "content-type": "application/json" } },
         ),
@@ -67,8 +69,11 @@ describe("VerifyPageClient a11y", () => {
     expect(screen.getByLabelText("Verification events NDJSON")).toHaveValue(EXAMPLE_WF_MISSING_NDJSON);
     fireEvent.click(screen.getByRole("button", { name: "Run verification" }));
     await waitFor(() => {
-      expect(screen.getByText("Reality contradicts the claim")).toBeInTheDocument();
-      expect(screen.getByText("Expected row is missing.")).toBeInTheDocument();
+      expect(screen.getByTestId("remediation-verdict-label")).toHaveTextContent("Reality contradicts the claim");
+      expect(screen.getByTestId("remediation-primary-action")).toHaveTextContent(
+        certificate.evidenceCompleteness.nextActions[0]?.text ?? "",
+      );
     });
+    expect(certificate.humanReport).toContain("Expected row is missing.");
   });
 });
