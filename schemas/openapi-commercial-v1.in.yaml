@@ -570,7 +570,7 @@ components:
         outcome_certificate:
           type: object
           additionalProperties: true
-          description: Outcome Certificate v2 JSON (schemaVersion 2) including evidenceCompleteness
+          description: Outcome Certificate v3 JSON (`schemaVersion` 3) including `evidenceCompleteness`, `failureSpine`, and optional `correctnessDefinition` per published schema `https://agentskeptic.com/schemas/outcome-certificate-v3.schema.json`
         material_truth_sha256:
           type: string
         certificate_sha256:
