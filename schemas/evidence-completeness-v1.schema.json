@@ -69,10 +69,20 @@
         }
       }
     },
+    "rerunReadiness": {
+      "type": "string",
+      "enum": [
+        "rerun_ready_same_inputs",
+        "fix_inputs_before_rerun",
+        "fix_registry_before_rerun",
+        "reconcile_state_before_rerun",
+        "manual_review_before_rerun"
+      ]
+    },
     "nextActions": {
       "type": "array",
       "minItems": 1,
-      "maxItems": 3,
+      "maxItems": 5,
       "items": {
         "type": "object",
         "additionalProperties": false,

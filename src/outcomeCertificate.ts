@@ -2,6 +2,7 @@ import type { QuickVerifyReport } from "./quickVerify/runQuickVerify.js";
 import { formatQuickVerifyHumanReport } from "./quickVerify/formatQuickVerifyHumanReport.js";
 import {
   buildEvidenceCompletenessForIneligibleLangGraph,
+  buildEvidenceCompletenessFromQuickReport,
   buildEvidenceCompletenessFromWorkflowResult,
   type EvidenceCompletenessJson,
 } from "./evidenceCompleteness.js";
@@ -17,7 +18,11 @@ import {
 } from "./failureSpine.js";
 import { formatFailureSpineHuman } from "./formatFailureSpineHuman.js";
 import { loadSchemaValidator } from "./schemaLoad.js";
-import type { Reason, StepOutcome, WorkflowResult, WorkflowTruthStep } from "./types.js";
+import {
+  deriveRemediationDecisionFromQuickReport,
+  deriveRemediationDecisionFromWorkflowResult,
+} from "./actionableFailure.js";
+import type { CorrectnessDefinitionV1, Reason, StepOutcome, WorkflowResult, WorkflowTruthStep } from "./types.js";
 import { formatWorkflowTruthReportStruct } from "./workflowTruthReport.js";
 
 export type OutcomeCertificateRunKind =
@@ -72,6 +77,8 @@ export type OutcomeCertificateV3 = {
   evidenceCompleteness: EvidenceCompletenessJson;
   failureSpine: FailureSpineV1;
   checkpointVerdicts?: OutcomeCertificateCheckpointVerdict[];
+  /** Mirrors `workflowTruthReport.correctnessDefinition` when present (optional attestation field). */
+  correctnessDefinition?: CorrectnessDefinitionV1 | null;
 };
 
 /** @deprecated Use OutcomeCertificateV3 — alias retained for semver-stable imports */
@@ -289,7 +296,8 @@ export function buildOutcomeCertificateLangGraphCheckpointTrustFromWorkflowResul
       : `${baseHuman}\n\nlanggraph_checkpoint_verdicts:\n${checkpointVerdicts
           .map((c) => `${c.checkpointKey}\t${c.verdict}\t${c.productionMeaning}`)
           .join("\n")}`;
-  const evidenceCompleteness = buildEvidenceCompletenessFromWorkflowResult(result);
+  const remediationDecision = deriveRemediationDecisionFromWorkflowResult(result);
+  const evidenceCompleteness = buildEvidenceCompletenessFromWorkflowResult(result, remediationDecision);
   let humanReport = appendEvidenceCompletenessHuman(workflowHuman, evidenceCompleteness, {
     runKind,
     highStakesReliance,
@@ -299,6 +307,7 @@ export function buildOutcomeCertificateLangGraphCheckpointTrustFromWorkflowResul
     runKind,
     stateRelation,
     highStakesReliance,
+    remediationDecision,
   });
   humanReport = `${humanReport}\n\n${formatFailureSpineHuman(failureSpine)}`;
   const cert: OutcomeCertificateV3 = {
@@ -315,6 +324,9 @@ export function buildOutcomeCertificateLangGraphCheckpointTrustFromWorkflowResul
     evidenceCompleteness,
     failureSpine,
     checkpointVerdicts,
+    ...(truth.correctnessDefinition !== null && truth.correctnessDefinition !== undefined
+      ? { correctnessDefinition: truth.correctnessDefinition }
+      : {}),
   };
   assertOutcomeCertificateInvariants(cert);
   return cert;
@@ -331,7 +343,8 @@ export function buildOutcomeCertificateFromWorkflowResult(
   const highStakesReliance = deriveHighStakesReliance(runKind, stateRelation);
   const truth = result.workflowTruthReport;
   const steps = truth.steps.map(truthStepToCertificateStep);
-  const evidenceCompleteness = buildEvidenceCompletenessFromWorkflowResult(result);
+  const remediationDecision = deriveRemediationDecisionFromWorkflowResult(result);
+  const evidenceCompleteness = buildEvidenceCompletenessFromWorkflowResult(result, remediationDecision);
   let humanReport = appendEvidenceCompletenessHuman(formatWorkflowTruthReportStruct(truth), evidenceCompleteness, {
     runKind,
     highStakesReliance,
@@ -341,6 +354,7 @@ export function buildOutcomeCertificateFromWorkflowResult(
     runKind,
     stateRelation,
     highStakesReliance,
+    remediationDecision,
   });
   humanReport = `${humanReport}\n\n${formatFailureSpineHuman(failureSpine)}`;
   const cert: OutcomeCertificateV3 = {
@@ -356,6 +370,9 @@ export function buildOutcomeCertificateFromWorkflowResult(
     humanReport,
     evidenceCompleteness,
     failureSpine,
+    ...(truth.correctnessDefinition !== null && truth.correctnessDefinition !== undefined
+      ? { correctnessDefinition: truth.correctnessDefinition }
+      : {}),
   };
   assertOutcomeCertificateInvariants(cert);
   return cert;
@@ -378,7 +395,22 @@ export function buildOutcomeCertificateFromQuickReport(options: BuildQuickOutcom
   const runKind = "quick_preview" as const;
   const stateRelation = quickVerdictToStateRelation(report.verdict);
   const highStakesReliance = deriveHighStakesReliance(runKind, stateRelation);
-  const evidenceCompleteness = report.evidenceCompleteness;
+  const remediationDecision = deriveRemediationDecisionFromQuickReport(report, workflowId);
+  const evidenceCompleteness = buildEvidenceCompletenessFromQuickReport(
+    {
+      verdict: report.verdict,
+      ingest: report.ingest,
+      units: report.units.map((u) => ({
+        unitId: u.unitId,
+        verdict: u.verdict,
+        reasonCodes: u.reasonCodes,
+        sourceAction: u.sourceAction,
+        reconciliation: u.reconciliation,
+        verification: u.verification,
+      })),
+    },
+    remediationDecision,
+  );
   let humanReport = appendEvidenceCompletenessHuman(
     formatQuickVerifyHumanReport(report, humanReportOptions),
     evidenceCompleteness,
@@ -398,8 +430,10 @@ export function buildOutcomeCertificateFromQuickReport(options: BuildQuickOutcom
     workflowId,
     stateRelation,
     highStakesReliance,
+    remediationDecision,
   });
   humanReport = `${humanReport}\n\n${formatFailureSpineHuman(failureSpine)}`;
+  const firstCd = report.units.find((u) => u.correctnessDefinition !== undefined)?.correctnessDefinition;
   const cert: OutcomeCertificateV3 = {
     schemaVersion: 3,
     workflowId,
@@ -421,6 +455,7 @@ export function buildOutcomeCertificateFromQuickReport(options: BuildQuickOutcom
     humanReport,
     evidenceCompleteness,
     failureSpine,
+    ...(firstCd !== undefined ? { correctnessDefinition: firstCd } : {}),
   };
   assertOutcomeCertificateInvariants(cert);
   return cert;

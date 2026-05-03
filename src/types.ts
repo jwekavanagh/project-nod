@@ -568,6 +568,40 @@ export type ActionableFailure = {
   automationSafe: boolean;
 };
 
+export type EvidenceGapPrimary =
+  | "none"
+  | "preview_lane"
+  | "ingest_empty"
+  | "ingest_unstructured"
+  | "registry_unknown_tool"
+  | "registry_resolution"
+  | "database_access"
+  | "timing_or_window"
+  | "witness_unavailable"
+  | "state_mismatch"
+  | "verification_incomplete"
+  | "event_sequence"
+  | "control_flow_context"
+  | "unclassified";
+
+export type RerunReadiness =
+  | "rerun_ready_same_inputs"
+  | "fix_inputs_before_rerun"
+  | "fix_registry_before_rerun"
+  | "reconcile_state_before_rerun"
+  | "manual_review_before_rerun";
+
+export type RemediationNextAction = {
+  id: string;
+  text: string;
+};
+
+export type RemediationDecision = {
+  actionableFailure: ActionableFailure;
+  orderedNextActions: RemediationNextAction[];
+  rerunReadiness: RerunReadiness;
+};
+
 export type FailureAnalysisEvidenceItem = {
   scope: "run_context" | "run_level" | "event_sequence" | "step" | "effect";
   codes?: string[];

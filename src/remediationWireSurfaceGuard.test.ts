@@ -16,6 +16,7 @@ const ALLOWLIST = new Set([
   "src/evidenceCompleteness.ts",
   "src/failureSpine.ts",
   "src/formatFailureSpineHuman.ts",
+  "src/loop/loopOutput.ts",
 ]);
 
 function listProductionTsFiles(dir: string, out: string[] = []): string[] {

@@ -2,6 +2,7 @@ import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
+import { deriveRemediationDecisionFromWorkflowResult } from "./actionableFailure.js";
 import { buildFailureSpineFromWorkflowResult } from "./failureSpine.js";
 import type { WorkflowResult } from "./types.js";
 
@@ -15,11 +16,13 @@ describe("buildFailureSpineFromWorkflowResult (wf_multi_all_fail golden)", () =>
     const fa = result.workflowTruthReport.failureAnalysis;
     expect(fa).not.toBeNull();
 
+    const remediationDecision = deriveRemediationDecisionFromWorkflowResult(result);
     const spine = buildFailureSpineFromWorkflowResult({
       result,
       runKind: "contract_sql",
       stateRelation: "does_not_match",
       highStakesReliance: "prohibited",
+      remediationDecision,
     });
 
     expect(spine.trustDecision).toBe("unsafe");

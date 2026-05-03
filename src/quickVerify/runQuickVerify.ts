@@ -30,6 +30,7 @@ import { buildQuickUnitReconciliation } from "../reconciliationPresentation.js";
 import { buildSyntheticRowParams } from "./buildSyntheticRowParams.js";
 import { flatKeyToJsonPointer } from "./flatKeyToJsonPointer.js";
 import { normalizedSqlRowRequestFingerprint } from "./verificationRequestFingerprint.js";
+import { deriveRemediationDecisionFromQuickReport } from "../actionableFailure.js";
 import { buildEvidenceCompletenessFromQuickReport, type EvidenceCompletenessJson } from "../evidenceCompleteness.js";
 
 export type QuickVerifyReport = {
@@ -125,6 +126,44 @@ function augmentExportVerificationRequest(
   return { ...provisional, requiredFields: rf };
 }
 
+/** Placeholder evidence so `deriveRemediationDecisionFromQuickReport` can run before real completeness is built. */
+function stubEvidenceCompletenessForQuickDecision(): EvidenceCompletenessJson {
+  return {
+    schemaVersion: 1,
+    blockerCategory: "preview_lane",
+    quickSignal: "sql_ran_uncertain",
+    verifiedClaims: [],
+    unverifiedClaims: [],
+    missingInputs: [{ code: "_pending", hint: "_" }],
+    nextActions: [{ id: "_pending", text: "_" }],
+  };
+}
+
+/** Synthetic full report for remediation derivation only (`evidenceCompleteness` is discarded afterward). */
+function quickReportShapeForDecision(
+  partial: Pick<
+    QuickVerifyReport,
+    | "verdict"
+    | "summary"
+    | "ingest"
+    | "units"
+    | "productTruth"
+    | "scope"
+    | "ingestWarnings"
+    | "runHeaderReasonCodes"
+  >,
+): QuickVerifyReport {
+  return {
+    schemaVersion: 5,
+    verificationMode: "inferred",
+    exportableRegistry: { tools: [] },
+    ...partial,
+    evidenceCompleteness: stubEvidenceCompletenessForQuickDecision(),
+  };
+}
+
+const QUICK_VERIFY_DECISION_WORKFLOW_ID = "quick_verify";
+
 function buildSummary(verdict: string, units: QuickVerifyReport["units"], ingest: QuickVerifyReport["ingest"]): string {
   const parts = [
     `Inferred provisional check — rollup ${verdict} is not a production-safety or audit-final verdict`,
@@ -150,15 +189,30 @@ export async function runQuickVerify(opts: RunQuickVerifyOptions): Promise<RunQu
   if (ingest.inputTooLarge) {
     const units: QuickVerifyReport["units"] = [];
     const verdict = "uncertain" as const;
-    const evidenceCompleteness = buildEvidenceCompletenessFromQuickReport({
-      verdict,
-      ingest: ingestBlock,
-      units: [],
-    });
+    const summary = buildSummary("uncertain", units, ingestBlock);
+    const decision = deriveRemediationDecisionFromQuickReport(
+      quickReportShapeForDecision({
+        verdict,
+        summary,
+        ingest: ingestBlock,
+        units,
+        productTruth: buildQuickVerifyProductTruth(false),
+        scope: { ...DEFAULT_QUICK_VERIFY_SCOPE },
+      }),
+      QUICK_VERIFY_DECISION_WORKFLOW_ID,
+    );
+    const evidenceCompleteness = buildEvidenceCompletenessFromQuickReport(
+      {
+        verdict,
+        ingest: ingestBlock,
+        units: [],
+      },
+      decision,
+    );
     const report: QuickVerifyReport = {
       schemaVersion: 5,
       verdict,
-      summary: buildSummary("uncertain", units, ingestBlock),
+      summary,
       verificationMode: "inferred",
       scope: { ...DEFAULT_QUICK_VERIFY_SCOPE },
       productTruth: buildQuickVerifyProductTruth(false),
@@ -489,22 +543,39 @@ export async function runQuickVerify(opts: RunQuickVerifyOptions): Promise<RunQu
     const anyNotContractEligible = units.some((u) => !u.contractEligible);
     const contractReplayPartialCoverage = exportTools.length > 0 && anyNotContractEligible;
 
-    const evidenceCompleteness = buildEvidenceCompletenessFromQuickReport({
-      verdict,
-      ingest: ingestBlock,
-      units: units.map((u) => ({
-        unitId: u.unitId,
-        verdict: u.verdict,
-        reasonCodes: u.reasonCodes,
-        sourceAction: u.sourceAction,
-        reconciliation: u.reconciliation,
-        verification: u.verification,
-      })),
-    });
+    const summary = buildSummary(verdict, units, ingestBlock);
+    const decision = deriveRemediationDecisionFromQuickReport(
+      quickReportShapeForDecision({
+        verdict,
+        summary,
+        ingest: ingestBlock,
+        units,
+        productTruth: buildQuickVerifyProductTruth(contractReplayPartialCoverage),
+        scope: { ...DEFAULT_QUICK_VERIFY_SCOPE },
+        ...(ingestWarnings ? { ingestWarnings } : {}),
+        ...(runHeaderReasonCodes.length ? { runHeaderReasonCodes } : {}),
+      }),
+      QUICK_VERIFY_DECISION_WORKFLOW_ID,
+    );
+    const evidenceCompleteness = buildEvidenceCompletenessFromQuickReport(
+      {
+        verdict,
+        ingest: ingestBlock,
+        units: units.map((u) => ({
+          unitId: u.unitId,
+          verdict: u.verdict,
+          reasonCodes: u.reasonCodes,
+          sourceAction: u.sourceAction,
+          reconciliation: u.reconciliation,
+          verification: u.verification,
+        })),
+      },
+      decision,
+    );
     const report: QuickVerifyReport = {
       schemaVersion: 5,
       verdict,
-      summary: buildSummary(verdict, units, ingestBlock),
+      summary,
       verificationMode: "inferred",
       scope: { ...DEFAULT_QUICK_VERIFY_SCOPE },
       productTruth: buildQuickVerifyProductTruth(contractReplayPartialCoverage),

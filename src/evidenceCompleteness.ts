@@ -2,29 +2,12 @@
  * Canonical evidence completeness object (schemas/evidence-completeness-v1.schema.json).
  */
 
-import type { RecommendedActionCode, WorkflowEngineResult, WorkflowResult } from "./types.js";
-import { deriveActionableFailureWorkflow } from "./actionableFailure.js";
-import { remediationMessageForRecommendedAction } from "./remediationMessage.js";
-import { RESOLVE_FAILURE_CODES } from "./verificationDiagnostics.js";
-import { REGISTRY_RESOLVER_CODE, SQL_VERIFICATION_OUTCOME_CODE as SQL } from "./wireReasonCodes.js";
+import type { EvidenceGapPrimary, RemediationDecision, RerunReadiness, WorkflowResult } from "./types.js";
 import { userPhraseForReasonCode } from "./verificationUserPhrases.js";
 import { redactEvidenceString } from "./redactEvidenceString.js";
+import { classifyWorkflowBlocker, collectWorkflowCodes } from "./workflowFailureSignals.js";
 
-export type EvidenceGapPrimary =
-  | "none"
-  | "preview_lane"
-  | "ingest_empty"
-  | "ingest_unstructured"
-  | "registry_unknown_tool"
-  | "registry_resolution"
-  | "database_access"
-  | "timing_or_window"
-  | "witness_unavailable"
-  | "state_mismatch"
-  | "verification_incomplete"
-  | "event_sequence"
-  | "control_flow_context"
-  | "unclassified";
+export type { EvidenceGapPrimary } from "./types.js";
 
 export type QuickSignalEvidence =
   | "na"
@@ -44,9 +27,8 @@ export type EvidenceCompletenessJson = {
   unverifiedClaims: string[];
   missingInputs: Array<{ code: string; hint: string }>;
   nextActions: Array<{ id: string; text: string }>;
+  rerunReadiness?: RerunReadiness;
 };
-
-const REGISTRY_CODES = new Set<string>(Object.values(REGISTRY_RESOLVER_CODE));
 
 function capList(lines: string[], max: number, eachMax: number): string[] {
   const out: string[] = [];
@@ -56,90 +38,14 @@ function capList(lines: string[], max: number, eachMax: number): string[] {
   return out;
 }
 
-function collectWorkflowCodes(result: WorkflowResult): Set<string> {
-  const s = new Set<string>();
-  for (const r of result.runLevelReasons) s.add(r.code);
-  if (result.eventSequenceIntegrity.kind === "irregular") {
-    for (const r of result.eventSequenceIntegrity.reasons) s.add(r.code);
-  }
-  for (const step of result.steps) {
-    for (const r of step.reasons) s.add(r.code);
-  }
-  return s;
-}
+export { classifyWorkflowBlocker } from "./workflowFailureSignals.js";
 
-function classifyWorkflowBlocker(result: WorkflowResult): EvidenceGapPrimary {
-  const C = collectWorkflowCodes(result);
-  if (C.has("NO_STEPS_FOR_WORKFLOW")) return "ingest_empty";
-  if (C.has("MALFORMED_EVENT_LINE")) return "ingest_unstructured";
-  if (result.eventSequenceIntegrity.kind === "irregular") return "event_sequence";
+export { workflowResultToEngineSlice } from "./workflowResultSlice.js";
 
-  const ctx = result.verificationRunContext;
-  if (ctx.toolSkippedEvents.length > 0) return "control_flow_context";
-  if (ctx.controlEvents.some((e) => e.decision === "skipped")) return "control_flow_context";
-  if (ctx.modelTurnEvents.some((e) => e.status !== "completed")) return "control_flow_context";
-
-  if (C.has(SQL.UNKNOWN_TOOL)) return "registry_unknown_tool";
-  for (const c of C) {
-    if (REGISTRY_CODES.has(c) || RESOLVE_FAILURE_CODES.has(c)) return "registry_resolution";
-  }
-  if (
-    C.has(SQL.STATE_WITNESS_UNAVAILABLE_IN_SQLITE_FILE_MODE) ||
-    C.has(SQL.STATE_WITNESS_SETUP_ERROR)
-  ) {
-    return "witness_unavailable";
-  }
-
-  if (
-    C.has(SQL.CONNECTOR_ERROR) ||
-    C.has(SQL.ROW_SHAPE_MISMATCH) ||
-    C.has(SQL.UNREADABLE_VALUE) ||
-    C.has(SQL.VECTOR_PROVIDER_ERROR) ||
-    C.has(SQL.HTTP_WITNESS_NETWORK_ERROR)
-  ) {
-    return "database_access";
-  }
-
-  if (
-    C.has(SQL.ROW_NOT_OBSERVED_WITHIN_WINDOW) ||
-    C.has(SQL.MULTI_EFFECT_UNCERTAIN_WITHIN_WINDOW) ||
-    C.has(SQL.FORBIDDEN_ROWS_STILL_PRESENT_WITHIN_WINDOW) ||
-    C.has(SQL.BOUNDED_WINDOW_EXPIRED_WITHOUT_OBSERVATION)
-  ) {
-    return "timing_or_window";
-  }
-
-  if (result.status === "inconsistent") return "state_mismatch";
-  if (result.status === "incomplete") return "verification_incomplete";
-  return "none";
-}
-
-function nextActionsFromRemediation(code: RecommendedActionCode): Array<{ id: string; text: string }> {
-  const text = redactEvidenceString(remediationMessageForRecommendedAction(code), 500);
-  return [{ id: code, text }];
-}
-
-function syntheticFailureBase(result: WorkflowResult) {
-  const codes = [...collectWorkflowCodes(result)].sort((a, b) => a.localeCompare(b)).slice(0, 12);
-  return {
-    summary: "Synthetic failure analysis for evidence completeness fallback.",
-    primaryOrigin: "workflow_flow" as const,
-    confidence: "medium" as const,
-    unknownReasonCodes: [] as string[],
-    evidence:
-      codes.length > 0
-        ? [{ scope: "run_level" as const, codes }]
-        : [{ scope: "step" as const, codes: ["UNCLASSIFIED_GAP"], seq: 0, toolId: "" }],
-    alternativeHypotheses: undefined as undefined,
-  };
-}
-
-export function workflowResultToEngineSlice(result: WorkflowResult): WorkflowEngineResult {
-  const { workflowTruthReport: _omit, schemaVersion: _sv, ...rest } = result;
-  return { ...rest, schemaVersion: 8 };
-}
-
-export function buildEvidenceCompletenessFromWorkflowResult(result: WorkflowResult): EvidenceCompletenessJson {
+export function buildEvidenceCompletenessFromWorkflowResult(
+  result: WorkflowResult,
+  decision: RemediationDecision,
+): EvidenceCompletenessJson {
   const truth = result.workflowTruthReport;
   const verified: string[] = [];
   const unverified: string[] = [];
@@ -155,16 +61,6 @@ export function buildEvidenceCompletenessFromWorkflowResult(result: WorkflowResu
   }
 
   const blockerCategory = classifyWorkflowBlocker(result);
-  const fa = truth.failureAnalysis;
-  let recommended: RecommendedActionCode = "manual_review";
-
-  const engineSlice = workflowResultToEngineSlice(result);
-  if (fa === null && result.status === "complete") {
-    recommended = "none";
-  } else {
-    const base = fa ?? syntheticFailureBase(result);
-    recommended = deriveActionableFailureWorkflow(engineSlice, base).recommendedAction;
-  }
 
   const primaryCodes = [...collectWorkflowCodes(result)].sort((a, b) => a.localeCompare(b)).slice(0, 8);
   const missingInputs = primaryCodes.map((code) => {
@@ -175,10 +71,12 @@ export function buildEvidenceCompletenessFromWorkflowResult(result: WorkflowResu
     };
   });
 
-  const nextActions =
-    result.status === "complete" && fa === null ? nextActionsFromRemediation("none") : nextActionsFromRemediation(recommended);
+  const nextActions = decision.orderedNextActions.map((a) => ({
+    id: a.id,
+    text: a.text,
+  }));
 
-  return {
+  const out: EvidenceCompletenessJson = {
     schemaVersion: 1,
     blockerCategory,
     quickSignal: "na",
@@ -187,6 +85,10 @@ export function buildEvidenceCompletenessFromWorkflowResult(result: WorkflowResu
     missingInputs,
     nextActions,
   };
+  if (!(result.status === "complete" && truth.failureAnalysis === null)) {
+    out.rerunReadiness = decision.rerunReadiness;
+  }
+  return out;
 }
 
 export type QuickReportEvidenceInput = {
@@ -211,7 +113,10 @@ function classifyQuickBlocker(signal: QuickSignalEvidence, verdict: string): Evi
   return "preview_lane";
 }
 
-export function buildEvidenceCompletenessFromQuickReport(input: QuickReportEvidenceInput): EvidenceCompletenessJson {
+export function buildEvidenceCompletenessFromQuickReport(
+  input: QuickReportEvidenceInput,
+  decision: RemediationDecision,
+): EvidenceCompletenessJson {
   const { ingest, units, verdict } = input;
 
   let quickSignal: QuickSignalEvidence = "sql_ran_uncertain";
@@ -261,22 +166,12 @@ export function buildEvidenceCompletenessFromQuickReport(input: QuickReportEvide
 
   const blockerCategory = classifyQuickBlocker(quickSignal, verdict);
 
-  const nextActions: Array<{ id: string; text: string }> = [];
-  nextActions.push({
-    id: "rerun_quick_or_promote_contract",
-    text: redactEvidenceString(
-      "For decision-grade reliance, export registry and events then run agentskeptic check (contract mode).",
-      500,
-    ),
-  });
-  if (quickSignal !== "sql_ran_passed") {
-    nextActions.push({
-      id: "fix_ingest_or_mapping",
-      text: redactEvidenceString("Fix ingest shape or mapping failures shown in units, then rerun quick verify.", 500),
-    });
-  }
+  const nextActions = decision.orderedNextActions.map((a) => ({
+    id: a.id,
+    text: a.text,
+  }));
 
-  return {
+  const out: EvidenceCompletenessJson = {
     schemaVersion: 1,
     blockerCategory,
     quickSignal,
@@ -288,6 +183,10 @@ export function buildEvidenceCompletenessFromQuickReport(input: QuickReportEvide
         : [{ code: redactEvidenceString("none_reported", 72), hint: redactEvidenceString("No structured missing-field entries.", 400) }],
     nextActions,
   };
+  if (verdict !== "pass") {
+    out.rerunReadiness = decision.rerunReadiness;
+  }
+  return out;
 }
 
 /** LangGraph checkpoint trust ineligible: no runnable verification trace. */

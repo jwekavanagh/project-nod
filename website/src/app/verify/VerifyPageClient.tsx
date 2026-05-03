@@ -1,6 +1,6 @@
 "use client";
 
-import { buildCertificateLaySummary } from "@/lib/buildCertificateLaySummary";
+import { CertificateRemediationPanel } from "@/components/verify/CertificateRemediationPanel";
 import { EXAMPLE_WF_MISSING_NDJSON } from "@/lib/verifyDefaultSample";
 import {
   verifyBundledSuccessResponseClientSchema,
@@ -43,9 +43,14 @@ export function VerifyPageClient() {
   const [result, setResult] = useState<VerifyResult | null>(null);
   const [loading, setLoading] = useState(false);
 
-  const summary = useMemo(() => {
+  const parsedSuccess = useMemo(() => {
     if (!result || !result.ok) return null;
-    return buildCertificateLaySummary(result.certificate, result.humanReport);
+    return verifyBundledSuccessResponseClientSchema.safeParse({
+      ok: true as const,
+      workflowId: result.workflowId,
+      certificate: result.certificate,
+      humanReport: result.humanReport,
+    });
   }, [result]);
 
   async function run() {
@@ -137,10 +142,9 @@ export function VerifyPageClient() {
         </div>
       )}
 
-      {result && result.ok && summary && (
+      {result && result.ok && parsedSuccess?.success && (
         <div className="try-it-output" data-testid="verify-page-result">
-          <h2>{summary.verdictLabel}</h2>
-          <p className="lede">{summary.contradictionLine}</p>
+          <CertificateRemediationPanel certificate={parsedSuccess.data.certificate} />
           <details className="try-it-human-details">
             <summary>Full human report</summary>
             <pre className="code-block">{result.humanReport}</pre>

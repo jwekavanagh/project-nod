@@ -2,6 +2,8 @@
 
 This document is the **sole product authority** for the **Outcome Certificate**: trust boundary, field semantics, the **`highStakesReliance` derivation table**, and the canonical **`evidenceCompleteness`** object. Engine internals (`WorkflowResult`, reconciler codes, NDJSON) remain in [`agentskeptic.md`](agentskeptic.md).
 
+**v3 wire (authoritative for current builds):** top-level **`schemaVersion`** is **`3`** only—**there is no v4**. Optional **`correctnessDefinition`** on the certificate mirrors [`workflowTruthReport.correctnessDefinition`](../schemas/workflow-truth-report.schema.json#/$defs/correctnessDefinitionV1) when present (attestation / storage). Optional **`evidenceCompleteness.rerunReadiness`** is defined in [`schemas/evidence-completeness-v1.schema.json`](../schemas/evidence-completeness-v1.schema.json).
+
 ## Trust boundary (unchanged intent)
 
 - The certificate proves **observed SQL state vs expectations** derived from structured tool activity and the registry (contract) or inferred mapping (quick preview)—**not** that a tool executed, and **not** generic observability.

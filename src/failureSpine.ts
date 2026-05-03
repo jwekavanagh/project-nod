@@ -3,29 +3,21 @@
  */
 
 import { deriveActionableFailureWorkflow } from "./actionableFailure.js";
-import { workflowResultToEngineSlice } from "./evidenceCompleteness.js";
 import { buildFailureAnalysis } from "./failureAnalysis.js";
 import type { QuickVerifyReport } from "./quickVerify/runQuickVerify.js";
 import { remediationMessageForRecommendedAction } from "./remediationMessage.js";
 import { redactEvidenceString } from "./redactEvidenceString.js";
+import type { RemediationDecision } from "./types.js";
 import type { TrustDecision } from "./trustDecision.js";
 import { trustDecisionFromRelianceFields } from "./trustDecision.js";
-import type {
-  ActionableFailure,
-  FailureAnalysisBase,
-  Reason,
-  StepOutcome,
-  WorkflowEngineResult,
-  WorkflowResult,
-  WorkflowStatus,
-} from "./types.js";
+import type { Reason, WorkflowEngineResult, WorkflowResult } from "./types.js";
 import type {
   OutcomeCertificateHighStakesReliance,
   OutcomeCertificateStateRelation,
 } from "./outcomeCertificate.js";
 import { DEFAULT_VERIFICATION_POLICY } from "./verificationPolicy.js";
 import { createEmptyVerificationRunContext } from "./verificationRunContext.js";
-import { SQL_VERIFICATION_OUTCOME_CODE } from "./wireReasonCodes.js";
+import type { FailureAnalysisBase } from "./types.js";
 
 export type FailureSpineSource = "workflow" | "quick" | "ineligible_langgraph";
 
@@ -33,7 +25,7 @@ export type FailureSpineV1 = {
   schemaVersion: 1;
   trustDecision: TrustDecision;
   summary: string;
-  actionableFailure: ActionableFailure;
+  actionableFailure: import("./types.js").ActionableFailure;
   primaryCodes: string[];
   rerunGuidance: string;
   source: FailureSpineSource;
@@ -55,21 +47,6 @@ function collectWorkflowCodes(result: WorkflowResult): Set<string> {
   return s;
 }
 
-function syntheticFailureBase(result: WorkflowResult): FailureAnalysisBase {
-  const codes = [...collectWorkflowCodes(result)].sort((a, b) => a.localeCompare(b)).slice(0, 12);
-  return {
-    summary: "Synthetic failure analysis for evidence completeness fallback.",
-    primaryOrigin: "workflow_flow",
-    confidence: "medium",
-    unknownReasonCodes: [] as string[],
-    evidence:
-      codes.length > 0
-        ? [{ scope: "run_level" as const, codes }]
-        : [{ scope: "step" as const, codes: ["UNCLASSIFIED_GAP"], seq: 0, toolId: "" }],
-    alternativeHypotheses: undefined,
-  };
-}
-
 function primaryCodesForWorkflowResult(result: WorkflowResult): string[] {
   const fa = result.workflowTruthReport.failureAnalysis;
   if (fa !== null) {
@@ -86,20 +63,18 @@ export function buildFailureSpineFromWorkflowResult(params: {
   runKind: "contract_sql" | "contract_sql_langgraph_checkpoint_trust";
   stateRelation: OutcomeCertificateStateRelation;
   highStakesReliance: OutcomeCertificateHighStakesReliance;
+  remediationDecision: RemediationDecision;
 }): FailureSpineV1 {
-  const { result, runKind, stateRelation, highStakesReliance } = params;
+  const { result, runKind, stateRelation, highStakesReliance, remediationDecision } = params;
   const truth = result.workflowTruthReport;
-  const engineSlice = workflowResultToEngineSlice(result);
 
-  let actionableFailure: ActionableFailure;
+  let actionableFailure = remediationDecision.actionableFailure;
   let summary: string;
 
   if (truth.failureAnalysis !== null) {
     actionableFailure = truth.failureAnalysis.actionableFailure;
     summary = truth.failureAnalysis.summary;
   } else {
-    const base = syntheticFailureBase(result);
-    actionableFailure = deriveActionableFailureWorkflow(engineSlice, base);
     summary = truth.trustSummary;
   }
 
@@ -125,54 +100,6 @@ export function buildFailureSpineFromWorkflowResult(params: {
   };
 }
 
-function quickVerifyReportToSyntheticEngine(report: QuickVerifyReport, workflowId: string): WorkflowEngineResult {
-  const status: WorkflowStatus =
-    report.verdict === "fail" ? "inconsistent" : report.verdict === "pass" ? "complete" : "incomplete";
-
-  const steps: StepOutcome[] = report.units.map((u, i) => {
-    const st =
-      u.verdict === "verified" ? "verified" : u.verdict === "fail" ? "inconsistent" : "uncertain";
-    const reasons: Reason[] =
-      u.reasonCodes.length > 0
-        ? u.reasonCodes.map((c) => ({ code: c, message: c }))
-        : u.verdict !== "verified"
-          ? [{ code: SQL_VERIFICATION_OUTCOME_CODE.ROW_ABSENT, message: "quick synthetic absent" }]
-          : [];
-    const step: StepOutcome = {
-      seq: i,
-      toolId: u.sourceAction.toolName,
-      intendedEffect: { narrative: u.explanation },
-      observedExecution: { paramsCanonical: "{}" },
-      verificationRequest: {
-        kind: "sql_row",
-        table: u.inference.table,
-        identityEq: [{ column: "id", value: "quick_synthetic" }],
-        requiredFields: {},
-      },
-      status: st,
-      reasons,
-      evidenceSummary: {},
-      repeatObservationCount: 1,
-      evaluatedObservationOrdinal: 1,
-    };
-    if (st !== "verified") {
-      step.failureDiagnostic = "workflow_execution";
-    }
-    return step;
-  });
-
-  return {
-    schemaVersion: 8,
-    workflowId,
-    status,
-    runLevelReasons: [],
-    verificationPolicy: DEFAULT_VERIFICATION_POLICY,
-    eventSequenceIntegrity: { kind: "normal" },
-    steps,
-    verificationRunContext: createEmptyVerificationRunContext(),
-  };
-}
-
 function primaryCodesQuick(report: QuickVerifyReport): string[] {
   const codes: string[] = [];
   for (const u of report.units) {
@@ -183,31 +110,14 @@ function primaryCodesQuick(report: QuickVerifyReport): string[] {
   return codes.length ? sortUniqueCodes(codes) : ["UNCLASSIFIED"];
 }
 
-function syntheticQuickFailureAnalysis(report: QuickVerifyReport): FailureAnalysisBase {
-  return {
-    summary: report.summary,
-    primaryOrigin: "workflow_flow",
-    confidence: "medium",
-    unknownReasonCodes: [],
-    evidence: [{ scope: "run_level", codes: ["QUICK_PREVIEW_SYNTHETIC"] }],
-    alternativeHypotheses: undefined,
-  };
-}
-
 export function buildFailureSpineFromQuickReport(params: {
   report: QuickVerifyReport;
   workflowId: string;
   stateRelation: OutcomeCertificateStateRelation;
   highStakesReliance: OutcomeCertificateHighStakesReliance;
+  remediationDecision: RemediationDecision;
 }): FailureSpineV1 {
-  const engine = quickVerifyReportToSyntheticEngine(params.report, params.workflowId);
-  const fa = buildFailureAnalysis(engine);
-  let actionableFailure: ActionableFailure;
-  if (fa !== null) {
-    actionableFailure = deriveActionableFailureWorkflow(engine, fa);
-  } else {
-    actionableFailure = deriveActionableFailureWorkflow(engine, syntheticQuickFailureAnalysis(params.report));
-  }
+  const actionableFailure = params.remediationDecision.actionableFailure;
 
   const trustDecision = trustDecisionFromRelianceFields({
     runKind: "quick_preview",

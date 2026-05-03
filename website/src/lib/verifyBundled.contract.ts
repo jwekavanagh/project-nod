@@ -1,9 +1,45 @@
 import { z } from "zod";
 
+const actionableFailureSchema = z.object({
+  category: z.string(),
+  severity: z.string(),
+  recommendedAction: z.string(),
+  automationSafe: z.boolean(),
+});
+
+const failureSpineSchema = z
+  .object({
+    schemaVersion: z.number(),
+    actionableFailure: actionableFailureSchema,
+  })
+  .passthrough();
+
+const evidenceCompletenessSchema = z
+  .object({
+    schemaVersion: z.number(),
+    blockerCategory: z.string(),
+    nextActions: z.array(z.object({ id: z.string(), text: z.string() })),
+    rerunReadiness: z.string().optional(),
+  })
+  .passthrough();
+
+/** Bundled `/api/verify` outcome certificate (structured fields required for remediation UI). */
+export const bundledOutcomeCertificateSchema = z
+  .object({
+    schemaVersion: z.literal(3),
+    stateRelation: z.enum(["matches_expectations", "does_not_match", "not_established"]),
+    failureSpine: failureSpineSchema,
+    evidenceCompleteness: evidenceCompletenessSchema,
+    correctnessDefinition: z.unknown().optional(),
+  })
+  .passthrough();
+
+export type BundledOutcomeCertificate = z.infer<typeof bundledOutcomeCertificateSchema>;
+
 export const verifyBundledSuccessResponseClientSchema = z.object({
   ok: z.literal(true),
   workflowId: z.string().min(1),
-  certificate: z.unknown(),
+  certificate: bundledOutcomeCertificateSchema,
   humanReport: z.string().min(1),
 });
 

@@ -1,5 +1,5 @@
 {
-  "$id": "https://agentskeptic.com/schemas/outcome-certificate-v3.schema.json",
+  "$id": "https://agentskeptic.com/schemas/test/outcome-certificate-v3-pre-additive.schema.json",
   "title": "OutcomeCertificateV3",
   "type": "object",
   "additionalProperties": false,
@@ -92,14 +92,6 @@
     },
     "failureSpine": {
       "$ref": "https://agentskeptic.com/schemas/failure-spine-v1.schema.json"
-    },
-    "correctnessDefinition": {
-      "oneOf": [
-        { "type": "null" },
-        {
-          "$ref": "https://agentskeptic.com/schemas/workflow-truth-report.schema.json#/$defs/correctnessDefinitionV1"
-        }
-      ]
     }
   }
 }

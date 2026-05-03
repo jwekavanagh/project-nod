@@ -8,17 +8,40 @@ import {
 import { HUMAN_REPORT_BEGIN, HUMAN_REPORT_END, verdictLine } from "./quickVerifyHumanCopy.js";
 import { DEFAULT_QUICK_VERIFY_SCOPE } from "./quickVerifyScope.js";
 import { buildQuickVerifyProductTruth } from "./quickVerifyProductTruth.js";
+import { deriveRemediationDecisionFromQuickReport } from "../actionableFailure.js";
 import { buildEvidenceCompletenessFromQuickReport } from "../evidenceCompleteness.js";
 import type { QuickVerifyReport } from "./runQuickVerify.js";
 
 function minimalReport(verdict: "pass" | "fail" | "uncertain"): QuickVerifyReport {
   const ingest = { reasonCodes: ["INGEST_NO_ACTIONS"], malformedLineCount: 0 };
   const units: QuickVerifyReport["units"] = [];
-  const evidenceCompleteness = buildEvidenceCompletenessFromQuickReport({ verdict, ingest, units });
+  const summary = `Inferred provisional check — rollup ${verdict} is not a production-safety or audit-final verdict. 0 unit(s).`;
+  const stub = {
+    schemaVersion: 5 as const,
+    verdict,
+    summary,
+    verificationMode: "inferred" as const,
+    scope: { ...DEFAULT_QUICK_VERIFY_SCOPE },
+    productTruth: buildQuickVerifyProductTruth(false),
+    ingest,
+    units,
+    exportableRegistry: { tools: [] },
+    evidenceCompleteness: {
+      schemaVersion: 1 as const,
+      blockerCategory: "preview_lane" as const,
+      quickSignal: "no_actions" as const,
+      verifiedClaims: [],
+      unverifiedClaims: [],
+      missingInputs: [{ code: "_", hint: "_" }],
+      nextActions: [{ id: "_", text: "_" }],
+    },
+  };
+  const decision = deriveRemediationDecisionFromQuickReport(stub, "test");
+  const evidenceCompleteness = buildEvidenceCompletenessFromQuickReport({ verdict, ingest, units }, decision);
   return {
     schemaVersion: 5,
     verdict,
-    summary: `Inferred provisional check — rollup ${verdict} is not a production-safety or audit-final verdict. 0 unit(s).`,
+    summary,
     verificationMode: "inferred",
     scope: { ...DEFAULT_QUICK_VERIFY_SCOPE },
     productTruth: buildQuickVerifyProductTruth(false),

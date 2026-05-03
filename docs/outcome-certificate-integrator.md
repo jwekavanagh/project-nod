@@ -3,7 +3,11 @@
 Library integration (`createDecisionGate`, NDJSON replay): **[`docs/decision-gate.md`](decision-gate.md)**.
 Commercial governance semantics (material truth hash, baseline lifecycle, shared governance UI, audit export) are in **[`docs/governance.md`](governance.md)**.
 
-**Hosted enforce API (`POST /api/v1/enforcement/check|baselines|accept`):** governance evidence bodies use **`schema_version` 3** with **`outcome_certificate`** (inner certificate **`schemaVersion` 2** + **`evidenceCompleteness`**). Response payloads continue to expose lifecycle fields per OpenAPI (**`EnforcementFsmEnvelopeV2`**). Authoritative behavior is **`docs/outcome-certificate-normative.md`** — section **Hosted enforcement lifecycle (verification FSM)** — not inferred from legacy `enforcement_events.event` strings.
+**Hosted enforce API (`POST /api/v1/enforcement/check|baselines|accept`):** governance evidence bodies use **`schema_version` 3** with **`outcome_certificate`** (inner Outcome Certificate **`schemaVersion` 3**, including **`evidenceCompleteness`** and **`failureSpine`**; optional **`correctnessDefinition`** when emitted). Response payloads continue to expose lifecycle fields per OpenAPI (**`EnforcementFsmEnvelopeV2`**). Authoritative behavior is **`docs/outcome-certificate-normative.md`** — section **Hosted enforcement lifecycle (verification FSM)** — not inferred from legacy `enforcement_events.event` strings.
+
+## Strict validator pins (consumer migration)
+
+Consumers who compile or pin **exact bytes** of [`https://agentskeptic.com/schemas/outcome-certificate-v3.schema.json`](https://agentskeptic.com/schemas/outcome-certificate-v3.schema.json) (or a fork) with **`additionalProperties: false`** at the certificate root will **reject** payloads that add new optional keys until that pinned schema file is updated and redeployed. Emitters may send superset JSON first; strict validators must **repin** the canonical schema URL when adopting optional fields such as **`correctnessDefinition`** or extra **`evidenceCompleteness`** keys.
 
 ## Retaining decision evidence
 

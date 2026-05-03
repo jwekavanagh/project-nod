@@ -11,14 +11,30 @@ import {
   TEST_BLOCKING_CODE,
 } from "./failureOriginCatalog.js";
 import { OPERATIONAL_DISPOSITION } from "./operationalDisposition.js";
+import { buildFailureAnalysis } from "./failureAnalysis.js";
 import { REGISTRY_RESOLVER_CODE, SQL_VERIFICATION_OUTCOME_CODE } from "./wireReasonCodes.js";
+import {
+  quickVerifyReportToSyntheticEngine,
+  syntheticQuickFailureAnalysis,
+} from "./quickSyntheticWorkflow.js";
+import type { QuickVerifyReport } from "./quickVerify/runQuickVerify.js";
+import { redactEvidenceString } from "./redactEvidenceString.js";
+import { classifyWorkflowBlocker, collectWorkflowCodes } from "./workflowFailureSignals.js";
+import { workflowResultToEngineSlice } from "./workflowResultSlice.js";
+import { remediationMessageForRecommendedAction } from "./remediationMessage.js";
 import type {
   ActionableFailure,
   ActionableFailureCategory,
   ActionableFailureSeverity,
+  EvidenceGapPrimary,
   FailureAnalysisBase,
   RecommendedActionCode,
+  RemediationDecision,
+  RemediationNextAction,
+  RerunReadiness,
   WorkflowEngineResult,
+  WorkflowResult,
+  WorkflowStatus,
 } from "./types.js";
 
 export const ACTIONABLE_FAILURE_CATEGORIES = [
@@ -185,7 +201,7 @@ const STEP_CODE_TO_REMEDIATION: Record<string, RemediationRow> = {
   },
   [SQL_VERIFICATION_OUTCOME_CODE.CONNECTOR_ERROR]: {
     recommendedAction: "improve_read_connectivity",
-    automationSafe: false,
+    automationSafe: true,
   },
   [SQL_VERIFICATION_OUTCOME_CODE.ROW_SHAPE_MISMATCH]: {
     recommendedAction: "improve_read_connectivity",
@@ -518,6 +534,221 @@ export function deriveActionableFailureOperational(code: string): ActionableFail
     recommendedAction: row.recommendedAction,
     automationSafe: row.automationSafe,
   };
+}
+
+function syntheticFailureBaseWorkflow(result: WorkflowResult): FailureAnalysisBase {
+  const codes = [...collectWorkflowCodes(result)].sort((a, b) => a.localeCompare(b)).slice(0, 12);
+  return {
+    summary: "Synthetic failure analysis for evidence completeness fallback.",
+    primaryOrigin: "workflow_flow",
+    confidence: "medium",
+    unknownReasonCodes: [] as string[],
+    evidence:
+      codes.length > 0
+        ? [{ scope: "run_level" as const, codes }]
+        : [{ scope: "step" as const, codes: ["UNCLASSIFIED_GAP"], seq: 0, toolId: "" }],
+    alternativeHypotheses: undefined,
+  };
+}
+
+function nextActionEntry(code: RecommendedActionCode): RemediationNextAction {
+  return {
+    id: code,
+    text: redactEvidenceString(remediationMessageForRecommendedAction(code), 500),
+  };
+}
+
+function buildOrderedNextActionsWorkflow(
+  result: WorkflowResult,
+  primary: RecommendedActionCode,
+): RemediationNextAction[] {
+  const out: RemediationNextAction[] = [nextActionEntry(primary)];
+  const seen = new Set<RecommendedActionCode>([primary]);
+  const C = collectWorkflowCodes(result);
+  if (C.has(SQL_VERIFICATION_OUTCOME_CODE.UNKNOWN_TOOL) && !seen.has("fix_registry_events_or_compare_files")) {
+    seen.add("fix_registry_events_or_compare_files");
+    out.push(nextActionEntry("fix_registry_events_or_compare_files"));
+  }
+  if (!(result.status === "complete" && primary === "none")) {
+    const sec: RecommendedActionCode = "fix_registry_events_or_compare_files";
+    if (!seen.has(sec)) {
+      seen.add(sec);
+      out.push(nextActionEntry(sec));
+    }
+  }
+  return out.slice(0, 5);
+}
+
+function deriveRerunReadinessWorkflow(
+  actionableFailure: ActionableFailure,
+  blocker: EvidenceGapPrimary,
+  status: WorkflowStatus,
+): RerunReadiness {
+  if (status === "complete" && actionableFailure.recommendedAction === "none") return "rerun_ready_same_inputs";
+  if (
+    actionableFailure.automationSafe &&
+    actionableFailure.recommendedAction === "improve_read_connectivity"
+  ) {
+    return "rerun_ready_same_inputs";
+  }
+  switch (blocker) {
+    case "ingest_empty":
+    case "ingest_unstructured":
+      return "fix_inputs_before_rerun";
+    case "registry_unknown_tool":
+    case "registry_resolution":
+      return "fix_registry_before_rerun";
+    case "state_mismatch":
+    case "database_access":
+      return "reconcile_state_before_rerun";
+    case "verification_incomplete":
+      return "manual_review_before_rerun";
+    default:
+      return "manual_review_before_rerun";
+  }
+}
+
+function quickSignalFromReport(report: QuickVerifyReport): {
+  quickSignal:
+    | "na"
+    | "no_actions"
+    | "no_structured_activity"
+    | "no_sql_candidates"
+    | "sql_ran_uncertain"
+    | "sql_ran_failed"
+    | "sql_ran_passed";
+} {
+  const ingest = report.ingest;
+  const units = report.units;
+  const verdict = report.verdict;
+  let quickSignal:
+    | "na"
+    | "no_actions"
+    | "no_structured_activity"
+    | "no_sql_candidates"
+    | "sql_ran_uncertain"
+    | "sql_ran_failed"
+    | "sql_ran_passed" = "sql_ran_uncertain";
+  if (ingest.reasonCodes.includes("INGEST_NO_ACTIONS")) {
+    quickSignal = "no_actions";
+  } else if (ingest.reasonCodes.includes("INGEST_NO_STRUCTURED_TOOL_ACTIVITY")) {
+    quickSignal = "no_structured_activity";
+  } else if (units.length === 0) {
+    quickSignal = "no_sql_candidates";
+  } else {
+    const mappedOk = units.filter((u) => !u.reasonCodes.includes("MAPPING_FAILED")).length > 0;
+    if (!mappedOk) {
+      quickSignal = "no_sql_candidates";
+    } else if (verdict === "pass") quickSignal = "sql_ran_passed";
+    else if (verdict === "fail") quickSignal = "sql_ran_failed";
+    else quickSignal = "sql_ran_uncertain";
+  }
+  return { quickSignal };
+}
+
+function classifyQuickPreviewBlocker(
+  quickSignal: ReturnType<typeof quickSignalFromReport>["quickSignal"],
+  verdict: QuickVerifyReport["verdict"],
+): EvidenceGapPrimary {
+  if (quickSignal === "no_actions") return "ingest_empty";
+  if (quickSignal === "no_structured_activity") return "ingest_unstructured";
+  if (quickSignal === "no_sql_candidates") return "registry_resolution";
+  if (quickSignal === "sql_ran_failed") return "state_mismatch";
+  if (verdict === "uncertain") return "verification_incomplete";
+  return "preview_lane";
+}
+
+function buildOrderedNextActionsQuick(
+  report: QuickVerifyReport,
+  primary: RecommendedActionCode,
+): RemediationNextAction[] {
+  const out: RemediationNextAction[] = [nextActionEntry(primary)];
+  const seen = new Set<RecommendedActionCode>([primary]);
+  if (report.verdict !== "pass") {
+    const sec: RecommendedActionCode = "fix_registry_events_or_compare_files";
+    if (!seen.has(sec)) {
+      seen.add(sec);
+      out.push(nextActionEntry(sec));
+    }
+  }
+  return out.slice(0, 5);
+}
+
+function deriveRerunReadinessQuick(
+  blocker: EvidenceGapPrimary,
+  verdict: QuickVerifyReport["verdict"],
+  actionableFailure: ActionableFailure,
+): RerunReadiness {
+  if (verdict === "pass") return "rerun_ready_same_inputs";
+  if (
+    actionableFailure.automationSafe &&
+    actionableFailure.recommendedAction === "improve_read_connectivity"
+  ) {
+    return "rerun_ready_same_inputs";
+  }
+  switch (blocker) {
+    case "ingest_empty":
+    case "ingest_unstructured":
+      return "fix_inputs_before_rerun";
+    case "registry_resolution":
+      return "fix_registry_before_rerun";
+    case "state_mismatch":
+      return "reconcile_state_before_rerun";
+    case "verification_incomplete":
+      return "manual_review_before_rerun";
+    default:
+      return "manual_review_before_rerun";
+  }
+}
+
+export function deriveRemediationDecisionFromWorkflowResult(result: WorkflowResult): RemediationDecision {
+  const truth = result.workflowTruthReport;
+  const fa = truth.failureAnalysis;
+  const engineSlice = workflowResultToEngineSlice(result);
+
+  if (fa === null && result.status === "complete") {
+    const noneFailure: ActionableFailure = {
+      category: "unclassified",
+      severity: "low",
+      recommendedAction: "none",
+      automationSafe: false,
+    };
+    return {
+      actionableFailure: noneFailure,
+      orderedNextActions: [nextActionEntry("none")],
+      rerunReadiness: "rerun_ready_same_inputs",
+    };
+  }
+
+  let actionableFailure: ActionableFailure;
+  if (fa !== null) {
+    actionableFailure = fa.actionableFailure;
+  } else {
+    actionableFailure = deriveActionableFailureWorkflow(engineSlice, syntheticFailureBaseWorkflow(result));
+  }
+  const blocker = classifyWorkflowBlocker(result);
+  const orderedNextActions = buildOrderedNextActionsWorkflow(result, actionableFailure.recommendedAction);
+  const rerunReadiness = deriveRerunReadinessWorkflow(actionableFailure, blocker, result.status);
+  return { actionableFailure, orderedNextActions, rerunReadiness };
+}
+
+export function deriveRemediationDecisionFromQuickReport(
+  report: QuickVerifyReport,
+  workflowId: string,
+): RemediationDecision {
+  const engine = quickVerifyReportToSyntheticEngine(report, workflowId);
+  const fa = buildFailureAnalysis(engine);
+  let actionableFailure: ActionableFailure;
+  if (fa !== null) {
+    actionableFailure = deriveActionableFailureWorkflow(engine, fa);
+  } else {
+    actionableFailure = deriveActionableFailureWorkflow(engine, syntheticQuickFailureAnalysis(report));
+  }
+  const { quickSignal } = quickSignalFromReport(report);
+  const blocker = classifyQuickPreviewBlocker(quickSignal, report.verdict);
+  const orderedNextActions = buildOrderedNextActionsQuick(report, actionableFailure.recommendedAction);
+  const rerunReadiness = deriveRerunReadinessQuick(blocker, report.verdict, actionableFailure);
+  return { actionableFailure, orderedNextActions, rerunReadiness };
 }
 
 export type PerRunActionable = {

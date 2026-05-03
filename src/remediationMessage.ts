@@ -4,6 +4,10 @@
 
 import type { RecommendedActionCode } from "./types.js";
 
+/** Human `failure_spine` line when CONNECTOR + automationSafe + improve_read_connectivity. */
+export const AUTOMATION_BOUNDARY_CONNECTOR =
+  "Automation-safe here means retrying the same read-only verification (same events, registry, workflow, and read target) after a transient connector fault. It does not authorize changing application data, switching databases or workflows, or weakening verification policy." as const;
+
 const REMEDIATION_BY_CODE: Record<RecommendedActionCode, string> = {
   none: "No further verification action is required for this outcome under the configured rules.",
   manual_review: "Review the evidence completeness block and workflow truth report, then decide on a manual fix path.",

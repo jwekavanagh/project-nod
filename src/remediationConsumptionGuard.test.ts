@@ -16,6 +16,7 @@ const PROPERTY_ACCESS_ALLOWLIST = new Set([
   "src/evidenceCompleteness.ts",
   "src/failureSpine.ts",
   "src/formatFailureSpineHuman.ts",
+  "src/loop/loopOutput.ts",
 ]);
 
 const propAccessRecommended = /\.(\s*)recommendedAction\b/;

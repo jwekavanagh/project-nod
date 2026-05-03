@@ -37,7 +37,9 @@ export type {
   BuildQuickOutcomeCertificateOptions,
   TruthCheckVerdictLabel,
 } from "./outcomeCertificate.js";
-export { remediationMessageForRecommendedAction } from "./remediationMessage.js";
+export { AUTOMATION_BOUNDARY_CONNECTOR, remediationMessageForRecommendedAction } from "./remediationMessage.js";
+export { deriveRemediationDecisionFromQuickReport, deriveRemediationDecisionFromWorkflowResult } from "./actionableFailure.js";
+export type { RemediationDecision, RerunReadiness, RemediationNextAction } from "./types.js";
 export {
   buildFailureSpineFromIneligibleLangGraph,
   buildFailureSpineFromQuickReport,

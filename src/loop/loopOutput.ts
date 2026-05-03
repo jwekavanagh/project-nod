@@ -1,6 +1,10 @@
+import type { OperationalCode } from "../cliOperationalCodes.js";
+import { deriveActionableFailureOperational } from "../actionableFailure.js";
 import type { OutcomeCertificateV1 } from "../outcomeCertificate.js";
-import { trustDecisionFromCertificate } from "../trustDecision.js";
+import { OPERATIONAL_DISPOSITION } from "../operationalDisposition.js";
+import { remediationMessageForRecommendedAction } from "../remediationMessage.js";
 import type { RegressionArtifactV1 } from "../regressionArtifact.js";
+import { trustDecisionFromCertificate } from "../trustDecision.js";
 
 function normalizedVerdict(certificate: OutcomeCertificateV1): "TRUSTED" | "NOT TRUSTED" | "UNKNOWN" {
   const trust = trustDecisionFromCertificate(certificate);
@@ -37,15 +41,20 @@ export function renderLoopTerminalContract(input: {
 }
 
 export function renderLoopOperationalUnknown(input: {
+  /** TruthLayerError.code or best-effort operational code string */
+  code: string;
   message: string;
-  nextAction: string;
   runRef: string;
 }): string {
+  const row = OPERATIONAL_DISPOSITION[input.code as OperationalCode];
+  const why = row?.summary ?? input.message;
+  const af = deriveActionableFailureOperational(input.code);
+  const nextAction = remediationMessageForRecommendedAction(af.recommendedAction);
   return [
     "VERDICT: UNKNOWN",
-    `WHY: ${input.message}`,
+    `WHY: ${why}`,
     "LOCAL_REGRESSION_COMPARE: no_anchor",
-    `NEXT_ACTION: ${input.nextAction}`,
+    `NEXT_ACTION: ${nextAction}`,
     `RUN_REF: ${input.runRef}`,
   ].join("\n");
 }

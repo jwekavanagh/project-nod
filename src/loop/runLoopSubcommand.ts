@@ -106,9 +106,8 @@ export async function runLoopSubcommand(args: string[]): Promise<void> {
         : formatOperationalMessage(e instanceof Error ? e.message : String(e));
     process.stderr.write(`${cliErrorEnvelope(code, msg)}\n`);
     const out = renderLoopOperationalUnknown({
+      code,
       message: msg,
-      nextAction:
-        "Check your CLI args, event/registry paths, and database connectivity, then rerun `agentskeptic loop`.",
       runRef: "unavailable",
     });
     process.stdout.write(`${out}\n`);

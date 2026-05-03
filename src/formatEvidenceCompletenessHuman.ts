@@ -46,6 +46,9 @@ export function formatEvidenceCompletenessHuman(
     if (lines.length >= 1 + EVIDENCE_COMPLETENESS_MAX_LINES) break;
     lines.push(`  - ${n.text}`);
   }
+  if (ec.rerunReadiness !== undefined && lines.length < 1 + EVIDENCE_COMPLETENESS_MAX_LINES) {
+    lines.push(`Rerun readiness: ${ec.rerunReadiness}`);
+  }
   lines.push(
     `Trust boundary: runKind=${ctx.runKind} highStakesReliance=${ctx.highStakesReliance} (see certificate fields for normative meaning).`,
   );

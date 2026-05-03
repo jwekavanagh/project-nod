@@ -283,7 +283,7 @@ export interface components {
             schema_version: 3;
             run_id: string;
             workflow_id: string;
-            /** @description Outcome Certificate v2 JSON (schemaVersion 2) including evidenceCompleteness */
+            /** @description Outcome Certificate v3 JSON (`schemaVersion` 3) including `evidenceCompleteness`, `failureSpine`, and optional `correctnessDefinition` per published schema `https://agentskeptic.com/schemas/outcome-certificate-v3.schema.json` */
             outcome_certificate: {
                 [key: string]: unknown;
             };
