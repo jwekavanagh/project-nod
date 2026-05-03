@@ -1,3 +1,9 @@
+## [6.1.0](https://github.com/jwekavanagh/agentskeptic/compare/v6.0.1...v6.1.0) (2026-05-03)
+
+### Features
+
+* remediation decision SSOT and certificate remediation UX ([#53](https://github.com/jwekavanagh/agentskeptic/issues/53)) ([c51a902](https://github.com/jwekavanagh/agentskeptic/commit/c51a902ef17f72a8a626420e8e684c8534905414))
+
 ## [6.0.1](https://github.com/jwekavanagh/agentskeptic/compare/v6.0.0...v6.0.1) (2026-05-03)
 
 ### Bug Fixes

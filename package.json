@@ -1,6 +1,6 @@
 {
   "name": "agentskeptic",
-  "version": "6.0.1",
+  "version": "6.1.0",
   "description": "Structured tool activity vs downstream state at verify time: SQL (SQLite, Postgres, MySQL), HTTP witnesses, supported vector indexes, MongoDB documents, and S3-compatible objects when configured—deterministic verdict artifacts (see verification-state-stores.md).",
   "license": "MIT",
   "type": "module",
