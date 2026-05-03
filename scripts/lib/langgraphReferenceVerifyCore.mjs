@@ -138,14 +138,14 @@ function parseWorkflowResult(stdout) {
   return obj;
 }
 
-/** stdout is Outcome Certificate v1/v2, not legacy WorkflowResult (schemaVersion 15). */
+/** stdout is Outcome Certificate v1–v3, not legacy WorkflowResult (schemaVersion 15). */
 function isOutcomeCertificateWireStdout(obj) {
   return (
     obj !== null &&
     typeof obj === "object" &&
     typeof obj.schemaVersion === "number" &&
     obj.schemaVersion >= 1 &&
-    obj.schemaVersion <= 2 &&
+    obj.schemaVersion <= 3 &&
     typeof obj.stateRelation === "string" &&
     "humanReport" in obj
   );
@@ -176,6 +176,9 @@ function assertVerifiedStdout(stdout) {
     }
     if (!cvs.every((r) => r && r.verdict === "verified")) {
       throw new Error("langgraph-reference-verify: OPERATIONAL: expected all checkpointVerdicts verified");
+    }
+    if (obj.schemaVersion === 3 && (obj.failureSpine === null || typeof obj.failureSpine !== "object")) {
+      throw new Error("langgraph-reference-verify: OPERATIONAL: v3 certificate must include failureSpine object");
     }
     return;
   }
