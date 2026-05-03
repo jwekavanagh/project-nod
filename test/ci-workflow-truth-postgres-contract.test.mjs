@@ -8,7 +8,7 @@ import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { spawnSync } from "node:child_process";
 import { loadSchemaValidator } from "../dist/schemaLoad.js";
-import { assertNoHumanReportStderrOptionalOssTelemetry } from "./oss-product-activation-cli-stderr.mjs";
+import { assertNoHumanReportStderrOptionalOssTelemetry } from "./oss-product-activation-cli-stderr.lib.mjs";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const root = join(__dirname, "..");

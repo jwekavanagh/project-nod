@@ -11,7 +11,7 @@ import { dirname } from "node:path";
 import { spawnSync } from "node:child_process";
 import { verifyWorkflow } from "../dist/pipeline.js";
 import { loadSchemaValidator } from "../dist/schemaLoad.js";
-import { parseExecutionTruthLayerJsonFromStderr } from "./oss-product-activation-cli-stderr.mjs";
+import { parseExecutionTruthLayerJsonFromStderr } from "./oss-product-activation-cli-stderr.lib.mjs";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const root = join(__dirname, "..");
