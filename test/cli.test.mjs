@@ -21,6 +21,17 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const root = join(__dirname, "..");
 const cliJs = join(root, "dist", "cli.js");
 
+const TELEMETRY_STATUS_OFFLINE = "Running offline: telemetry disabled.\n";
+
+function firstJsonEnvelopeFromStderr(stderr) {
+  const s = stderr.replace(/\r\n/g, "\n").trimEnd();
+  const line = s.split("\n").find((l) => l.trimStart().startsWith("{"));
+  if (!line) {
+    throw new Error(`expected JSON envelope line in stderr, got: ${stderr.slice(0, 400)}`);
+  }
+  return JSON.parse(line);
+}
+
 describe("CLI agentskeptic", () => {
   let dir;
   let dbPath;
@@ -69,10 +80,10 @@ describe("CLI agentskeptic", () => {
       "\n" +
       formatDistributionFooter()
     ).trimEnd();
-    assert.equal(stderr, expected);
+    assert.equal(stderr, TELEMETRY_STATUS_OFFLINE + expected);
   });
 
-  it("--no-human-report: stderr empty; stdout schema-valid wf_complete", () => {
+  it("--no-human-report: stderr is telemetry status only; stdout schema-valid wf_complete", () => {
     const r = spawnSync(
       process.execPath,
       [
@@ -91,7 +102,7 @@ describe("CLI agentskeptic", () => {
       { encoding: "utf8", cwd: root },
     );
     assert.equal(r.status, 0, r.stderr);
-    assert.equal(r.stderr, "");
+    assert.equal(r.stderr, TELEMETRY_STATUS_OFFLINE);
     const parsed = JSON.parse(r.stdout.trim());
     const validateResult = loadSchemaValidator("outcome-certificate-v3");
     assert.equal(validateResult(parsed), true, JSON.stringify(validateResult.errors ?? []));
@@ -101,7 +112,7 @@ describe("CLI agentskeptic", () => {
     assert.equal(parsed.runKind, "contract_sql");
   });
 
-  it("--share-report-origin to closed port: exit 3, stdout empty, stderr one JSON line SHARE_REPORT_FAILED", () => {
+  it("--share-report-origin to closed port: exit 3, stdout empty, stderr includes SHARE_REPORT_FAILED JSON", () => {
     const r = spawnSync(
       process.execPath,
       [
@@ -123,8 +134,9 @@ describe("CLI agentskeptic", () => {
     assert.equal(r.status, 3, r.stderr);
     assert.equal(r.stdout, "");
     const lines = r.stderr.replace(/\r\n/g, "\n").trimEnd().split("\n");
-    assert.equal(lines.length, 1);
-    const j = JSON.parse(lines[0]);
+    assert.ok(lines.length >= 2);
+    assert.equal(lines[0], "Running offline: telemetry disabled.");
+    const j = JSON.parse(lines[lines.length - 1]);
     assert.equal(j.code, CLI_OPERATIONAL_CODES.SHARE_REPORT_FAILED);
     assert.ok(String(j.message).includes("share_report_origin="));
   });
@@ -356,7 +368,7 @@ describe("CLI agentskeptic", () => {
       "eventual",
     ], { encoding: "utf8", cwd: root });
     assert.equal(r.status, 3);
-    const err = JSON.parse(r.stderr.trim());
+    const err = firstJsonEnvelopeFromStderr(r.stderr);
     assert.equal(err.code, CLI_OPERATIONAL_CODES.CLI_USAGE);
   });
 
@@ -380,7 +392,7 @@ describe("CLI agentskeptic", () => {
       "50",
     ], { encoding: "utf8", cwd: root });
     assert.equal(r.status, 3);
-    const err = JSON.parse(r.stderr.trim());
+    const err = firstJsonEnvelopeFromStderr(r.stderr);
     assert.equal(err.code, CLI_OPERATIONAL_CODES.VERIFICATION_POLICY_INVALID);
   });
 
@@ -402,7 +414,7 @@ describe("CLI agentskeptic", () => {
       "100",
     ], { encoding: "utf8", cwd: root });
     assert.equal(r.status, 3);
-    const err = JSON.parse(r.stderr.trim());
+    const err = firstJsonEnvelopeFromStderr(r.stderr);
     assert.equal(err.code, CLI_OPERATIONAL_CODES.CLI_USAGE);
   });
 

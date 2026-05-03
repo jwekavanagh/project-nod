@@ -34,6 +34,8 @@ import type { OutcomeCertificateV1 } from "../outcomeCertificate.js";
 import { emitVerifyWorkflowCliJsonAndExitByStatus } from "../standardVerifyWorkflowCli.js";
 import { formatDistributionFooter } from "../distributionFooter.js";
 import { maybeEmitOssClaimTicketUrlToStderr } from "../telemetry/maybeEmitOssClaimTicketUrl.js";
+import { maybePromptTelemetryAfterFirstOfflineSuccess } from "../telemetry/telemetryOfflineConsentPrompt.js";
+import { printProductActivationTelemetryStatusLineOnce } from "../telemetry/telemetryStatusLine.js";
 import { postProductActivationEvent } from "../telemetry/postProductActivationEvent.js";
 import { stableStringify } from "../quickVerify/canonicalJson.js";
 import type { QuickVerifyReport } from "../quickVerify/runQuickVerify.js";
@@ -286,6 +288,8 @@ export async function orchestrateVerifyBatchLockRun(restArgs: string[]): Promise
   });
   const suppressOssClaim = route.parsed.noHumanReport || route.parsed.shareReportOrigin !== undefined;
 
+  printProductActivationTelemetryStatusLineOnce();
+
   const batchLineage = classifyWorkflowLineage({
     subcommand: "batch_verify",
     workloadClass,
@@ -338,6 +342,11 @@ export async function orchestrateVerifyBatchLockRun(restArgs: string[]): Promise
   }
 
   if (terminal.tag === "workflow_terminal") {
+    await maybePromptTelemetryAfterFirstOfflineSuccess({
+      verificationUsedOnlyLocalSqliteFile: route.parsed.database.kind === "sqlite",
+      shareReportOriginUsed: route.parsed.shareReportOrigin !== undefined,
+      verifySucceeded: terminal.result.status === "complete",
+    });
     emitVerifyWorkflowCliJsonAndExitByStatus(terminal.result, {
       consoleLog: (line) => {
         console.log(line);
@@ -537,6 +546,8 @@ export async function orchestrateVerifyQuickLockRun(restArgs: string[]): Promise
   });
   const suppressOssClaim = route.pq.noHumanReport || route.pq.shareReportOrigin !== undefined;
 
+  printProductActivationTelemetryStatusLineOnce();
+
   const quickLockLineage = classifyWorkflowLineage({
     subcommand: "quick_verify",
     workloadClass,
@@ -595,6 +606,11 @@ export async function orchestrateVerifyQuickLockRun(restArgs: string[]): Promise
       console.error(qCert.humanReport);
       stderrWrite(formatDistributionFooter());
     }
+    await maybePromptTelemetryAfterFirstOfflineSuccess({
+      verificationUsedOnlyLocalSqliteFile: route.pq.postgresUrl === undefined,
+      shareReportOriginUsed: route.pq.shareReportOrigin !== undefined,
+      verifySucceeded: terminal.report.verdict === "pass",
+    });
     if (terminal.exitCode === 0) emitMonetizedBoundaryFootersOnSuccess();
     process.exit(terminal.exitCode);
   }

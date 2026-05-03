@@ -56,3 +56,46 @@ describe("maybeEmitOssClaimTicketUrlToStderr telemetry off", () => {
     assert.equal(claimHint, false);
   });
 });
+
+describe("maybeEmitOssClaimTicketUrlToStderr without telemetry opt-in", () => {
+  let prevTelemetry;
+  let prevClaim;
+  let prevFetch;
+  /** @type {unknown[]} */
+  let fetchCalls;
+
+  beforeEach(() => {
+    prevTelemetry = process.env.AGENTSKEPTIC_TELEMETRY;
+    prevClaim = process.env.AGENTSKEPTIC_OSS_CLAIM;
+    prevFetch = globalThis.fetch;
+    fetchCalls = [];
+    globalThis.fetch = async () => {
+      fetchCalls.push(true);
+      return { ok: true, status: 204 };
+    };
+    delete process.env.AGENTSKEPTIC_TELEMETRY;
+    process.env.AGENTSKEPTIC_OSS_CLAIM = "1";
+  });
+
+  afterEach(() => {
+    globalThis.fetch = prevFetch;
+    if (prevTelemetry === undefined) delete process.env.AGENTSKEPTIC_TELEMETRY;
+    else process.env.AGENTSKEPTIC_TELEMETRY = prevTelemetry;
+    if (prevClaim === undefined) delete process.env.AGENTSKEPTIC_OSS_CLAIM;
+    else process.env.AGENTSKEPTIC_OSS_CLAIM = prevClaim;
+  });
+
+  it("no fetch when AGENTSKEPTIC_TELEMETRY unset (OSS_CLAIM=1)", async () => {
+    const { maybeEmitOssClaimTicketUrlToStderr } = await import(
+      "../dist/telemetry/maybeEmitOssClaimTicketUrl.js"
+    );
+    await maybeEmitOssClaimTicketUrlToStderr({
+      run_id: "run-no-consent",
+      terminal_status: "complete",
+      workload_class: "non_bundled",
+      subcommand: "quick_verify",
+      build_profile: "oss",
+    });
+    assert.equal(fetchCalls.length, 0);
+  });
+});

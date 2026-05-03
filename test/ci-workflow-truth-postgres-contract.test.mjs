@@ -8,6 +8,7 @@ import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { spawnSync } from "node:child_process";
 import { loadSchemaValidator } from "../dist/schemaLoad.js";
+import { assertNoHumanReportStderrOptionalOssTelemetry } from "./oss-product-activation-cli-stderr.lib.mjs";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const root = join(__dirname, "..");
@@ -46,7 +47,7 @@ describe("CI workflow truth contract (Postgres CLI)", () => {
     );
     assert.ok(!r.error, r.error?.message ?? String(r.error));
     assert.equal(r.status, 0, r.stderr);
-    assert.equal(r.stderr, "");
+    assertNoHumanReportStderrOptionalOssTelemetry(r.stderr);
     const parsed = JSON.parse(r.stdout.trim());
     const validateResult = loadSchemaValidator("outcome-certificate-v3");
     assert.equal(validateResult(parsed), true, JSON.stringify(validateResult.errors ?? []));
@@ -80,7 +81,7 @@ describe("CI workflow truth contract (Postgres CLI)", () => {
     );
     assert.ok(!r.error, r.error?.message ?? String(r.error));
     assert.equal(r.status, 1, r.stderr);
-    assert.equal(r.stderr, "");
+    assertNoHumanReportStderrOptionalOssTelemetry(r.stderr);
     const parsed = JSON.parse(r.stdout.trim());
     const validateResult = loadSchemaValidator("outcome-certificate-v3");
     assert.equal(validateResult(parsed), true);
@@ -114,7 +115,7 @@ describe("CI workflow truth contract (Postgres CLI)", () => {
     );
     assert.ok(!r.error, r.error?.message ?? String(r.error));
     assert.equal(r.status, 0, r.stderr);
-    assert.equal(r.stderr, "");
+    assertNoHumanReportStderrOptionalOssTelemetry(r.stderr);
     const parsed = JSON.parse(r.stdout.trim());
     const validateResult = loadSchemaValidator("outcome-certificate-v3");
     assert.equal(validateResult(parsed), true, JSON.stringify(validateResult.errors ?? []));

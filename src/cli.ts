@@ -82,6 +82,8 @@ import { runBatchVerifyWithTelemetrySubcommand } from "./verify/batchVerifyTelem
 import { runCrossingSubcommand } from "./crossing/runCrossingSubcommand.js";
 import { runLoopSubcommand } from "./loop/runLoopSubcommand.js";
 import { maybeEmitOssClaimTicketUrlToStderr } from "./telemetry/maybeEmitOssClaimTicketUrl.js";
+import { maybePromptTelemetryAfterFirstOfflineSuccess } from "./telemetry/telemetryOfflineConsentPrompt.js";
+import { printProductActivationTelemetryStatusLineOnce } from "./telemetry/telemetryStatusLine.js";
 import { classifyWorkflowLineage } from "./funnel/workflowLineageClassify.js";
 import { postProductActivationEvent } from "./telemetry/postProductActivationEvent.js";
 import { runFunnelAnonCliAndExit } from "./cli/runFunnelAnonSet.js";
@@ -223,8 +225,10 @@ With strong, do not pass --verification-window-ms or --poll-interval-ms.
 Provide exactly one of --db or --postgres-url.
 
 Optional output:
-  --no-human-report   For verdict exits 0–2, do not print certificate.humanReport or distribution footer to stderr (stderr empty). stdout Outcome Certificate JSON is unchanged. Exit 3 stderr is unchanged (single-line JSON envelope).
+  --no-human-report   For verdict exits 0–2, do not print certificate.humanReport or distribution footer to stderr (stderr may still include a one-line product-telemetry status). stdout Outcome Certificate JSON is unchanged. Exit 3 stderr is unchanged (JSON envelope; may be preceded by the telemetry status line).
   --share-report-origin <https://host>   After successful verification, POST a shareable report (v3 envelope) to that origin (https only, origin with no path), then print human report + footer to stderr and Outcome Certificate JSON to stdout. On POST failure: exit 3, stdout empty, stderr single-line JSON envelope (code SHARE_REPORT_FAILED). See docs/shareable-verification-reports.md.
+
+Anonymous product telemetry (verify_started / verify_outcome) is opt-in: set AGENTSKEPTIC_TELEMETRY=1 or persist {"telemetry": true} in ~/.agentskeptic/config.json. Default is off (AGENTSKEPTIC_TELEMETRY unset). AGENTSKEPTIC_TELEMETRY=0 forces off. This gate does not disable --share-report-origin, remote DB URLs, state witnesses, or commercial license traffic.
 
 Exit codes:
   0  workflow status complete
@@ -778,6 +782,7 @@ async function runQuickSubcommand(args: string[]): Promise<void> {
     sqlitePath: dbPath ?? undefined,
     postgresUrl: postgresUrl ?? undefined,
   });
+  printProductActivationTelemetryStatusLineOnce();
   const quickLineage = classifyWorkflowLineage({
     subcommand: "quick_verify",
     workloadClass: quickWorkloadClass,
@@ -965,6 +970,11 @@ async function runQuickSubcommand(args: string[]): Promise<void> {
     xRequestId: quickHttpCorrelationId,
   });
   if (report.verdict === "pass") {
+    await maybePromptTelemetryAfterFirstOfflineSuccess({
+      verificationUsedOnlyLocalSqliteFile: pq.postgresUrl === undefined,
+      shareReportOriginUsed: shareReportOrigin !== undefined,
+      verifySucceeded: true,
+    });
     exitAfterQuickVerifyReceipt({
       quick: pq,
       certificate,

@@ -8,6 +8,7 @@ import {
 } from "../publicDistribution.generated.js";
 import { getOrCreateInstallId, getPersistedFunnelAnonIdForTelemetry } from "./cliInstallId.js";
 import { fetchWithTimeout } from "./fetchWithTimeout.js";
+import { isProductActivationTelemetryEnabled } from "./telemetryConsent.js";
 import { resolveTelemetrySource } from "./resolveTelemetrySource.js";
 import {
   PRODUCT_ACTIVATION_CLI_PRODUCT_HEADER,
@@ -57,10 +58,10 @@ export type PostProductActivationEventInput =
 
 /**
  * Best-effort POST to product-activation funnel. Never throws.
- * Disabled when AGENTSKEPTIC_TELEMETRY=0.
+ * Sends only when {@link isProductActivationTelemetryEnabled} is true (`AGENTSKEPTIC_TELEMETRY=1` or persisted config).
  */
 export async function postProductActivationEvent(input: PostProductActivationEventInput): Promise<void> {
-  if (process.env.AGENTSKEPTIC_TELEMETRY?.trim() === "0") return;
+  if (!isProductActivationTelemetryEnabled()) return;
 
   const overrideFunnelAnon = process.env.AGENTSKEPTIC_FUNNEL_ANON_ID?.trim();
   const funnelAnonId =

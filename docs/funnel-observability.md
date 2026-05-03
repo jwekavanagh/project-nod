@@ -73,7 +73,7 @@ These **minimum** outcomes for **`POST /api/funnel/product-activation`** are enf
 - **User outcome** — What happened on the machine running the CLI: terminal workflow or Quick Verify result, stdout/stderr contracts, and exit codes. This is **authoritative for product truth** (see [`verification-product.md`](verification-product.md)).
 - **Telemetry capture** — Whether **`funnel_event`** rows (e.g. **`verify_started`**, **`verify_outcome`**) were **accepted and persisted** on the telemetry-tier Postgres. This is **operator observation only** and **not authoritative** for product correctness; it is **not** proof of verification correctness and can diverge from user outcome.
 
-CLI posts use **`postProductActivationEvent`** semantics: **best-effort** `fetch` to **`/api/funnel/product-activation`**, **`AGENTSKEPTIC_TELEMETRY=0`** disables POSTs entirely, and failures do **not** change verification exit codes ([`src/telemetry/postProductActivationEvent.ts`](../src/telemetry/postProductActivationEvent.ts)). Therefore **absence of rows is ambiguous** without local/cli context.
+CLI posts use **`postProductActivationEvent`** semantics: **best-effort** `fetch` to **`/api/funnel/product-activation`** only when product-activation telemetry is **opted in** (**`AGENTSKEPTIC_TELEMETRY=1`** or persisted **`{"telemetry": true}`** in **`~/.agentskeptic/config.json`**). By default (**`AGENTSKEPTIC_TELEMETRY` unset** and no persisted opt-in) the OSS CLI sends **no** activation POSTs. **`AGENTSKEPTIC_TELEMETRY=0`** forces POSTs off. Failures do **not** change verification exit codes ([`src/telemetry/postProductActivationEvent.ts`](../src/telemetry/postProductActivationEvent.ts)). Therefore **absence of rows is ambiguous** without local/cli context.
 
 ### User-side
 
@@ -87,6 +87,7 @@ Factors where the integrator may never reach a terminal verification object, or 
 
 Factors where **user outcome can succeed** while **no qualifying `verify_outcome` row** appears for operator metrics (non-exhaustive); details and HTTP tables live elsewhere in this document:
 
+- **Telemetry not opted in** — default OSS CLI: **`AGENTSKEPTIC_TELEMETRY` unset** and no persisted **`telemetry: true`** → no activation POSTs.
 - **`AGENTSKEPTIC_TELEMETRY=0`** — no activation POSTs (see [`website/__tests__/integrate-activation-telemetry-off.integration.test.ts`](../website/__tests__/integrate-activation-telemetry-off.integration.test.ts)).
 - **Best-effort transport failure** — network, timeout (~400ms bound), skewed **`issued_at`** (**`400`**), oversize body (**`413`**), maintenance (**`503`**), missing telemetry DB (**`503`**); see [HTTP semantics](#post-apifunnelproduct-activation-http-semantics).
 - **Split deployment** — license API origin does not serve **`POST /api/funnel/product-activation`** unless **`AGENTSKEPTIC_TELEMETRY_ORIGIN`** is set correctly (see **Split deployments** above and **When to set `AGENTSKEPTIC_TELEMETRY_ORIGIN`** under [Operator reading metrics](#operator-reading-metrics-do-not-double-count)).
@@ -170,9 +171,9 @@ The signed-in **`/account`** page lists recent **licensed verify outcomes** per 
 | Duplicate `run_id` for same phase | **`204`** | No additional row |
 | Database error inside transaction | **`503`** | No |
 
-**CLI default `install_id`:** The Node CLI mints or reads a stable pseudonymous UUID, persists it locally at **`~/.agentskeptic/config.json`** (`{ "install_id": "<uuid>" }`), and sends it as **`install_id`** on every **`verify_started`** and **`verify_outcome`** activation POST when telemetry is enabled. If the file is missing, malformed, or not writable, the CLI uses a **process-lifetime** fallback id so both phases in one run still share the same value. **`AGENTSKEPTIC_TELEMETRY=0`** disables activation posts **and** skips reading or writing this file.
+**CLI default `install_id`:** When product-activation telemetry is enabled, the Node CLI mints or reads a stable pseudonymous UUID, persists it locally at **`~/.agentskeptic/config.json`** (`{ "install_id": "<uuid>" }`), and sends it as **`install_id`** on every **`verify_started`** and **`verify_outcome`** activation POST. If the file is missing, malformed, or not writable, the CLI uses a **process-lifetime** fallback id so both phases in one run still share the same value. When telemetry is disabled, activation posts are skipped (see [`src/telemetry/postProductActivationEvent.ts`](../src/telemetry/postProductActivationEvent.ts)).
 
-**CLI opt-out:** set **`AGENTSKEPTIC_TELEMETRY=0`** to disable anonymous CLI **`fetch`** for **`POST /api/funnel/product-activation`** (no `verify_started` / `verify_outcome` posts), **`POST /api/oss/claim-ticket`**, and the **stderr claim URL** helper (no stderr lines; no claim-ticket network). Licensed completion (`POST /api/v1/funnel/verify-outcome`) is unchanged so monetization metrics stay comparable.
+**CLI telemetry consent:** Opt in with **`AGENTSKEPTIC_TELEMETRY=1`** or persist **`{"telemetry": true}`** in **`~/.agentskeptic/config.json`**. Opt out / force off with **`AGENTSKEPTIC_TELEMETRY=0`**, or persist **`{"telemetry": false}`**. When disabled, the OSS CLI performs no anonymous **`fetch`** for **`POST /api/funnel/product-activation`** (no `verify_started` / `verify_outcome` posts), no **`POST /api/oss/claim-ticket`**, and the **stderr claim URL** helper does not run (**`AGENTSKEPTIC_OSS_CLAIM=1`** still requires telemetry consent). Licensed completion (`POST /api/v1/funnel/verify-outcome`) is unchanged so monetization metrics stay comparable.
 
 **CLI `telemetry_source`:** when telemetry is enabled, the CLI sends **v3** bodies (and always includes **`workflow_lineage`**) with **`telemetry_source`** from **`AGENTSKEPTIC_TELEMETRY_SOURCE`**: trim-equal **`local_dev`** → wire **`local_dev`**; otherwise **`unknown`** (resolver in `src/telemetry/resolveTelemetrySource.ts`).
 
@@ -269,7 +270,7 @@ Commercial vs OSS lock flags are normative in [`commercial-enforce-gate-normativ
 
 From the repository root, **`npm run validate-commercial`** must pass (includes website Vitest with DB migrations applied). That is the binary gate for this SSOT’s implementation staying green.
 
-**Manual smoke:** run a local OSS `verify` or `quick` against a deployment with core + telemetry migrations applied, **`TELEMETRY_DATABASE_URL`** set, **`AGENTSKEPTIC_TELEMETRY` unset**, and confirm one `verify_started` and one `verify_outcome` row appear for a single `run_id` in **telemetry** `funnel_event` (and matching rows in telemetry `product_activation_*_beacon`). With **`AGENTSKEPTIC_TELEMETRY=0`**, confirm **no** new rows for that run.
+**Manual smoke:** run a local OSS `verify` or `quick` against a deployment with core + telemetry migrations applied, **`TELEMETRY_DATABASE_URL`** set, **`AGENTSKEPTIC_TELEMETRY=1`** (or persisted **`{"telemetry": true}`**), and confirm one `verify_started` and one `verify_outcome` row appear for a single `run_id` in **telemetry** `funnel_event` (and matching rows in telemetry `product_activation_*_beacon`). With telemetry **not** opted in (default unset) or with **`AGENTSKEPTIC_TELEMETRY=0`**, confirm **no** new rows for that run.
 
 ### Operator validation (`telemetry_source`, `AGENTSKEPTIC_RUN_ID`)
 

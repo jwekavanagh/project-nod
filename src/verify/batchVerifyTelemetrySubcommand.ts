@@ -26,6 +26,8 @@ import {
   formatContractVerifyStderrForStderrLine,
   formatContractVerifyStderrForStderrWrite,
 } from "../decisionEvidenceHumanLayer.js";
+import { maybePromptTelemetryAfterFirstOfflineSuccess } from "../telemetry/telemetryOfflineConsentPrompt.js";
+import { printProductActivationTelemetryStatusLineOnce } from "../telemetry/telemetryStatusLine.js";
 import { maybeEmitOssClaimTicketUrlToStderr } from "../telemetry/maybeEmitOssClaimTicketUrl.js";
 import { classifyWorkflowLineage } from "../funnel/workflowLineageClassify.js";
 import { postProductActivationEvent } from "../telemetry/postProductActivationEvent.js";
@@ -127,6 +129,8 @@ export async function runBatchVerifyWithTelemetrySubcommand(
   }
   if (parsedMaybe === null) throw new Error("batch verify parse: unreachable null");
   const parsedBatch = parsedMaybe;
+
+  printProductActivationTelemetryStatusLineOnce();
 
   if (
     !parsedBatch.langgraphCheckpointTrust &&
@@ -323,6 +327,11 @@ export async function runBatchVerifyWithTelemetrySubcommand(
       workload_class: batchWorkloadClass,
       subcommand: opts.telemetrySubcommand,
       xRequestId: batchHttpCorrelationId,
+    });
+    await maybePromptTelemetryAfterFirstOfflineSuccess({
+      verificationUsedOnlyLocalSqliteFile: parsedBatch.database.kind === "sqlite",
+      shareReportOriginUsed: parsedBatch.shareReportOrigin !== undefined,
+      verifySucceeded: certificate.stateRelation === "matches_expectations",
     });
     if (workflowResultForStderrHook !== undefined) {
       opts.stderrAppendBeforeStdout?.(workflowResultForStderrHook);

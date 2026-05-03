@@ -1,4 +1,5 @@
 import { AGENTSKEPTIC_CLI_SEMVER } from "../publicDistribution.generated.js";
+import { isProductActivationTelemetryEnabled } from "./telemetryConsent.js";
 import { fetchWithTimeout } from "./fetchWithTimeout.js";
 import {
   PRODUCT_ACTIVATION_CLI_PRODUCT_HEADER,
@@ -44,7 +45,7 @@ function readProblemCode(j: Record<string, unknown> | null): string | undefined 
 }
 
 async function postOssClaimTicketOnce(input: PostOssClaimTicketInput): Promise<PostOssClaimTicketResult> {
-  if (process.env.AGENTSKEPTIC_TELEMETRY?.trim() === "0") return { outcome: "failed" };
+  if (!isProductActivationTelemetryEnabled()) return { outcome: "failed" };
 
   const base = resolveOssClaimApiOrigin();
   const url = `${base}/api/oss/claim-ticket`;

@@ -17,6 +17,7 @@ import { cliErrorEnvelope } from "./failureCatalog.js";
 import { OPERATIONAL_CODE_TO_SUMMARY, PRODUCTION_STEP_REASON_CODES } from "./failureOriginCatalog.js";
 import { OPERATIONAL_DISPOSITION } from "./operationalDisposition.js";
 import { buildRunComparisonReport } from "./runComparison.js";
+import { OSS_PRODUCT_ACTIVATION_TELEMETRY_STDERR_DISABLED } from "./telemetry/telemetryStatusLine.js";
 import { loadSchemaValidator } from "./schemaLoad.js";
 import type { FailureAnalysisBase, StepOutcome, WorkflowEngineResult, WorkflowResult } from "./types.js";
 import { createEmptyVerificationRunContext } from "./verificationRunContext.js";
@@ -328,7 +329,10 @@ describe("operational success: no stderr envelope (Module A negative)", () => {
       { encoding: "utf8", cwd: root },
     );
     expect(r.status).toBe(0);
-    expect(r.stderr).toBe("");
+    expect(
+      r.stderr === "" || r.stderr === OSS_PRODUCT_ACTIVATION_TELEMETRY_STDERR_DISABLED,
+      `expected no error stderr; got: ${JSON.stringify(r.stderr)}`,
+    ).toBe(true);
     const parsed = JSON.parse(r.stdout.trim()) as Record<string, unknown>;
     const validateResult = loadSchemaValidator("outcome-certificate-v3");
     expect(validateResult(parsed)).toBe(true);

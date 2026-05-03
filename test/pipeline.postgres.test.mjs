@@ -11,6 +11,7 @@ import { dirname } from "node:path";
 import { spawnSync } from "node:child_process";
 import { verifyWorkflow } from "../dist/pipeline.js";
 import { loadSchemaValidator } from "../dist/schemaLoad.js";
+import { parseExecutionTruthLayerJsonFromStderr } from "./oss-product-activation-cli-stderr.lib.mjs";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const root = join(__dirname, "..");
@@ -152,7 +153,7 @@ describe("verifyWorkflow Postgres integration", () => {
     assert.ok(!r.error, r.error?.message ?? String(r.error));
     assert.equal(r.status, 3);
     assert.equal(r.stdout.trim(), "");
-    const err = JSON.parse(r.stderr.trim());
+    const err = parseExecutionTruthLayerJsonFromStderr(r.stderr);
     assert.equal(err.kind, "execution_truth_layer_error");
     assert.equal(err.code, "POSTGRES_CLIENT_SETUP_FAILED");
     assert.ok(typeof err.message === "string");
@@ -179,7 +180,7 @@ describe("verifyWorkflow Postgres integration", () => {
     );
     assert.ok(!r.error, r.error?.message ?? String(r.error));
     assert.equal(r.status, 3);
-    const err = JSON.parse(r.stderr.trim());
+    const err = parseExecutionTruthLayerJsonFromStderr(r.stderr);
     assert.equal(err.code, "CLI_USAGE");
   });
 });

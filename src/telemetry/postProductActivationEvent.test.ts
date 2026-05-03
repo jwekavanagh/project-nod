@@ -30,9 +30,26 @@ describe("postProductActivationEvent", () => {
     expect(fetchMock).not.toHaveBeenCalled();
   });
 
+  it("does not call fetch when env unset and no persisted opt-in", async () => {
+    const fetchMock = vi.fn();
+    vi.stubGlobal("fetch", fetchMock);
+    delete process.env.AGENTSKEPTIC_TELEMETRY;
+    await postProductActivationEvent({
+      phase: "verify_started",
+      run_id: "r-unset",
+      issued_at: new Date().toISOString(),
+      workload_class: "non_bundled",
+      workflow_lineage: "integrator_scoped",
+      subcommand: "batch_verify",
+      build_profile: "oss",
+    });
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
   it("POSTs verify_started with CLI headers and does not throw on fetch failure", async () => {
     const fetchMock = vi.fn().mockRejectedValue(new Error("network down"));
     vi.stubGlobal("fetch", fetchMock);
+    process.env.AGENTSKEPTIC_TELEMETRY = "1";
     await postProductActivationEvent({
       phase: "verify_started",
       run_id: "r2",
@@ -57,6 +74,7 @@ describe("postProductActivationEvent", () => {
   it("POSTs telemetry_source local_dev when AGENTSKEPTIC_TELEMETRY_SOURCE=local_dev", async () => {
     const fetchMock = vi.fn().mockResolvedValue({ ok: true, status: 204 });
     vi.stubGlobal("fetch", fetchMock);
+    process.env.AGENTSKEPTIC_TELEMETRY = "1";
     process.env.AGENTSKEPTIC_TELEMETRY_SOURCE = "local_dev";
     await postProductActivationEvent({
       phase: "verify_started",
@@ -75,6 +93,7 @@ describe("postProductActivationEvent", () => {
   it("includes verification_hypothesis in JSON when AGENTSKEPTIC_VERIFICATION_HYPOTHESIS is valid", async () => {
     const fetchMock = vi.fn().mockResolvedValue({ ok: true, status: 204 });
     vi.stubGlobal("fetch", fetchMock);
+    process.env.AGENTSKEPTIC_TELEMETRY = "1";
     process.env.AGENTSKEPTIC_VERIFICATION_HYPOTHESIS = "  Expect_row_present  ";
     await postProductActivationEvent({
       phase: "verify_started",
@@ -93,6 +112,7 @@ describe("postProductActivationEvent", () => {
   it("omits verification_hypothesis when AGENTSKEPTIC_VERIFICATION_HYPOTHESIS is invalid", async () => {
     const fetchMock = vi.fn().mockResolvedValue({ ok: true, status: 204 });
     vi.stubGlobal("fetch", fetchMock);
+    process.env.AGENTSKEPTIC_TELEMETRY = "1";
     process.env.AGENTSKEPTIC_VERIFICATION_HYPOTHESIS = `bad"quote`;
     await postProductActivationEvent({
       phase: "verify_started",

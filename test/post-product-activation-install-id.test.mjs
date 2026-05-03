@@ -101,7 +101,7 @@ describe("postProductActivationEvent install_id", () => {
     const home = mkdtempSync(join(tmpdir(), "as-install-persist-"));
     try {
       setSandboxHome(home);
-      delete process.env.AGENTSKEPTIC_TELEMETRY;
+      process.env.AGENTSKEPTIC_TELEMETRY = "1";
       const { postProductActivationEvent } = await import(
         "../dist/telemetry/postProductActivationEvent.js"
       );
@@ -142,7 +142,7 @@ describe("postProductActivationEvent install_id", () => {
     const home = mkdtempSync(join(tmpdir(), "as-install-fallback-"));
     try {
       setSandboxHome(home);
-      delete process.env.AGENTSKEPTIC_TELEMETRY;
+      process.env.AGENTSKEPTIC_TELEMETRY = "1";
       writeFileSync(join(home, ".agentskeptic"), "not-a-directory", "utf8");
       const { resetCliInstallIdModuleStateForTests } = await import(
         "../dist/telemetry/cliInstallId.js"
@@ -183,7 +183,7 @@ describe("postProductActivationEvent install_id", () => {
     const home = mkdtempSync(join(tmpdir(), "as-install-badjson-"));
     try {
       setSandboxHome(home);
-      delete process.env.AGENTSKEPTIC_TELEMETRY;
+      process.env.AGENTSKEPTIC_TELEMETRY = "1";
       mkdirSync(join(home, ".agentskeptic"), { recursive: true });
       writeFileSync(join(home, ".agentskeptic", "config.json"), "{ not json", "utf8");
       const { resetCliInstallIdModuleStateForTests } = await import(
@@ -227,7 +227,7 @@ describe("postProductActivationEvent install_id", () => {
     const home = mkdtempSync(join(tmpdir(), "as-install-empty-"));
     try {
       setSandboxHome(home);
-      delete process.env.AGENTSKEPTIC_TELEMETRY;
+      process.env.AGENTSKEPTIC_TELEMETRY = "1";
       mkdirSync(join(home, ".agentskeptic"), { recursive: true });
       writeFileSync(join(home, ".agentskeptic", "config.json"), "{}", "utf8");
       const { resetCliInstallIdModuleStateForTests } = await import(
@@ -267,7 +267,7 @@ describe("postProductActivationEvent install_id", () => {
     const home = mkdtempSync(join(tmpdir(), "as-install-baduuid-"));
     try {
       setSandboxHome(home);
-      delete process.env.AGENTSKEPTIC_TELEMETRY;
+      process.env.AGENTSKEPTIC_TELEMETRY = "1";
       mkdirSync(join(home, ".agentskeptic"), { recursive: true });
       writeFileSync(
         join(home, ".agentskeptic", "config.json"),
@@ -315,7 +315,7 @@ describe("postProductActivationEvent install_id", () => {
     const home = mkdtempSync(join(tmpdir(), "as-funnel-override-"));
     try {
       setSandboxHome(home);
-      delete process.env.AGENTSKEPTIC_TELEMETRY;
+      process.env.AGENTSKEPTIC_TELEMETRY = "1";
       mkdirSync(join(home, ".agentskeptic"), { recursive: true });
       const diskFunnel = "f47ac10b-58cc-4372-a567-0e02b2c3d479";
       const envFunnel = "11111111-1111-4111-8111-111111111111";

@@ -2,6 +2,7 @@ import { randomBytes } from "node:crypto";
 import { LICENSE_PREFLIGHT_ENABLED } from "../generated/commercialBuildFlags.js";
 import { newActivationHttpCorrelationId } from "../commercial/activationCorrelation.js";
 import { postOssClaimTicket } from "./postOssClaimTicket.js";
+import { isProductActivationTelemetryEnabled } from "./telemetryConsent.js";
 
 export async function maybeEmitOssClaimTicketUrlToStderr(input: {
   run_id: string;
@@ -14,7 +15,7 @@ export async function maybeEmitOssClaimTicketUrlToStderr(input: {
 }): Promise<void> {
   if (LICENSE_PREFLIGHT_ENABLED) return;
   if (process.env.AGENTSKEPTIC_OSS_CLAIM?.trim() !== "1") return;
-  if (process.env.AGENTSKEPTIC_TELEMETRY?.trim() === "0") return;
+  if (!isProductActivationTelemetryEnabled()) return;
 
   const claim_secret = randomBytes(32).toString("hex");
   const issued_at = new Date().toISOString();
