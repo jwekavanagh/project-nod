@@ -1,7 +1,7 @@
 {
   "schemaVersion": 3,
   "certificate": {
-    "schemaVersion": 2,
+    "schemaVersion": 3,
     "workflowId": "wf_fixture_share_v2",
     "runKind": "contract_sql",
     "stateRelation": "does_not_match",
@@ -21,7 +21,7 @@
         "observedOutcome": "0 rows"
       }
     ],
-    "humanReport": "workflow_id: wf_fixture_share_v2\nworkflow_status: inconsistent\ntrust: NOT TRUSTED\n\n=== evidence_completeness ===\nBlocker: state_mismatch\nQuick signal: na\nNot verified:\n  - crm.upsert_contact:seq=0: ROW_ABSENT\nMissing input:\n  - ROW_ABSENT: Expected row is missing.\nNext:\n  - Review the evidence completeness block and workflow truth report, then decide on a manual fix path.\nTrust boundary: runKind=contract_sql highStakesReliance=prohibited (see certificate fields for normative meaning).\n=== end evidence_completeness ===",
+    "humanReport": "workflow_id: wf_fixture_share_v2\nworkflow_status: inconsistent\ntrust: NOT TRUSTED\n\n=== evidence_completeness ===\nBlocker: state_mismatch\nQuick signal: na\nNot verified:\n  - crm.upsert_contact:seq=0: ROW_ABSENT\nMissing input:\n  - ROW_ABSENT: Expected row is missing.\nNext:\n  - Review the evidence completeness block and workflow truth report, then decide on a manual fix path.\nTrust boundary: runKind=contract_sql highStakesReliance=prohibited (see certificate fields for normative meaning).\n=== end evidence_completeness ===\n\nfailure_spine:\n  trust_decision: unsafe\n  summary: Fixture headline for share POST v2\n  actionable_failure: category=state_inconsistency severity=high recommended_action=manual_review automation_safe=false\n  primary_codes: ROW_ABSENT\n  rerun_guidance: Review the evidence completeness block and workflow truth report, then decide on a manual fix path.\n  source: workflow",
     "evidenceCompleteness": {
       "schemaVersion": 1,
       "blockerCategory": "state_mismatch",
@@ -35,6 +35,20 @@
           "text": "Review the evidence completeness block and workflow truth report, then decide on a manual fix path."
         }
       ]
+    },
+    "failureSpine": {
+      "schemaVersion": 1,
+      "trustDecision": "unsafe",
+      "summary": "Fixture headline for share POST v2",
+      "actionableFailure": {
+        "category": "state_inconsistency",
+        "severity": "high",
+        "recommendedAction": "manual_review",
+        "automationSafe": false
+      },
+      "primaryCodes": ["ROW_ABSENT"],
+      "rerunGuidance": "Review the evidence completeness block and workflow truth report, then decide on a manual fix path.",
+      "source": "workflow"
     }
   }
 }

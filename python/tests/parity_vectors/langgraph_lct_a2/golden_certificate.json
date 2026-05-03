@@ -1,5 +1,5 @@
 {
-  "schemaVersion": 2,
+  "schemaVersion": 3,
   "workflowId": "wf_partner",
   "runKind": "contract_sql_langgraph_checkpoint_trust",
   "stateRelation": "not_established",
@@ -16,7 +16,7 @@
     ]
   },
   "steps": [],
-  "humanReport": "LangGraph checkpoint trust: ineligible\nMALFORMED_EVENT_LINE: Event line was missing, invalid JSON, or failed schema validation for a tool observation.\n\n=== evidence_completeness ===\nBlocker: verification_incomplete\nQuick signal: na\nNot verified:\n- LangGraph checkpoint trust: ineligible\nMissing input:\n- MALFORMED_EVENT_LINE: Event line was missing, invalid JSON, or failed schema validation for a tool observation.\nNext:\n- Repair NDJSON capture so checkpoint trust receives schema-valid schemaVersion 3 tool_observed lines for this workflow, then rerun verify.\nTrust boundary: runKind=contract_sql_langgraph_checkpoint_trust highStakesReliance=prohibited (see certificate fields for normative meaning).\n=== end evidence_completeness ===",
+  "humanReport": "LangGraph checkpoint trust: ineligible\nMALFORMED_EVENT_LINE: Event line was missing, invalid JSON, or failed schema validation for a tool observation.\n\n=== evidence_completeness ===\nBlocker: verification_incomplete\nQuick signal: na\nNot verified:\n- LangGraph checkpoint trust: ineligible\nMissing input:\n- MALFORMED_EVENT_LINE: Event line was missing, invalid JSON, or failed schema validation for a tool observation.\nNext:\n- Repair NDJSON capture so checkpoint trust receives schema-valid schemaVersion 3 tool_observed lines for this workflow, then rerun verify.\nTrust boundary: runKind=contract_sql_langgraph_checkpoint_trust highStakesReliance=prohibited (see certificate fields for normative meaning).\n=== end evidence_completeness ===\n\nfailure_spine:\n  trust_decision: unknown\n  summary: LangGraph checkpoint trust: ineligible\n  actionable_failure: category=bad_input severity=medium recommended_action=fix_event_ingest_and_steps automation_safe=false\n  primary_codes: LANGGRAPH_INELIGIBLE\n  rerun_guidance: Repair NDJSON event capture so each line is schema-valid tool_observed for this workflow, then rerun verify.\n  source: ineligible_langgraph",
   "evidenceCompleteness": {
     "schemaVersion": 1,
     "blockerCategory": "verification_incomplete",
@@ -37,5 +37,21 @@
         "text": "Repair NDJSON capture so checkpoint trust receives schema-valid schemaVersion 3 tool_observed lines for this workflow, then rerun verify."
       }
     ]
+  },
+  "failureSpine": {
+    "schemaVersion": 1,
+    "trustDecision": "unknown",
+    "summary": "LangGraph checkpoint trust: ineligible",
+    "actionableFailure": {
+      "category": "bad_input",
+      "severity": "medium",
+      "recommendedAction": "fix_event_ingest_and_steps",
+      "automationSafe": false
+    },
+    "primaryCodes": [
+      "LANGGRAPH_INELIGIBLE"
+    ],
+    "rerunGuidance": "Repair NDJSON event capture so each line is schema-valid tool_observed for this workflow, then rerun verify.",
+    "source": "ineligible_langgraph"
   }
 }

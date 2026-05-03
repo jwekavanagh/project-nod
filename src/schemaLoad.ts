@@ -89,6 +89,8 @@ export type SchemaValidatorName =
   | "evidence-completeness-v1"
   | "outcome-certificate-v1"
   | "outcome-certificate-v2"
+  | "outcome-certificate-v3"
+  | "failure-spine-v1"
   | "compare-run-manifest-v1"
   | "regression-artifact-v1"
   | "bootstrap-pack-input-v1"
@@ -190,6 +192,14 @@ export function loadSchemaValidator(name: SchemaValidatorName): ValidateFunction
     case "outcome-certificate-v2":
       compileSchemaFile("evidence-completeness-v1", "evidence-completeness-v1.schema.json");
       return compileSchemaFile(name, "outcome-certificate-v2.schema.json");
+    case "failure-spine-v1":
+      ensureWorkflowTruthForWireRefs();
+      return compileSchemaFile(name, "failure-spine-v1.schema.json");
+    case "outcome-certificate-v3":
+      compileSchemaFile("evidence-completeness-v1", "evidence-completeness-v1.schema.json");
+      ensureWorkflowTruthForWireRefs();
+      compileSchemaFile("failure-spine-v1", "failure-spine-v1.schema.json");
+      return compileSchemaFile(name, "outcome-certificate-v3.schema.json");
     case "quick-verify-report":
       compileSchemaFile("evidence-completeness-v1", "evidence-completeness-v1.schema.json");
       ensureWorkflowEmittedDependencies();
@@ -217,8 +227,9 @@ export function loadSchemaValidator(name: SchemaValidatorName): ValidateFunction
       return compileSchemaFile(name, "compare-run-manifest-v1.schema.json");
     case "regression-artifact-v1":
       compileSchemaFile("evidence-completeness-v1", "evidence-completeness-v1.schema.json");
-      compileSchemaFile("outcome-certificate-v2", "outcome-certificate-v2.schema.json");
       ensureWorkflowTruthForWireRefs();
+      compileSchemaFile("failure-spine-v1", "failure-spine-v1.schema.json");
+      compileSchemaFile("outcome-certificate-v3", "outcome-certificate-v3.schema.json");
       compileSchemaFile("run-comparison-report", "run-comparison-report.schema.json");
       compileSchemaFile("execution-trace-view", "execution-trace-view.schema.json");
       return compileSchemaFile(name, "regression-artifact-v1.schema.json");
@@ -227,7 +238,7 @@ export function loadSchemaValidator(name: SchemaValidatorName): ValidateFunction
       return compileSchemaFile(name, "public-verification-report-v2.schema.json");
     case "public-verification-report-v3":
       compileSchemaFile("evidence-completeness-v1", "evidence-completeness-v1.schema.json");
-      compileSchemaFile("outcome-certificate-v2", "outcome-certificate-v2.schema.json");
+      compileSchemaFile("outcome-certificate-v3", "outcome-certificate-v3.schema.json");
       return compileSchemaFile(name, "public-verification-report-v3.schema.json");
     case "openai-function-tool-call-item-v1":
       return compileSchemaFile(name, "openai-function-tool-call-item-v1.schema.json");

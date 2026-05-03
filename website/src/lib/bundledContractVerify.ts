@@ -6,7 +6,7 @@ import path from "node:path";
 import type { DemoScenarioId } from "./demoScenarios";
 import { DemoFixturesMissingError, resolveRepoExamplesPaths } from "./resolveRepoExamples";
 
-const validateCertificate = loadSchemaValidator("outcome-certificate-v2");
+const validateCertificate = loadSchemaValidator("outcome-certificate-v3");
 
 export class BundledVerifyResultSchemaMismatchError extends Error {
   readonly code = "BUNDLED_VERIFY_RESULT_SCHEMA_MISMATCH" as const;

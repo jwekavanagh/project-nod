@@ -7,7 +7,7 @@
   "properties": {
     "schemaVersion": { "type": "integer", "const": 3 },
     "certificate": {
-      "$ref": "https://agentskeptic.com/schemas/outcome-certificate-v2.schema.json"
+      "$ref": "https://agentskeptic.com/schemas/outcome-certificate-v3.schema.json"
     },
     "cliVersion": { "type": "string", "maxLength": 128 },
     "createdFrom": { "type": "string", "maxLength": 256 }

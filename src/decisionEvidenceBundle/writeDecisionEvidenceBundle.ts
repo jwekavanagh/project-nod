@@ -53,7 +53,7 @@ export function writeDecisionEvidenceBundle(options: WriteDecisionEvidenceBundle
   const resolved = path.resolve(options.outDir);
   mkdirSync(resolved, { recursive: true });
 
-  const validateCert = loadSchemaValidator("outcome-certificate-v2");
+  const validateCert = loadSchemaValidator("outcome-certificate-v3");
   if (!validateCert(options.certificate)) {
     throw new TruthLayerError(
       CLI_OPERATIONAL_CODES.INTERNAL_ERROR,

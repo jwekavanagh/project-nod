@@ -7,11 +7,47 @@ import {
   EVIDENCE_COMPLETENESS_BEGIN,
   formatEvidenceCompletenessHuman,
 } from "./formatEvidenceCompletenessHuman.js";
+import { formatFailureSpineHuman } from "./formatFailureSpineHuman.js";
+import type { FailureSpineV1 } from "./failureSpine.js";
+import { remediationMessageForRecommendedAction } from "./remediationMessage.js";
 import { writeDecisionEvidenceBundle } from "./decisionEvidenceBundle/writeDecisionEvidenceBundle.js";
 import {
   formatValidationStdout,
   validateDecisionEvidenceBundle,
 } from "./decisionEvidenceBundle/validateDecisionEvidenceBundle.js";
+
+function minimalFailureSpine(stateRelation: OutcomeCertificateV1["stateRelation"]): FailureSpineV1 {
+  if (stateRelation === "matches_expectations") {
+    return {
+      schemaVersion: 1,
+      trustDecision: "safe",
+      summary: "s",
+      actionableFailure: {
+        category: "unclassified",
+        severity: "low",
+        recommendedAction: "none",
+        automationSafe: true,
+      },
+      primaryCodes: ["OK"],
+      rerunGuidance: remediationMessageForRecommendedAction("none"),
+      source: "workflow",
+    };
+  }
+  return {
+    schemaVersion: 1,
+    trustDecision: "unsafe",
+    summary: "h",
+    actionableFailure: {
+      category: "state_inconsistency",
+      severity: "high",
+      recommendedAction: "manual_review",
+      automationSafe: false,
+    },
+    primaryCodes: ["ROW_ABSENT"],
+    rerunGuidance: remediationMessageForRecommendedAction("manual_review"),
+    source: "workflow",
+  };
+}
 
 function minimalCertificate(stateRelation: OutcomeCertificateV1["stateRelation"]): OutcomeCertificateV1 {
   const ec = minimalEvidenceCompletenessFixture(
@@ -20,10 +56,12 @@ function minimalCertificate(stateRelation: OutcomeCertificateV1["stateRelation"]
     : { blockerCategory: "state_mismatch" },
   );
   const rl = stateRelation === "matches_expectations" ? "permitted" : ("prohibited" as const);
-  const hr = `${"human"}\n\n${formatEvidenceCompletenessHuman(ec, { runKind: "contract_sql", highStakesReliance: rl })}`;
-  if (!hr.includes(EVIDENCE_COMPLETENESS_BEGIN)) throw new Error("fixture humanReport missing anchors");
+  const fs = minimalFailureSpine(stateRelation);
+  const hrBase = `${"human"}\n\n${formatEvidenceCompletenessHuman(ec, { runKind: "contract_sql", highStakesReliance: rl })}`;
+  if (!hrBase.includes(EVIDENCE_COMPLETENESS_BEGIN)) throw new Error("fixture humanReport missing anchors");
+  const hr = `${hrBase}\n\n${formatFailureSpineHuman(fs)}`;
   return {
-    schemaVersion: 2,
+    schemaVersion: 3,
     workflowId: "wf_test",
     runKind: "contract_sql",
     stateRelation,
@@ -34,6 +72,7 @@ function minimalCertificate(stateRelation: OutcomeCertificateV1["stateRelation"]
     evidenceCompleteness: ec,
     steps: [],
     humanReport: hr,
+    failureSpine: fs,
   };
 }
 

@@ -8,7 +8,7 @@ import {
 import {
   buildOutcomeCertificateFromWorkflowResult,
   truthCheckVerdictFromCertificate,
-  type OutcomeCertificateV1,
+  type OutcomeCertificateV3,
 } from "./outcomeCertificate.js";
 import type { WorkflowResult } from "./types.js";
 import { loadSchemaValidator } from "./schemaLoad.js";
@@ -37,10 +37,10 @@ export async function runBatchVerifyToValidatedResult(
 /** Validates engine `WorkflowResult`, builds public Outcome Certificate v1, validates certificate schema. */
 export async function runBatchVerifyToValidatedCertificate(
   runVerify: () => Promise<WorkflowResult>,
-): Promise<{ workflowResult: WorkflowResult; certificate: OutcomeCertificateV1 }> {
+): Promise<{ workflowResult: WorkflowResult; certificate: OutcomeCertificateV3 }> {
   const workflowResult = await runBatchVerifyToValidatedResult(runVerify);
   const certificate = buildOutcomeCertificateFromWorkflowResult(workflowResult, "contract_sql");
-  const validateCert = loadSchemaValidator("outcome-certificate-v2");
+  const validateCert = loadSchemaValidator("outcome-certificate-v3");
   if (!validateCert(certificate)) {
     throw new TruthLayerError(
       CLI_OPERATIONAL_CODES.WORKFLOW_RESULT_SCHEMA_INVALID,
@@ -62,7 +62,7 @@ export type StandardVerifyWorkflowCliIo = {
  * Print Outcome Certificate JSON to stdout and exit by `stateRelation` (same thresholds as legacy workflow status).
  */
 export function emitOutcomeCertificateCliAndExitByStateRelation(
-  certificate: OutcomeCertificateV1,
+  certificate: OutcomeCertificateV3,
   io: Pick<StandardVerifyWorkflowCliIo, "consoleLog" | "exit">,
 ): void {
   io.consoleLog(JSON.stringify(certificate));
@@ -118,21 +118,21 @@ export async function runStandardVerifyWorkflowCliToTerminalResult(options: {
   /** When set, used instead of `runVerify` + default contract certificate builder (e.g. LangGraph checkpoint trust). */
   runVerifyWithCertificate?: () => Promise<{
     workflowResult: WorkflowResult;
-    certificate: OutcomeCertificateV1;
+    certificate: OutcomeCertificateV3;
   }>;
-  maybeWriteBundle?: (result: WorkflowResult, certificate: OutcomeCertificateV1) => void;
+  maybeWriteBundle?: (result: WorkflowResult, certificate: OutcomeCertificateV3) => void;
   /** When set, human stderr is deferred until after a successful POST to this origin. */
   shareReportOrigin?: string;
   io?: Partial<StandardVerifyWorkflowCliIo>;
   /** When true, prefix stderr human output with `truth_check_verdict:` (agentskeptic check). */
   truthCheckInvoked?: boolean;
-}): Promise<{ certificate: OutcomeCertificateV1; workflowResult: WorkflowResult }> {
+}): Promise<{ certificate: OutcomeCertificateV3; workflowResult: WorkflowResult }> {
   const io = { ...defaultIo, ...options.io };
   const writeCliError = (code: string, message: string): void => {
     io.stderrLine(cliErrorEnvelope(code, message));
   };
 
-  let certificate: OutcomeCertificateV1;
+  let certificate: OutcomeCertificateV3;
   let workflowResult: WorkflowResult;
   try {
     if (options.runVerifyWithCertificate) {
@@ -146,7 +146,7 @@ export async function runStandardVerifyWorkflowCliToTerminalResult(options: {
           JSON.stringify(validateWf.errors ?? []),
         );
       }
-      const validateCert = loadSchemaValidator("outcome-certificate-v2");
+      const validateCert = loadSchemaValidator("outcome-certificate-v3");
       if (!validateCert(certificate)) {
         throw new TruthLayerError(
           CLI_OPERATIONAL_CODES.WORKFLOW_RESULT_SCHEMA_INVALID,
@@ -196,7 +196,7 @@ export async function runStandardVerifyWorkflowCliToTerminalResult(options: {
   const origin = options.shareReportOrigin;
   if (origin !== undefined) {
     const shareRes = await postPublicVerificationReport(origin, {
-      schemaVersion: 2,
+      schemaVersion: 3,
       certificate,
     });
     if (!shareRes.ok) {
@@ -224,7 +224,7 @@ export async function runStandardVerifyWorkflowCliToTerminalResult(options: {
  */
 export async function runStandardVerifyWorkflowCliFlow(options: {
   runVerify: () => Promise<WorkflowResult>;
-  maybeWriteBundle?: (result: WorkflowResult, certificate: OutcomeCertificateV1) => void;
+  maybeWriteBundle?: (result: WorkflowResult, certificate: OutcomeCertificateV3) => void;
   /** When set, human stderr is deferred until after a successful POST to this origin. */
   shareReportOrigin?: string;
   io?: Partial<StandardVerifyWorkflowCliIo>;

@@ -62,7 +62,7 @@ function wf(steps: StepOutcome[], id = "wf_compare_ac"): WorkflowResult {
 describe("Run comparison acceptance tests", () => {
   const v = loadSchemaValidator("run-comparison-report");
   const vArtifact = loadSchemaValidator("regression-artifact-v1");
-  const vCert = loadSchemaValidator("outcome-certificate-v2");
+  const vCert = loadSchemaValidator("outcome-certificate-v3");
 
   it("AC_9_1_multi_run_compare_emits_schema_v4", () => {
     const r0 = wf([sqlRowStep(0, "t", "a", true)]);

@@ -27,6 +27,9 @@ const MAX_SUMMARY_UTF8_BYTES = 65536;
 const MAX_PR_BODY_UTF8_BYTES = 10240;
 const STDERR_TAIL_LINES = 20;
 
+/** Max UTF-8 bytes of stdout parsed for Outcome Certificate JSON (`failureSpine` extraction). */
+const MAX_STDOUT_PARSE_BYTES = 262144;
+
 const REPO_ROOT = join(__dirname, "..");
 const README_ADOPTION_START = "<!-- adoption-canonical:start -->";
 const README_ADOPTION_END = "<!-- adoption-canonical:end -->";
@@ -311,8 +314,109 @@ function formatStderrBlock(stderrText) {
 }
 
 /**
- * Assemble PR body: header → optional verdict → stderr → footer → marker.
- * Truncates stderr block from the start only until UTF-8 length ≤ max.
+ * Parse workflow stdout for a single-line/single-object Outcome Certificate JSON and extract `failureSpine`.
+ * @param {string} stdoutText
+ * @returns {{ ok: true; spine: Record<string, unknown> } | { malformed: true } | { oversized: true }}
+ */
+function extractFailureSummaryFromStdout(stdoutText) {
+  const t = String(stdoutText ?? "").trim();
+  if (t.length === 0) return { malformed: true };
+  if (utf8ByteLength(t) > MAX_STDOUT_PARSE_BYTES) return { oversized: true };
+  let obj;
+  try {
+    obj = JSON.parse(t);
+  } catch {
+    return { malformed: true };
+  }
+  if (!obj || typeof obj !== "object") return { malformed: true };
+  const spine = obj.failureSpine;
+  if (!spine || typeof spine !== "object") return { malformed: true };
+  return { ok: true, spine };
+}
+
+/**
+ * @param {Record<string, unknown>} spine
+ */
+function renderFailureSummaryMarkdownFromSpine(spine) {
+  const af = /** @type {{ category: string; severity: string; recommendedAction: string; automationSafe: boolean }} */ (
+    spine.actionableFailure
+  );
+  const codes = Array.isArray(spine.primaryCodes) ? spine.primaryCodes.join(",") : "";
+  return [
+    "## Failure summary (agentskeptic)",
+    "",
+    `- trust_decision: ${spine.trustDecision}`,
+    `- summary: ${spine.summary}`,
+    `- actionable_failure: category=${af.category} severity=${af.severity} recommended_action=${af.recommendedAction} automation_safe=${af.automationSafe}`,
+    `- primary_codes: ${codes}`,
+    `- rerun_guidance: ${spine.rerunGuidance}`,
+    `- source: ${spine.source}`,
+    "",
+  ].join("\n");
+}
+
+/**
+ * @param {Record<string, unknown>} envelope — cli-error-envelope JSON
+ */
+function projectCliEnvelopeToCiMarkdown(envelope) {
+  const fd = /** @type {{ summary: string; actionableFailure: { category: string; severity: string; recommendedAction: string; automationSafe: boolean } }} */ (
+    envelope.failureDiagnosis
+  );
+  const af = fd.actionableFailure;
+  return [
+    "## Failure summary (agentskeptic)",
+    "",
+    "- trust_decision: unknown",
+    `- summary: ${fd.summary}`,
+    `- actionable_failure: category=${af.category} severity=${af.severity} recommended_action=${af.recommendedAction} automation_safe=${af.automationSafe}`,
+    "- primary_codes: _(operational)_",
+    `- rerun_guidance: ${String(envelope.message)}`,
+    "- source: operational",
+    "",
+  ].join("\n");
+}
+
+/**
+ * @param {string} line
+ */
+function tryParseCliErrorEnvelopeLine(line) {
+  const s = String(line).trim();
+  if (!s.startsWith("{")) return null;
+  try {
+    const o = JSON.parse(s);
+    if (
+      o &&
+      typeof o === "object" &&
+      o.schemaVersion === 2 &&
+      o.kind === "execution_truth_layer_error" &&
+      o.failureDiagnosis &&
+      typeof o.failureDiagnosis === "object" &&
+      o.failureDiagnosis.actionableFailure
+    ) {
+      return o;
+    }
+  } catch {
+    /* ignore */
+  }
+  return null;
+}
+
+/**
+ * @param {string} stderrText
+ * @returns {string[]}
+ */
+function extractOperationalFailureMarkdownFromStderr(stderrText) {
+  const out = [];
+  for (const line of String(stderrText).split(/\r?\n/)) {
+    const env = tryParseCliErrorEnvelopeLine(line);
+    if (env) out.push(projectCliEnvelopeToCiMarkdown(env));
+  }
+  return out;
+}
+
+/**
+ * Assemble PR body: header → optional stdout oversize note → failure summary (certificate spine and/or operational stderr) → stderr → footer → marker.
+ * Truncates stderr tail lines from the front until UTF-8 length ≤ max (failure summary retained).
  *
  * @param {Record<string, unknown>} payload
  * @param {{ stderrText: string; workflowStdoutText: string }} capture
@@ -329,12 +433,27 @@ ${String(payload.identityOneLiner)}
 
 `;
 
-  const verdictTrim = String(workflowStdoutText).trim();
-  const oneLine =
-    verdictTrim.length > 0 ? verdictTrim.split("\n")[0].slice(0, 500) : "";
-  const verdictSection = oneLine
-    ? ["## Verification stdout (first line)", "", "```", oneLine, "```", ""].join("\n")
-    : "";
+  const ext = extractFailureSummaryFromStdout(workflowStdoutText);
+  const operationalBlocks = extractOperationalFailureMarkdownFromStderr(stderrText);
+
+  let oversizedNote = "";
+  if (ext.oversized) {
+    oversizedNote = `_(stdout exceeded 262144 UTF-8 bytes; failure summary skipped)_\n\n`;
+  }
+
+  const failureParts = [];
+  if ("ok" in ext && ext.ok) failureParts.push(renderFailureSummaryMarkdownFromSpine(ext.spine));
+  failureParts.push(...operationalBlocks);
+
+  const failureSummaryBlock = failureParts.length > 0 ? failureParts.join("\n") : "";
+
+  let unparsedStdoutBlock = "";
+  if (ext.malformed) {
+    const rawOut = String(workflowStdoutText).trim();
+    if (rawOut.length > 0) {
+      unparsedStdoutBlock = `## Verification stdout (unparsed)\n\n\`\`\`text\n${rawOut}\n\`\`\`\n\n`;
+    }
+  }
 
   let stderrBlock = formatStderrBlock(stderrText);
 
@@ -350,12 +469,16 @@ ${String(payload.identityOneLiner)}
     "",
   ].join("\n");
 
-  function assemble(verdict, sb) {
-    const raw = header + verdict + sb + footer;
+  function assemble(middle) {
+    const raw = header + middle + footer;
     return normalizeDiscoveryText(raw);
   }
 
-  let body = assemble(verdictSection, stderrBlock);
+  function middleFrom(stderrBlk) {
+    return oversizedNote + failureSummaryBlock + unparsedStdoutBlock + stderrBlk;
+  }
+
+  let body = assemble(middleFrom(stderrBlock));
   if (utf8ByteLength(body) <= MAX_PR_BODY_UTF8_BYTES) {
     return body;
   }
@@ -367,18 +490,13 @@ ${String(payload.identityOneLiner)}
     stderrBlock = inner
       ? `## CLI stderr (last ${STDERR_TAIL_LINES} lines)\n\n\`\`\`text\n${inner}\n\`\`\`\n`
       : "## CLI stderr (last 20 lines)\n\n_(no stderr)_\n";
-    body = assemble(verdictSection, stderrBlock);
+    body = assemble(middleFrom(stderrBlock));
     if (utf8ByteLength(body) <= MAX_PR_BODY_UTF8_BYTES) return body;
   }
 
   stderrBlock = "## CLI stderr (last 20 lines)\n\n_(no stderr)_\n";
-  body = assemble(verdictSection, stderrBlock);
+  body = assemble(middleFrom(stderrBlock));
   if (utf8ByteLength(body) <= MAX_PR_BODY_UTF8_BYTES) return body;
-
-  if (verdictSection) {
-    body = assemble("", stderrBlock);
-    if (utf8ByteLength(body) <= MAX_PR_BODY_UTF8_BYTES) return body;
-  }
 
   throw new Error(
     `discovery-payload: PR body still exceeds ${MAX_PR_BODY_UTF8_BYTES} bytes after truncation`,
@@ -408,6 +526,7 @@ module.exports = {
   PR_MARKER_LINE_LEGACY,
   MAX_SUMMARY_UTF8_BYTES,
   MAX_PR_BODY_UTF8_BYTES,
+  MAX_STDOUT_PARSE_BYTES,
   STDERR_TAIL_LINES,
   buildDiscoveryPayload,
   normalizeDiscoveryText,
@@ -417,6 +536,9 @@ module.exports = {
   renderLlmsTextFromPayload,
   renderCiSummaryMarkdownFromPayload,
   renderCiPrBodyFromPayload,
+  extractFailureSummaryFromStdout,
+  renderFailureSummaryMarkdownFromSpine,
+  projectCliEnvelopeToCiMarkdown,
   parseGithubRepoFromUrl,
   selectPrCommentUpsert,
 };

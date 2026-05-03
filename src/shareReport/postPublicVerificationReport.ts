@@ -1,4 +1,4 @@
-import type { OutcomeCertificateV1 } from "../outcomeCertificate.js";
+import type { OutcomeCertificateV3 } from "../outcomeCertificate.js";
 
 const MAX_BODY_BYTES = 393216;
 
@@ -17,8 +17,8 @@ export type ShareReportEnvelope =
       humanReportText: string;
     }
   | {
-      schemaVersion: 2;
-      certificate: OutcomeCertificateV1;
+      schemaVersion: 3;
+      certificate: OutcomeCertificateV3;
       cliVersion?: string;
       createdFrom?: string;
     };
@@ -58,7 +58,7 @@ export async function postPublicVerificationReport(
   try {
     const json = JSON.parse(text) as { schemaVersion?: number; id?: string; url?: string };
     if (
-      (json.schemaVersion !== 1 && json.schemaVersion !== 2) ||
+      json.schemaVersion !== 3 ||
       typeof json.id !== "string" ||
       typeof json.url !== "string"
     ) {

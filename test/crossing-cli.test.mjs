@@ -67,7 +67,7 @@ describe("crossing CLI", () => {
     const lines = r.stdout.trim().split(/\r?\n/).filter(Boolean);
     assert.equal(lines.length, 1, r.stdout);
     const cert = JSON.parse(lines[0]);
-    const validateCert = loadSchemaValidator("outcome-certificate-v2");
+    const validateCert = loadSchemaValidator("outcome-certificate-v3");
     assert.equal(validateCert(cert), true);
     assert.equal(cert.stateRelation, "matches_expectations");
     assert.ok(r.stderr.includes("Decision-ready ProductionComplete"), r.stderr);

@@ -61,7 +61,7 @@ describe("CLI agentskeptic", () => {
     const stdout = r.stdout.trimEnd();
     const stderr = r.stderr.replace(/\r\n/g, "\n").trimEnd();
     const parsed = JSON.parse(stdout);
-    const validateResult = loadSchemaValidator("outcome-certificate-v2");
+    const validateResult = loadSchemaValidator("outcome-certificate-v3");
     assert.equal(validateResult(parsed), true, JSON.stringify(validateResult.errors ?? []));
     assert.equal(parsed.humanReport, formatOutcomeCertificateHuman(parsed));
     const expected = (
@@ -93,7 +93,7 @@ describe("CLI agentskeptic", () => {
     assert.equal(r.status, 0, r.stderr);
     assert.equal(r.stderr, "");
     const parsed = JSON.parse(r.stdout.trim());
-    const validateResult = loadSchemaValidator("outcome-certificate-v2");
+    const validateResult = loadSchemaValidator("outcome-certificate-v3");
     assert.equal(validateResult(parsed), true, JSON.stringify(validateResult.errors ?? []));
     assert.equal(parsed.workflowId, "wf_complete");
     assert.equal(parsed.stateRelation, "matches_expectations");

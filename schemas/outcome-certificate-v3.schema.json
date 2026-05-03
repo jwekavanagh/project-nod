@@ -1,0 +1,97 @@
+{
+  "$id": "https://agentskeptic.com/schemas/outcome-certificate-v3.schema.json",
+  "title": "OutcomeCertificateV3",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "workflowId",
+    "runKind",
+    "stateRelation",
+    "highStakesReliance",
+    "relianceRationale",
+    "intentSummary",
+    "explanation",
+    "steps",
+    "humanReport",
+    "evidenceCompleteness",
+    "failureSpine"
+  ],
+  "properties": {
+    "schemaVersion": { "type": "integer", "const": 3 },
+    "workflowId": { "type": "string", "minLength": 1, "maxLength": 512 },
+    "runKind": {
+      "type": "string",
+      "enum": ["contract_sql", "contract_sql_langgraph_checkpoint_trust", "quick_preview"]
+    },
+    "stateRelation": {
+      "type": "string",
+      "enum": ["matches_expectations", "does_not_match", "not_established"]
+    },
+    "highStakesReliance": { "type": "string", "enum": ["permitted", "prohibited"] },
+    "relianceRationale": { "type": "string", "minLength": 1, "maxLength": 8192 },
+    "intentSummary": { "type": "string", "minLength": 1, "maxLength": 8192 },
+    "explanation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["headline", "details"],
+      "properties": {
+        "headline": { "type": "string", "minLength": 1, "maxLength": 2048 },
+        "details": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["code", "message"],
+            "properties": {
+              "code": { "type": "string", "minLength": 1, "maxLength": 256 },
+              "message": { "type": "string", "minLength": 1, "maxLength": 4096 }
+            }
+          }
+        }
+      }
+    },
+    "steps": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["seq", "declaredAction", "expectedOutcome", "observedOutcome"],
+        "properties": {
+          "seq": { "type": "integer", "minimum": 0 },
+          "toolId": { "type": "string", "maxLength": 512 },
+          "declaredAction": { "type": "string", "minLength": 1, "maxLength": 4096 },
+          "expectedOutcome": { "type": "string", "minLength": 1, "maxLength": 4096 },
+          "observedOutcome": { "type": "string", "minLength": 1, "maxLength": 8192 }
+        }
+      }
+    },
+    "humanReport": { "type": "string", "minLength": 1, "maxLength": 1048576 },
+    "checkpointVerdicts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["checkpointKey", "verdict", "seqs", "productionMeaning"],
+        "properties": {
+          "checkpointKey": { "type": "string", "minLength": 1, "maxLength": 2048 },
+          "verdict": {
+            "type": "string",
+            "enum": ["verified", "inconsistent", "incomplete"]
+          },
+          "seqs": {
+            "type": "array",
+            "items": { "type": "integer", "minimum": 0 }
+          },
+          "productionMeaning": { "type": "string", "minLength": 1, "maxLength": 8192 }
+        }
+      }
+    },
+    "evidenceCompleteness": {
+      "$ref": "https://agentskeptic.com/schemas/evidence-completeness-v1.schema.json"
+    },
+    "failureSpine": {
+      "$ref": "https://agentskeptic.com/schemas/failure-spine-v1.schema.json"
+    }
+  }
+}

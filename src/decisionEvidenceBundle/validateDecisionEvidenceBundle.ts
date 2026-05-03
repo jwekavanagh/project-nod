@@ -65,7 +65,7 @@ export function validateDecisionEvidenceBundle(bundleDir: string): DecisionBundl
     if (!parsed.ok) {
       structuralErrors.push({ code: "CERTIFICATE_PARSE", message: parsed.message });
     } else {
-      const v = loadSchemaValidator("outcome-certificate-v2");
+      const v = loadSchemaValidator("outcome-certificate-v3");
       if (!v(parsed.value)) {
         structuralErrors.push({
           code: "CERTIFICATE_SCHEMA",

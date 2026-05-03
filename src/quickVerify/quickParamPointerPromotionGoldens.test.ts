@@ -8,6 +8,10 @@ import { stableStringify } from "./canonicalJson.js";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
 const dbPath = join(root, "test/fixtures/quick-param-pointer/pointer-promotion.sqlite");
+
+function readGolden(path: string): string {
+  return readFileSync(path, "utf8").replace(/\r\n/g, "\n");
+}
 const promoLine =
   JSON.stringify({
     toolId: "aa.save",
@@ -22,14 +26,10 @@ describe("quick param pointer promotion goldens", () => {
     });
     const row = report.units.find((u) => u.kind === "row");
     expect(row?.contractEligible).toBe(true);
-    expect(readFileSync(join(root, "test/golden/quick-param-pointer/v1/export.tools.json"), "utf8")).toBe(
-      registryUtf8,
-    );
+    expect(readGolden(join(root, "test/golden/quick-param-pointer/v1/export.tools.json"))).toBe(registryUtf8);
     const events = buildQuickContractEventsNdjson({ workflowId: "quick-verify", exports: contractExports });
-    expect(readFileSync(join(root, "test/golden/quick-param-pointer/v1/contract.events.ndjson"), "utf8")).toBe(
-      events,
-    );
-    expect(readFileSync(join(root, "test/golden/quick-param-pointer/v1/quick.stdout.promoted.jsonline"), "utf8")).toBe(
+    expect(readGolden(join(root, "test/golden/quick-param-pointer/v1/contract.events.ndjson"))).toBe(events);
+    expect(readGolden(join(root, "test/golden/quick-param-pointer/v1/quick.stdout.promoted.jsonline"))).toBe(
       quickReportToStdoutLine(report),
     );
     const slice = {
@@ -37,7 +37,7 @@ describe("quick param pointer promotion goldens", () => {
       reasonCodes: row?.reasonCodes,
       inference: row?.inference,
     };
-    expect(readFileSync(join(root, "test/golden/quick-param-pointer/v1/expected.unit-row-slice.json"), "utf8")).toBe(
+    expect(readGolden(join(root, "test/golden/quick-param-pointer/v1/expected.unit-row-slice.json"))).toBe(
       stableStringify(slice) + "\n",
     );
   });

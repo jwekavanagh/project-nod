@@ -1,16 +1,36 @@
 import { describe, expect, it } from "vitest";
 import type { OutcomeCertificateV1 } from "./outcomeCertificate.js";
 import { minimalEvidenceCompletenessFixture } from "./evidenceCompleteness.js";
+import { formatFailureSpineHuman } from "./formatFailureSpineHuman.js";
+import { remediationMessageForRecommendedAction } from "./remediationMessage.js";
 import {
   canonicalCertificateSha256,
   materialTruthProjectionFromCertificate,
   materialTruthSha256,
 } from "./governanceEvidence.js";
 
+const fixtureFailureSpine = {
+  schemaVersion: 1 as const,
+  trustDecision: "safe" as const,
+  summary: "summary",
+  actionableFailure: {
+    category: "unclassified" as const,
+    severity: "low" as const,
+    recommendedAction: "none" as const,
+    automationSafe: true,
+  },
+  primaryCodes: ["OK"],
+  rerunGuidance: remediationMessageForRecommendedAction("none"),
+  source: "workflow" as const,
+};
+
 function fixture(overrides?: Partial<OutcomeCertificateV1>): OutcomeCertificateV1 {
   const ec = minimalEvidenceCompletenessFixture({ blockerCategory: "none" });
+  const humanReportBody =
+    "human body\n\n=== evidence_completeness ===\nstub\n=== end evidence_completeness ===\n\n" +
+    formatFailureSpineHuman(fixtureFailureSpine);
   return {
-    schemaVersion: 2,
+    schemaVersion: 3,
     workflowId: "wf_test",
     runKind: "contract_sql",
     stateRelation: "matches_expectations",
@@ -40,7 +60,8 @@ function fixture(overrides?: Partial<OutcomeCertificateV1>): OutcomeCertificateV
         observedOutcome: "observed 1",
       },
     ],
-    humanReport: "human body\n\n=== evidence_completeness ===\nstub\n=== end evidence_completeness ===",
+    humanReport: humanReportBody,
+    failureSpine: fixtureFailureSpine,
     checkpointVerdicts: [
       {
         checkpointKey: "cp_b",

@@ -262,7 +262,7 @@ export async function runBatchVerifyWithTelemetrySubcommand(
       const shareOrigin = parsedBatch.shareReportOrigin;
       if (shareOrigin !== undefined) {
         const shareRes = await postPublicVerificationReport(shareOrigin, {
-          schemaVersion: 2,
+          schemaVersion: 3,
           certificate,
         });
         if (!shareRes.ok) {
@@ -391,7 +391,7 @@ export async function runBatchVerifyWithTelemetrySubcommand(
               );
             }
             const certificate = buildOutcomeCertificateLangGraphCheckpointTrustFromWorkflowResult(workflowResult);
-            const validateCert = loadSchemaValidator("outcome-certificate-v2");
+            const validateCert = loadSchemaValidator("outcome-certificate-v3");
             if (!validateCert(certificate)) {
               throw new TruthLayerError(
                 CLI_OPERATIONAL_CODES.WORKFLOW_RESULT_SCHEMA_INVALID,

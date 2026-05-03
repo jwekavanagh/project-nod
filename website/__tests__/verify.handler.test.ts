@@ -8,7 +8,7 @@ import { loadSchemaValidator } from "agentskeptic/schemaLoad";
 import { NextRequest } from "next/server";
 import { describe, expect, it } from "vitest";
 
-const validateCert = loadSchemaValidator("outcome-certificate-v2");
+const validateCert = loadSchemaValidator("outcome-certificate-v3");
 
 describe("POST /api/verify", () => {
   it("returns contradiction for default paste sample", async () => {

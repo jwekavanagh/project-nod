@@ -14,6 +14,8 @@ const PROPERTY_ACCESS_ALLOWLIST = new Set([
   "src/workflowTruthReport.ts",
   "src/runComparison.ts",
   "src/evidenceCompleteness.ts",
+  "src/failureSpine.ts",
+  "src/formatFailureSpineHuman.ts",
 ]);
 
 const propAccessRecommended = /\.(\s*)recommendedAction\b/;

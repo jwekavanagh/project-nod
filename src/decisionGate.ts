@@ -123,7 +123,7 @@ export function createDecisionGateImpl(options: CreateDecisionGateOptions): Deci
   api.evaluateCertificate = async (): Promise<OutcomeCertificateV1> => {
     const result = await api.evaluate();
     const certificate = buildOutcomeCertificateFromWorkflowResult(result, "contract_sql");
-    const validateCert = loadSchemaValidator("outcome-certificate-v2");
+    const validateCert = loadSchemaValidator("outcome-certificate-v3");
     if (!validateCert(certificate)) {
       throw new TruthLayerError(
         CLI_OPERATIONAL_CODES.WORKFLOW_RESULT_SCHEMA_INVALID,

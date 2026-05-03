@@ -914,7 +914,7 @@ async function runQuickSubcommand(args: string[]): Promise<void> {
   }
   if (shareReportOrigin !== undefined) {
     const shareRes = await postPublicVerificationReport(shareReportOrigin, {
-      schemaVersion: 2,
+      schemaVersion: 3,
       certificate,
     });
     if (!shareRes.ok) {

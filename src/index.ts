@@ -25,6 +25,7 @@ export {
   LANGGRAPH_CHECKPOINT_TRUST_INELIGIBLE_HEADLINE,
 } from "./outcomeCertificate.js";
 export type {
+  OutcomeCertificateV3,
   OutcomeCertificateV1,
   OutcomeCertificateV2,
   OutcomeCertificateRunKind,
@@ -36,6 +37,14 @@ export type {
   BuildQuickOutcomeCertificateOptions,
   TruthCheckVerdictLabel,
 } from "./outcomeCertificate.js";
+export { remediationMessageForRecommendedAction } from "./remediationMessage.js";
+export {
+  buildFailureSpineFromIneligibleLangGraph,
+  buildFailureSpineFromQuickReport,
+  buildFailureSpineFromWorkflowResult,
+} from "./failureSpine.js";
+export type { FailureSpineSource, FailureSpineV1 } from "./failureSpine.js";
+export { formatFailureSpineHuman } from "./formatFailureSpineHuman.js";
 export { loadToolsRegistry, verifyRunStateFromEvents } from "./pipeline.js";
 export type { VerifyRunStateFromEventsInput } from "./pipeline.js";
 export {
@@ -49,7 +58,7 @@ export type {
   LangGraphCheckpointTrustEligibility,
   LangGraphCheckpointTrustGate,
 } from "./langGraphCheckpointTrustGate.js";
-export { trustDecisionFromCertificate } from "./trustDecision.js";
+export { trustDecisionFromCertificate, trustDecisionFromRelianceFields } from "./trustDecision.js";
 export type { TrustDecision } from "./trustDecision.js";
 export { firstProblemStepForCertificate } from "./decisionBlocker.js";
 export { TrustDecisionBlockedError } from "./trustDecisionBlockedError.js";

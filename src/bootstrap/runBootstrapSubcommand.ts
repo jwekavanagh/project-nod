@@ -103,7 +103,7 @@ function shouldEmitActivationProvisionalBlockedLine(code: string, message: strin
 }
 
 function validateCertificateOrExit(certificate: OutcomeCertificateV1): void {
-  const validateCert = loadSchemaValidator("outcome-certificate-v2");
+  const validateCert = loadSchemaValidator("outcome-certificate-v3");
   if (!validateCert(certificate)) {
     writeBootstrapOperationalFailure(
       CLI_OPERATIONAL_CODES.WORKFLOW_RESULT_SCHEMA_INVALID,

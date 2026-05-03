@@ -10,7 +10,7 @@ import { loadSchemaValidator } from "agentskeptic/schemaLoad";
 import { NextRequest } from "next/server";
 import { describe, expect, it } from "vitest";
 
-const validateCert = loadSchemaValidator("outcome-certificate-v2");
+const validateCert = loadSchemaValidator("outcome-certificate-v3");
 
 function assertScenarioMatrix(scenarioId: string, c: Record<string, unknown>) {
   const matrix: Record<string, { stateRelation: string; highStakesReliance: string }> = {

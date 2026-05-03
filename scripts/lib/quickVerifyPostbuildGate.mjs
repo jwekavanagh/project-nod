@@ -123,7 +123,7 @@ export async function runQuickVerifyPostbuildGate(opts) {
     }
     const schemaLoadUrl = pathToFileURL(join(root, "dist", "schemaLoad.js")).href;
     const { loadSchemaValidator } = await import(schemaLoadUrl);
-    const validateOutcome = loadSchemaValidator("outcome-certificate-v2");
+    const validateOutcome = loadSchemaValidator("outcome-certificate-v3");
     if (!validateOutcome(cert)) {
       const errLite = JSON.stringify(validateOutcome.errors ?? []).slice(0, 1024);
       stderrParts.push(`validate-ttfv: quick stdout is not schema-valid Outcome Certificate v2 (${errLite})`);

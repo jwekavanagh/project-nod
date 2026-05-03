@@ -1,5 +1,5 @@
 {
-  "schemaVersion": 2,
+  "schemaVersion": 3,
   "workflowId": "wf_partner",
   "runKind": "contract_sql_langgraph_checkpoint_trust",
   "stateRelation": "matches_expectations",
@@ -19,7 +19,7 @@
       "observedOutcome": "rowCount=1"
     }
   ],
-  "humanReport": "workflow_id: wf_partner\nworkflow_status: complete\ntrust: TRUSTED: Every step matched the database under the configured verification rules.\nexecution_path: execution_path_concerns=2; codes=MISSING_RUN_COMPLETED,NO_RETRIEVAL_EVENTS\n  - path_finding: code=NO_RETRIEVAL_EVENTS severity=low concern=context_quality scope=run_context codes=NO_RETRIEVAL_EVENTS\n    detail: No retrieval events recorded before tool observations (coarse missing-context signal).\n  - path_finding: code=MISSING_RUN_COMPLETED severity=medium concern=workflow_completeness scope=run_context codes=MISSING_RUN_COMPLETED\n    detail: No run_completed control event after tool observations (v2 graph).\nrun_level: (none)\nevent_sequence: normal\nsteps:\n  - seq=0 tool=crm.upsert_contact\n    declared: tool=crm.upsert_contact; intent=Upsert contact \"partner_1\" with fields {\"name\":\"You\",\"status\":\"active\"}; parameters_digest={\"fields\":{\"name\":\"You\",\"status\":\"active\"},\"recordId\":\"partner_1\"}\n    expected: table=contacts identity=[id=partner_1] required_fields=[name, status]\n    observed_database: rowCount=1\n    verification_verdict: outcome=VERIFIED; Matched the database.\n    observations: evaluated=1 of 1 in_capture_order\n\nlanggraph_checkpoint_verdicts:\nt-contract\u001f\u001fcp-contract\tverified\tProduction may advance under this checkpoint identity.\n\n=== evidence_completeness ===\nBlocker: none\nQuick signal: na\nVerified:\n- crm.upsert_contact:seq=0: verified\nNext:\n- No further verification action is required for this outcome under the configured rules.\nTrust boundary: runKind=contract_sql_langgraph_checkpoint_trust highStakesReliance=permitted (see certificate fields for normative meaning).\n=== end evidence_completeness ===",
+  "humanReport": "workflow_id: wf_partner\nworkflow_status: complete\ntrust: TRUSTED: Every step matched the database under the configured verification rules.\nexecution_path: execution_path_concerns=2; codes=MISSING_RUN_COMPLETED,NO_RETRIEVAL_EVENTS\n  - path_finding: code=NO_RETRIEVAL_EVENTS severity=low concern=context_quality scope=run_context codes=NO_RETRIEVAL_EVENTS\n    detail: No retrieval events recorded before tool observations (coarse missing-context signal).\n  - path_finding: code=MISSING_RUN_COMPLETED severity=medium concern=workflow_completeness scope=run_context codes=MISSING_RUN_COMPLETED\n    detail: No run_completed control event after tool observations (v2 graph).\nrun_level: (none)\nevent_sequence: normal\nsteps:\n  - seq=0 tool=crm.upsert_contact\n    declared: tool=crm.upsert_contact; intent=Upsert contact \"partner_1\" with fields {\"name\":\"You\",\"status\":\"active\"}; parameters_digest={\"fields\":{\"name\":\"You\",\"status\":\"active\"},\"recordId\":\"partner_1\"}\n    expected: table=contacts identity=[id=partner_1] required_fields=[name, status]\n    observed_database: rowCount=1\n    verification_verdict: outcome=VERIFIED; Matched the database.\n    observations: evaluated=1 of 1 in_capture_order\n\nlanggraph_checkpoint_verdicts:\nt-contract\u001f\u001fcp-contract\tverified\tProduction may advance under this checkpoint identity.\n\n=== evidence_completeness ===\nBlocker: none\nQuick signal: na\nVerified:\n- crm.upsert_contact:seq=0: verified\nNext:\n- No further verification action is required for this outcome under the configured rules.\nTrust boundary: runKind=contract_sql_langgraph_checkpoint_trust highStakesReliance=permitted (see certificate fields for normative meaning).\n=== end evidence_completeness ===\n\nfailure_spine:\n  trust_decision: safe\n  summary: TRUSTED: Every step matched the database under the configured verification rules.\n  actionable_failure: category=unclassified severity=low recommended_action=none automation_safe=true\n  primary_codes: OK\n  rerun_guidance: No further verification action is required for this outcome under the configured rules.\n  source: workflow",
   "evidenceCompleteness": {
     "schemaVersion": 1,
     "blockerCategory": "none",
@@ -45,5 +45,21 @@
       ],
       "productionMeaning": "Production may advance under this checkpoint identity."
     }
-  ]
+  ],
+  "failureSpine": {
+    "schemaVersion": 1,
+    "trustDecision": "safe",
+    "summary": "TRUSTED: Every step matched the database under the configured verification rules.",
+    "actionableFailure": {
+      "category": "unclassified",
+      "severity": "low",
+      "recommendedAction": "none",
+      "automationSafe": true
+    },
+    "primaryCodes": [
+      "OK"
+    ],
+    "rerunGuidance": "No further verification action is required for this outcome under the configured rules.",
+    "source": "workflow"
+  }
 }
