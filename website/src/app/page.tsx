@@ -112,15 +112,14 @@ export default async function HomePage() {
                 <span className="home-hero-flow-miss">Row missing</span>
               </div>
             </div>
-            <details className="home-hero-raw-json">
-              <summary>Example verification details</summary>
+            <div className="home-hero-example-json">
               <pre
                 className="home-hero-terminal-pre"
                 aria-label="Example verification failure JSON; verdict failed"
               >
                 <HeroTerminalHighlighted text={heroFailureJson} />
               </pre>
-            </details>
+            </div>
           </div>
         </div>
       </section>

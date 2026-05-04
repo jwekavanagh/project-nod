@@ -32,5 +32,8 @@ describe("homepage copy optimization (key strings)", () => {
     expect(pageSrc).toContain("Agent traces show what the agent attempted.");
     expect(pageSrc).toContain("AgentSkeptic checks whether the promised state actually exists.");
     expect(pageSrc).toContain("home-closing-primary-cta");
+    expect(pageSrc).not.toContain("Example verification details");
+    expect(pageSrc).toContain("shareableTerminalFailureJsonOnly");
+    expect(pageSrc).toContain("HeroTerminalHighlighted");
   });
 });

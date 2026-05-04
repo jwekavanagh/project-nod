@@ -1123,18 +1123,6 @@ main {
   font-weight: 600;
   color: var(--danger);
 }
-.home-hero-raw-json {
-  margin: 0;
-}
-.home-hero-raw-json summary {
-  cursor: pointer;
-  font-size: 0.88rem;
-  margin: 0 0 0.4rem;
-  color: var(--accent);
-}
-.home-hero-raw-json[open] summary {
-  margin-bottom: 0.5rem;
-}
 .home-guarantee-h2 {
   margin: 1.75rem 0 0.75rem;
   font-size: 1.25rem;
@@ -1178,6 +1166,9 @@ main {
 .try-it-pre-frame {
   margin: 0.75rem 0 0.5rem;
   max-width: 44rem;
+}
+.home-hero-example-json {
+  margin: 0.35rem 0 0;
 }
 .home-hero-terminal-pre {
   max-height: min(24rem, 56vh);
