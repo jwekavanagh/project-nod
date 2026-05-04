@@ -6,8 +6,6 @@ import { loadLegalMetadata } from "@/lib/plans";
 import { indexableGuideCanonical } from "@/lib/indexableGuides";
 import { brandedMarketingTitle, marketingOpenGraphAndTwitter } from "@/lib/marketingSocialMetadata";
 import type { Metadata } from "next";
-import Link from "next/link";
-import { conversionSpine, productCopy } from "@/content/productCopy";
 
 const termsSegmentTitle = "Terms of Service";
 const termsPublicTitle = brandedMarketingTitle(termsSegmentTitle);
@@ -30,15 +28,6 @@ export default function TermsPage() {
     .replace(/\{\{TERMS_VERSION\}\}/g, meta.termsVersion);
   return (
     <main className="integrate-main">
-      <p className="home-cta-row">
-        <Link
-          className="btn"
-          href="/integrate"
-          data-cta-priority={conversionSpine.ctaPriorityPrimaryValue}
-        >
-          {productCopy.ctaTaxonomy.decision}
-        </Link>
-      </p>
       <article className="integrate-prose">
         <ReactMarkdown remarkPlugins={[remarkGfm]}>{body}</ReactMarkdown>
       </article>
