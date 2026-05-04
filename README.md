@@ -7,7 +7,9 @@
 
 Declared tool effects vs read-only store facts.
 
-Traces say success. Your data often disagrees. Read-only checks at verify time compare tool claims to stored state—before you ship or bill.
+Traces can say success while your data says otherwise.
+
+AgentSkeptic performs read-only checks at verification time, comparing tool claims against stored state before you ship or bill.
 
 ### Bundled terminal proof
 
@@ -32,7 +34,7 @@ steps:
 workflow_id: wf_missing
 workflow_status: inconsistent
 steps:
-  - seq=0 tool=crm.upsert_contact result:Expected row is missing from the database (the log implies a write that is not present).
+  - seq=0 tool=crm.upsert_contact result=Expected row is missing from the database.
     reference_code: ROW_ABSENT
 
 {

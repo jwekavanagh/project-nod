@@ -116,13 +116,13 @@ export default function DatabaseTruthVsTracesPage() {
           </p>
         ))}
         <h3 className="product-brief-terminal-block-title" id="terminal-success-heading">
-          Success (`wf_complete`)
+          Success: <code>wf_complete</code>
         </h3>
         <pre className="truth-report-pre" aria-labelledby="terminal-success-heading">
           {successBlock}
         </pre>
         <h3 className="product-brief-terminal-block-title" id="terminal-failure-heading">
-          Failure (`wf_missing`) — <span className="product-brief-row-absent">ROW_ABSENT</span>
+          Failure: <code>wf_missing</code> — <span className="product-brief-row-absent"><code>ROW_ABSENT</code></span>
         </h3>
         <pre className="truth-report-pre" aria-labelledby="terminal-failure-heading">
           {failureBlock}
@@ -132,28 +132,35 @@ export default function DatabaseTruthVsTracesPage() {
       <p className="muted product-brief-disclaimer" data-testid="acquisition-brief-disclaimer">
         {boldSegments(pb.disclaimer)}
       </p>
-      <div
-        className="product-brief-cta-wrap"
-        data-testid={pb.testIds.cta}
-        role="group"
-        aria-label="Run first verification or see failed versus passed run"
+      <section
+        className="home-section"
+        data-testid="acquisition-run-section"
+        aria-labelledby="acquisition-run-heading"
       >
-        <a
-          className="btn"
-          href="/verify"
-          data-testid="acquisition-try-home-demo-cta"
-          data-cta-priority={conversionSpine.ctaPriorityPrimaryValue}
+        <h2 id="acquisition-run-heading">See a failed vs passed run</h2>
+        <div
+          className="product-brief-cta-wrap"
+          data-testid={pb.testIds.cta}
+          role="group"
+          aria-label="See a failed vs passed run and run first verification"
         >
-          {productCopy.ctaTaxonomy.awareness}
-        </a>{" "}
-        <Link
-          className="btn secondary"
-          href={productCopy.homeHeroSecondaryCta.href}
-          data-cta-priority={conversionSpine.ctaPrioritySecondaryValue}
-        >
-          {productCopy.ctaTaxonomy.decision}
-        </Link>
-      </div>
+          <a
+            className="btn"
+            href="/verify"
+            data-testid="acquisition-try-home-demo-cta"
+            data-cta-priority={conversionSpine.ctaPriorityPrimaryValue}
+          >
+            {productCopy.ctaTaxonomy.awareness}
+          </a>{" "}
+          <Link
+            className="btn secondary"
+            href={productCopy.homeHeroSecondaryCta.href}
+            data-cta-priority={conversionSpine.ctaPrioritySecondaryValue}
+          >
+            {productCopy.ctaTaxonomy.decision}
+          </Link>
+        </div>
+      </section>
     </main>
   );
 }

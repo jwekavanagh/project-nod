@@ -7,7 +7,7 @@ import type { AssuranceRunReportV1 } from "./runAssurance.js";
 const pkgRoot = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
 const firstFive = JSON.parse(
   readFileSync(join(pkgRoot, "config", "first-five-minutes.json"), "utf8"),
-) as { checklist: string[]; telemetryIcingLine?: string };
+) as { checklist: string[]; telemetryIntroParagraphs?: string[] };
 
 export type AssuranceOutputStaleV1 = {
   schemaVersion: 1;

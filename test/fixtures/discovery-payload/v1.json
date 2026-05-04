@@ -18,7 +18,7 @@
   },
   "appendix": {
     "slug": "/database-truth-vs-traces",
-    "visitorProblemAnswer": "Traces say success. Your data often disagrees. Read-only checks at verify time compare tool claims to stored state—before you ship or bill.",
+    "visitorProblemAnswer": "Traces can say success while your data says otherwise.\n\nAgentSkeptic performs read-only checks at verification time, comparing tool claims against stored state before you ship or bill.",
     "intentPhrases": [
       "trace v data",
       "read-only verify",
@@ -185,7 +185,7 @@
     ],
     "shareableTerminalDemo": {
       "title": "Bundled terminal proof",
-      "transcript": "### Success (`wf_complete`)\n\nworkflow_id: wf_complete\nworkflow_status: complete\ntrust: TRUSTED: Every step matched the database under the configured verification rules.\nsteps:\n  - seq=0 tool=crm.upsert_contact result=Matched the database.\n\n{\n  \"schemaVersion\": 15,\n  \"workflowId\": \"wf_complete\",\n  \"status\": \"complete\",\n  \"steps\": [{ \"seq\": 0, \"toolId\": \"crm.upsert_contact\", \"status\": \"verified\" }]\n}\n\n### Failure (`wf_missing`)\n\nworkflow_id: wf_missing\nworkflow_status: inconsistent\nsteps:\n  - seq=0 tool=crm.upsert_contact result:Expected row is missing from the database (the log implies a write that is not present).\n    reference_code: ROW_ABSENT\n\n{\n  \"schemaVersion\": 15,\n  \"workflowId\": \"wf_missing\",\n  \"status\": \"inconsistent\",\n  \"steps\": [\n    {\n      \"seq\": 0,\n      \"toolId\": \"crm.upsert_contact\",\n      \"status\": \"missing\",\n      \"reasons\": [{ \"code\": \"ROW_ABSENT\" }]\n    }\n  ]\n}"
+      "transcript": "### Success (`wf_complete`)\n\nworkflow_id: wf_complete\nworkflow_status: complete\ntrust: TRUSTED: Every step matched the database under the configured verification rules.\nsteps:\n  - seq=0 tool=crm.upsert_contact result=Matched the database.\n\n{\n  \"schemaVersion\": 15,\n  \"workflowId\": \"wf_complete\",\n  \"status\": \"complete\",\n  \"steps\": [{ \"seq\": 0, \"toolId\": \"crm.upsert_contact\", \"status\": \"verified\" }]\n}\n\n### Failure (`wf_missing`)\n\nworkflow_id: wf_missing\nworkflow_status: inconsistent\nsteps:\n  - seq=0 tool=crm.upsert_contact result=Expected row is missing from the database.\n    reference_code: ROW_ABSENT\n\n{\n  \"schemaVersion\": 15,\n  \"workflowId\": \"wf_missing\",\n  \"status\": \"inconsistent\",\n  \"steps\": [\n    {\n      \"seq\": 0,\n      \"toolId\": \"crm.upsert_contact\",\n      \"status\": \"missing\",\n      \"reasons\": [{ \"code\": \"ROW_ABSENT\" }]\n    }\n  ]\n}"
     }
   }
 }

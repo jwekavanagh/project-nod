@@ -414,9 +414,9 @@ export const productBriefPage = {
     title: "How it works",
     titleSuffix: "AgentSkeptic" as const,
     description:
-      "Read-only verification at verify time: structured tool activity checked against stored state, with a structured Outcome Certificate and bundled success and failure examples.",
+      "Read-only verification at verification time: structured tool activity checked against stored state, with a structured Outcome Certificate and bundled success and failure examples.",
   },
-  jsonLdHeadline: "How it works: read-only checks for tool-claimed work on your stores",
+  jsonLdHeadline: "How it works: read-only verification against stored tool claims",
   testIds: {
     cta: "acquisition-cta-row" as const,
   },
@@ -428,19 +428,21 @@ export const productBriefPage = {
       id: "problem" as const,
       title: "The problem",
       paragraphs: [
-        "The tool reported “done.” The graph finished.",
-        "Yet the customer record may be missing, the ledger off, the vector stale, or the ticket not updated. Stored data is what actually matters.",
+        "The tool reported “done.”",
+        "The graph finished.",
+        "But the customer record may be missing, the ledger may be off, the vector may be stale, or the ticket may not be updated.",
+        "Stored data is what matters.",
       ],
     },
     {
       id: "how" as const,
       title: "How read-only verification works",
-      intro: "One simple gate you control:",
+      intro: "One gate you control:",
       steps: [
         "Emit structured tool activity for the actions and side effects you care about.",
-        "Map those tool IDs to your real stores in a lightweight `tools.json` registry.",
+        "Map tool IDs to real stores in a lightweight `tools.json` registry.",
         "Run verification against a read-only snapshot of your data.",
-        "Get a structured Outcome Certificate with machine fields for trust and remediation.",
+        "Get a structured Outcome Certificate with trust and remediation fields.",
       ],
       outro: "The check happens at verification time, not from trace color.",
     },
@@ -448,10 +450,11 @@ export const productBriefPage = {
   terminal: {
     beforeTitle: "Terminal proof: success vs failure",
     intro: [
-      "Bundled `wf_complete` and `wf_missing` outputs use the same verification engine as your own runs.",
+      "Bundled `wf_complete` and `wf_missing` examples use the same verification engine as your own runs.",
     ],
   },
-  disclaimer: "**Read-only at verification time** — not proof of which call caused a specific write.",
+  disclaimer:
+    "Read-only verification checks stored state at verification time. It does not prove which specific call caused a write.",
 } as const;
 
 export const productCopy = {

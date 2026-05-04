@@ -37,7 +37,10 @@ describe("home vs brief exclusive content", { timeout: 300_000 }, () => {
         .map((p) => p.trim())
         .join(""),
     );
-    const transcriptNeedle = "### Success (`wf_complete`)";
+    /** Stripped from `<pre>`; assert acquisition terminal embed + bundled success trust line instead. */
+    const acquisitionTerminalMarker = 'data-testid="acquisition-terminal-demo"';
+    const successTrustLine =
+      "TRUSTED: Every step matched the database under the configured verification rules.";
 
     for (const s of productCopy.productBriefPage.sections) {
       expect(briefText).toContain(s.title);
@@ -55,8 +58,10 @@ describe("home vs brief exclusive content", { timeout: 300_000 }, () => {
     expect(briefText).toContain(visitorNorm);
     expect(homeText).not.toContain(visitorNorm);
 
-    expect(brief).toContain(transcriptNeedle);
-    expect(homeText).not.toContain(transcriptNeedle);
+    expect(brief).toContain(acquisitionTerminalMarker);
+    expect(home).not.toContain(acquisitionTerminalMarker);
+    expect(briefText).toContain(successTrustLine);
+    expect(homeText).not.toContain(successTrustLine);
 
     expect(home).toContain('data-testid="home-try-it"');
     expect(brief).not.toContain('data-testid="home-try-it"');
