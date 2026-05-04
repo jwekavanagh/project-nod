@@ -33,9 +33,9 @@ describe("/integrate completion semantics (RTL)", () => {
     const main = screen.getByRole("main");
     const h2s = within(main).getAllByRole("heading", { level: 2 });
     expect(h2s.map((h) => h.textContent)).toEqual([
-      "Contract truth check",
-      "Requirements",
-      "What a green run shows",
+      "First proof: contract truth check",
+      "Before you run it",
+      "What a green run proves",
       "Next steps",
     ]);
     const truthPre = within(main).getByTestId("integrate-truth-check-commands");
