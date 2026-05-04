@@ -4,6 +4,12 @@
 
 * **web:** proof-first `/integrate` and `/integrate/guided` activation (quick before contract check, optional Formalize CTA, graduation to `check` / `enforce`); marketing `integratePage.quickVerifyCommand` SSOT and `validate-activation-journey-copy` merge gate
 
+## [6.3.1](https://github.com/jwekavanagh/agentskeptic/compare/v6.3.0...v6.3.1) (2026-05-04)
+
+### Bug Fixes
+
+* **verify:** add verification:truth:local via website/.env ([#56](https://github.com/jwekavanagh/agentskeptic/issues/56)) ([387c61e](https://github.com/jwekavanagh/agentskeptic/commit/387c61e2654262dcf16fcf40fc0c931d26b094e1))
+
 ## [6.3.0](https://github.com/jwekavanagh/agentskeptic/compare/v6.2.0...v6.3.0) (2026-05-04)
 
 ### Features
