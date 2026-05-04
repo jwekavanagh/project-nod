@@ -26,12 +26,13 @@ export default function ProblemsPage() {
   return (
     <main className="integrate-main">
       <DiscoveryArticleJsonLd
-        headline="Problems"
+        headline={productCopy.problemsPageMetadata.title}
         description={productCopy.problemsPageMetadata.description}
         path="/problems"
         breadcrumbMiddle={{ name: "Learn", path: "/guides" }}
       />
-      <h1>Problems</h1>
+      <h1>{productCopy.problemsPageMetadata.title}</h1>
+      <p className="lede">{productCopy.problemsPageMetadata.supportingLine}</p>
       <ol className="mechanism-list">
         {rows.map((row, i) => (
           <li key={`${row.primaryRoute}-${i}`}>
@@ -39,6 +40,9 @@ export default function ProblemsPage() {
               <Link href={row.primaryRoute}>{row.moment}</Link>
             </p>
             <p className="muted">{row.symptom}</p>
+            {"verificationCue" in row && typeof row.verificationCue === "string" ? (
+              <p className="muted">{row.verificationCue}</p>
+            ) : null}
           </li>
         ))}
       </ol>

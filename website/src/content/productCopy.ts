@@ -577,9 +577,11 @@ export const productCopy = {
 
   /** `/problems` metadata (UI-only; list body comes from `config/marketing.json` `problemIndex`). */
   problemsPageMetadata: {
-    title: "Problems",
+    title: "Problems AgentSkeptic catches",
     description:
-      "Problem index: trace-versus-state symptoms with links to guides.",
+      "Failure-mode index for trace-versus-state drift: pick the symptom that matches yours, then verify stored rows, CRM, CI side effects, pre-prod gates, LangGraph persistence, or Stripe ledgers before production.",
+    supportingLine:
+      "Pick the failure mode that looks like yours, then verify stored state before it reaches production, billing, or customers.",
   },
 
   homeWhatCatches: {

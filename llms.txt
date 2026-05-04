@@ -165,9 +165,9 @@ steps:
 
 ## When this hurts (search-shaped)
 - Green trace, bad data — https://agentskeptic.com/guides/trace-green-postgres-row-missing
-- Tool ok, CRM wrong — https://agentskeptic.com/guides/tool-loop-success-crm-state-wrong
+- Tool OK, CRM wrong — https://agentskeptic.com/guides/tool-loop-success-crm-state-wrong
 - CI green, no write — https://agentskeptic.com/guides/ci-green-logs-row-absent
-- Pre-prod read-only gate — https://agentskeptic.com/guides/pre-production-read-only-sql-gate
+- Pre-production read-only gate — https://agentskeptic.com/guides/pre-production-read-only-sql-gate
 - LangGraph data check — https://agentskeptic.com/guides/debug-postgres-after-langgraph
 - Webhook vs ledger — https://agentskeptic.com/guides/stripe-webhook-database-alignment
 

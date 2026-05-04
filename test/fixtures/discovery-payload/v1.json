@@ -37,32 +37,38 @@
     "problemIndex": [
       {
         "moment": "Green trace, bad data",
-        "symptom": "A LangGraph trace looks successful, but the Postgres row is missing.",
+        "symptom": "A LangGraph trace finishes successfully, but the Postgres row is missing or stale.",
+        "verificationCue": "Verify the row that matters before you trust the run.",
         "primaryRoute": "/guides/trace-green-postgres-row-missing"
       },
       {
-        "moment": "Tool ok, CRM wrong",
-        "symptom": "A tool loop reports success, but CRM state is wrong.",
+        "moment": "Tool OK, CRM wrong",
+        "symptom": "A tool loop reports success, but the CRM record is missing, stale, or mismatched.",
+        "verificationCue": "Compare declared tool activity with the customer data actually stored.",
         "primaryRoute": "/guides/tool-loop-success-crm-state-wrong"
       },
       {
         "moment": "CI green, no write",
         "symptom": "CI passes, but the database write never landed.",
+        "verificationCue": "Fail the release when the expected stored state is absent.",
         "primaryRoute": "/guides/ci-green-logs-row-absent"
       },
       {
-        "moment": "Pre-prod read-only gate",
-        "symptom": "Add a read-only SQL gate before production.",
+        "moment": "Pre-production read-only gate",
+        "symptom": "Add a read-only SQL verification gate before production.",
+        "verificationCue": "Check real stored state without writing to your systems.",
         "primaryRoute": "/guides/pre-production-read-only-sql-gate"
       },
       {
         "moment": "LangGraph data check",
         "symptom": "Debug Postgres state after a LangGraph run.",
+        "verificationCue": "Reconcile trace success with rows, checkpoints, and persisted state.",
         "primaryRoute": "/guides/debug-postgres-after-langgraph"
       },
       {
         "moment": "Webhook vs ledger",
-        "symptom": "Compare Stripe webhooks with database rows.",
+        "symptom": "Stripe returns 200, but the ledger row is missing, duplicated, or wrong.",
+        "verificationCue": "Compare external callbacks with internal records before settlement.",
         "primaryRoute": "/guides/stripe-webhook-database-alignment"
       }
     ],
