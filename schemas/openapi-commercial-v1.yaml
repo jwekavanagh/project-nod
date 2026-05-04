@@ -1,7 +1,7 @@
 openapi: "3.0.3"
 info:
   title: AgentSkeptic commercial license API
-  version: "6.3.0"
+  version: "6.3.1"
   contact:
     url: https://agentskeptic.com
   x-agentskeptic-distribution:
