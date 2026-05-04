@@ -426,7 +426,7 @@ export const productBriefPage = {
     title: "How it works",
     titleSuffix: "AgentSkeptic" as const,
     description:
-      "Read-only verification: how your agents' claims are checked against real database and API state, the trace versus state gap, and bundled demo output.",
+      "Read-only verification at verify time: structured tool activity checked against stored state, with a structured Outcome Certificate and bundled success and failure examples.",
   },
   jsonLdHeadline: "How it works: read-only checks for tool-claimed work on your stores",
   testIds: {
@@ -434,18 +434,14 @@ export const productBriefPage = {
   },
   h1: "How it works",
   /** Placed after the `visitorProblemAnswer` block. */
-  introParagraphs: [
-    "This page shows the complete picture: why the gap matters in production, how verification works in one simple gate, what real failures it catches, and the exact success/failure outputs your own runs will produce.",
-  ],
+  introParagraphs: [] as readonly string[],
   sections: [
     {
       id: "problem" as const,
       title: "The problem",
       paragraphs: [
-        "Agents and workflows look successful in traces and logs. The tool reported “done.” The step completed. The graph finished.",
-        "Yet the customer record is missing, the ledger is off, the vector is stale, or the ticket never updated.",
-        "Traces stop at “the tool said it worked.”",
-        "Your stored data is what actually matters — and that’s exactly where silent failures hide.",
+        "The tool reported “done.” The graph finished.",
+        "Yet the customer record may be missing, the ledger off, the vector stale, or the ticket not updated. Stored data is what actually matters.",
       ],
     },
     {
@@ -453,49 +449,18 @@ export const productBriefPage = {
       title: "How read-only verification works",
       intro: "One simple gate you control:",
       steps: [
-        "Emit structured tool activity (usually NDJSON) for the actions and side effects you care about.",
+        "Emit structured tool activity for the actions and side effects you care about.",
         "Map those tool IDs to your real stores in a lightweight `tools.json` registry.",
         "Run verification against a read-only snapshot of your data.",
+        "Get a structured Outcome Certificate with machine fields for trust and remediation.",
       ],
-      outro:
-        "You get a structured Outcome Certificate (JSON) with machine fields for trust and remediation. Every failed check includes expected state, action, automation boundary, and rerun condition. The check happens at verification time, not from trace color.",
-    },
-    {
-      id: "scenarios" as const,
-      title: "What it catches in production",
-      bullets: [
-        "**LangGraph and agent workflows**: The trace looks healthy, but the persisted row or vector is missing or wrong at handoff.",
-        "**CRM and ticket systems**: The agent says the ticket is closed, but the CRM still shows the old state or the record never landed.",
-        "**CI and deploy gates**: Pipelines pass on logs, but the required side effect never appeared in the target store.",
-        "**Webhooks and ledgers** (Stripe-style flows): The external callback succeeded, but your internal ledger or reconciliation is inconsistent.",
-      ],
-      coda: "These are not “trace lies” — they are gaps between what was declared and what actually exists when it matters.",
-    },
-    {
-      id: "who" as const,
-      title: "Who it's for (and who it's not)",
-      forYou: {
-        label: "Use AgentSkeptic when",
-        items: [
-          "You emit structured tool output.",
-          "You have databases (SQL preferred), MongoDB, S3-compatible object storage you can authorize for Head/Get, HTTP witness URLs, or supported vector indexes (see docs linked from Guides).",
-          "You've seen green traces that still left bad or missing data behind.",
-        ],
-      },
-      notForYou: {
-        label: "Not the right fit when",
-        items: [
-          "You only have unstructured logs with nothing to query.",
-          "You need proof that one specific call caused a write.",
-          "You're looking for a full APM or log analytics replacement.",
-        ],
-      },
+      outro: "The check happens at verification time, not from trace color.",
     },
   ],
   terminal: {
     beforeTitle: "Terminal proof: success vs failure",
     intro: [
-      "Here are the exact outputs from the bundled demo (`wf_complete` and `wf_missing`). Your own runs use the same verification engine.",
+      "Bundled `wf_complete` and `wf_missing` outputs use the same verification engine as your own runs.",
     ],
   },
   disclaimer: "**Read-only at verification time** — not proof of which call caused a specific write.",

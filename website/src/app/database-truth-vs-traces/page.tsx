@@ -41,17 +41,25 @@ function splitDemoSuccessFailure(transcript: string): { success: string; failure
   }
   return {
     success: transcript.slice(0, i).trim(),
-    failure: transcript.slice(i + 2).trim(),
+    failure: transcript.slice(i + needle.length).trim(),
   };
+}
+
+/** Drop markdown H3 lines duplicated by on-page `<h3>` titles above each `<pre>`. */
+function stripBundledTerminalHeadingsForDisplay(success: string, failure: string): { success: string; failure: string } {
+  const s = success.replace(/^### Success \(`wf_complete`\)\s*\n+/, "").trimStart();
+  const f = failure.replace(/^### Failure \(`wf_missing`\)\s*\n+/, "").trimStart();
+  return { success: s, failure: f };
 }
 
 export default function DatabaseTruthVsTracesPage() {
   const { visitorProblemAnswer, shareableTerminalDemo, heroTitle } = marketing;
   const pb = productBriefPage;
-  const [sProblem, sHow, sScenarios, sWho] = pb.sections;
-  const { success: successBlock, failure: failureBlock } = splitDemoSuccessFailure(shareableTerminalDemo.transcript);
-  if (sHow.id !== "how" || sScenarios.id !== "scenarios") {
-    throw new Error("How it works page sections: expected how then scenarios");
+  const [sProblem, sHow] = pb.sections;
+  const { success: rawSuccess, failure: rawFailure } = splitDemoSuccessFailure(shareableTerminalDemo.transcript);
+  const { success: successBlock, failure: failureBlock } = stripBundledTerminalHeadingsForDisplay(rawSuccess, rawFailure);
+  if (sProblem.id !== "problem" || sHow.id !== "how") {
+    throw new Error("How it works page sections: expected problem then how");
   }
 
   return (
@@ -94,38 +102,6 @@ export default function DatabaseTruthVsTracesPage() {
           ))}
         </ol>
         <p className="lede product-brief-prose">{sHow.outro}</p>
-      </section>
-
-      <section
-        className="home-section"
-        data-testid="acquisition-brief-section-scenarios"
-        aria-labelledby="brief-section-scenarios"
-      >
-        <h2 id="brief-section-scenarios">{sScenarios.title}</h2>
-        <ul className="product-brief-catch-bullets">
-          {sScenarios.bullets.map((b) => (
-            <li key={b.slice(0, 64)} className="product-brief-prose">
-              {boldSegments(b)}
-            </li>
-          ))}
-        </ul>
-        <p className="muted product-brief-catch-coda">{sScenarios.coda}</p>
-      </section>
-
-      <section className="home-section" data-testid="acquisition-brief-section-who" aria-labelledby="brief-section-who">
-        <h2 id="brief-section-who">{sWho.title}</h2>
-        <h3 className="guarantee-sub">{sWho.forYou.label}</h3>
-        <ul>
-          {sWho.forYou.items.map((t) => (
-            <li key={t.slice(0, 48)}>{boldSegments(t)}</li>
-          ))}
-        </ul>
-        <h3 className="guarantee-sub">{sWho.notForYou.label}</h3>
-        <ul>
-          {sWho.notForYou.items.map((t) => (
-            <li key={t.slice(0, 48)}>{boldSegments(t)}</li>
-          ))}
-        </ul>
       </section>
 
       <section
