@@ -174,9 +174,11 @@ export const adoptionCompleteChecklistTokenRefs = {
 
 /** Curated Learn hub (`/guides`): benefit-led links; routes must match markdown `route` frontmatter. */
 export const learnHub = {
-  popularHeading: "Guides",
-  debugHeading: "Debug & troubleshooting",
-  closingTitle: "Ready to try it on your data?",
+  popularHeading: "Production failure scenarios",
+  debugHeading: "Setup and troubleshooting",
+  closingTitle: "Ready to prove one workflow?",
+  closingBody:
+    "Run a first verification against your own readable data, or start with the bundled missing-write demo.",
   popular: [
     {
       href: "/guides/ai-agent-wrong-crm-data",
@@ -186,17 +188,17 @@ export const learnHub = {
     {
       href: "/guides/scenario-green-trace-row-missing",
       title: "LangGraph trace looks healthy — but state is wrong",
-      caption: "Catch missing or stale rows and vector metadata.",
+      caption: "Catch missing rows, stale rows, and mismatched vector metadata.",
     },
     {
       href: "/guides/scenario-ci-green-side-effect-missing",
       title: "CI passed, but the side effect is missing",
-      caption: "Check whether the store actually updated.",
+      caption: "Fail the release when the store did not actually update.",
     },
     {
       href: "/guides/tool-loop-success-crm-state-wrong",
       title: 'Tool loop said "success" — CRM or ledger disagrees',
-      caption: "Compare declared activity with stored state.",
+      caption: "Compare declared tool activity with stored state.",
     },
     {
       href: "/guides/scenario-stripe-webhook-ledger-mismatch",
@@ -213,12 +215,12 @@ export const learnHub = {
     {
       href: "/guides/first-run-verification",
       title: "First-run verification on your own data",
-      caption: "Run your first deterministic check with minimal setup.",
+      caption: "Run your first deterministic stored-state check with minimal setup.",
     },
     {
       href: "/guides/pre-production-read-only-sql-gate",
       title: "Add a pre-production read-only gate",
-      caption: "Verify state before release.",
+      caption: "Verify stored state before release without writing to your systems.",
     },
   ],
 } as const;
@@ -537,11 +539,11 @@ export const productCopy = {
   guaranteeProductBriefCtaLabel: "How it works",
 
   /** Learn hub (`/guides`) first line under H1 (UI-only). */
-  learnHubPrimaryLede: "Real problems. Real fixes.",
+  learnHubPrimaryLede: "Real failures. Stored-state fixes.",
 
   /** Guides hub second lede (UI-only). */
   guidesHubSupportingSentence:
-    "Guides for checking stored state before agent failures reach production.",
+    "Guides for proving that agent side effects actually landed before they reach production, billing, or customers.",
 
   /** Muted line after Learn hub supporting lede — pairs with `/compare`. */
   guidesHubCompareLead: "When you want bundles versus single checks in one view, use",
@@ -560,7 +562,7 @@ export const productCopy = {
 
   /** Learn hub (`/guides`) metadata.description (UI-only). */
   learnHubIndexDescription:
-    "Symptom-led guides and read-only verification gates for your stores.",
+    "Prove agent side effects in stored state before production, billing, or customers — practical guides and read-only verification gates.",
 
   /** Shared report view one-liner (UI-only). */
   publicShareReportIntro:

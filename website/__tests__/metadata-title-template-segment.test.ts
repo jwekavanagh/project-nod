@@ -55,7 +55,7 @@ describe("metadata.title segment (no pre-branded template suffix)", () => {
   });
 
   it("openGraph titles stay full public strings with one brand suffix", () => {
-    expect(String(guidesHubMetadata.openGraph?.title)).toBe("Learn — AgentSkeptic");
+    expect(String(guidesHubMetadata.openGraph?.title)).toBe("Learn how to verify agent outcomes — AgentSkeptic");
     expect(String(compareHubMetadata.openGraph?.title)).toBe("Compare approaches — AgentSkeptic");
     expect(String(contactMetadata.openGraph?.title)).toBe("Contact — AgentSkeptic");
   });

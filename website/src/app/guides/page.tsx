@@ -4,7 +4,7 @@ import { brandedMarketingTitle, marketingOpenGraphAndTwitter } from "@/lib/marke
 import type { Metadata } from "next";
 import Link from "next/link";
 
-const guidesSegmentTitle = "Learn";
+const guidesSegmentTitle = "Learn how to verify agent outcomes";
 const guidesPublicTitle = brandedMarketingTitle(guidesSegmentTitle);
 
 export const metadata: Metadata = {
@@ -18,7 +18,7 @@ export const metadata: Metadata = {
 export default function GuidesHubPage() {
   return (
     <main className="integrate-main integrate-prose learn-hub">
-      <h1>Learn</h1>
+      <h1>{guidesSegmentTitle}</h1>
       <p className="integrate-benefit-lede">
         <strong>{productCopy.learnHubPrimaryLede}</strong>
       </p>
@@ -56,6 +56,7 @@ export default function GuidesHubPage() {
         <h2 id="learn-closing-heading" className="learn-hub-cta-heading">
           {learnHub.closingTitle}
         </h2>
+        <p className="lede">{learnHub.closingBody}</p>
         <p className="home-cta-row">
           <Link
             href="/integrate"
@@ -69,7 +70,7 @@ export default function GuidesHubPage() {
             className="btn secondary"
             data-cta-priority={conversionSpine.ctaPrioritySecondaryValue}
           >
-            {productCopy.ctaTaxonomy.topOfFunnel}
+            Try the missing-write demo
           </Link>
         </p>
       </section>
