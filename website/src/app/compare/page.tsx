@@ -7,7 +7,7 @@ import Link from "next/link";
 const compareSegmentTitle = "Compare approaches";
 const comparePublicTitle = brandedMarketingTitle(compareSegmentTitle);
 const compareDescription =
-  "Choose the right reliability layer: how read-only verification differs from offline evals, observability dashboards, and trace-only review—grounded in your stores before you ship.";
+  "Choose the right reliability layer. See how read-only verification compares with offline evals, observability dashboards, and trace-only review—using read-only checks against stored state before you ship.";
 
 export const metadata: Metadata = {
   title: compareSegmentTitle,
@@ -22,8 +22,8 @@ const SECTIONS = [
     id: "compare-hub-offline-evals",
     href: "/compare/evals-vs-row-gates",
     title: "Offline evals vs. real stored-state gates",
-    contrast: "Offline evaluations measure model quality.",
-    ours: "AgentSkeptic verifies whether the workflow actually wrote the correct data to your stores.",
+    contrast: "Offline evals measure model quality.",
+    ours: "AgentSkeptic checks whether the workflow wrote the correct data to your stores.",
   },
   {
     id: "compare-hub-observability",
@@ -36,8 +36,8 @@ const SECTIONS = [
     id: "compare-hub-traces",
     href: "/compare/traces-vs-read-only-sql-verification",
     title: "Trace-only review vs. read-only verification",
-    contrast: "Traces tell you what the tool said happened.",
-    ours: "AgentSkeptic tells you whether the stored state actually matches those claims.",
+    contrast: "Traces show what the tool said happened.",
+    ours: "AgentSkeptic checks whether stored state matches those claims.",
   },
 ] as const;
 
@@ -48,9 +48,7 @@ export default function CompareHubPage() {
       <p className="integrate-benefit-lede">
         <strong>Choose the right reliability layer.</strong>
       </p>
-      <p className="lede">
-        See how read-only verification differs from — and improves upon — common alternatives.
-      </p>
+      <p className="lede">See how read-only verification compares with common alternatives.</p>
 
       {SECTIONS.map((s) => (
         <section key={s.href} className="home-section" aria-labelledby={s.id}>
