@@ -22,8 +22,5 @@ describe("guides hub copy", { timeout: 300_000 }, () => {
       .replace(/&#39;/g, "'")
       .replace(/&apos;/g, "'");
     expect(flat).toContain(productCopy.guidesHubSupportingSentence.replace(/\s+/g, " "));
-    expect(flat).toContain(productCopy.guidesHubBridgeSentence.replace(/\s+/g, " "));
-    expect(flat).toContain(productCopy.learnBundledProofLedes.primary.replace(/\s+/g, " "));
-    expect(html).toContain('id="bundled-proof"');
   });
 });

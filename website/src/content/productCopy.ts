@@ -170,11 +170,7 @@ export const adoptionCompleteChecklistTokenRefs = {
 export const learnHub = {
   popularHeading: "Guides",
   debugHeading: "Debug & troubleshooting",
-  buyersHeading: "For buyers and teams",
-  bundledProofHeading: "Bundled proof examples",
   closingTitle: "Ready to try it on your data?",
-  getStartedCtaLabel: "Get started",
-  tryDemoCtaLabel: HOME_HERO_DEMO_CTA_LABEL,
   popular: [
     {
       href: "/guides/ai-agent-wrong-crm-data",
@@ -184,7 +180,7 @@ export const learnHub = {
     {
       href: "/guides/scenario-green-trace-row-missing",
       title: "LangGraph trace looks healthy — but state is wrong",
-      caption: "Catch missing or stale Postgres/SQLite rows—or vector metadata when wired to Pinecone/Weaviate/Chroma.",
+      caption: "Catch missing or stale rows—or vector metadata.",
     },
     {
       href: "/guides/scenario-ci-green-side-effect-missing",
@@ -205,7 +201,7 @@ export const learnHub = {
   debug: [
     {
       href: "/guides/debug-postgres-after-langgraph",
-      title: "Debug after LangGraph or agent runs (Postgres, SQLite, and other stores)",
+      title: "Debug after LangGraph or agent runs",
       caption: "A practical checklist to reconcile traces with persisted rows and state.",
     },
     {
@@ -215,25 +211,8 @@ export const learnHub = {
     },
     {
       href: "/guides/pre-production-read-only-sql-gate",
-      title: "Add a pre-production read-only gate (instead of more log volume)",
+      title: "Add a pre-production read-only gate",
       caption: "Add a stop-ship gate that verifies state before release.",
-    },
-  ],
-  buyers: [
-    {
-      href: "/guides/buyer-ci-enforcement-metering",
-      title: "CI enforcement and metering",
-      caption: "Understand enforcement controls, reserve behavior, and quota planning.",
-    },
-    {
-      href: "/guides/buyer-commercial-boundary",
-      title: "Commercial vs open-source boundaries and evaluation path",
-      caption: "See exactly what is paid vs OSS and how to evaluate without ambiguity.",
-    },
-    {
-      href: "/guides/buyer-trust-production-implications",
-      title: "What a green verdict really means in production",
-      caption: "Interpret trust outcomes correctly and avoid over-claiming guarantees.",
     },
   ],
 } as const;
@@ -512,10 +491,6 @@ export const productCopy = {
   guidesHubSupportingSentence:
     `Guides that turn "it looked fine in the trace" into "here's exactly what to check before it reaches production."`,
 
-  /** Learn hub third lede — gate + Get started (UI-only). */
-  guidesHubBridgeSentence:
-    "Each short read connects a common symptom to a read-only verification you can add as a gate — then sends you straight to Get started on your own data.",
-
   /** Muted line after Learn hub supporting lede — pairs with `/compare`. */
   guidesHubCompareLead: "When you want bundles versus single checks in one view, use",
 
@@ -531,9 +506,9 @@ export const productCopy = {
   indexedGuideEmbedMuted:
     "The block below uses the bundled `wf_missing` demo so this page stays aligned with the engine.",
 
-  /** Learn hub (`/guides`) metadata.description (UI-only); includes bundled proof list. */
+  /** Learn hub (`/guides`) metadata.description (UI-only). */
   learnHubIndexDescription:
-    "Symptom-led guides, read-only verification gates for your stores, bundled examples you can skim, and a clear path to Get started.",
+    "Symptom-led guides and read-only verification gates for your stores.",
 
   /** Shared report view one-liner (UI-only). */
   publicShareReportIntro:
