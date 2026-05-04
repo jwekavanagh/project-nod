@@ -50,6 +50,7 @@ const PRELUDE_SELECTORS = [
   ".try-it-verdict-card",
   ".try-it-k",
   ".home-hero-grid",
+  ".home-hero-trace-bridge",
   ".home-hero-copy .home-cta-row",
   ".home-trust-strip",
   ".home-trust-strip-heading",

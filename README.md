@@ -5,11 +5,11 @@
 <!-- discovery-acquisition-fold:start -->
 ## Trust reality, not traces.
 
-Declared tool effects vs read-only store facts.
+Tool effects vs read-only store facts.
 
-Traces can say success while your data says otherwise.
+Traces say success while data disagrees.
 
-AgentSkeptic performs read-only checks at verification time, comparing tool claims against stored state before you ship or bill.
+AgentSkeptic read-only: tool claims vs stored state before ship or bill.
 
 ### Bundled terminal proof
 

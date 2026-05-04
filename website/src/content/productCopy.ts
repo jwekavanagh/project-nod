@@ -64,6 +64,7 @@ export type LearnBundledProofLedes = { primary: string; secondaryMuted: string }
 export type HomeHeroCtaLabels = { demo: string };
 export type ConversionSpineCtaLabel =
   | "Try interactive demo"
+  | "Run the missing-write demo"
   | "See a failed vs passed run"
   | "Run on sample data in 5 minutes"
   | "Run first verification"
@@ -93,6 +94,9 @@ export type ConversionSpineRoute =
 
 /** Hero primary CTA — scrolls to bundled Try it. */
 export const HOME_HERO_DEMO_CTA_LABEL = "Try interactive demo" as const;
+
+/** Homepage hero + `/` demo band — bundled missing-write proof on `/verify`. */
+export const HOME_PAGE_MISSING_WRITE_DEMO_CTA = "Run the missing-write demo" as const;
 
 /** Try-it control — performs POST /api/demo/verify (distinct from scroll CTAs). */
 export const HOME_TRY_IT_RUN_BUTTON_LABEL = "Run sample verification" as const;
@@ -275,6 +279,7 @@ export const conversionSpine = {
   ctaPrioritySecondaryValue: "secondary",
   allowedLabels: [
     "Try interactive demo",
+    "Run the missing-write demo",
     "See a failed vs passed run",
     "Run on sample data in 5 minutes",
     "Run first verification",
@@ -285,7 +290,7 @@ export const conversionSpine = {
     "View pricing",
   ] as const,
   dominantByRoute: {
-    "/": "Try interactive demo",
+    "/": "Run the missing-write demo",
     "/database-truth-vs-traces": "See a failed vs passed run",
     "/integrate": "Run first verification",
     "/pricing": "Start free",
@@ -310,6 +315,9 @@ export const homeHeroSecondaryCta = {
   label: "Run first verification",
   testId: "home-hero-get-started" as const,
 } as const;
+
+/** Second hero tertiary link on `/` only — same destination as `homeHeroSecondaryCta`. */
+export const homePageHeroIntegrateSecondaryLabel = "Run first verification locally" as const;
 
 /** Homepage hero secondary: docs hub; primary remains Try the demo. */
 export const homePageHeroSecondaryCta = {
@@ -357,7 +365,24 @@ export const trustStripPills = [
   },
   {
     title: "Structured verdict artifacts",
-    supporting: "Deterministic JSON you can inspect, save, and use in CI",
+    supporting:
+      "Deterministic JSON your CI can fail on, your team can inspect, and your release process can archive.",
+  },
+] as const;
+
+/** Homepage “How it works” ordered steps (`<ol>` markers are supplied by the list). */
+export const homeHowItWorksSteps = [
+  {
+    lead: "Capture what the agent claimed",
+    body: "Your agent emits structured tool activity.",
+  },
+  {
+    lead: "Define what should have changed",
+    body: "Map tool IDs to the database rows or stores they affect.",
+  },
+  {
+    lead: "Verify against reality",
+    body: "AgentSkeptic re-reads the store and returns a deterministic verdict your CI can enforce.",
   },
 ] as const;
 
@@ -384,18 +409,18 @@ const homepageDisplay = {
   },
   mechanism: {
     intro: "Add this as a read-only gate in minutes:",
-    items: [
-      "Agents emit structured tool activity.",
-      "You map tool IDs to the stores they affect.",
-      "AgentSkeptic re-reads those stores and returns a deterministic outcome for CI.",
-    ] as const,
+    items: homeHowItWorksSteps.map((s) => `${s.lead} ${s.body}`) as unknown as readonly [
+      string,
+      string,
+      string,
+    ],
     worksWith: bt.homepageCopy.mechanismWorksWith,
     notObservability: "It compares state to claims, not a full APM, distributed tracing, or log aggregation product.",
     quickPathDisclaimer: bt.verificationPaths.quickSqlOnlyDisclaimer,
   },
   homeClosing: {
-    sectionTitle: "Ready to try?",
-    subtitle: "Run the linked demo, skim the guides, then follow Get started on your own data.",
+    sectionTitle: "Ready to verify your first workflow?",
+    subtitle: "Start with the bundled missing-write proof, then wire the same pattern into your own CI.",
   },
   forYou: [
     "You ship multi-step agents and care whether downstream store state matches the story in logs or traces",
@@ -548,7 +573,7 @@ export const productCopy = {
   homeClosing: {
     sectionTitle: homepageDisplay.homeClosing.sectionTitle,
     subtitle: homepageDisplay.homeClosing.subtitle,
-    integratorLinksCaption: "GitHub · npm · OpenAPI · documentation",
+    integratorLinksCaption: "GitHub · npm · Docs · Pricing",
   },
 
   homeStakes: {
@@ -559,8 +584,11 @@ export const productCopy = {
   },
 
   homeHeroExampleLabel: "Example: Missing write",
-  homeHeroFailureCaption:
-    "The agent reported a successful CRM contact update. AgentSkeptic checked the database and found the row was missing.",
+  homeHeroFailureCaptionLead:
+    "The agent said the CRM contact was updated.",
+  homeHeroFailureCaptionMid: "The database said otherwise.",
+  homeHeroFailureCaptionOutro:
+    "AgentSkeptic returned a failed verdict before the bug could ship.",
 
   fitAndLimits: {
     sectionTitle: "Who it's for",
@@ -744,11 +772,14 @@ export const productCopy = {
 
   homeHeroCtaLabels,
   homeHeroSecondaryCta,
+  homePageHeroIntegrateSecondaryLabel,
   homePageHeroSecondaryCta,
   ctaTaxonomy,
   coreValuePropTriptych,
   whenToUseDecisionBox,
   trustStripPills,
+  homeHowItWorksSteps,
+  homePageMissingWriteDemoCta: HOME_PAGE_MISSING_WRITE_DEMO_CTA,
   pricingBillingAndQuestionsBand,
   learnBundledProofLedes,
   learnBundledProofIntegrateLede,

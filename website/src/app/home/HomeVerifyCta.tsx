@@ -16,7 +16,7 @@ export function HomeVerifyCta() {
       </p>
       <p className="home-cta-row">
         <Link href="/verify" className="btn" data-cta-priority="primary" data-testid="home-verify-cta">
-          Try interactive demo
+          {productCopy.homePageMissingWriteDemoCta}
         </Link>
       </p>
     </section>

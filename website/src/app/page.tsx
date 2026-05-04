@@ -58,9 +58,6 @@ export default async function HomePage() {
             <h1 id="hero-heading">{productCopy.hero.title}</h1>
             <p className="lede">{productCopy.heroOutcome}</p>
             <p className="lede">{productCopy.heroMechanism}</p>
-            <p className="lede home-hero-supporting-outcome">
-              Catch missing DB writes before release with read-only verification against your real stores.
-            </p>
             <p className="home-cta-row" data-testid="home-hero-cta-row">
               <a
                 className="btn"
@@ -68,7 +65,7 @@ export default async function HomePage() {
                 data-testid="home-hero-demo-cta"
                 data-cta-priority="primary"
               >
-                {productCopy.ctaTaxonomy.topOfFunnel}
+                {productCopy.homePageMissingWriteDemoCta}
               </a>
             </p>
             <p className="muted home-hero-tertiary">
@@ -82,14 +79,23 @@ export default async function HomePage() {
               </Link>
               <span> · </span>
               <Link className="link-tertiary" href={productCopy.homeHeroSecondaryCta.href}>
-                {productCopy.homeHeroSecondaryCta.label}
+                {productCopy.homePageHeroIntegrateSecondaryLabel}
               </Link>
             </p>
             <TrustPills items={productCopy.trustStripPills} />
           </div>
           <div className="home-hero-terminal" data-testid="home-hero-terminal">
+            <p className="muted home-hero-trace-bridge">
+              Agent traces show what the agent attempted.
+              <br />
+              AgentSkeptic checks whether the promised state actually exists.
+            </p>
             <p className="home-hero-terminal-label muted">{productCopy.homeHeroExampleLabel}</p>
-            <p className="home-hero-failure-caption muted">{productCopy.homeHeroFailureCaption}</p>
+            <p className="home-hero-failure-caption muted">
+              {productCopy.homeHeroFailureCaptionLead}{" "}
+              {productCopy.homeHeroFailureCaptionMid}{" "}
+              {productCopy.homeHeroFailureCaptionOutro}
+            </p>
             <p className="home-hero-verdict" aria-hidden="true">
               VERDICT: <span className="home-hero-verdict-failed">FAILED</span>
             </p>
@@ -129,8 +135,12 @@ export default async function HomePage() {
       >
         <h2 id="how-it-works-heading">{productCopy.howItWorks.sectionTitle}</h2>
         <ol className="mechanism-list home-how-tight">
-          {productCopy.mechanism.items.map((item) => (
-            <li key={item.slice(0, 48)}>{item}</li>
+          {productCopy.homeHowItWorksSteps.map((step) => (
+            <li key={step.lead}>
+              <strong>{step.lead}</strong>
+              <br />
+              {step.body}
+            </li>
           ))}
         </ol>
       </section>
@@ -143,6 +153,17 @@ export default async function HomePage() {
         aria-labelledby="home-closing-heading"
       >
         <h2 id="home-closing-heading">{productCopy.homeClosing.sectionTitle}</h2>
+        <p className="lede">{productCopy.homeClosing.subtitle}</p>
+        <p className="home-cta-row">
+          <Link
+            className="btn"
+            href={productCopy.homeHeroSecondaryCta.href}
+            data-testid="home-closing-primary-cta"
+            data-cta-priority="primary"
+          >
+            {productCopy.homeHeroSecondaryCta.label}
+          </Link>
+        </p>
         <ul className="home-trust-strip-list">
           {footerLinks.map((item) => (
             <li key={item.key} data-testid={`home-footer-${item.key}`}>

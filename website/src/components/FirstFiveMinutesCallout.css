@@ -17,6 +17,12 @@
   margin: 0 0 0.5rem;
 }
 
+.first-five-minutes-privacy-note-heading {
+  font-size: 0.95rem;
+  font-weight: 600;
+  margin: 0 0 0.35rem;
+}
+
 .first-five-minutes-lede {
   margin: 0 0 0.75rem;
 }
