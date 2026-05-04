@@ -6,7 +6,6 @@ import {
   verifyBundledSuccessResponseClientSchema,
   VERIFY_BUNDLED_ERROR_CODES,
 } from "@/lib/verifyBundled.contract";
-import Link from "next/link";
 import { useMemo, useState } from "react";
 
 type VerifyResult =
@@ -153,15 +152,6 @@ export function VerifyPageClient() {
             <summary>Raw outcome JSON</summary>
             <pre className="code-block">{JSON.stringify(result.certificate, null, 2)}</pre>
           </details>
-          <h3>Use this in your stack</h3>
-          <pre className="code-block">
-            node dist/cli.js --workflow-id wf_missing --events examples/events.ndjson --registry examples/tools.json --db examples/demo.db
-          </pre>
-          <p className="home-cta-row">
-            <Link href="/integrate" className="btn" data-cta-priority="primary">
-              Run first verification
-            </Link>
-          </p>
         </div>
       )}
     </section>
