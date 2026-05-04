@@ -16,7 +16,7 @@ type M = {
   siteDefaultMetadata: { description: string };
   site: {
     integrate: { title: string; description: string };
-    pricing: { heroTitle: string; positioning: string };
+    pricing: { heroTitle: string; heroSupporting: string; positioning: string };
   };
 };
 
@@ -56,6 +56,7 @@ describe("marketing surface parity (HTML includes JSON needles)", { timeout: 300
     const html = await getSiteHtml("/pricing");
     const flat = collapseWs(html);
     expect(flat).toContain(collapseWs(m.site.pricing.heroTitle));
+    expect(flat).toContain(collapseWs(m.site.pricing.heroSupporting));
     expect(flat).toContain(collapseWs(m.site.pricing.positioning));
   });
 

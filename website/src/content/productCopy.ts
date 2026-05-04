@@ -255,6 +255,9 @@ export const pricingHeroExample = pricingWhatYouGetPaidPlans;
 
 export const pricingPlansSectionTitle = "Plans";
 
+export const pricingPlansIntro =
+  "Choose Starter to prove value. Choose Individual, Team, or Business when CI enforcement needs baselines, drift detection, and acceptance workflows.";
+
 /** `<summary>` for expandable commercial terms on `/pricing`. */
 export const pricingCommercialTermsDetailsSummary = "Full commercial terms (expand)";
 
@@ -267,7 +270,7 @@ export const pricingTeamFootnote = "";
 /** Primary CTA labels on `/pricing` cards (sign-in still required before checkout). */
 export const pricingPlanCtas = {
   starter: { href: "/integrate" as const, label: "Start free" },
-  individual: { signInLabel: "Sign in to continue", checkoutLabel: "Continue to checkout" },
+  individual: { signInLabel: "Start free", checkoutLabel: "Start free" },
   team: { signInLabel: "Sign in to continue", checkoutLabel: "Continue to checkout" },
   business: { signInLabel: "Sign in to continue", checkoutLabel: "Continue to checkout" },
   enterprise: { label: "Contact sales" },
@@ -367,12 +370,12 @@ export const whenToUseDecisionBox = {
 export const trustStripPills = [
   {
     title: "Read-only by default",
-    supporting: "Verifier does not write to your stores",
+    supporting: "Verifier checks your stores without writing to them.",
   },
   {
     title: "Structured verdict artifacts",
     supporting:
-      "Deterministic JSON your CI can fail on, your team can inspect, and your release process can archive.",
+      "Deterministic Outcome Certificate JSON you can inspect, archive, and fail CI on.",
   },
 ] as const;
 
@@ -754,6 +757,7 @@ export const productCopy = {
   pricingWhatYouGetPaidPlans,
   pricingHeroExample: pricingWhatYouGetPaidPlans,
   pricingPlansSectionTitle,
+  pricingPlansIntro,
   pricingCommercialTermsDetailsSummary,
   pricingRecommendedPill,
   pricingTeamFootnote,

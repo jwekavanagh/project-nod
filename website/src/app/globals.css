@@ -223,6 +223,32 @@ main {
   margin: 1.35rem 0 0.65rem;
   line-height: 1.25;
 }
+.pricing-page .pricing-plans-intro {
+  margin: -0.35rem 0 0.85rem;
+  max-width: 44rem;
+  line-height: 1.45;
+}
+.pricing-page .pricing-billing-fieldset {
+  border: 0;
+  margin: 0 0 1rem;
+  padding: 0;
+  min-inline-size: unset;
+}
+.pricing-page .pricing-billing-legend {
+  padding: 0;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--fg);
+  margin-bottom: 0.35rem;
+}
+.pricing-page .pricing-billing-fieldset.muted .pricing-billing-legend {
+  color: inherit;
+}
+.pricing-page .pricing-compare-intro {
+  margin: 0 0 0.65rem;
+  max-width: 44rem;
+  line-height: 1.45;
+}
 .pricing-page .pricing-compare-lead {
   margin: 0 0 0.65rem;
   max-width: 42rem;

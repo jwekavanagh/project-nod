@@ -4,7 +4,6 @@ import { metadata as compareHubMetadata } from "@/app/compare/page";
 import { metadata as contactMetadata } from "@/app/contact/page";
 import { metadata as guidesHubMetadata } from "@/app/guides/page";
 import { metadata as homeMetadata } from "@/app/page";
-import { metadata as pricingMetadata } from "@/app/pricing/page";
 import { metadata as privacyMetadata } from "@/app/privacy/page";
 import { metadata as problemsMetadata } from "@/app/problems/page";
 import { metadata as securityMetadata } from "@/app/security/page";
@@ -50,7 +49,7 @@ describe("metadata.title segment (no pre-branded template suffix)", () => {
     const { generateMetadata } = await import("@/app/pricing/page");
     const m = await generateMetadata();
     expect(typeof m.title).toBe("string");
-    expect(String(m.title)).toBe("Pricing");
+    expect(String(m.title)).toBe("Pricing for stored-state verification");
     expect(String(m.openGraph?.title)).toMatch(TEMPLATE_SUFFIX);
   });
 

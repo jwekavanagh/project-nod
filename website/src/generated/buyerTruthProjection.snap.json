@@ -38,7 +38,7 @@
   "pricing_row_2_npm_licensed_enterprise": "Custom",
   "pricing_row_2_npm_licensed_individual": "Yes + overage",
   "pricing_row_2_npm_licensed_label": "Published npm CLI + API key, licensed/metered",
-  "pricing_row_2_npm_licensed_starter": "1,000 / mo hard cap, pooled per account",
+  "pricing_row_2_npm_licensed_starter": "1,000/month hard cap, pooled per account",
   "pricing_row_2_npm_licensed_team": "Yes + overage",
   "pricing_row_3_enforce_business": "Yes",
   "pricing_row_3_enforce_enterprise": "Yes",

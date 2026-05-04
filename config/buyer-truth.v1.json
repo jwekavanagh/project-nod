@@ -69,7 +69,7 @@
         "featureKey": "npm_licensed",
         "featureDisplay": "Published npm CLI + API key, licensed/metered",
         "cells": {
-          "starter": "{{starterIncluded}} / mo hard cap, pooled per account",
+          "starter": "{{starterIncluded}}/month hard cap, pooled per account",
           "individual": "Yes + overage",
           "team": "Yes + overage",
           "business": "Yes + overage",

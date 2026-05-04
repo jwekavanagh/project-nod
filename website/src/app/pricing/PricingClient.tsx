@@ -15,17 +15,17 @@ export type BillingInterval = "monthly" | "yearly";
 export type { PlanRow } from "@/lib/commercialNarrative";
 
 function paidCheckoutCtaLabel(plan: PlanId): string {
-  if (plan === "team") return "Continue to checkout";
   const ctas = productCopy.pricingPlanCtas;
   if (plan === "individual") return ctas.individual.checkoutLabel;
   if (plan === "business") return ctas.business.checkoutLabel;
+  if (plan === "team") return ctas.team.checkoutLabel;
   return "Continue to checkout";
 }
 
 function paidSignInCtaLabel(plan: PlanId): string {
-  if (plan === "team") return "Sign in to continue";
   const ctas = productCopy.pricingPlanCtas;
-  if (plan === "individual") return "Start free";
+  if (plan === "individual") return ctas.individual.signInLabel;
+  if (plan === "team") return ctas.team.signInLabel;
   if (plan === "business") return ctas.business.signInLabel;
   return "Get started";
 }
@@ -37,7 +37,7 @@ function formatIncludedLine(p: PlanRow): string {
   if (p.includedMonthly === null) {
     return "Custom";
   }
-  return `${p.includedMonthly.toLocaleString()} verifications / month included per key`;
+  return `${p.includedMonthly.toLocaleString("en-US")} verifications/month included per key`;
 }
 
 export function PricingClient({
@@ -100,34 +100,36 @@ export function PricingClient({
         </LiveStatus>
       )}
       {hasYearly ? (
-        <p className="pricing-billing-interval-toggle muted" data-testid="pricing-billing-interval">
-          <span>Billing: </span>
-          <label className="u-mr-1">
-            <input
-              type="radio"
-              name="billing-interval"
-              value="monthly"
-              checked={billingInterval === "monthly"}
-              onChange={() => {
-                setBillingInterval("monthly");
-              }}
-            />{" "}
-            Monthly
-          </label>
-          <span aria-hidden="true"> · </span>
-          <label>
-            <input
-              type="radio"
-              name="billing-interval"
-              value="yearly"
-              checked={billingInterval === "yearly"}
-              onChange={() => {
-                setBillingInterval("yearly");
-              }}
-            />{" "}
-            Annual — save 20%
-          </label>
-        </p>
+        <fieldset className="pricing-billing-fieldset muted" data-testid="pricing-billing-interval">
+          <legend className="pricing-billing-legend">Billing</legend>
+          <div className="pricing-billing-interval-toggle">
+            <label className="u-mr-1">
+              <input
+                type="radio"
+                name="billing-interval"
+                value="monthly"
+                checked={billingInterval === "monthly"}
+                onChange={() => {
+                  setBillingInterval("monthly");
+                }}
+              />{" "}
+              Monthly
+            </label>
+            <span aria-hidden="true"> · </span>
+            <label>
+              <input
+                type="radio"
+                name="billing-interval"
+                value="yearly"
+                checked={billingInterval === "yearly"}
+                onChange={() => {
+                  setBillingInterval("yearly");
+                }}
+              />{" "}
+              Annual — save 20%
+            </label>
+          </div>
+        </fieldset>
       ) : null}
       <div className="pricing-grid pricing-grid-after-hero">
         {plans.map((p) => {

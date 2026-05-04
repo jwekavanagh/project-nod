@@ -63,8 +63,9 @@
       }
     },
     "pricing": {
-      "heroTitle": "Verify before you ship.",
-      "positioning": "Catch bad or missing state in CI before it reaches customers, compliance, or revenue."
+      "heroTitle": "Pricing for stored-state verification",
+      "heroSupporting": "Start free. Pay when verification becomes a CI enforcement workflow.",
+      "positioning": "Catch bad or missing state before it reaches customers, compliance, or revenue."
     },
     "home": {},
     "security": {
