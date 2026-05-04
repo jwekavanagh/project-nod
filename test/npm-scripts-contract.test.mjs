@@ -21,6 +21,13 @@ describe("npm scripts contract (verification:truth)", () => {
     assert.equal(pkg.scripts["test:ci"], truth);
   });
 
+  it("verification:truth:local preflights website/.env then runs canonical gate via dotenv-cli", () => {
+    assert.equal(
+      pkg.scripts["verification:truth:local"],
+      "node scripts/verification-truth-local-preflight.mjs && dotenv -e website/.env -- npm run verification:truth",
+    );
+  });
+
   it("shims use dedicated batch runners (no verify.mjs)", () => {
     assert.equal(
       pkg.scripts["test:node:sqlite"],

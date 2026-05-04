@@ -11,6 +11,7 @@ Integrator-facing execution semantics (CLI receipts, identity pin, compose repla
 | Command | Meaning |
 |--------|---------|
 | `npm run verification:truth` | Full gate (same as `npm test` and `npm run test:ci`) |
+| `npm run verification:truth:local` | Same full gate, after loading **`website/.env`** via `dotenv-cli` (use this from repo root when DB URLs are only in that file; do not copy secrets to a root `.env`) |
 | `npm run test:node:sqlite` | Quick SQLite `node:test` batch after `npm run build` |
 | `npm run test:postgres` | Postgres `node:test` batch with `scripts/pg-ci-init.mjs` |
 | `npm run test:workflow-truth-contract` | Run CI workflow-truth postgres contract file only |
@@ -28,7 +29,7 @@ Integrator-facing execution semantics (CLI receipts, identity pin, compose repla
 
 [`../.github/workflows/ci.yml`](../.github/workflows/ci.yml) runs on every push and PR (no path filters). The **`verification`** job runs **`npm run verification:truth`** once (after checkout, Postgres env, LangGraph oracle fixture **`npm ci`**, and setup); **`replay_verification_truth`** reruns that gate inside **Docker Compose** (`npm run replay:verification`). The same workflow also runs **CodeQL**, **Python** (pytest, timed smoke, Docker), PR-only Conventional Commits and release preview, and **`main`-only** Vercel production after those jobs succeed.
 
-**Postgres env** for the gate: `POSTGRES_ADMIN_URL`, `POSTGRES_VERIFICATION_URL`, `DATABASE_URL`, and `TELEMETRY_DATABASE_URL` (see [`ci.yml`](../.github/workflows/ci.yml) and README).
+**Postgres env** for the gate: `POSTGRES_ADMIN_URL`, `POSTGRES_VERIFICATION_URL`, `DATABASE_URL`, and `TELEMETRY_DATABASE_URL` (see [`ci.yml`](../.github/workflows/ci.yml) and README). CI sets these on the runner. Locally, if you keep `DATABASE_URL` / `TELEMETRY_DATABASE_URL` only in **`website/.env`**, run **`npm run verification:truth:local`** from the repo root so that file is loaded before the canonical `npm run verification:truth` (do not copy `website/.env` to a root `.env`).
 
 ## Audiences
 

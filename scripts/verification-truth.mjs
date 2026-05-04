@@ -162,8 +162,11 @@ function runJourneyTail() {
 function requirePostgresEnv() {
   if (!process.env.DATABASE_URL?.trim() || !process.env.TELEMETRY_DATABASE_URL?.trim()) {
     console.error(
-      "[verification-truth:postgres] DATABASE_URL and TELEMETRY_DATABASE_URL must be set (website/.env.example). " +
-        "Commercial validation and downstream journeys require Postgres.",
+      "[verification-truth:postgres] DATABASE_URL and TELEMETRY_DATABASE_URL must be present in the environment.\n" +
+        "CI injects these from workflow secrets. Locally they usually live in website/.env (see website/.env.example); " +
+        "do not copy that file to a repo-root .env (unsupported and easy to commit by mistake).\n" +
+        "Run the same canonical gate with website/.env loaded: npm run verification:truth:local\n" +
+        "(That script only prepends env loading; it still runs npm run verification:truth unchanged.)",
     );
     vtExit(1);
   }

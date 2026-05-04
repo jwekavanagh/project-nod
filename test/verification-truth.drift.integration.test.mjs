@@ -24,5 +24,8 @@ describe("verification-truth process contract", () => {
     const out = `${r.stderr ?? ""}${r.stdout ?? ""}`;
     assert.ok(out.includes("[verification-truth:postgres]"));
     assert.ok(out.includes("DATABASE_URL"));
+    assert.ok(out.includes("verification:truth:local"));
+    assert.ok(out.includes("website/.env"));
+    assert.ok(out.includes("repo-root"));
   });
 });

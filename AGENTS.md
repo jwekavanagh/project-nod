@@ -37,7 +37,8 @@ This is an npm workspace monorepo with two packages:
 | Core vitest | `npx vitest run` (repo root) | Runs `src/**/*.test.ts` and `test/**/*.test.ts` |
 | SQLite tests | `npm run test:node:sqlite` | Builds first, then runs node:test suite (fast, no Postgres) |
 | Website vitest | `npm run test:vitest -w agentskeptic-web` | Needs `DATABASE_URL` + `TELEMETRY_DATABASE_URL` |
-| Full CI gate | `npm test` (or `npm run verification:truth`) | Requires Postgres; see `docs/testing.md` |
+| Full CI gate | `npm test` (or `npm run verification:truth`) | Requires Postgres env vars; see `docs/testing.md` |
+| Full CI gate (local env file) | `npm run verification:truth:local` | Loads **`website/.env`** then runs the same `verification:truth` as CI; do not copy `website/.env` to repo root |
 | DB migrate | `npm run db:migrate` / `npm run db:migrate:telemetry` (from `website/`) | Requires `DATABASE_URL`/`TELEMETRY_DATABASE_URL` in env or `website/.env` |
 
 ### Gotchas
