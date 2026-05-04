@@ -1,3 +1,9 @@
+## [6.5.0](https://github.com/jwekavanagh/agentskeptic/compare/v6.4.0...v6.5.0) (2026-05-04)
+
+### Features
+
+* **web:** sharpen how-it-works acquisition copy and CTAs ([#58](https://github.com/jwekavanagh/agentskeptic/issues/58)) ([dc2e32f](https://github.com/jwekavanagh/agentskeptic/commit/dc2e32f60991881c0911d3a596acefbacd500213))
+
 ## [6.4.0](https://github.com/jwekavanagh/agentskeptic/compare/v6.3.1...v6.4.0) (2026-05-04)
 
 ### Features
