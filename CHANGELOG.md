@@ -1,3 +1,9 @@
+## [6.4.0](https://github.com/jwekavanagh/agentskeptic/compare/v6.3.1...v6.4.0) (2026-05-04)
+
+### Features
+
+* **web:** proof-first integrate surfaces and activation journey copy gate ([#57](https://github.com/jwekavanagh/agentskeptic/issues/57)) ([129abaf](https://github.com/jwekavanagh/agentskeptic/commit/129abafef7b9b7429a6b8819d9b06a157d3e34eb))
+
 ## [Unreleased]
 
 ### Features
