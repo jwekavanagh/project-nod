@@ -17,6 +17,6 @@
 
 ## Trust and production implications
 
-**Canonical copy:** [`outcome-certificate-normative.md`](outcome-certificate-normative.md) (trust boundary, quick vs contract, `highStakesReliance`) and [`verification-state-stores.md`](verification-state-stores.md) (which registry `verification.kind` values exist and what “observed” means per kind). In one line: contract verification compares declared tool activity to **read-only observed downstream state** at verify time (SQL **and** configured HTTP / object / vector / Mongo witnesses); **Quick** is SQL-inference preview only and is **not** interchangeable with contract certificates for high-stakes reliance.
+**Canonical copy:** [`outcome-certificate-normative.md`](outcome-certificate-normative.md) (trust boundary, quick vs contract, `highStakesReliance`, **`evidenceCompleteness`**) and [`verification-state-stores.md`](verification-state-stores.md) (which registry `verification.kind` values exist and what “observed” means per kind). In one line: contract verification compares declared tool activity to **read-only observed downstream state** at verify time (SQL **and** configured HTTP / object / vector / Mongo witnesses); **Quick** is SQL-inference preview only and is **not** interchangeable with contract certificates for high-stakes reliance. Contract Outcome Certificate JSON is **schemaVersion 2** on the inner certificate with the same **`evidenceCompleteness`** shape you see on quick stderr when enabled.
 
 <!-- buyer-surface-trust-production-implications:end -->
