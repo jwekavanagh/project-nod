@@ -1,3 +1,9 @@
+## [6.3.0](https://github.com/jwekavanagh/agentskeptic/compare/v6.2.0...v6.3.0) (2026-05-04)
+
+### Features
+
+* **telemetry:** opt-in product activation telemetry on OSS CLI ([#55](https://github.com/jwekavanagh/agentskeptic/issues/55)) ([df750cb](https://github.com/jwekavanagh/agentskeptic/commit/df750cb85990103e589def487674f53528745709))
+
 ## [6.2.0](https://github.com/jwekavanagh/agentskeptic/compare/v6.1.0...v6.2.0) (2026-05-03)
 
 ### Features
