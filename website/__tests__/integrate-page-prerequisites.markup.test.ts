@@ -13,8 +13,8 @@ registerMarketingSiteTeardown();
 
 const REQUIREMENT_LINES = [
   "Node.js 22 or newer",
-  "Read-only access to a database",
-  "Ability to emit or export structured tool activity as NDJSON",
+  "Read-only database access",
+  "Structured tool activity exported as NDJSON",
 ];
 
 const buildIdPath = join(getRepoRoot(), "website", ".next", "BUILD_ID");

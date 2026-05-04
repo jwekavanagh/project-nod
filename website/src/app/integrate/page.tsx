@@ -25,19 +25,28 @@ export default function IntegratePage() {
     <main className="integrate-main integrate-prose" data-testid="integrate-page">
       <h1>{siteMetadata.integrate.title}</h1>
       <p className="lede">
-        Run a single verification that compares what your agents and tools claimed against your actual stored state.
+        Run one verification that compares tool claims against actual stored state.
       </p>
-      <p className="lede">Get a clear, binary verdict before you ship, bill, or hand off to customers.</p>
+      <p className="lede">Get a clear verdict before you ship, bill, or hand off to customers.</p>
 
       <h2>Contract truth check</h2>
       <p>
-        Run <code>agentskeptic check</code> against your registry, events file, and database. Stderr begins with{" "}
-        <code>truth_check_verdict:</code>; stdout is the Outcome Certificate JSON. Full guide:{" "}
-        <a href={p.githubDeepLink} rel="noopener noreferrer" target="_blank">
-          docs/integrate.md
-        </a>
-        .
+        Run <code>agentskeptic check</code> against your registry, events file, and database.
       </p>
+      <ul>
+        <li>
+          <code>stderr</code> starts with <code>truth_check_verdict:</code>
+        </li>
+        <li>
+          <code>stdout</code> returns the Outcome Certificate JSON
+        </li>
+        <li>
+          Full guide:{" "}
+          <a href={p.githubDeepLink} rel="noopener noreferrer" target="_blank">
+            <code>docs/integrate.md</code>
+          </a>
+        </li>
+      </ul>
       <pre
         id="integrate-truth-check-commands"
         className="integrate-pack-command"
@@ -58,8 +67,8 @@ export default function IntegratePage() {
       <h2>Requirements</h2>
       <ul>
         <li>Node.js 22 or newer</li>
-        <li>Read-only access to a database</li>
-        <li>Ability to emit or export structured tool activity as NDJSON</li>
+        <li>Read-only database access</li>
+        <li>Structured tool activity exported as NDJSON</li>
       </ul>
 
       <h2>What a green run shows</h2>
@@ -71,9 +80,9 @@ export default function IntegratePage() {
         <li>Every step marked &quot;verified&quot; or &quot;matched&quot;</li>
       </ul>
       <p className="muted">
-        If anything is wrong, you get an immediate, actionable failure (e.g. <code>ROW_ABSENT</code>) — no more
-        silent green traces hiding bad data.
+        If anything is wrong, verification fails immediately with an actionable reason such as <code>ROW_ABSENT</code>.
       </p>
+      <p className="muted">No more silent green traces hiding bad data.</p>
 
       <h2>Next steps</h2>
       <ol>
@@ -82,7 +91,7 @@ export default function IntegratePage() {
         </li>
         <li>Run the command above on your own data</li>
         <li>
-          <Link href="/guides">Follow the integration guides in Learn</Link> for deeper setup
+          <Link href="/guides">Follow the integration guides in Learn for deeper setup</Link>
         </li>
       </ol>
     </main>

@@ -52,7 +52,7 @@
   "site": {
     "integrate": {
       "title": "Get started",
-      "description": "Run a single verification that compares what your agents and tools claimed against your actual stored state."
+      "description": "Run one verification that compares tool claims against actual stored state."
     },
     "openGraph": {
       "image": {

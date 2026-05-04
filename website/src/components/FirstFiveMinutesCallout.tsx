@@ -74,9 +74,16 @@ export function FirstFiveMinutesCallout({ homeTeaser = false }: FirstFiveMinutes
           <li>No telemetry that changes verification results</li>
         </ul>
         <p className="first-five-minutes-sub">
-          If the beacon cannot mint an ID because of a blocked network or service issue, use:{" "}
-          <code>agentskeptic funnel-anon pull</code> or <code>agentskeptic funnel-anon set &lt;uuid&gt;</code>
+          If the beacon cannot mint an ID because of a blocked network or service issue, use:
         </p>
+        <ul className="first-five-minutes-list">
+          <li>
+            <code>agentskeptic funnel-anon pull</code>
+          </li>
+          <li>
+            <code>agentskeptic funnel-anon set &lt;uuid&gt;</code>
+          </li>
+        </ul>
         <p className="first-five-minutes-sub">To connect browser and CLI activity:</p>
         <ol className="first-five-minutes-numbered">
           {FIRST_FIVE_MINUTES_CHECKLIST.map((step, i) => (
