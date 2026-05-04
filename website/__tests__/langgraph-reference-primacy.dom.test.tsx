@@ -27,10 +27,10 @@ afterEach(() => {
 });
 
 describe("langgraph reference integrator primacy", () => {
-  it("/integrate: no LangGraph primary CTA; activation commands present", () => {
+  it("/integrate: no LangGraph primary CTA; truth-check commands present", () => {
     const { container } = render(<IntegratePage /> as ReactElement);
     expect(container.querySelector('[data-testid="integrator-primary-cta"]')).toBeNull();
-    expect(container.querySelector('[data-testid="integrator-activation-commands"]')).toBeTruthy();
+    expect(container.querySelector('[data-testid="integrate-truth-check-commands"]')).toBeTruthy();
   });
 
   it("LangGraph guide: first https link in prose matches canonical README blob URL", () => {

@@ -1,6 +1,7 @@
 import { siteMetadata } from "@/content/siteMetadata";
 import { COMMERCIAL_SITE_CSP_NONCE_HEADER } from "@/lib/httpSecurityHeaders";
 import marketing from "@/lib/marketing";
+import { homeIndexPlainDescriptionFromMarketing } from "@/lib/marketingSocialMetadata";
 import { publicProductAnchors } from "@/lib/publicProductAnchors";
 import { Analytics } from "@vercel/analytics/react";
 import { Inter } from "next/font/google";
@@ -23,7 +24,7 @@ const productJsonLd = {
   "@context": "https://schema.org",
   "@type": "SoftwareApplication",
   name: "AgentSkeptic",
-  description: marketing.siteDefaultMetadata.description,
+  description: homeIndexPlainDescriptionFromMarketing(),
   url: publicProductAnchors.productionCanonicalOrigin,
   sameAs: [publicProductAnchors.gitRepositoryUrl, publicProductAnchors.npmPackageUrl],
 };

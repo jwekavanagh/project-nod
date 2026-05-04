@@ -18,7 +18,8 @@ describe("buyer plane problemIndex contract", () => {
     for (const row of marketing.problemIndex) {
       expect(row.moment.length).toBeGreaterThanOrEqual(8);
       expect(row.primaryRoute).toMatch(primaryRe);
-      for (const r of row.relatedRoutes ?? []) {
+      const related = "relatedRoutes" in row && Array.isArray(row.relatedRoutes) ? row.relatedRoutes : [];
+      for (const r of related) {
         expect(r).toMatch(relatedRe);
       }
     }

@@ -64,7 +64,10 @@ export type LearnBundledProofLedes = { primary: string; secondaryMuted: string }
 export type HomeHeroCtaLabels = { demo: string };
 export type ConversionSpineCtaLabel =
   | "Try interactive demo"
+  | "Run the missing-write demo"
   | "See a failed vs passed run"
+  | "See a failed run"
+  | "See a passed run"
   | "Run on sample data in 5 minutes"
   | "Run first verification"
   | "Start free"
@@ -93,6 +96,9 @@ export type ConversionSpineRoute =
 
 /** Hero primary CTA — scrolls to bundled Try it. */
 export const HOME_HERO_DEMO_CTA_LABEL = "Try interactive demo" as const;
+
+/** Homepage hero + `/` demo band — bundled missing-write proof on `/verify`. */
+export const HOME_PAGE_MISSING_WRITE_DEMO_CTA = "Run the missing-write demo" as const;
 
 /** Try-it control — performs POST /api/demo/verify (distinct from scroll CTAs). */
 export const HOME_TRY_IT_RUN_BUTTON_LABEL = "Run sample verification" as const;
@@ -168,72 +174,53 @@ export const adoptionCompleteChecklistTokenRefs = {
 
 /** Curated Learn hub (`/guides`): benefit-led links; routes must match markdown `route` frontmatter. */
 export const learnHub = {
-  popularHeading: "Guides",
-  debugHeading: "Debug & troubleshooting",
-  buyersHeading: "For buyers and teams",
-  bundledProofHeading: "Bundled proof examples",
-  closingTitle: "Ready to try it on your data?",
-  getStartedCtaLabel: "Get started",
-  tryDemoCtaLabel: HOME_HERO_DEMO_CTA_LABEL,
+  popularHeading: "Production failure scenarios",
+  debugHeading: "Setup and troubleshooting",
+  closingTitle: "Ready to prove one workflow?",
+  closingBody:
+    "Run a first verification against your own readable data, or start with the bundled missing-write demo.",
   popular: [
     {
       href: "/guides/ai-agent-wrong-crm-data",
       title: "AI agent updated the CRM — but the record never landed",
-      caption: "Verify values before you trust the customer data.",
+      caption: "Verify CRM writes before you trust customer data.",
     },
     {
       href: "/guides/scenario-green-trace-row-missing",
       title: "LangGraph trace looks healthy — but state is wrong",
-      caption: "Catch missing or stale Postgres/SQLite rows—or vector metadata when wired to Pinecone/Weaviate/Chroma.",
+      caption: "Catch missing rows, stale rows, and mismatched vector metadata.",
     },
     {
       href: "/guides/scenario-ci-green-side-effect-missing",
       title: "CI passed, but the side effect is missing",
-      caption: "Green logs don't mean your store updated.",
+      caption: "Fail the release when the store did not actually update.",
     },
     {
       href: "/guides/tool-loop-success-crm-state-wrong",
       title: 'Tool loop said "success" — CRM or ledger disagrees',
-      caption: "Close the gap between declared activity and stored state.",
+      caption: "Compare declared tool activity with stored state.",
     },
     {
       href: "/guides/scenario-stripe-webhook-ledger-mismatch",
       title: "Stripe webhook returned 200 — but your ledger is off",
-      caption: "Reconcile external callbacks with your internal records before settlement.",
+      caption: "Reconcile external callbacks with internal records before settlement.",
     },
   ],
   debug: [
     {
       href: "/guides/debug-postgres-after-langgraph",
-      title: "Debug after LangGraph or agent runs (Postgres, SQLite, and other stores)",
-      caption: "A practical checklist to reconcile traces with persisted rows and state.",
+      title: "Debug after LangGraph or agent runs",
+      caption: "Reconcile traces with persisted rows and state.",
     },
     {
       href: "/guides/first-run-verification",
       title: "First-run verification on your own data",
-      caption: "Run the first deterministic check on your own stores with minimal setup.",
+      caption: "Run your first deterministic stored-state check with minimal setup.",
     },
     {
       href: "/guides/pre-production-read-only-sql-gate",
-      title: "Add a pre-production read-only gate (instead of more log volume)",
-      caption: "Add a stop-ship gate that verifies state before release.",
-    },
-  ],
-  buyers: [
-    {
-      href: "/guides/buyer-ci-enforcement-metering",
-      title: "CI enforcement and metering",
-      caption: "Understand enforcement controls, reserve behavior, and quota planning.",
-    },
-    {
-      href: "/guides/buyer-commercial-boundary",
-      title: "Commercial vs open-source boundaries and evaluation path",
-      caption: "See exactly what is paid vs OSS and how to evaluate without ambiguity.",
-    },
-    {
-      href: "/guides/buyer-trust-production-implications",
-      title: "What a green verdict really means in production",
-      caption: "Interpret trust outcomes correctly and avoid over-claiming guarantees.",
+      title: "Add a pre-production read-only gate",
+      caption: "Verify stored state before release without writing to your systems.",
     },
   ],
 } as const;
@@ -268,6 +255,9 @@ export const pricingHeroExample = pricingWhatYouGetPaidPlans;
 
 export const pricingPlansSectionTitle = "Plans";
 
+export const pricingPlansIntro =
+  "Choose Starter to prove value. Choose Individual, Team, or Business when CI enforcement needs baselines, drift detection, and acceptance workflows.";
+
 /** `<summary>` for expandable commercial terms on `/pricing`. */
 export const pricingCommercialTermsDetailsSummary = "Full commercial terms (expand)";
 
@@ -280,7 +270,7 @@ export const pricingTeamFootnote = "";
 /** Primary CTA labels on `/pricing` cards (sign-in still required before checkout). */
 export const pricingPlanCtas = {
   starter: { href: "/integrate" as const, label: "Start free" },
-  individual: { signInLabel: "Sign in to continue", checkoutLabel: "Continue to checkout" },
+  individual: { signInLabel: "Start free", checkoutLabel: "Start free" },
   team: { signInLabel: "Sign in to continue", checkoutLabel: "Continue to checkout" },
   business: { signInLabel: "Sign in to continue", checkoutLabel: "Continue to checkout" },
   enterprise: { label: "Contact sales" },
@@ -296,7 +286,10 @@ export const conversionSpine = {
   ctaPrioritySecondaryValue: "secondary",
   allowedLabels: [
     "Try interactive demo",
+    "Run the missing-write demo",
     "See a failed vs passed run",
+    "See a failed run",
+    "See a passed run",
     "Run on sample data in 5 minutes",
     "Run first verification",
     "Start free",
@@ -306,8 +299,8 @@ export const conversionSpine = {
     "View pricing",
   ] as const,
   dominantByRoute: {
-    "/": "Try interactive demo",
-    "/database-truth-vs-traces": "See a failed vs passed run",
+    "/": "Run the missing-write demo",
+    "/database-truth-vs-traces": "See a failed run",
     "/integrate": "Run first verification",
     "/pricing": "Start free",
     "/guides": "Run first verification",
@@ -332,6 +325,9 @@ export const homeHeroSecondaryCta = {
   testId: "home-hero-get-started" as const,
 } as const;
 
+/** Second hero tertiary link on `/` only — same destination as `homeHeroSecondaryCta`. */
+export const homePageHeroIntegrateSecondaryLabel = "Run first verification locally" as const;
+
 /** Homepage hero secondary: docs hub; primary remains Try the demo. */
 export const homePageHeroSecondaryCta = {
   href: "/guides" as const,
@@ -340,7 +336,7 @@ export const homePageHeroSecondaryCta = {
 } as const;
 
 export const ctaTaxonomy = {
-  awareness: "See a failed vs passed run",
+  awareness: "See a failed run",
   topOfFunnel: "Try interactive demo",
   consideration: "Run on sample data in 5 minutes",
   decision: "Run first verification",
@@ -372,9 +368,31 @@ export const whenToUseDecisionBox = {
 } as const;
 
 export const trustStripPills = [
-  "Read-only by default",
-  "Verifier does not write your stores",
-  "Structured verdict artifacts",
+  {
+    title: "Read-only by default",
+    supporting: "Verifier checks your stores without writing to them.",
+  },
+  {
+    title: "Structured verdict artifacts",
+    supporting:
+      "Deterministic Outcome Certificate JSON you can inspect, archive, and fail CI on.",
+  },
+] as const;
+
+/** Homepage “How it works” ordered steps (`<ol>` markers are supplied by the list). */
+export const homeHowItWorksSteps = [
+  {
+    lead: "Capture what the agent claimed",
+    body: "Your agent emits structured tool activity.",
+  },
+  {
+    lead: "Define what should have changed",
+    body: "Map tool IDs to the database rows or stores they affect.",
+  },
+  {
+    lead: "Verify against reality",
+    body: "AgentSkeptic re-reads the store and returns a deterministic verdict your CI can enforce.",
+  },
 ] as const;
 
 /**
@@ -400,18 +418,18 @@ const homepageDisplay = {
   },
   mechanism: {
     intro: "Add this as a read-only gate in minutes:",
-    items: [
-      "Agents emit structured tool activity (JSON/NDJSON) as they work.",
-      "You map tool ids to the stores they touch (for example in tools.json).",
-      "Verification re-reads those stores and returns a deterministic outcome you can script in CI and HTTP.",
-    ] as const,
+    items: homeHowItWorksSteps.map((s) => `${s.lead} ${s.body}`) as unknown as readonly [
+      string,
+      string,
+      string,
+    ],
     worksWith: bt.homepageCopy.mechanismWorksWith,
     notObservability: "It compares state to claims, not a full APM, distributed tracing, or log aggregation product.",
     quickPathDisclaimer: bt.verificationPaths.quickSqlOnlyDisclaimer,
   },
   homeClosing: {
-    sectionTitle: "Ready to try?",
-    subtitle: "Run the linked demo, skim the guides, then follow Get started on your own data.",
+    sectionTitle: "Ready to verify your first workflow?",
+    subtitle: "Start with the bundled missing-write proof, then wire the same pattern into your own CI.",
   },
   forYou: [
     "You ship multi-step agents and care whether downstream store state matches the story in logs or traces",
@@ -427,82 +445,61 @@ const homepageDisplay = {
 /** Deeper layer after the homepage: `/database-truth-vs-traces` (not in `config/marketing.json` word budget). */
 export const productBriefPage = {
   metadata: {
-    title: "How it works",
+    title: "How AgentSkeptic verifies reality",
     titleSuffix: "AgentSkeptic" as const,
     description:
-      "Read-only verification: how your agents' claims are checked against real database and API state, the trace versus state gap, and bundled demo output.",
+      "Traces are not proof. Stored state is proof. Read-only verification returns a deterministic Outcome Certificate from your stores before release, billing, or continuation—bundled wf_complete and wf_missing examples included.",
   },
-  jsonLdHeadline: "How it works: read-only checks for tool-claimed work on your stores",
+  jsonLdHeadline: "How AgentSkeptic verifies reality: read-only checks against stored state before ship, bill, or continue",
   testIds: {
     cta: "acquisition-cta-row" as const,
   },
-  h1: "How it works",
+  h1: "How AgentSkeptic verifies reality",
+  /** Shown under H1, before `visitorProblemAnswer` from `config/marketing.json`. */
+  mainHeadline: "Trust stored state, not trace success.",
   /** Placed after the `visitorProblemAnswer` block. */
-  introParagraphs: [
-    "This page shows the complete picture: why the gap matters in production, how verification works in one simple gate, what real failures it catches, and the exact success/failure outputs your own runs will produce.",
-  ],
+  introParagraphs: [] as readonly string[],
   sections: [
     {
       id: "problem" as const,
       title: "The problem",
       paragraphs: [
-        "Agents and workflows look successful in traces and logs. The tool reported “done.” The step completed. The graph finished.",
-        "Yet the customer record is missing, the ledger is off, the vector is stale, or the ticket never updated.",
-        "Traces stop at “the tool said it worked.”",
-        "Your stored data is what actually matters — and that’s exactly where silent failures hide.",
+        'The agent said "done."',
+        "The trace turned green.",
+        "The graph finished.",
+        "But the customer record may still be missing, the ledger may be wrong, the vector may be stale, or the ticket may never have updated.",
+        "Stored data is the source of truth.",
       ],
     },
     {
       id: "how" as const,
       title: "How read-only verification works",
-      intro: "One simple gate you control:",
+      subheading: "The verification gate",
+      intro: "One read-only gate turns agent claims into stored-state evidence:",
       steps: [
-        "Emit structured tool activity (usually NDJSON) for the actions and side effects you care about.",
-        "Map those tool IDs to your real stores in a lightweight `tools.json` registry.",
+        "Emit structured tool activity for the actions and side effects you care about.",
+        "Map tool IDs to real stores in a lightweight `tools.json` registry.",
         "Run verification against a read-only snapshot of your data.",
+        "Get a structured Outcome Certificate with trust and remediation fields.",
       ],
-      outro:
-        "You get a structured Outcome Certificate (JSON) with machine fields for trust and remediation. Every failed check includes expected state, action, automation boundary, and rerun condition. The check happens at verification time, not from trace color.",
-    },
-    {
-      id: "scenarios" as const,
-      title: "What it catches in production",
-      bullets: [
-        "**LangGraph and agent workflows**: The trace looks healthy, but the persisted row or vector is missing or wrong at handoff.",
-        "**CRM and ticket systems**: The agent says the ticket is closed, but the CRM still shows the old state or the record never landed.",
-        "**CI and deploy gates**: Pipelines pass on logs, but the required side effect never appeared in the target store.",
-        "**Webhooks and ledgers** (Stripe-style flows): The external callback succeeded, but your internal ledger or reconciliation is inconsistent.",
-      ],
-      coda: "These are not “trace lies” — they are gaps between what was declared and what actually exists when it matters.",
-    },
-    {
-      id: "who" as const,
-      title: "Who it's for (and who it's not)",
-      forYou: {
-        label: "Use AgentSkeptic when",
-        items: [
-          "You emit structured tool output.",
-          "You have databases (SQL preferred), MongoDB, S3-compatible object storage you can authorize for Head/Get, HTTP witness URLs, or supported vector indexes (see docs linked from Guides).",
-          "You've seen green traces that still left bad or missing data behind.",
-        ],
-      },
-      notForYou: {
-        label: "Not the right fit when",
-        items: [
-          "You only have unstructured logs with nothing to query.",
-          "You need proof that one specific call caused a write.",
-          "You're looking for a full APM or log analytics replacement.",
-        ],
-      },
+      outro: "The check happens at verification time, against stored state — not from trace color.",
     },
   ],
   terminal: {
-    beforeTitle: "Terminal proof: success vs failure",
+    beforeTitle: "Terminal proof: same claim, different reality",
     intro: [
-      "Here are the exact outputs from the bundled demo (`wf_complete` and `wf_missing`). Your own runs use the same verification engine.",
+      "The bundled `wf_complete` and `wf_missing` examples run through the same verification engine your own workflows use.",
     ],
   },
-  disclaimer: "**Read-only at verification time** — not proof of which call caused a specific write.",
+  disclaimer:
+    "Important: read-only verification proves whether the expected state exists at verification time. It does not attribute causality to a specific tool call.",
+  ctaSection: {
+    title: "See proof, then verify",
+    ariaLabel: "See a failed run, see a passed run, and run first verification",
+    failed: { href: "/examples/wf-missing" as const, label: "See a failed run" as const },
+    passed: { href: "/examples/wf-complete" as const, label: "See a passed run" as const },
+    integrate: { href: "/integrate" as const, label: "Run first verification" as const },
+  },
 } as const;
 
 export const productCopy = {
@@ -545,15 +542,11 @@ export const productCopy = {
   guaranteeProductBriefCtaLabel: "How it works",
 
   /** Learn hub (`/guides`) first line under H1 (UI-only). */
-  learnHubPrimaryLede: "Real problems, real fixes.",
+  learnHubPrimaryLede: "Real failures. Stored-state fixes.",
 
   /** Guides hub second lede (UI-only). */
   guidesHubSupportingSentence:
-    `Guides that turn "it looked fine in the trace" into "here's exactly what to check before it reaches production."`,
-
-  /** Learn hub third lede — gate + Get started (UI-only). */
-  guidesHubBridgeSentence:
-    "Each short read connects a common symptom to a read-only verification you can add as a gate — then sends you straight to Get started on your own data.",
+    "Guides for proving that agent side effects actually landed before they reach production, billing, or customers.",
 
   /** Muted line after Learn hub supporting lede — pairs with `/compare`. */
   guidesHubCompareLead: "When you want bundles versus single checks in one view, use",
@@ -570,20 +563,13 @@ export const productCopy = {
   indexedGuideEmbedMuted:
     "The block below uses the bundled `wf_missing` demo so this page stays aligned with the engine.",
 
-  /** Learn hub (`/guides`) metadata.description (UI-only); includes bundled proof list. */
+  /** Learn hub (`/guides`) metadata.description (UI-only). */
   learnHubIndexDescription:
-    "Symptom-led guides, read-only verification gates for your stores, bundled examples you can skim, and a clear path to Get started.",
+    "Prove agent side effects in stored state before production, billing, or customers — practical guides and read-only verification gates.",
 
   /** Shared report view one-liner (UI-only). */
   publicShareReportIntro:
     "Private verification snapshot for sharing in tickets or Slack. This URL is not indexed for search; see Security & Trust for how the site handles data.",
-
-  /** Server intro on `/account` (AccountServerAboveFold); links are composed in TSX. */
-  accountPage: {
-    line1: "Recent verification runs, your plan and usage, and API keys—together in one place.",
-    pricingLinkLabel: "Pricing",
-    integrateLinkLabel: "Get started",
-  } as const,
 
   howItWorks: {
     sectionTitle: "How it works",
@@ -594,16 +580,12 @@ export const productCopy = {
 
   /** `/problems` metadata (UI-only; list body comes from `config/marketing.json` `problemIndex`). */
   problemsPageMetadata: {
-    title: "Problems the product routes to",
+    title: "Problems AgentSkeptic catches",
     description:
-      "Buyer moments from `config/marketing.json` `problemIndex`—each row links to a guide and related site paths.",
+      "Failure-mode index for trace-versus-state drift: pick the symptom that matches yours, then verify stored rows, CRM, CI side effects, pre-prod gates, LangGraph persistence, or Stripe ledgers before production.",
+    supportingLine:
+      "Pick the failure mode that looks like yours, then verify stored state before it reaches production, billing, or customers.",
   },
-
-  /** Visible text around the `/compare` link on `/problems`. */
-  problemsHubIntroLead:
-    "These buyer moments are published in discovery order; each row links to a primary guide and related paths on this site. When you want bundles versus single checks in one place, use",
-
-  problemsHubIntroTrail: ".",
 
   homeWhatCatches: {
     sectionTitle: homepageDisplay.homeWhatCatches.sectionTitle,
@@ -613,7 +595,7 @@ export const productCopy = {
   homeClosing: {
     sectionTitle: homepageDisplay.homeClosing.sectionTitle,
     subtitle: homepageDisplay.homeClosing.subtitle,
-    integratorLinksCaption: "GitHub · npm · OpenAPI · documentation",
+    integratorLinksCaption: "GitHub · npm · Docs · Pricing",
   },
 
   homeStakes: {
@@ -624,8 +606,11 @@ export const productCopy = {
   },
 
   homeHeroExampleLabel: "Example: Missing write",
-  homeHeroFailureCaption:
-    "The agent reported a successful CRM contact update, but the row is missing from the database.",
+  homeHeroFailureCaptionLead:
+    "The agent said the CRM contact was updated.",
+  homeHeroFailureCaptionMid: "The database said otherwise.",
+  homeHeroFailureCaptionOutro:
+    "AgentSkeptic returned a failed verdict before the bug could ship.",
 
   fitAndLimits: {
     sectionTitle: "Who it's for",
@@ -644,24 +629,10 @@ export const productCopy = {
 
   productBriefPage,
 
-  /** Security & Trust page — factual only; link out to normative docs for guarantees. */
+  /** Security & Trust page — trust facts and documentation links. */
   securityTrust: {
     title: "Security & Trust",
-    intro: "Buyer-oriented answers live on this site first; GitHub remains the full normative source.",
-    sections: [
-      {
-        heading: "Buyer answers on this site",
-        paragraphs: [
-          "Use the buyer guides, Problems index, and Compare hub linked above for evaluation, metering, and trust boundaries in site-native prose before you widen database access.",
-        ],
-      },
-      {
-        heading: "GitHub as authoritative documentation",
-        paragraphs: [
-          "Verification vocabulary, commercial limits, and incident-class semantics remain normative in the repository SSOT documents linked below—this page does not restate those contracts.",
-        ],
-      },
-    ],
+    sections: [] as readonly { heading: string; paragraphs: readonly string[] }[],
     docLinks: {
       verificationSemanticsHref: bt.canonicalHref.verificationSemantics,
       commercialSsotHref: bt.canonicalHref.commercialSsotDoc,
@@ -724,14 +695,8 @@ export const productCopy = {
   /** Account client: activation copy and a11y announcements (keep in sync with AccountClient UI). */
   account: {
     monthlyQuotaHeading: "Verification quota (this billing month)",
-    monthlyQuotaYearMonth: (ym: string) => `Billing month: ${ym} (UTC).`,
-    monthlyQuotaKeyLine: (used: number, limitLabel: string) =>
-      `${used} used · included: ${limitLabel} (UTC month)`,
+    monthlyQuotaKeyLine: (used: number, limitLabel: string) => `${used} used · included: ${limitLabel}`,
     monthlyQuotaUnlimited: "Unlimited",
-    monthlyQuotaDistinctDays: (n: number) => `Verification days this month: ${n}.`,
-    /** Shown as `title` on the verification-days line (UTC / quota nuance). */
-    monthlyQuotaDistinctDaysTitle:
-      "Each count is a separate UTC calendar day this billing month when you ran paid verification against your allowance.",
     quotaUrgencyCopy: {
       ok: bt.accountQuotaUrgency.ok,
       notice: bt.accountQuotaUrgency.notice,
@@ -757,33 +722,16 @@ export const productCopy = {
     verificationMetricLine: (n: number) => `This billing month (UTC): ${n} outcome${n === 1 ? "" : "s"} on record.`,
     verificationMonthNoRowsDetail:
       "We see activity for this billing month, but detailed rows are not available here yet—try refreshing in a moment.",
-    activityEmpty:
-      "Nothing recorded for this billing month yet. Create a key below if you need one—the Integrate button is your next step.",
     activityLoadError:
       "We could not load verification activity right now. Refresh the page in a moment; if it keeps happening, contact support.",
-    trustFootnoteLines: [
-      "Billing and subscription details are managed through Stripe; use Manage billing when it appears above.",
-      "How keys and data are handled is summarized on the Security & Trust page—this page does not add new guarantees beyond that page.",
-    ] as const,
-    starterUpgradeBody:
-      "Starter is for trying the product. Paid plans unlock real verification runs, predictable monthly usage, and checks you can rely on in CI and production—not just demos.",
-    monthlyQuotaNoKeyLine:
-      "No active API key yet. Create one below, add it to your environment, then run a verification from Integrate.",
-    apiKeyFlowHeading: "Turn your key into a run",
-    apiKeyFlowSteps: [
-      "Generate an API key below (one-time reveal—copy it immediately).",
-      "Set AGENTSKEPTIC_API_KEY in your environment (WORKFLOW_VERIFIER_API_KEY still works).",
-      "Open Integrate and run npx agentskeptic verify … from your repo (full commands are on that page).",
-    ] as const,
+    monthlyQuotaNoKeyLine: "No active API key yet. Create one below to use licensed verification.",
     primaryVerificationCtaFirstRun: "Run first verification",
-    /** When the user has no key yet; verification CTA stays visible but sets expectations. */
-    primaryVerificationCtaFirstRunNeedsKey: "Run first verification (create a key below first)",
     primaryVerificationCtaAgain: "Run first verification again",
     ossClaimChecklistTitle: "After linking a CLI verification",
     ossClaimChecklistItems: [
       "Your run id and outcome are attached to this account for verification history.",
       "Create an API key below if you need licensed npm verification or reserve quota.",
-      "Use Integrate for copy-paste commands tied to your environment.",
+      "See site guides for environment setup and commands.",
     ] as const,
     ossClaimRunHint: (runId: string) => `Linked run id: ${runId.slice(0, 12)}…`,
     ossClaimStarterCta: "Compare paid plans for licensed verification and monthly allowance",
@@ -809,6 +757,7 @@ export const productCopy = {
   pricingWhatYouGetPaidPlans,
   pricingHeroExample: pricingWhatYouGetPaidPlans,
   pricingPlansSectionTitle,
+  pricingPlansIntro,
   pricingCommercialTermsDetailsSummary,
   pricingRecommendedPill,
   pricingTeamFootnote,
@@ -842,19 +791,18 @@ export const productCopy = {
     title: "Sign in",
     intro:
       "Use your email for a magic link to manage plans, account settings, and API keys.",
-    benefits: [
-      "Subscribe to Individual, Team, or Business (Stripe Checkout; trial available on eligible plans)—required before licensed npm verify.",
-      "Create and view API keys on the account page after sign-in.",
-    ],
   },
 
   homeHeroCtaLabels,
   homeHeroSecondaryCta,
+  homePageHeroIntegrateSecondaryLabel,
   homePageHeroSecondaryCta,
   ctaTaxonomy,
   coreValuePropTriptych,
   whenToUseDecisionBox,
   trustStripPills,
+  homeHowItWorksSteps,
+  homePageMissingWriteDemoCta: HOME_PAGE_MISSING_WRITE_DEMO_CTA,
   pricingBillingAndQuestionsBand,
   learnBundledProofLedes,
   learnBundledProofIntegrateLede,

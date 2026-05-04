@@ -17,7 +17,7 @@ describe("integrate page markup", { timeout: 300_000 }, () => {
   it("has exactly one page-level main h1 with integrate title", async () => {
     const html = await getSiteHtml("/integrate");
     const $ = cheerio.load(html);
-    const $h1 = $("main.integrate-main > h1");
+    const $h1 = $("main.integrate-main h1.marketing-page-title");
     expect($h1.length).toBe(1);
     expect($h1.text().trim()).toBe(siteMetadata.integrate.title);
   });

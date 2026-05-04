@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Drift gate: `/integrate` is pack-led only (config/marketing.json); no legacy activation blocks.
+ * Drift gate: `/integrate` renders contract `check` from config/marketing.json; no legacy activation blocks.
  */
 import { readFileSync } from "node:fs";
 import { join, dirname } from "node:path";
@@ -56,24 +56,14 @@ for (const b of bannedIntegratePrimary) {
 
 const page = readFileSync(join(root, "website", "src", "app", "integrate", "page.tsx"), "utf8");
 if (!page.includes("marketing.integratePage")) {
-  fail("integrate/page.tsx must read pack-led copy from marketing.integratePage");
+  fail("integrate/page.tsx must read copy from marketing.integratePage");
 }
-if (!page.includes("quickVerifyCommand")) fail("integrate/page.tsx must reference quickVerifyCommand");
 if (!page.includes("truthCheckCommand")) fail("integrate/page.tsx must reference truthCheckCommand");
-if (!page.includes("packLedCommand")) fail("integrate/page.tsx must render packLedCommand");
-if (!page.includes("<pre")) fail("integrate/page.tsx must contain a <pre> for commands");
-const quickIdx = page.indexOf("quickVerifyCommand");
-const truthIdx = page.indexOf("truthCheckCommand");
-const packIdx = page.indexOf("packLedCommand");
-if (quickIdx === -1 || truthIdx === -1 || packIdx === -1 || quickIdx >= truthIdx || truthIdx >= packIdx) {
-  fail(
-    "integrate/page.tsx must reference quickVerifyCommand before truthCheckCommand before packLedCommand (source order)",
-  );
+if (!page.includes('data-testid="integrate-truth-check-commands"')) {
+  fail("integrate/page.tsx must define data-testid integrate-truth-check-commands");
 }
-const fq = page.indexOf('data-testid="integrate-first-proof-quick"');
-const gc = page.indexOf('data-testid="integrate-guided-cta"');
-if (fq === -1 || gc === -1 || fq >= gc) {
-  fail("integrate/page.tsx must place data-testid integrate-first-proof-quick before integrate-guided-cta");
+if (!(page.includes("<pre") || page.includes("MarketingCodeBlock"))) {
+  fail("integrate/page.tsx must render commands in a <pre> (or MarketingCodeBlock, which renders <pre>)");
 }
 if (page.includes("IntegrateActivationBlock") || page.includes("IntegrateCrossingCommands")) {
   fail("integrate/page.tsx must not import legacy IntegrateActivationBlock / IntegrateCrossingCommands");

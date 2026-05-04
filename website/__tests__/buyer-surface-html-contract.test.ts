@@ -42,26 +42,21 @@ describe("buyer-surface HTML contracts (R2–R6)", { timeout: 300_000 }, () => {
     expect(hrefs).toEqual(expected);
   });
 
-  it("homepage trust strip has four keyed testids (R3)", async () => {
+  it("homepage closing footer has four keyed testids github → npm → docs → pricing (R3)", async () => {
     const html = await getSiteHtml("/");
-    for (const key of ["integrate", "openapi", "npm", "github"]) {
-      expect(html).toContain(`data-testid="home-trust-strip-${key}"`);
+    for (const key of ["github", "npm", "docs", "pricing"]) {
+      expect(html).toContain(`data-testid="home-footer-${key}"`);
     }
   });
 
-  it("/pricing trust band matches productCopy (R4)", async () => {
+  it("/pricing shows plans grid and comparison without legacy billing band (R4)", async () => {
     const html = await getSiteHtml("/pricing");
-    expect(html).toContain('data-testid="pricing-trust-band"');
+    expect(html).not.toContain('data-testid="pricing-trust-band"');
+    expect(html).toContain('data-testid="pricing-compare-section"');
+    expect(html).toContain(productCopy.pricingPlansSectionTitle);
     const $ = cheerio.load(html);
-    const band = $('[data-testid="pricing-trust-band"]');
-    expect(band.find("h2").first().text().trim()).toBe(productCopy.pricingBillingAndQuestionsBand.billingTitle);
-    const billingParas = band.find(".pricing-billing-prose p").toArray().map((el) => $(el).text().trim());
-    for (const b of productCopy.pricingBillingAndQuestionsBand.billingParagraphs) {
-      expect(billingParas).toContain(b);
-    }
-    expect(band.find(".pricing-questions-lead").first().text().trim()).toBe(
-      productCopy.pricingBillingAndQuestionsBand.questionsTitle,
-    );
+    expect($('[data-plan="starter"]').length).toBe(1);
+    expect($('[data-plan="enterprise"]').length).toBe(1);
   });
 
   it("/security quick facts match commercialNarrative (R5)", async () => {

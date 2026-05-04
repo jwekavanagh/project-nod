@@ -104,10 +104,11 @@ describe("AccountClient inactive subscription", () => {
     expect(notice).toHaveTextContent(/use manage billing above/i);
   });
 
-  it("documents licensed CLI prerequisites next to API key", () => {
+  it("shows one-time API key reveal reminder next to generate control", () => {
     render(<AccountClient hasKey={false} initialCommercial={baseCommercial()} activity={idleActivity} />);
-    expect(screen.getByText(/AGENTSKEPTIC_API_KEY/i)).toBeInTheDocument();
-    expect(screen.getByText(/npx agentskeptic verify/i)).toBeInTheDocument();
+    expect(
+      screen.getByText(/Generate an API key below\. Copy it immediately; it is shown once\./i),
+    ).toBeInTheDocument();
   });
 
   it("does not show inactive notice when subscription is active", () => {

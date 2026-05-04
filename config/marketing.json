@@ -10,20 +10,20 @@
   "keywords": ["agentskeptic", "verification", "database", "read-only", "agent", "workflow"],
   "readmeTitle": "AgentSkeptic — state vs trace",
   "heroTitle": "Trust reality, not traces.",
-  "heroSubtitle": "Declared tool effects vs read-only store facts.",
-  "visitorProblemAnswer": "Traces say success. Your data often disagrees. Read-only checks at verify time compare tool claims to stored state—before you ship or bill.",
-  "heroOutcome": "Your agents say the workflow succeeded.",
-  "heroMechanism": "Your database says otherwise.",
+  "heroSubtitle": "Tool effects vs read-only store facts.",
+  "visitorProblemAnswer": "Traces can show success while stored data disagrees.\n\nAgentSkeptic re-checks the stores your agent claims to change, then returns a deterministic Outcome Certificate before you ship.",
+  "heroOutcome": "Agents can report success while the database is still wrong.",
+  "heroMechanism": "AgentSkeptic re-checks your real stores and fails CI before missing writes reach production.",
   "guaranteeFootnote": "Read-only checks; not which call wrote.",
   "heroPositioning": "Post-condition verification for AI-agent workflows.",
   "siteDefaultMetadata": {
     "title": "AgentSkeptic",
-    "description": "Structured tool activity vs downstream state at verify time: SQL (SQLite, Postgres, MySQL), HTTP witnesses, supported vector indexes, MongoDB documents, and S3-compatible objects when configured—deterministic verdict artifacts (see verification-state-stores.md)."
+    "description": "Tool activity vs downstream state at verify: SQL, HTTP, vectors, documents, S3 objects—deterministic verdict artifacts (verification-state-stores.md)."
   },
   "homepageAcquisitionCtaLabel": "How it works",
   "pageMetadata": {
     "title": "Traces vs state",
-    "description": "Structured tool activity vs downstream state at verify time: SQL (SQLite, Postgres, MySQL), HTTP witnesses, supported vector indexes, MongoDB documents, and S3-compatible objects when configured—deterministic verdict artifacts (see verification-state-stores.md)."
+    "description": "Tool activity vs downstream state at verify: SQL, HTTP, vectors, documents, S3 objects—deterministic verdict artifacts (verification-state-stores.md)."
   },
   "readmeFold": {
     "templateLines": [
@@ -42,7 +42,7 @@
   },
   "shareableTerminalDemo": {
     "title": "Bundled terminal proof",
-    "transcript": "### Success (`wf_complete`)\n\nworkflow_id: wf_complete\nworkflow_status: complete\ntrust: TRUSTED: Every step matched the database under the configured verification rules.\nsteps:\n  - seq=0 tool=crm.upsert_contact result=Matched the database.\n\n{\n  \"schemaVersion\": 15,\n  \"workflowId\": \"wf_complete\",\n  \"status\": \"complete\",\n  \"steps\": [{ \"seq\": 0, \"toolId\": \"crm.upsert_contact\", \"status\": \"verified\" }]\n}\n\n### Failure (`wf_missing`)\n\nworkflow_id: wf_missing\nworkflow_status: inconsistent\nsteps:\n  - seq=0 tool=crm.upsert_contact result:Expected row is missing from the database (the log implies a write that is not present).\n    reference_code: ROW_ABSENT\n\n{\n  \"schemaVersion\": 15,\n  \"workflowId\": \"wf_missing\",\n  \"status\": \"inconsistent\",\n  \"steps\": [\n    {\n      \"seq\": 0,\n      \"toolId\": \"crm.upsert_contact\",\n      \"status\": \"missing\",\n      \"reasons\": [{ \"code\": \"ROW_ABSENT\" }]\n    }\n  ]\n}"
+    "transcript": "### Success (`wf_complete`)\n\nworkflow_id: wf_complete\nworkflow_status: complete\ntrust: TRUSTED: Every step matched the database under the configured verification rules.\nsteps:\n  - seq=0 tool=crm.upsert_contact result=Matched the database.\n\n{\n  \"schemaVersion\": 15,\n  \"workflowId\": \"wf_complete\",\n  \"status\": \"complete\",\n  \"steps\": [{ \"seq\": 0, \"toolId\": \"crm.upsert_contact\", \"status\": \"verified\" }]\n}\n\n### Failure (`wf_missing`)\n\nworkflow_id: wf_missing\nworkflow_status: inconsistent\nsteps:\n  - seq=0 tool=crm.upsert_contact result=Expected row is missing from the database.\n    reference_code: ROW_ABSENT\n\n{\n  \"schemaVersion\": 15,\n  \"workflowId\": \"wf_missing\",\n  \"status\": \"inconsistent\",\n  \"steps\": [\n    {\n      \"seq\": 0,\n      \"toolId\": \"crm.upsert_contact\",\n      \"status\": \"missing\",\n      \"reasons\": [{ \"code\": \"ROW_ABSENT\" }]\n    }\n  ]\n}"
   },
   "cliFollowupLines": [
     "Context: {{ACQUISITION_URL}}",
@@ -51,8 +51,8 @@
   ],
   "site": {
     "integrate": {
-      "title": "Get started",
-      "description": "Run one truth check against your database (agentskeptic check); optional activation packs export proof/ for commercial evidence."
+      "title": "Run your first stored-state verification",
+      "description": "Compare your agent's tool claims against actual stored state."
     },
     "openGraph": {
       "image": {
@@ -63,8 +63,9 @@
       }
     },
     "pricing": {
-      "heroTitle": "Verify before you ship.",
-      "positioning": "Catch bad or missing state in CI before it reaches customers, compliance, or revenue."
+      "heroTitle": "Pricing for stored-state verification",
+      "heroSupporting": "Start free. Pay when verification becomes a CI enforcement workflow.",
+      "positioning": "Catch bad or missing state before it reaches customers, compliance, or revenue."
     },
     "home": {},
     "security": {
@@ -81,9 +82,9 @@
     }
   },
   "integratePage": {
-    "truthCheckCommand": "npx agentskeptic check --workflow-id YOUR_WORKFLOW_ID \\\n  --project ./your-app \\\n  --db ./path/to/readable.sqlite\n\n# Or explicit registry/events paths:\n# npx agentskeptic check --workflow-id YOUR_WORKFLOW_ID \\\n#   --events ./agentskeptic/events.ndjson \\\n#   --registry ./agentskeptic/tools.json \\\n#   --db ./path/to/readable.sqlite",
+    "truthCheckCommand": "npx agentskeptic check --workflow-id YOUR_WORKFLOW_ID \\\n  --project ./your-app \\\n  --db ./path/to/readable.sqlite",
     "quickVerifyCommand": "npx agentskeptic quick \\\n  --input path/to/quick-input.ndjson \\\n  --export-registry path/to/tools.json \\\n  --db path/to/readable.sqlite \\\n  --no-human-report",
-    "packLedCommand": "npx agentskeptic activate --input ./path/to/workflow-bootstrap-input.json \\\n  --db ./path/to/readable.sqlite \\\n  --out ./path/to/agent-pack\n\n# Replay only (advanced): NDJSON pack you already authored\nnpx agentskeptic crossing \\\n  --workflow-id YOUR_WORKFLOW_ID \\\n  --events ./path/to/events.ndjson \\\n  --registry ./path/to/tools.json \\\n  --db ./path/to/readable.sqlite",
+    "packLedCommand": "npx agentskeptic activate --input ./path/to/workflow-bootstrap-input.json \\\n  --db ./path/to/readable.sqlite \\\n  --out ./path/to/agent-pack\n\nnpx agentskeptic crossing \\\n  --workflow-id YOUR_WORKFLOW_ID \\\n  --events ./path/to/events.ndjson \\\n  --registry ./path/to/tools.json \\\n  --db ./path/to/readable.sqlite",
     "githubDeepLink": "https://github.com/jwekavanagh/agentskeptic/blob/main/docs/integrate.md",
     "githubFirstRunLink": "https://github.com/jwekavanagh/agentskeptic/blob/main/docs/integrate.md"
   },
@@ -129,48 +130,39 @@
   "problemIndex": [
     {
       "moment": "Green trace, bad data",
-      "primaryRoute": "/guides/trace-green-postgres-row-missing",
-      "relatedRoutes": ["/integrate", "/database-truth-vs-traces"]
+      "symptom": "Trace succeeds, but the Postgres row is missing or stale.",
+      "verificationCue": "Verify the row before you trust the run.",
+      "primaryRoute": "/guides/trace-green-postgres-row-missing"
     },
     {
-      "moment": "Tool ok, CRM wrong",
-      "primaryRoute": "/guides/tool-loop-success-crm-state-wrong",
-      "relatedRoutes": ["/integrate", "/pricing"]
+      "moment": "Tool OK, CRM wrong",
+      "symptom": "Tool loop succeeds, but the CRM record is wrong or missing.",
+      "verificationCue": "Match tool claims to stored customer data.",
+      "primaryRoute": "/guides/tool-loop-success-crm-state-wrong"
     },
     {
       "moment": "CI green, no write",
-      "primaryRoute": "/guides/ci-green-logs-row-absent",
-      "relatedRoutes": ["/guides/ci-green-missing-database-side-effect", "/integrate"]
+      "symptom": "CI passes, but the write never landed.",
+      "verificationCue": "Fail when expected stored state is absent.",
+      "primaryRoute": "/guides/ci-green-logs-row-absent"
     },
     {
-      "moment": "Pre-prod read-only gate",
-      "primaryRoute": "/guides/pre-production-read-only-sql-gate",
-      "relatedRoutes": ["/integrate", "/pricing"]
-    },
-    {
-      "moment": "AI CRM data wrong",
-      "primaryRoute": "/guides/ai-agent-wrong-crm-data",
-      "relatedRoutes": ["/database-truth-vs-traces"]
-    },
-    {
-      "moment": "Params vs store",
-      "primaryRoute": "/guides/automation-success-database-mismatch",
-      "relatedRoutes": ["/integrate"]
+      "moment": "Pre-production read-only gate",
+      "symptom": "Add read-only SQL verification before production.",
+      "verificationCue": "Read stored state without writes.",
+      "primaryRoute": "/guides/pre-production-read-only-sql-gate"
     },
     {
       "moment": "LangGraph data check",
-      "primaryRoute": "/guides/debug-postgres-after-langgraph",
-      "relatedRoutes": ["/guides/verify-langgraph-workflows", "/integrate"]
+      "symptom": "Inspect Postgres after a LangGraph run.",
+      "verificationCue": "Reconcile trace success with persisted rows.",
+      "primaryRoute": "/guides/debug-postgres-after-langgraph"
     },
     {
       "moment": "Webhook vs ledger",
-      "primaryRoute": "/guides/stripe-webhook-database-alignment",
-      "relatedRoutes": ["/pricing"]
-    },
-    {
-      "moment": "CI green, no effect",
-      "primaryRoute": "/guides/scenario-ci-green-side-effect-missing",
-      "relatedRoutes": ["/guides/ci-green-missing-database-side-effect", "/integrate"]
+      "symptom": "Stripe 200, but the ledger row is wrong or missing.",
+      "verificationCue": "Match webhooks to internal records before settlement.",
+      "primaryRoute": "/guides/stripe-webhook-database-alignment"
     }
   ],
   "llms": {

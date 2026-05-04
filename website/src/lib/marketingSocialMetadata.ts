@@ -1,4 +1,5 @@
 import { siteMetadata } from "@/content/siteMetadata";
+import marketing from "@/lib/marketing";
 import type { Metadata } from "next";
 
 const ogImage = {
@@ -39,6 +40,14 @@ export function marketingOpenGraphAndTwitter(
 export function homePageTitleFromMarketing(heroTitle: string): string {
   const withoutTrailingPeriod = heroTitle.replace(/\s*\.\s*$/u, "");
   return `${withoutTrailingPeriod} — AgentSkeptic`;
+}
+
+/** Short public description without normative doc filenames — used for `/` metadata and JSON-LD. */
+export function homeIndexPlainDescriptionFromMarketing(): string {
+  return [marketing.heroTitle, marketing.heroOutcome, marketing.heroMechanism]
+    .map((s) => s.replace(/\s+/g, " ").trim())
+    .filter(Boolean)
+    .join(" ");
 }
 
 const BRAND_TITLE_SUFFIX = / — AgentSkeptic$/;

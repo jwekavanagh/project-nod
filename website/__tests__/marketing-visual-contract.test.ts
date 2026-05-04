@@ -21,7 +21,7 @@ describe("marketing visual contract", () => {
 
 describe("securityTrust copy", () => {
   it("does not claim common certifications without evidence", () => {
-    const blobs: string[] = [productCopy.securityTrust.intro];
+    const blobs: string[] = [productCopy.securityTrust.title];
     for (const s of productCopy.securityTrust.sections) {
       blobs.push(s.heading, ...s.paragraphs);
     }

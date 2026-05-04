@@ -68,12 +68,12 @@ export function getOutcomeCertificateQuickFactBullet(): string {
 
 export function getSecurityQuickFacts(): {
   title: string;
-  bullets: readonly [string, string, string, string];
+  bullets: readonly [string, string, string];
 } {
   const b = loadBuyerTruth().securityQuickFactsBullets;
   return {
-    title: "Quick facts for buyers",
-    bullets: [b[0], b[1], b[2], b[3]] as const,
+    title: "Trust facts",
+    bullets: [b[0], b[1], b[2]] as const,
   };
 }
 
@@ -85,6 +85,7 @@ export type PricingComparisonRow = {
 
 export type PricingFeatureComparison = {
   title: string;
+  intro: string;
   columnLabels: readonly ["Capability", "Starter", "Individual", "Team", "Business", "Enterprise"];
   rows: readonly PricingComparisonRow[];
 };
@@ -113,6 +114,7 @@ export function getPricingFeatureComparison(catalog: CommercialPlansFile): Prici
 
   return {
     title: "Plan comparison",
+    intro: "Compare what stays free, what becomes metered, and what unlocks stateful enforcement.",
     columnLabels: ["Capability", "Starter", "Individual", "Team", "Business", "Enterprise"] as const,
     rows,
   };
@@ -181,6 +183,7 @@ export function getCompareApproachesLabel(): string {
 
 export function getPricingPageViewModel(catalog: CommercialPlansFile): {
   heroTitle: string;
+  heroSupporting: string;
   heroPositioning: string;
   heroSubtitle: string;
   heroSubtitleSecondary: string;
@@ -210,12 +213,14 @@ export function getPricingPageViewModel(catalog: CommercialPlansFile): {
       recommended: id === recommendedPlanId,
     };
   });
-  const metadataDescription = [m.positioning, heroN.subtitle, heroN.subtitleSecondary]
+  const supporting = m.heroSupporting.trim();
+  const metadataDescription = [supporting, m.positioning]
     .map((s) => s.replace(/\s+/g, " ").trim())
     .filter(Boolean)
     .join(" ");
   return {
     heroTitle: m.heroTitle,
+    heroSupporting: supporting,
     heroPositioning: m.positioning,
     heroSubtitle: heroN.subtitle,
     heroSubtitleSecondary: heroN.subtitleSecondary,

@@ -7,16 +7,16 @@ import {
   getSiteHtml,
   registerMarketingSiteTeardown,
 } from "./helpers/siteTestServer";
-import { getFrameworkFootnoteForHomepage } from "@/lib/commercialNarrative";
-
 registerMarketingSiteTeardown();
 
 type M = {
   heroTitle: string;
+  heroOutcome: string;
+  heroMechanism: string;
   siteDefaultMetadata: { description: string };
   site: {
     integrate: { title: string; description: string };
-    pricing: { heroTitle: string; positioning: string };
+    pricing: { heroTitle: string; heroSupporting: string; positioning: string };
   };
 };
 
@@ -37,11 +37,12 @@ describe("marketing surface parity (HTML includes JSON needles)", { timeout: 300
     await ensureMarketingSiteRunning();
   });
 
-  it("home `/` includes hero title and default site description", async () => {
+  it("home `/` includes hero title and homepage meta description (hero headline + outcome lines)", async () => {
     const html = await getSiteHtml("/");
     const flat = collapseWs(html);
     expect(flat).toContain(collapseWs(m.heroTitle));
-    expect(flat).toContain(collapseWs(m.siteDefaultMetadata.description));
+    expect(flat).toContain(collapseWs(m.heroOutcome));
+    expect(flat).toContain(collapseWs(m.heroMechanism));
   });
 
   it("`/integrate` includes integrate title and description from JSON", async () => {
@@ -55,12 +56,8 @@ describe("marketing surface parity (HTML includes JSON needles)", { timeout: 300
     const html = await getSiteHtml("/pricing");
     const flat = collapseWs(html);
     expect(flat).toContain(collapseWs(m.site.pricing.heroTitle));
+    expect(flat).toContain(collapseWs(m.site.pricing.heroSupporting));
     expect(flat).toContain(collapseWs(m.site.pricing.positioning));
   });
 
-  it("home includes buyer-truth framework footnote (homepage closing)", async () => {
-    const html = await getSiteHtml("/");
-    const flat = collapseWs(html);
-    expect(flat).toContain(collapseWs(getFrameworkFootnoteForHomepage()));
-  });
 });

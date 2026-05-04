@@ -18,10 +18,20 @@ export function SiteFunnelBeacon() {
 
 /**
  * First-five-minutes + telemetry callout: mounts after `children` on beacon-eligible routes
- * so the homepage lead is product story, not policy detail.
+ * (except policy, guides, pricing, and the paste verifier at `/verify`).
  */
 export function FirstFiveMinutesAfterMain() {
   const pathname = usePathname() ?? "";
+  const basePath = pathname.replace(/\/+$/, "") || "/";
+  if (
+    basePath === "/guides" ||
+    basePath === "/pricing" ||
+    basePath === "/security" ||
+    basePath === "/privacy" ||
+    basePath === "/terms" ||
+    basePath === "/verify"
+  )
+    return null;
   const surface = resolveAttributionSurface(pathname);
   if (!surface) return null;
   return <FirstFiveMinutesCallout homeTeaser={pathname === "/"} />;

@@ -2,7 +2,6 @@ import * as cheerio from "cheerio";
 import { existsSync } from "node:fs";
 import { join } from "node:path";
 import { beforeAll, describe, expect, it } from "vitest";
-import { loadBuyerTruth } from "@/lib/buyerTruth";
 import { getRepoRoot } from "./helpers/distributionGraphHelpers";
 import {
   ensureMarketingSiteRunning,
@@ -12,7 +11,11 @@ import {
 
 registerMarketingSiteTeardown();
 
-const requirements = [...loadBuyerTruth().integrateRequirements];
+const REQUIREMENT_LINES = [
+  "Node.js 22 or newer",
+  "read-only access to the database or snapshot you want to verify",
+  "structured tool activity exported as NDJSON",
+];
 
 const buildIdPath = join(getRepoRoot(), "website", ".next", "BUILD_ID");
 if (existsSync(buildIdPath)) {
@@ -24,11 +27,11 @@ describe("integrate page product prerequisites markup", { timeout: 600_000 }, ()
     await ensureMarketingSiteRunning();
   });
 
-  it("main.integrate-main includes every requirements line from config/buyer-truth.v1.json", async () => {
+  it("main.integrate-main includes simplified requirements lines", async () => {
     const html = await getSiteHtml("/integrate");
     const $ = cheerio.load(html);
     const mainText = $("main.integrate-main").text();
-    for (const line of requirements) {
+    for (const line of REQUIREMENT_LINES) {
       expect(mainText).toContain(line);
     }
   });

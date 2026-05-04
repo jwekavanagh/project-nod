@@ -1,7 +1,7 @@
 /** @vitest-environment jsdom */
 
 import GuidesHubPage from "@/app/guides/page";
-import { learnHub, productCopy } from "@/content/productCopy";
+import { learnHub } from "@/content/productCopy";
 import { DiscoverySurfacePage } from "@/components/discovery/DiscoverySurfacePage";
 import * as hubMeta from "@/app/guides/page";
 import { listAllSurfaces, readSurfaceFile } from "@/lib/surfaceMarkdown";
@@ -37,21 +37,15 @@ function assertGuideShell(surface: ReturnType<typeof readSurfaceFile>) {
 }
 
 describe("indexed guides", () => {
-  it("hub is indexable, lists curated hub targets, every example, and primary CTAs", () => {
+  it("hub is indexable, lists curated hub targets, and primary CTAs", () => {
     expect(hubMeta.metadata.robots).toEqual({ index: true, follow: true });
-    const surfaces = listAllSurfaces();
-    const examples = surfaces.filter((s) => s.route.startsWith("/examples/"));
     const { container } = render(<GuidesHubPage />);
-    const curated = [...learnHub.popular, ...learnHub.debug, ...learnHub.buyers] as readonly { href: string }[];
+    const curated = [...learnHub.popular, ...learnHub.debug] as readonly { href: string }[];
     for (const item of curated) {
       expect(container.querySelector(`a[href="${item.href}"]`)).toBeTruthy();
     }
-    for (const e of examples) {
-      expect(container.querySelector(`a[href="${e.route}"]`)).toBeTruthy();
-    }
     expect(container.querySelector('a[href="/integrate"]')).toBeTruthy();
     expect(container.querySelector('a[href="/verify"]')).toBeTruthy();
-    expect(productCopy.guidesHubBridgeSentence.length).toBeGreaterThan(40);
   });
 
   it("each guide surfaceKind guide meets shell contract", () => {

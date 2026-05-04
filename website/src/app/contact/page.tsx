@@ -1,3 +1,5 @@
+import { MarketingPageHeader } from "@/components/marketing/MarketingPageHeader";
+import { MarketingPageShell } from "@/components/marketing/MarketingPageShell";
 import { conversionSpine, productCopy } from "@/content/productCopy";
 import { enterpriseMailtoHref } from "@/lib/contactSalesEmail";
 import { indexableGuideCanonical } from "@/lib/indexableGuides";
@@ -22,11 +24,16 @@ export default function ContactPage() {
   const salesMailto = enterpriseMailtoHref();
 
   return (
-    <main className="contact-page">
-      <h1>Contact</h1>
-      <p className="contact-lede">
-        For Enterprise procurement, tailored limits, on-prem options, or custom contract terms, reach sales directly.
-      </p>
+    <MarketingPageShell variant="documentProse" className="contact-page">
+      <MarketingPageHeader
+        title="Contact"
+        description={
+          <p className="contact-lede">
+            For Enterprise procurement, tailored limits, on-prem options, or custom contract terms, reach sales
+            directly.
+          </p>
+        }
+      />
       <p>
         <Link
           className="btn"
@@ -50,6 +57,6 @@ export default function ContactPage() {
         <Link href="/support">{productCopy.pricingBillingAndQuestionsBand.secondaryLinks[1].label}</Link>
         .
       </p>
-    </main>
+    </MarketingPageShell>
   );
 }

@@ -5,9 +5,11 @@
 <!-- discovery-acquisition-fold:start -->
 ## Trust reality, not traces.
 
-Declared tool effects vs read-only store facts.
+Tool effects vs read-only store facts.
 
-Traces say success. Your data often disagrees. Read-only checks at verify time compare tool claims to stored state—before you ship or bill.
+Traces can show success while stored data disagrees.
+
+AgentSkeptic re-checks the stores your agent claims to change, then returns a deterministic Outcome Certificate before you ship.
 
 ### Bundled terminal proof
 
@@ -32,7 +34,7 @@ steps:
 workflow_id: wf_missing
 workflow_status: inconsistent
 steps:
-  - seq=0 tool=crm.upsert_contact result:Expected row is missing from the database (the log implies a write that is not present).
+  - seq=0 tool=crm.upsert_contact result=Expected row is missing from the database.
     reference_code: ROW_ABSENT
 
 {

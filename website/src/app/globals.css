@@ -7,6 +7,8 @@ textarea:focus-visible,
 .btn:focus-visible,
 .link-secondary:focus-visible,
 .link-tertiary:focus-visible,
+.marketing-content-link:focus-visible,
+.marketing-text-link:focus-visible,
 .skip-to-main:focus-visible,
 [data-testid="brand-lockup"]:focus-visible,
 .site-logo:focus-visible,
@@ -72,8 +74,85 @@ textarea:focus-visible,
   --danger-border: color-mix(in srgb, var(--danger) 55%, #1f0a0a);
   --card: #ffffff;
   --border: #d0d7e0;
+  --marketing-page-title-size: clamp(1.65rem, 3.2vw, 1.95rem);
+  --marketing-section-h2-size: clamp(1.35rem, 2.2vw, 1.65rem);
+  --marketing-code-bg: var(--card);
+  --marketing-code-border: 1px solid var(--border);
+  --marketing-code-radius: 10px;
+  --marketing-callout-bg: color-mix(in srgb, var(--card) 92%, var(--surface));
   /* Populated by next/font variable on <html> (see layout.tsx). */
   --font-sans: ui-sans-serif, system-ui, sans-serif;
+}
+
+.marketing-shell {
+  box-sizing: border-box;
+}
+.marketing-shell--home {
+  width: 100%;
+}
+.marketing-shell--document {
+  width: 100%;
+}
+
+.marketing-page-header {
+  margin: 0 0 2rem;
+}
+.marketing-page-title {
+  margin: 0;
+  font-size: var(--marketing-page-title-size);
+  line-height: 1.22;
+  letter-spacing: -0.02em;
+  font-family: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
+}
+.marketing-page-kicker {
+  margin: 0.35rem 0 0;
+  font-size: 1.125rem;
+  line-height: 1.45;
+  max-width: 42rem;
+}
+.marketing-page-kicker strong {
+  font-weight: 650;
+}
+.marketing-page-kicker > p:first-child {
+  margin-top: 0;
+}
+.marketing-page-description {
+  margin-top: 0.5rem;
+  max-width: 44rem;
+}
+.marketing-page-description > p:first-child {
+  margin-top: 0;
+}
+
+.marketing-code-block {
+  background: var(--marketing-code-bg);
+  border: var(--marketing-code-border);
+  border-radius: var(--marketing-code-radius);
+  padding: 1rem;
+  overflow-x: auto;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  font-size: 0.85rem;
+  line-height: 1.45;
+  white-space: pre-wrap;
+  word-break: break-word;
+  margin: 0;
+}
+.marketing-code-block--scroll {
+  max-height: min(24rem, 56vh);
+  overflow-y: auto;
+}
+
+.integrate-pack-command {
+  background: var(--marketing-code-bg);
+  border: var(--marketing-code-border);
+  border-radius: var(--marketing-code-radius);
+  padding: 1rem;
+  overflow-x: auto;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  font-size: 0.85rem;
+  line-height: 1.45;
+  white-space: pre-wrap;
+  word-break: break-word;
 }
 
 .surface-ghost {
@@ -190,10 +269,12 @@ main {
   flex: 0 0 auto;
 }
 
-.pricing-page .pricing-hero-title {
-  font-size: 1.85rem;
-  line-height: 1.2;
-  margin: 0 0 0.5rem;
+.pricing-page .marketing-page-title {
+  margin-bottom: 0.5rem;
+}
+.pricing-page .marketing-page-kicker .pricing-positioning {
+  margin: 0;
+  max-width: 44rem;
 }
 .pricing-page .pricing-positioning {
   font-size: 1.1rem;
@@ -222,6 +303,32 @@ main {
   font-size: 1.2rem;
   margin: 1.35rem 0 0.65rem;
   line-height: 1.25;
+}
+.pricing-page .pricing-plans-intro {
+  margin: -0.35rem 0 0.85rem;
+  max-width: 44rem;
+  line-height: 1.45;
+}
+.pricing-page .pricing-billing-fieldset {
+  border: 0;
+  margin: 0 0 1rem;
+  padding: 0;
+  min-inline-size: unset;
+}
+.pricing-page .pricing-billing-legend {
+  padding: 0;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--fg);
+  margin-bottom: 0.35rem;
+}
+.pricing-page .pricing-billing-fieldset.muted .pricing-billing-legend {
+  color: inherit;
+}
+.pricing-page .pricing-compare-intro {
+  margin: 0 0 0.65rem;
+  max-width: 44rem;
+  line-height: 1.45;
 }
 .pricing-page .pricing-compare-lead {
   margin: 0 0 0.65rem;
@@ -518,7 +625,7 @@ button.secondary, .btn.secondary {
   letter-spacing: -0.02em;
 }
 .home-section h2 {
-  font-size: clamp(1.35rem, 2.2vw, 1.75rem);
+  font-size: var(--marketing-section-h2-size);
   margin-top: 0;
 }
 .lede {
@@ -573,27 +680,40 @@ button.secondary, .btn.secondary {
   padding-left: 1.25rem;
   max-width: 40rem;
 }
-.guide-hub-list li {
+/* Marketing hub lists: `/guides`, `/problems`, compare hub section titles — shared vertical rhythm */
+.marketing-link-list > li {
   margin: 0.65rem 0;
 }
-.guide-hub-link {
+.marketing-content-link {
   display: block;
   text-decoration: none;
   color: inherit;
 }
-.guide-hub-link:hover .guide-hub-link-title {
+.marketing-content-link:hover .marketing-content-link__title {
   text-decoration: underline;
 }
-.guide-hub-link-title {
+.marketing-content-link__title {
   display: block;
   font-weight: 600;
+  line-height: 1.45;
 }
-.guide-hub-link-caption {
+.marketing-content-link__desc {
   display: block;
   font-size: 0.9rem;
   margin-top: 0.2rem;
-  line-height: 1.35;
+  line-height: 1.45;
   max-width: 38rem;
+}
+.marketing-text-link {
+  font-weight: 600;
+  color: var(--link);
+  text-decoration: underline;
+  text-underline-offset: 0.12em;
+  text-decoration-color: color-mix(in srgb, var(--link) 32%, var(--bg));
+}
+.marketing-text-link:hover {
+  color: var(--link-hover);
+  text-decoration-color: color-mix(in srgb, var(--link-hover) 40%, var(--bg));
 }
 
 /* Learn hub (`/guides`): align with funnel pages — section rhythm, code in bundled list, CTA band */
@@ -634,16 +754,17 @@ button.secondary, .btn.secondary {
   margin: 1rem 0 0.35rem;
 }
 .code-block {
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: 8px;
+  background: var(--marketing-code-bg);
+  border: var(--marketing-code-border);
+  border-radius: var(--marketing-code-radius);
   padding: 1rem;
   overflow: auto;
-  font-size: 0.8rem;
-  line-height: 1.4;
+  font-size: 0.8125rem;
+  line-height: 1.45;
   margin: 0;
   white-space: pre-wrap;
   word-break: break-word;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
 }
 .code-block-short {
   max-height: 14rem;
@@ -663,11 +784,21 @@ button.secondary, .btn.secondary {
   font-weight: 600;
 }
 .try-it-select {
-  padding: 0.4rem 0.6rem;
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  min-height: 14rem;
+  padding: 0.5rem 0.65rem;
   border-radius: 8px;
   border: 1px solid var(--border);
   background: var(--surface);
   color: var(--fg);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New",
+    monospace;
+  font-size: 0.875rem;
+  line-height: 1.45;
+  resize: vertical;
 }
 .try-it-run:disabled {
   opacity: 0.6;
@@ -771,9 +902,11 @@ main {
 }
 
 .integrate-main {
-  max-width: 900px;
-  margin: 0 auto;
-  padding: 2rem 1rem;
+  max-width: none;
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  box-sizing: border-box;
 }
 .integrate-benefit-lede {
   font-size: 1.125rem;
@@ -792,10 +925,11 @@ main {
 }
 .integrate-prose h1 {
   margin-top: 0;
-  font-size: 1.75rem;
+  font-size: var(--marketing-page-title-size);
+  letter-spacing: -0.02em;
 }
 .integrate-prose h2 {
-  font-size: 1.35rem;
+  font-size: var(--marketing-section-h2-size);
   border-bottom: 1px solid var(--border);
   padding-bottom: 0.25rem;
 }
@@ -815,9 +949,9 @@ main {
   margin: 0.25rem 0;
 }
 .integrate-prose pre {
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: 8px;
+  background: var(--marketing-code-bg);
+  border: var(--marketing-code-border);
+  border-radius: var(--marketing-code-radius);
   padding: 1rem;
   overflow-x: auto;
   font-size: 0.85rem;
@@ -1001,25 +1135,34 @@ main {
 }
 
 .truth-report-pre {
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: 8px;
+  background: var(--marketing-code-bg);
+  border: var(--marketing-code-border);
+  border-radius: var(--marketing-code-radius);
   padding: 1rem;
   overflow-x: auto;
   white-space: pre-wrap;
   font-size: 0.85rem;
+  line-height: 1.45;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
   max-height: 70vh;
 }
 
 .product-brief-page h1 {
   margin-top: 0;
-  font-size: 1.75rem;
-  line-height: 1.2;
+  font-size: var(--marketing-page-title-size);
+  line-height: 1.22;
+  letter-spacing: -0.02em;
 }
 .product-brief-page h2 {
-  font-size: 1.35rem;
+  font-size: var(--marketing-section-h2-size);
   margin-top: 1.75rem;
   line-height: 1.25;
+}
+.product-brief-page .product-brief-subheading {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin: 0.35rem 0 0.5rem;
+  line-height: 1.35;
 }
 .product-brief-prose {
   max-width: 75ch;
@@ -1079,6 +1222,12 @@ main {
   font-weight: 600;
   color: var(--brand-navy-ink);
 }
+.home-hero-trace-bridge {
+  font-size: 0.88rem;
+  line-height: 1.45;
+  margin: 0 0 0.85rem;
+  max-width: 44ch;
+}
 .home-hero-terminal-label {
   font-size: 0.85rem;
   margin: 0 0 0.5rem;
@@ -1106,18 +1255,6 @@ main {
 .home-hero-flow-miss {
   font-weight: 600;
   color: var(--danger);
-}
-.home-hero-raw-json {
-  margin: 0;
-}
-.home-hero-raw-json summary {
-  cursor: pointer;
-  font-size: 0.88rem;
-  margin: 0 0 0.4rem;
-  color: var(--accent);
-}
-.home-hero-raw-json[open] summary {
-  margin-bottom: 0.5rem;
 }
 .home-guarantee-h2 {
   margin: 1.75rem 0 0.75rem;
@@ -1163,17 +1300,26 @@ main {
   margin: 0.75rem 0 0.5rem;
   max-width: 44rem;
 }
+.home-hero-example-json {
+  margin: 0.35rem 0 0;
+  padding: 0.75rem 1rem;
+  background: var(--marketing-code-bg);
+  border: var(--marketing-code-border);
+  border-radius: var(--marketing-code-radius);
+  box-sizing: border-box;
+}
 .home-hero-terminal-pre {
   max-height: min(24rem, 56vh);
   margin: 0;
-  font-size: 0.82rem;
+  font-size: 0.8125rem;
   line-height: 1.45;
   overflow-x: auto;
   white-space: pre-wrap;
   background: transparent;
   border: none;
-  border-radius: 6px;
-  padding: 0.35rem 0 0;
+  border-radius: 0;
+  padding: 0;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
 }
 .home-hero-terminal-hit {
   color: var(--danger);
@@ -1213,6 +1359,23 @@ main {
   background: var(--surface);
   font-size: 0.84rem;
   color: var(--brand-navy-ink);
+}
+.trust-pills li.trust-pill-stack {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.2rem;
+  border-radius: 12px;
+  max-width: min(100%, 22rem);
+}
+.trust-pill-headline {
+  font-weight: 600;
+}
+.trust-pill-supporting {
+  display: block;
+  font-size: 0.8rem;
+  line-height: 1.35;
+  font-weight: 400;
 }
 
 .value-triptych {

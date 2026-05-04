@@ -1,10 +1,10 @@
 /** @vitest-environment jsdom */
 
-import { cleanup, render, screen, within } from "@testing-library/react";
+import { cleanup, render, screen } from "@testing-library/react";
 import { Suspense } from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import SignInPage from "@/app/auth/signin/page";
-import { getMeteringClarifier } from "@/lib/commercialNarrative";
+import { productCopy } from "@/content/productCopy";
 
 vi.mock("next/navigation", () => ({
   useSearchParams: () => new URLSearchParams(),
@@ -15,24 +15,15 @@ afterEach(() => {
 });
 
 describe("sign-in page copy", () => {
-  it("lists Individual and Team in benefits", async () => {
+  it("shows title and magic-link helper without commercial details", async () => {
     render(
       <Suspense fallback={null}>
         <SignInPage />
       </Suspense>,
     );
-    const list = await screen.findByRole("list");
-    expect(within(list).getByText(/Individual/i)).toBeTruthy();
-    expect(within(list).getByText(/Team/i)).toBeTruthy();
-  });
-
-  it("shows the metering clarifier from commercialNarrative", async () => {
-    render(
-      <Suspense fallback={null}>
-        <SignInPage />
-      </Suspense>,
-    );
-    const clarifier = await screen.findByTestId("signin-metering-clarifier");
-    expect(clarifier).toHaveTextContent(getMeteringClarifier());
+    expect(await screen.findByRole("heading", { level: 1, name: /sign in/i })).toBeTruthy();
+    expect(screen.getByText(productCopy.signInPurpose.intro)).toBeTruthy();
+    expect(screen.queryByRole("list")).toBeNull();
+    expect(screen.queryByText(/^Details$/i)).toBeNull();
   });
 });

@@ -86,3 +86,14 @@ export function buildHomeTrustStripLinks(args: {
     { key: "github", href: anchors.gitRepositoryUrl, label: "Source repository", external: true },
   ] as const;
 }
+
+/** Homepage closing row only — no OpenAPI or integrate labels here. */
+export function buildHomeClosingFooterLinks(args: { anchors: SiteChromeAnchors }): readonly SiteChromeLink[] {
+  const { anchors } = args;
+  return [
+    { key: "github", href: anchors.gitRepositoryUrl, label: "GitHub", external: true },
+    { key: "npm", href: anchors.npmPackageUrl, label: "npm", external: true },
+    { key: "docs", href: "/guides", label: "Docs", external: false },
+    { key: "pricing", href: "/pricing", label: "Pricing", external: false },
+  ] as const;
+}

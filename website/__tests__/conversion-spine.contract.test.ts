@@ -25,11 +25,8 @@ describe("conversion spine contract", () => {
       "app/guides/page.tsx",
       "app/problems/page.tsx",
       "app/compare/page.tsx",
-      "app/security/page.tsx",
       "app/support/page.tsx",
       "app/contact/page.tsx",
-      "app/privacy/page.tsx",
-      "app/terms/page.tsx",
     ];
     for (const file of files) {
       const s = src(file);

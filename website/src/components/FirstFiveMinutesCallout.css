@@ -2,19 +2,29 @@
   margin-top: 2rem;
   padding: 0.85rem 1rem;
   max-width: 38rem;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--marketing-callout-bg, color-mix(in srgb, var(--card) 92%, var(--surface)));
 }
 
 .first-five-minutes-callout {
   margin-top: 1.25rem;
   padding: 1rem 1.25rem;
-  border: 1px solid color-mix(in srgb, currentColor 18%, transparent);
-  border-radius: 8px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--marketing-callout-bg, color-mix(in srgb, var(--card) 92%, var(--surface)));
   max-width: 42rem;
 }
 
 .first-five-minutes-callout-title {
   font-size: 1.05rem;
   margin: 0 0 0.5rem;
+}
+
+.first-five-minutes-privacy-note-heading {
+  font-size: 0.95rem;
+  font-weight: 600;
+  margin: 0 0 0.35rem;
 }
 
 .first-five-minutes-lede {

@@ -59,20 +59,11 @@ if (!/(quick|proof|first proof)/i.test(guidedFirst)) {
 }
 
 const integratePage = readUtf8("website/src/app/integrate/page.tsx");
-if (!integratePage.includes("Formalize")) {
-  fail("website/src/app/integrate/page.tsx must contain Formalize (guided CTA copy)");
+if (!integratePage.includes("truthCheckCommand")) {
+  fail("website/src/app/integrate/page.tsx must reference truthCheckCommand");
 }
-if (!integratePage.includes('data-testid="integrate-first-proof-quick"')) {
-  fail("website/src/app/integrate/page.tsx must define integrate-first-proof-quick");
-}
-if (!integratePage.includes('data-testid="integrate-guided-cta"')) {
-  fail("website/src/app/integrate/page.tsx must define integrate-guided-cta");
-}
-const fq = integratePage.indexOf('data-testid="integrate-first-proof-quick"');
-const tc = integratePage.indexOf('data-testid="integrate-truth-check-commands"');
-const gc = integratePage.indexOf('data-testid="integrate-guided-cta"');
-if (fq === -1 || tc === -1 || gc === -1 || !(fq < tc && tc < gc)) {
-  fail("integrate/page.tsx source must order integrate-first-proof-quick, integrate-truth-check-commands, integrate-guided-cta");
+if (!integratePage.includes('data-testid="integrate-truth-check-commands"')) {
+  fail("website/src/app/integrate/page.tsx must define integrate-truth-check-commands");
 }
 
 const guidedPage = readUtf8("website/src/app/integrate/guided/page.tsx");

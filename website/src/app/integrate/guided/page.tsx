@@ -1,5 +1,7 @@
 "use client";
 
+import { MarketingCodeBlock } from "@/components/marketing/MarketingCodeBlock";
+import { MarketingPageShell } from "@/components/marketing/MarketingPageShell";
 import Link from "next/link";
 import { useCallback, useMemo, useState } from "react";
 import marketing from "@/lib/marketing";
@@ -168,8 +170,9 @@ export default function IntegrateGuidedPage() {
   const quickBody = result?.quickIngestInput.body ?? "";
 
   return (
-    <main
-      className="integrate-main integrate-prose registry-draft-technical"
+    <MarketingPageShell
+      variant="documentProse"
+      className="registry-draft-technical"
       data-testid="integrate-guided-page"
     >
       <h1>Guided activation</h1>
@@ -295,10 +298,7 @@ export default function IntegrateGuidedPage() {
             <p>
               <strong>1) quick-input.ndjson</strong> (ingest for <code>--input</code>)
             </p>
-            <pre
-              className="integrate-pack-command"
-              data-testid="integrate-guided-ndjson"
-            >{quickBody}</pre>
+            <MarketingCodeBlock data-testid="integrate-guided-ndjson">{quickBody}</MarketingCodeBlock>
             <p>
               <button
                 type="button"
@@ -313,9 +313,7 @@ export default function IntegrateGuidedPage() {
               <strong>2) Run your first proof locally</strong> (edit paths; use <code>--postgres-url</code> instead of{" "}
               <code>--db</code> if you use Postgres). Read <code>QuickVerifyReport</code> on stdout.
             </p>
-            <pre className="integrate-pack-command" data-testid="integrate-guided-command">
-              {p.quickVerifyCommand}
-            </pre>
+            <MarketingCodeBlock data-testid="integrate-guided-command">{p.quickVerifyCommand}</MarketingCodeBlock>
             <p>
               <button
                 type="button"
@@ -329,10 +327,7 @@ export default function IntegrateGuidedPage() {
             <p>
               <strong>3) Formalize — tools.json</strong> (optional array for contract replay when this path matters)
             </p>
-            <pre
-              className="integrate-pack-command"
-              data-testid="integrate-guided-tools-json"
-            >{toolsFileText}</pre>
+            <MarketingCodeBlock data-testid="integrate-guided-tools-json">{toolsFileText}</MarketingCodeBlock>
             <p>
               <button
                 type="button"
@@ -346,6 +341,6 @@ export default function IntegrateGuidedPage() {
           </div>
         </section>
       )}
-    </main>
+    </MarketingPageShell>
   );
 }

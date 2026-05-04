@@ -1,3 +1,4 @@
+import { MarketingPageShell } from "@/components/marketing/MarketingPageShell";
 import { readFileSync } from "node:fs";
 import path from "node:path";
 import ReactMarkdown from "react-markdown";
@@ -6,8 +7,6 @@ import { loadLegalMetadata } from "@/lib/plans";
 import { indexableGuideCanonical } from "@/lib/indexableGuides";
 import { brandedMarketingTitle, marketingOpenGraphAndTwitter } from "@/lib/marketingSocialMetadata";
 import type { Metadata } from "next";
-import Link from "next/link";
-import { conversionSpine, productCopy } from "@/content/productCopy";
 
 const termsSegmentTitle = "Terms of Service";
 const termsPublicTitle = brandedMarketingTitle(termsSegmentTitle);
@@ -29,19 +28,10 @@ export default function TermsPage() {
     .replace(/\{\{EFFECTIVE_DATE\}\}/g, meta.effectiveDate)
     .replace(/\{\{TERMS_VERSION\}\}/g, meta.termsVersion);
   return (
-    <main className="integrate-main">
-      <p className="home-cta-row">
-        <Link
-          className="btn"
-          href="/integrate"
-          data-cta-priority={conversionSpine.ctaPriorityPrimaryValue}
-        >
-          {productCopy.ctaTaxonomy.decision}
-        </Link>
-      </p>
+    <MarketingPageShell variant="document">
       <article className="integrate-prose">
         <ReactMarkdown remarkPlugins={[remarkGfm]}>{body}</ReactMarkdown>
       </article>
-    </main>
+    </MarketingPageShell>
   );
 }

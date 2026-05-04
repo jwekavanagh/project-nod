@@ -18,7 +18,7 @@
   },
   "appendix": {
     "slug": "/database-truth-vs-traces",
-    "visitorProblemAnswer": "Traces say success. Your data often disagrees. Read-only checks at verify time compare tool claims to stored state—before you ship or bill.",
+    "visitorProblemAnswer": "Traces can show success while stored data disagrees.\n\nAgentSkeptic re-checks the stores your agent claims to change, then returns a deterministic Outcome Certificate before you ship.",
     "intentPhrases": [
       "trace v data",
       "read-only verify",
@@ -37,72 +37,39 @@
     "problemIndex": [
       {
         "moment": "Green trace, bad data",
-        "primaryRoute": "/guides/trace-green-postgres-row-missing",
-        "relatedRoutes": [
-          "/integrate",
-          "/database-truth-vs-traces"
-        ]
+        "symptom": "Trace succeeds, but the Postgres row is missing or stale.",
+        "verificationCue": "Verify the row before you trust the run.",
+        "primaryRoute": "/guides/trace-green-postgres-row-missing"
       },
       {
-        "moment": "Tool ok, CRM wrong",
-        "primaryRoute": "/guides/tool-loop-success-crm-state-wrong",
-        "relatedRoutes": [
-          "/integrate",
-          "/pricing"
-        ]
+        "moment": "Tool OK, CRM wrong",
+        "symptom": "Tool loop succeeds, but the CRM record is wrong or missing.",
+        "verificationCue": "Match tool claims to stored customer data.",
+        "primaryRoute": "/guides/tool-loop-success-crm-state-wrong"
       },
       {
         "moment": "CI green, no write",
-        "primaryRoute": "/guides/ci-green-logs-row-absent",
-        "relatedRoutes": [
-          "/guides/ci-green-missing-database-side-effect",
-          "/integrate"
-        ]
+        "symptom": "CI passes, but the write never landed.",
+        "verificationCue": "Fail when expected stored state is absent.",
+        "primaryRoute": "/guides/ci-green-logs-row-absent"
       },
       {
-        "moment": "Pre-prod read-only gate",
-        "primaryRoute": "/guides/pre-production-read-only-sql-gate",
-        "relatedRoutes": [
-          "/integrate",
-          "/pricing"
-        ]
-      },
-      {
-        "moment": "AI CRM data wrong",
-        "primaryRoute": "/guides/ai-agent-wrong-crm-data",
-        "relatedRoutes": [
-          "/database-truth-vs-traces"
-        ]
-      },
-      {
-        "moment": "Params vs store",
-        "primaryRoute": "/guides/automation-success-database-mismatch",
-        "relatedRoutes": [
-          "/integrate"
-        ]
+        "moment": "Pre-production read-only gate",
+        "symptom": "Add read-only SQL verification before production.",
+        "verificationCue": "Read stored state without writes.",
+        "primaryRoute": "/guides/pre-production-read-only-sql-gate"
       },
       {
         "moment": "LangGraph data check",
-        "primaryRoute": "/guides/debug-postgres-after-langgraph",
-        "relatedRoutes": [
-          "/guides/verify-langgraph-workflows",
-          "/integrate"
-        ]
+        "symptom": "Inspect Postgres after a LangGraph run.",
+        "verificationCue": "Reconcile trace success with persisted rows.",
+        "primaryRoute": "/guides/debug-postgres-after-langgraph"
       },
       {
         "moment": "Webhook vs ledger",
-        "primaryRoute": "/guides/stripe-webhook-database-alignment",
-        "relatedRoutes": [
-          "/pricing"
-        ]
-      },
-      {
-        "moment": "CI green, no effect",
-        "primaryRoute": "/guides/scenario-ci-green-side-effect-missing",
-        "relatedRoutes": [
-          "/guides/ci-green-missing-database-side-effect",
-          "/integrate"
-        ]
+        "symptom": "Stripe 200, but the ledger row is wrong or missing.",
+        "verificationCue": "Match webhooks to internal records before settlement.",
+        "primaryRoute": "/guides/stripe-webhook-database-alignment"
       }
     ],
     "indexableGuides": [
@@ -224,7 +191,7 @@
     ],
     "shareableTerminalDemo": {
       "title": "Bundled terminal proof",
-      "transcript": "### Success (`wf_complete`)\n\nworkflow_id: wf_complete\nworkflow_status: complete\ntrust: TRUSTED: Every step matched the database under the configured verification rules.\nsteps:\n  - seq=0 tool=crm.upsert_contact result=Matched the database.\n\n{\n  \"schemaVersion\": 15,\n  \"workflowId\": \"wf_complete\",\n  \"status\": \"complete\",\n  \"steps\": [{ \"seq\": 0, \"toolId\": \"crm.upsert_contact\", \"status\": \"verified\" }]\n}\n\n### Failure (`wf_missing`)\n\nworkflow_id: wf_missing\nworkflow_status: inconsistent\nsteps:\n  - seq=0 tool=crm.upsert_contact result:Expected row is missing from the database (the log implies a write that is not present).\n    reference_code: ROW_ABSENT\n\n{\n  \"schemaVersion\": 15,\n  \"workflowId\": \"wf_missing\",\n  \"status\": \"inconsistent\",\n  \"steps\": [\n    {\n      \"seq\": 0,\n      \"toolId\": \"crm.upsert_contact\",\n      \"status\": \"missing\",\n      \"reasons\": [{ \"code\": \"ROW_ABSENT\" }]\n    }\n  ]\n}"
+      "transcript": "### Success (`wf_complete`)\n\nworkflow_id: wf_complete\nworkflow_status: complete\ntrust: TRUSTED: Every step matched the database under the configured verification rules.\nsteps:\n  - seq=0 tool=crm.upsert_contact result=Matched the database.\n\n{\n  \"schemaVersion\": 15,\n  \"workflowId\": \"wf_complete\",\n  \"status\": \"complete\",\n  \"steps\": [{ \"seq\": 0, \"toolId\": \"crm.upsert_contact\", \"status\": \"verified\" }]\n}\n\n### Failure (`wf_missing`)\n\nworkflow_id: wf_missing\nworkflow_status: inconsistent\nsteps:\n  - seq=0 tool=crm.upsert_contact result=Expected row is missing from the database.\n    reference_code: ROW_ABSENT\n\n{\n  \"schemaVersion\": 15,\n  \"workflowId\": \"wf_missing\",\n  \"status\": \"inconsistent\",\n  \"steps\": [\n    {\n      \"seq\": 0,\n      \"toolId\": \"crm.upsert_contact\",\n      \"status\": \"missing\",\n      \"reasons\": [{ \"code\": \"ROW_ABSENT\" }]\n    }\n  ]\n}"
     }
   }
 }

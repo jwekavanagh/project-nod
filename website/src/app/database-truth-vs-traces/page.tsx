@@ -1,5 +1,7 @@
 import { DiscoveryArticleJsonLd } from "@/components/discovery/DiscoveryArticleJsonLd";
-import { conversionSpine, productBriefPage, productCopy } from "@/content/productCopy";
+import { MarketingPageHeader } from "@/components/marketing/MarketingPageHeader";
+import { MarketingPageShell } from "@/components/marketing/MarketingPageShell";
+import { conversionSpine, productBriefPage } from "@/content/productCopy";
 import marketing from "@/lib/marketing";
 import { indexableGuideCanonical } from "@/lib/indexableGuides";
 import { marketingOpenGraphAndTwitter } from "@/lib/marketingSocialMetadata";
@@ -41,28 +43,37 @@ function splitDemoSuccessFailure(transcript: string): { success: string; failure
   }
   return {
     success: transcript.slice(0, i).trim(),
-    failure: transcript.slice(i + 2).trim(),
+    failure: transcript.slice(i + needle.length).trim(),
   };
 }
 
+/** Drop markdown H3 lines duplicated by on-page `<h3>` titles above each `<pre>`. */
+function stripBundledTerminalHeadingsForDisplay(success: string, failure: string): { success: string; failure: string } {
+  const s = success.replace(/^### Success \(`wf_complete`\)\s*\n+/, "").trimStart();
+  const f = failure.replace(/^### Failure \(`wf_missing`\)\s*\n+/, "").trimStart();
+  return { success: s, failure: f };
+}
+
 export default function DatabaseTruthVsTracesPage() {
-  const { visitorProblemAnswer, shareableTerminalDemo, heroTitle } = marketing;
+  const { visitorProblemAnswer, shareableTerminalDemo } = marketing;
   const pb = productBriefPage;
-  const [sProblem, sHow, sScenarios, sWho] = pb.sections;
-  const { success: successBlock, failure: failureBlock } = splitDemoSuccessFailure(shareableTerminalDemo.transcript);
-  if (sHow.id !== "how" || sScenarios.id !== "scenarios") {
-    throw new Error("How it works page sections: expected how then scenarios");
+  const [sProblem, sHow] = pb.sections;
+  const { success: rawSuccess, failure: rawFailure } = splitDemoSuccessFailure(shareableTerminalDemo.transcript);
+  const { success: successBlock, failure: failureBlock } = stripBundledTerminalHeadingsForDisplay(rawSuccess, rawFailure);
+  if (sProblem.id !== "problem" || sHow.id !== "how") {
+    throw new Error("How it works page sections: expected problem then how");
   }
+  const howSubheading = "subheading" in sHow ? sHow.subheading : undefined;
 
   return (
-    <main className="integrate-main product-brief-page">
+    <MarketingPageShell variant="document" className="product-brief-page">
       <DiscoveryArticleJsonLd
         headline={pb.jsonLdHeadline}
         description={pb.metadata.description}
         path={marketing.slug}
       />
-      <h1 data-testid="acquisition-hero-title">{pb.h1}</h1>
-      <p className="lede product-brief-tagline">{heroTitle}</p>
+      <MarketingPageHeader title={pb.h1} headingTestId="acquisition-hero-title" />
+      <p className="lede product-brief-tagline">{pb.mainHeadline}</p>
       <div data-testid="visitor-problem-answer">
         {visitorProblemAnswer.split(/\n\n+/).filter(Boolean).map((p) => (
           <p key={p.slice(0, 64)} className="lede">
@@ -87,6 +98,11 @@ export default function DatabaseTruthVsTracesPage() {
 
       <section className="home-section" data-testid="acquisition-brief-section-how" aria-labelledby="brief-section-how">
         <h2 id="brief-section-how">{sHow.title}</h2>
+        {howSubheading ? (
+          <h3 className="product-brief-subheading" id="brief-section-how-gate">
+            {howSubheading}
+          </h3>
+        ) : null}
         <p className="lede product-brief-prose">{sHow.intro}</p>
         <ol className="product-brief-numbered">
           {sHow.steps.map((step) => (
@@ -94,38 +110,6 @@ export default function DatabaseTruthVsTracesPage() {
           ))}
         </ol>
         <p className="lede product-brief-prose">{sHow.outro}</p>
-      </section>
-
-      <section
-        className="home-section"
-        data-testid="acquisition-brief-section-scenarios"
-        aria-labelledby="brief-section-scenarios"
-      >
-        <h2 id="brief-section-scenarios">{sScenarios.title}</h2>
-        <ul className="product-brief-catch-bullets">
-          {sScenarios.bullets.map((b) => (
-            <li key={b.slice(0, 64)} className="product-brief-prose">
-              {boldSegments(b)}
-            </li>
-          ))}
-        </ul>
-        <p className="muted product-brief-catch-coda">{sScenarios.coda}</p>
-      </section>
-
-      <section className="home-section" data-testid="acquisition-brief-section-who" aria-labelledby="brief-section-who">
-        <h2 id="brief-section-who">{sWho.title}</h2>
-        <h3 className="guarantee-sub">{sWho.forYou.label}</h3>
-        <ul>
-          {sWho.forYou.items.map((t) => (
-            <li key={t.slice(0, 48)}>{boldSegments(t)}</li>
-          ))}
-        </ul>
-        <h3 className="guarantee-sub">{sWho.notForYou.label}</h3>
-        <ul>
-          {sWho.notForYou.items.map((t) => (
-            <li key={t.slice(0, 48)}>{boldSegments(t)}</li>
-          ))}
-        </ul>
       </section>
 
       <section
@@ -140,13 +124,13 @@ export default function DatabaseTruthVsTracesPage() {
           </p>
         ))}
         <h3 className="product-brief-terminal-block-title" id="terminal-success-heading">
-          Success (`wf_complete`)
+          Success: <code>wf_complete</code>
         </h3>
         <pre className="truth-report-pre" aria-labelledby="terminal-success-heading">
           {successBlock}
         </pre>
         <h3 className="product-brief-terminal-block-title" id="terminal-failure-heading">
-          Failure (`wf_missing`) — <span className="product-brief-row-absent">ROW_ABSENT</span>
+          Failure: <code>wf_missing</code> — <span className="product-brief-row-absent"><code>ROW_ABSENT</code></span>
         </h3>
         <pre className="truth-report-pre" aria-labelledby="terminal-failure-heading">
           {failureBlock}
@@ -156,28 +140,44 @@ export default function DatabaseTruthVsTracesPage() {
       <p className="muted product-brief-disclaimer" data-testid="acquisition-brief-disclaimer">
         {boldSegments(pb.disclaimer)}
       </p>
-      <div
-        className="product-brief-cta-wrap"
-        data-testid={pb.testIds.cta}
-        role="group"
-        aria-label="Run first verification or see failed versus passed run"
+      <section
+        className="home-section"
+        data-testid="acquisition-run-section"
+        aria-labelledby="acquisition-run-heading"
       >
-        <a
-          className="btn"
-          href="/verify"
-          data-testid="acquisition-try-home-demo-cta"
-          data-cta-priority={conversionSpine.ctaPriorityPrimaryValue}
+        <h2 id="acquisition-run-heading">{pb.ctaSection.title}</h2>
+        <div
+          className="product-brief-cta-wrap"
+          data-testid={pb.testIds.cta}
+          role="group"
+          aria-label={pb.ctaSection.ariaLabel}
         >
-          {productCopy.ctaTaxonomy.awareness}
-        </a>{" "}
-        <Link
-          className="btn secondary"
-          href={productCopy.homeHeroSecondaryCta.href}
-          data-cta-priority={conversionSpine.ctaPrioritySecondaryValue}
-        >
-          {productCopy.ctaTaxonomy.decision}
-        </Link>
-      </div>
-    </main>
+          <Link
+            className="btn"
+            href={pb.ctaSection.failed.href}
+            data-testid="acquisition-try-home-demo-cta"
+            data-cta-priority={conversionSpine.ctaPriorityPrimaryValue}
+          >
+            {pb.ctaSection.failed.label}
+          </Link>{" "}
+          <Link
+            className="btn secondary"
+            href={pb.ctaSection.passed.href}
+            data-testid="acquisition-try-passed-demo-cta"
+            data-cta-priority={conversionSpine.ctaPrioritySecondaryValue}
+          >
+            {pb.ctaSection.passed.label}
+          </Link>{" "}
+          <Link
+            className="btn secondary"
+            href={pb.ctaSection.integrate.href}
+            data-testid="acquisition-run-first-verification-cta"
+            data-cta-priority={conversionSpine.ctaPrioritySecondaryValue}
+          >
+            {pb.ctaSection.integrate.label}
+          </Link>
+        </div>
+      </section>
+    </MarketingPageShell>
   );
 }

@@ -124,8 +124,8 @@
     "securityQuickFactsBullets": {
       "type": "array",
       "items": { "type": "string" },
-      "minItems": 4,
-      "maxItems": 4
+      "minItems": 3,
+      "maxItems": 3
     },
     "canonicalHref": {
       "type": "object",

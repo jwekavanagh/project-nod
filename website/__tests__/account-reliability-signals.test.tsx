@@ -5,11 +5,11 @@ import { render, screen } from "@testing-library/react";
 import { ReliabilitySignalsView } from "@/app/account/ReliabilitySignalsView";
 
 describe("ReliabilitySignalsView", () => {
-  it("renders empty state copy", () => {
-    render(<ReliabilitySignalsView data={{ kind: "empty", message: "No licensed verification completions in the last 30 days." }} />);
-    expect(screen.getByTestId("reliability-empty").textContent).toContain(
-      "No licensed verification completions in the last 30 days.",
+  it("renders nothing for empty reliability state", () => {
+    const { container } = render(
+      <ReliabilitySignalsView data={{ kind: "empty", message: "No licensed verification completions in the last 30 days." }} />,
     );
+    expect(container.textContent).toBe("");
   });
 
   it("renders no-unsafe state with completion count", () => {

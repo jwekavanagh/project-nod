@@ -7,17 +7,20 @@ export function TrustPostureSection(props: {
   blockedActivity: TrustDecisionBlockedActivityRow[];
 }) {
   const { reliability, blockedActivity } = props;
+  const showReliability = reliability.kind !== "empty";
+  const showBlocked = blockedActivity.length > 0;
+  if (!showReliability && !showBlocked) {
+    return null;
+  }
   return (
     <section className="trust-posture u-stack" aria-labelledby="trust-posture-heading">
       <h2 id="trust-posture-heading" className="text-lg font-semibold">
         Trust posture
       </h2>
-      <ReliabilitySignalsView data={reliability} />
-      <div className="card">
-        <h3 className="font-medium">Recent blocked irreversible checks</h3>
-        {blockedActivity.length === 0 ? (
-          <p className="u-mt-1">No recorded blocks in recent history.</p>
-        ) : (
+      {showReliability ? <ReliabilitySignalsView data={reliability} /> : null}
+      {showBlocked ? (
+        <div className="card">
+          <h3 className="font-medium">Recent blocked irreversible checks</h3>
           <table className="u-mt-1" data-testid="trust-blocked-table">
             <thead>
               <tr>
@@ -42,8 +45,8 @@ export function TrustPostureSection(props: {
               ))}
             </tbody>
           </table>
-        )}
-      </div>
+        </div>
+      ) : null}
     </section>
   );
 }

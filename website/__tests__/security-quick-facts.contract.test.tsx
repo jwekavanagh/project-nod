@@ -20,13 +20,12 @@ describe("Security quick facts", () => {
     expect(items[2]).toHaveTextContent(qf.bullets[2]!);
   });
 
-  it("fourth bullet matches buyer-truth securityQuickFactsBullets[3]", () => {
-    const qf = getSecurityQuickFacts();
+  it("renders exactly three trust fact bullets", () => {
     render(<SecurityPage />);
     const section = screen.getByTestId("security-quick-facts");
     const list = section.querySelector("ul");
     expect(list).toBeTruthy();
     const items = within(list!).getAllByRole("listitem");
-    expect(items[3]).toHaveTextContent(qf.bullets[3]!);
+    expect(items).toHaveLength(3);
   });
 });

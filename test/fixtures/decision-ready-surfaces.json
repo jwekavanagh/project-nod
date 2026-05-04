@@ -17,7 +17,6 @@
     { "repoRelativePath": "website/__tests__/growth-metrics.contract.test.ts", "mustContain": "CANONICAL_METRIC_IDS" },
     { "repoRelativePath": "website/__tests__/growth-metrics.contract.test.ts", "mustContain": "CrossSurface_ConversionRate_QualifiedIntegrateToVerifyStarted_Rolling7dUtc" },
     { "repoRelativePath": "website/__tests__/repo-reference-integrity.growth-observability.test.ts", "mustContain": "BANNED_REFERENCE_SUBSTRINGS" },
-    { "repoRelativePath": "website/src/app/integrate/page.tsx", "mustContain": "packLedCommand" },
     { "repoRelativePath": "website/src/app/integrate/page.tsx", "mustContain": "truthCheckCommand" },
     { "repoRelativePath": "test/fixtures/github-heading-slug-vectors.json", "mustContain": "\"Decision-ready ProductionComplete (normative)\"" },
     { "repoRelativePath": "test/fixtures/adoption-item5-normative-line.txt", "mustContain": "5. **Success criteria (normative):**" },

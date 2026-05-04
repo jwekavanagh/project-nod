@@ -11,11 +11,12 @@ export function HomeVerifyCta() {
     >
       <h2 id="try-it-heading">Paste events. Verify reality.</h2>
       <p className="muted">
-        Run the bundled missing-write proof in under a minute, then edit the NDJSON and rerun in the same session.
+        Run the bundled missing-write proof in under a minute. Then edit the NDJSON and rerun verification in the
+        same session.
       </p>
       <p className="home-cta-row">
         <Link href="/verify" className="btn" data-cta-priority="primary" data-testid="home-verify-cta">
-          Try interactive demo
+          {productCopy.homePageMissingWriteDemoCta}
         </Link>
       </p>
     </section>

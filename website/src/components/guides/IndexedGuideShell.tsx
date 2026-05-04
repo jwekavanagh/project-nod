@@ -1,3 +1,4 @@
+import { MarketingPageShell } from "@/components/marketing/MarketingPageShell";
 import { VerificationReportView } from "@/components/VerificationReportView";
 import { productCopy } from "@/content/productCopy";
 import indexedGuideFixture from "@/content/indexedGuideFixture";
@@ -22,7 +23,7 @@ type Props = {
  */
 export function IndexedGuideShell({ children, progressionStrip }: Props) {
   return (
-    <main className="integrate-main" data-testid="indexed-guide-shell">
+    <MarketingPageShell variant="document" data-testid="indexed-guide-shell">
       {children}
       <section className="home-section" aria-labelledby="embed-heading">
         <h2 id="embed-heading">{productCopy.indexedGuideEmbedTitle}</h2>
@@ -36,6 +37,6 @@ export function IndexedGuideShell({ children, progressionStrip }: Props) {
           </Link>
         </p>
       )}
-    </main>
+    </MarketingPageShell>
   );
 }

@@ -15,6 +15,7 @@ export function PricingCompareTable({
       <h2 id="pricing-compare-title" className="pricing-compare-heading">
         {compare.title}
       </h2>
+      <p className="pricing-compare-intro muted">{compare.intro}</p>
       <div className="pricing-compare-scroll">
         <table className="pricing-compare-table">
           <thead>

@@ -24,8 +24,9 @@ function loadFirstFiveFingerprints() {
     readFileSync(join(root, "website", "src", "content", "first-five-minutes.json"), "utf8"),
   );
   assert.ok(Array.isArray(raw.checklist));
-  assert.ok(typeof raw.telemetryIcingLine === "string");
-  return [...raw.checklist, raw.telemetryIcingLine];
+  assert.ok(Array.isArray(raw.telemetryIntroParagraphs));
+  assert.ok(raw.telemetryIntroParagraphs.length >= 1);
+  return [...raw.checklist, ...raw.telemetryIntroParagraphs];
 }
 
 describe("docs first-five-minutes SSOT guard", () => {

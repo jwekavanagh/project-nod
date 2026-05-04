@@ -33,7 +33,7 @@ describe(
     });
 
     it("served HTML includes /compare on Req4 paths", async () => {
-      for (const path of ["/", "/guides", "/problems", "/pricing", "/security"]) {
+      for (const path of ["/", "/guides", "/pricing", "/security"]) {
         const html = await getSiteHtml(path);
         expect(html).toContain('href="/compare"');
       }

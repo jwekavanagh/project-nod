@@ -1,4 +1,6 @@
-import { conversionSpine, productCopy } from "@/content/productCopy";
+import { MarketingPageHeader } from "@/components/marketing/MarketingPageHeader";
+import { MarketingPageShell } from "@/components/marketing/MarketingPageShell";
+import { productCopy } from "@/content/productCopy";
 import { siteMetadata } from "@/content/siteMetadata";
 import { getSecurityQuickFacts } from "@/lib/commercialNarrative";
 import { indexableGuideCanonical } from "@/lib/indexableGuides";
@@ -22,35 +24,8 @@ export default function SecurityPage() {
   const quickFacts = getSecurityQuickFacts();
   const st = productCopy.securityTrust;
   return (
-    <main className="integrate-main">
-      <h1>{st.title}</h1>
-      <p className="lede">{st.intro}</p>
-      <p className="home-cta-row">
-        <Link
-          href="/integrate"
-          className="btn"
-          data-cta-priority={conversionSpine.ctaPriorityPrimaryValue}
-        >
-          {productCopy.ctaTaxonomy.decision}
-        </Link>
-      </p>
-      <ul className="mechanism-list" data-testid="security-buyer-authority-nav">
-        <li>
-          <Link href="/guides/buyer-commercial-boundary">{productCopy.pricingBuyerCommercialBoundaryLinkLabel}</Link>
-        </li>
-        <li>
-          <Link href="/guides/buyer-ci-enforcement-metering">Buyer: CI enforcement and metering</Link>
-        </li>
-        <li>
-          <Link href="/guides/buyer-trust-production-implications">Buyer: trust and production implications</Link>
-        </li>
-        <li>
-          <Link href="/problems">Problems</Link>
-        </li>
-        <li>
-          <Link href="/compare">{productCopy.homeCommercialCompareApproachesLabel}</Link>
-        </li>
-      </ul>
+    <MarketingPageShell variant="documentProse">
+      <MarketingPageHeader title={st.title} />
       <section data-testid="security-quick-facts" aria-labelledby="security-quick-facts-title">
         <h2 id="security-quick-facts-title">{quickFacts.title}</h2>
         <ul>
@@ -59,25 +34,17 @@ export default function SecurityPage() {
           ))}
         </ul>
       </section>
-      {st.sections.map((section) => (
-        <section key={section.heading} className="home-section">
-          <h2>{section.heading}</h2>
-          {section.paragraphs.map((paragraph) => (
-            <p key={paragraph.slice(0, 64)}>{paragraph}</p>
-          ))}
-        </section>
-      ))}
       <section className="home-section" aria-labelledby="security-doc-links">
         <h2 id="security-doc-links">Authoritative documentation</h2>
         <ul>
           <li>
             <a href={st.docLinks.verificationSemanticsHref} rel="noreferrer">
-              Verification semantics (Outcome Certificate, normative)
+              Verification semantics (Outcome Certificate)
             </a>
           </li>
           <li>
             <a href={st.docLinks.commercialSsotHref} rel="noreferrer">
-              Commercial SSOT (mechanics and metering)
+              Commercial terms (mechanics and metering)
             </a>
           </li>
           <li>
@@ -88,6 +55,6 @@ export default function SecurityPage() {
           </li>
         </ul>
       </section>
-    </main>
+    </MarketingPageShell>
   );
 }

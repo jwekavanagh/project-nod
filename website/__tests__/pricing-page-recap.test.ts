@@ -12,6 +12,7 @@ describe("pricing page", () => {
     expect(src).toContain('from "@/content/productCopy"');
     expect(src).toContain('from "@/lib/commercialNarrative"');
     expect(src).toContain("getPricingPageViewModelFromConfig");
-    expect(src).toContain("vm.termsBullets");
+    expect(src).toContain("PricingCompareTable");
+    expect(src).toContain("TrustPills");
   });
 });

@@ -42,7 +42,7 @@ export type BuyerTruthV1 = {
     }>;
   };
   accountQuotaUrgency: Record<"ok" | "notice" | "warning" | "in_overage" | "at_cap" | "zero_usage", string>;
-  securityQuickFactsBullets: readonly [string, string, string, string];
+  securityQuickFactsBullets: readonly [string, string, string];
   canonicalHref: {
     verificationSemantics: string;
     commercialSsotDoc: string;
@@ -147,7 +147,6 @@ export function exportBuyerFacingProjection(catalog: CommercialPlansFile): Recor
     security_quick_fact_a: bt.securityQuickFactsBullets[0],
     security_quick_fact_b: bt.securityQuickFactsBullets[1],
     security_quick_fact_c: bt.securityQuickFactsBullets[2],
-    security_quick_fact_d: bt.securityQuickFactsBullets[3],
     readme_commercial_joined: bt.readmeSegments.commercialEntry.join("\n"),
     account_quota_ok: bt.accountQuotaUrgency.ok,
     account_quota_notice: bt.accountQuotaUrgency.notice,

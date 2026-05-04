@@ -107,19 +107,6 @@ describe("Account verification center (DOM)", () => {
     expect(cta.compareDocumentPosition(S) & Node.DOCUMENT_POSITION_FOLLOWING).not.toBe(0);
   });
 
-  it("shows Starter upgrade strip only when plan is starter", () => {
-    const { rerender } = render(
-      <AccountClient initialKeys={noKeys} initialCommercial={baseCommercial({ plan: "starter" })} activity={idleActivity} />,
-    );
-    const strip = screen.getByTestId("account-starter-upgrade");
-    expect(strip.hidden).toBe(false);
-
-    rerender(
-      <AccountClient initialKeys={noKeys} initialCommercial={baseCommercial({ plan: "individual" })} activity={idleActivity} />,
-    );
-    expect(strip.hidden).toBe(true);
-  });
-
   it("maps activity rows to normative labels from accountVerificationActivityUi", () => {
     const activity: AccountPageVerificationActivity = {
       ok: true,
@@ -142,12 +129,11 @@ describe("Account verification center (DOM)", () => {
     ).toBeInTheDocument();
   });
 
-  it("shows exact activityEmpty when ok, zero rows, zero month count", () => {
+  it("shows verification empty headline when ok, zero rows, zero month count", () => {
     render(<AccountClient initialKeys={noKeys} initialCommercial={baseCommercial()} activity={idleActivity} />);
     expect(
       screen.getByText(productCopy.account.verificationHeadlineEmpty, { exact: true }),
     ).toBeInTheDocument();
-    expect(screen.getByText(productCopy.account.activityEmpty, { exact: true })).toBeInTheDocument();
   });
 
   it("styles primary verification CTA as a button", () => {
@@ -157,10 +143,10 @@ describe("Account verification center (DOM)", () => {
     expect(cta).toHaveClass("btn");
   });
 
-  it("nudges verification CTA when no API key exists yet", () => {
+  it("uses first-run verification CTA when no activity yet", () => {
     render(<AccountClient initialKeys={noKeys} initialCommercial={baseCommercial()} activity={idleActivity} />);
     expect(screen.getByTestId("account-primary-cta")).toHaveTextContent(
-      productCopy.account.primaryVerificationCtaFirstRunNeedsKey,
+      productCopy.account.primaryVerificationCtaFirstRun,
     );
   });
 
@@ -178,13 +164,6 @@ describe("Account verification center (DOM)", () => {
     expect(err).toHaveClass("muted");
     expect(err).toHaveTextContent(productCopy.account.activityLoadError);
     expect(err.closest("[aria-live=\"polite\"], [role=\"alert\"]")).toBeNull();
-  });
-
-  it("trust footnote lines are non-empty and omit forbidden compliance claims", () => {
-    for (const line of productCopy.account.trustFootnoteLines) {
-      expect(line.length).toBeGreaterThan(10);
-      expect(line).not.toMatch(/ROW_ABSENT|SOC\s*2|HIPAA/i);
-    }
   });
 
   it("API key lifecycle: create, acknowledge, post-refresh no leak, negative", async () => {

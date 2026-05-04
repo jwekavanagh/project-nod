@@ -1,3 +1,5 @@
+import { MarketingPageHeader } from "@/components/marketing/MarketingPageHeader";
+import { MarketingPageShell } from "@/components/marketing/MarketingPageShell";
 import type { Metadata } from "next";
 import Link from "next/link";
 
@@ -9,9 +11,8 @@ export const metadata: Metadata = {
 
 export default function NotFound() {
   return (
-    <main className="integrate-main not-found-page">
-      <h1>Page not found</h1>
-      <p className="lede">That URL does not match a page on this site.</p>
+    <MarketingPageShell variant="document" className="not-found-page">
+      <MarketingPageHeader title="Page not found" description={<p className="lede">That URL does not match a page on this site.</p>} />
       <p>
         <Link className="btn" href="/">
           Home
@@ -32,6 +33,6 @@ export default function NotFound() {
         </Link>
         .
       </p>
-    </main>
+    </MarketingPageShell>
   );
 }

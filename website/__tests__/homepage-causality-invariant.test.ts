@@ -35,7 +35,7 @@ describe("homepage causality invariant", { timeout: 300_000 }, () => {
     await ensureMarketingSiteRunning();
   });
 
-  it("exactly one canonical not-guaranteed sentence in main visible text; full visitor block absent; mechanism copy static rules", async () => {
+  it("guarantee-limitation sentence not duplicated in main; full visitor block absent; mechanism copy static rules", async () => {
     const root = getRepoRoot();
     const discoveryPath = join(root, "config", "marketing.json");
     const disc = JSON.parse(readFileSync(discoveryPath, "utf8")) as {
@@ -45,7 +45,7 @@ describe("homepage causality invariant", { timeout: 300_000 }, () => {
     const html = await getSiteHtml("/");
     const visible = mainVisibleText(html);
     const sentence = productCopy.guarantees.notGuaranteed[0];
-    expect(countOccurrences(visible, sentence)).toBe(1);
+    expect(countOccurrences(visible, sentence)).toBe(0);
 
     // Forbid the full multi-paragraph visitor block in `<main>` when JSON has more than one paragraph.
     expect(visible.includes(disc.visitorProblemAnswer)).toBe(false);

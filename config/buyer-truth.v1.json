@@ -56,7 +56,7 @@
       },
       {
         "featureKey": "fail_ci_oss_verify",
-        "featureDisplay": "Fail CI on mismatch (OSS build)",
+        "featureDisplay": "Fail CI on mismatch, OSS build",
         "cells": {
           "starter": "Yes",
           "individual": "Yes",
@@ -67,9 +67,9 @@
       },
       {
         "featureKey": "npm_licensed",
-        "featureDisplay": "Published npm CLI + API key (licensed / metered)",
+        "featureDisplay": "Published npm CLI + API key, licensed/metered",
         "cells": {
-          "starter": "{{starterIncluded}} / mo (hard cap; pooled per account)",
+          "starter": "{{starterIncluded}}/month hard cap, pooled per account",
           "individual": "Yes + overage",
           "team": "Yes + overage",
           "business": "Yes + overage",
@@ -78,7 +78,7 @@
       },
       {
         "featureKey": "enforce",
-        "featureDisplay": "Lock / enforce commands (paid only)",
+        "featureDisplay": "Lock / enforce commands, paid only",
         "cells": {
           "starter": "No",
           "individual": "Yes",
@@ -89,7 +89,7 @@
       },
       {
         "featureKey": "included_monthly_ci",
-        "featureDisplay": "Included verified runs (UTC month; pooled per account)",
+        "featureDisplay": "Included verified runs, UTC month, pooled per account",
         "cells": {
           "starter": "{{starterIncluded}}",
           "individual": "{{individualIncludedDigits}}",
@@ -111,8 +111,7 @@
   "securityQuickFactsBullets": [
     "CLI and verification engine run in your infrastructure against databases you configure; the homepage demo runs bundled fixtures on this server for evaluation only.",
     "Structured tool activity is compared to database query results at verification time; that check does not prove a specific network call caused a row.",
-    "Quick verify is a preview path; contract verification with an Outcome Certificate is what the engine treats as decision-grade for matches — see docs/outcome-certificate-normative.md on GitHub for highStakesReliance rules.",
-    "For buyer trust summaries on this site, use the guides and Problems index linked here first; authoritative field semantics remain in docs/outcome-certificate-normative.md on GitHub (not verification-product.md, which is a legacy redirect)."
+    "Quick verify is a preview path; contract verification with an Outcome Certificate is what the engine treats as decision-grade for matches."
   ],
   "canonicalHref": {
     "verificationSemantics": "https://github.com/jwekavanagh/agentskeptic/blob/main/docs/outcome-certificate-normative.md",

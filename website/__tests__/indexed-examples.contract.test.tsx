@@ -1,9 +1,8 @@
 /** @vitest-environment jsdom */
 
-import GuidesHubPage from "@/app/guides/page";
 import { DiscoverySurfacePage } from "@/components/discovery/DiscoverySurfacePage";
 import * as hubMeta from "@/app/guides/page";
-import { listAllSurfaces, readSurfaceFile } from "@/lib/surfaceMarkdown";
+import { readSurfaceFile } from "@/lib/surfaceMarkdown";
 import { cleanup, render } from "@testing-library/react";
 import type { ReactElement } from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
@@ -27,17 +26,8 @@ afterEach(() => {
 });
 
 describe("indexed examples", () => {
-  it("Learn hub lists every example surface in bundled-proof section", () => {
+  it("Learn hub metadata stays indexable", () => {
     expect(hubMeta.metadata.robots).toEqual({ index: true, follow: true });
-    const examples = listAllSurfaces().filter((s) => s.surfaceKind === "example");
-    const { container } = render(<GuidesHubPage />);
-    const bundled = container.querySelector("#bundled-proof");
-    expect(bundled).toBeTruthy();
-    const links = bundled!.querySelectorAll("ul.mechanism-list.guide-hub-list a[href]");
-    expect(links.length).toBe(examples.length);
-    for (const e of examples) {
-      expect(bundled!.querySelector(`a[href="${e.route}"]`)).toBeTruthy();
-    }
   });
 
   it("wf-complete surface shows verification embed", () => {

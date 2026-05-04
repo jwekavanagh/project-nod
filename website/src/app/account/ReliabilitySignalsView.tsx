@@ -1,19 +1,12 @@
-import Link from "next/link";
 import type { ReliabilitySignalsData } from "@/lib/reliabilitySignals";
 
-const TELEMETRY_DOC_HREF =
-  "https://github.com/jwekavanagh/agentskeptic/blob/main/docs/trust-authority-layer.md";
-
 export function ReliabilitySignalsView({ data }: { data: ReliabilitySignalsData }) {
+  if (data.kind === "empty") {
+    return null;
+  }
   return (
     <section className="card u-mt-1" data-testid="reliability-signals">
       <h2>Reliability signals</h2>
-      {data.kind === "empty" ? (
-        <p data-testid="reliability-empty">
-          {data.message}{" "}
-          <Link href={TELEMETRY_DOC_HREF}>Telemetry setup</Link>
-        </p>
-      ) : null}
       {data.kind === "no_unsafe" ? (
         <p data-testid="reliability-no-unsafe">
           {data.message} ({data.totalCompletions} completions)

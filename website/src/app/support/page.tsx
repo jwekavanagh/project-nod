@@ -1,3 +1,5 @@
+import { MarketingPageHeader } from "@/components/marketing/MarketingPageHeader";
+import { MarketingPageShell } from "@/components/marketing/MarketingPageShell";
 import { conversionSpine, productCopy } from "@/content/productCopy";
 import { siteMetadata } from "@/content/siteMetadata";
 import { indexableGuideCanonical } from "@/lib/indexableGuides";
@@ -22,9 +24,8 @@ export default function SupportPage() {
   const { supportPage: page } = productCopy;
 
   return (
-    <main className="integrate-main">
-      <h1>{page.h1}</h1>
-      <p className="lede">{page.intro}</p>
+    <MarketingPageShell variant="documentProse">
+      <MarketingPageHeader title={page.h1} description={<p className="lede">{page.intro}</p>} />
       <p className="home-cta-row">
         <Link
           href="/pricing"
@@ -106,6 +107,6 @@ export default function SupportPage() {
         }
         return null;
       })}
-    </main>
+    </MarketingPageShell>
   );
 }

@@ -1,4 +1,6 @@
-import { loadBuyerTruth } from "@/lib/buyerTruth";
+import { MarketingCodeBlock } from "@/components/marketing/MarketingCodeBlock";
+import { MarketingPageHeader } from "@/components/marketing/MarketingPageHeader";
+import { MarketingPageShell } from "@/components/marketing/MarketingPageShell";
 import marketing from "@/lib/marketing";
 import { conversionSpine } from "@/content/productCopy";
 import { siteMetadata } from "@/content/siteMetadata";
@@ -22,53 +24,41 @@ export const metadata: Metadata = {
 
 export default function IntegratePage() {
   const p = marketing.integratePage;
-  const requirements = loadBuyerTruth().integrateRequirements;
   return (
-    <main className="integrate-main integrate-prose" data-testid="integrate-page">
-      <h1>{siteMetadata.integrate.title}</h1>
-      <p className="lede integrate-benefit-lede">
-        <strong>{siteMetadata.integrate.description}</strong>
-      </p>
-      <p className="lede">
-        Run a single verification that compares what your agents and tools claimed against your actual stored state.
-      </p>
-      <p className="lede">Get a clear, binary verdict before you ship, bill, or hand off to customers.</p>
-      <h2>Truth check (primary)</h2>
-      <h3>First proof (quick, preview-only)</h3>
+    <MarketingPageShell variant="documentProse" data-testid="integrate-page">
+      <MarketingPageHeader
+        title={siteMetadata.integrate.title}
+        description={
+          <>
+            <p className="lede">{siteMetadata.integrate.description}</p>
+            <p className="lede">Get a deterministic verdict before you ship, bill, or hand off to customers.</p>
+          </>
+        }
+      />
+
+      <h2>First proof: contract truth check</h2>
       <p>
-        Start with <code>agentskeptic quick</code> on your capture for a read-only, inferred preview (
-        <code>QuickVerifyReport</code> on stdout). Preview stays decision-light; see the preview boundary in{" "}
-        <a href={p.githubDeepLink} rel="noopener noreferrer" target="_blank">
-          docs/integrate.md
-        </a>
-        .
+        Run <code>agentskeptic check</code> against your registry, events file, and readable database.
       </p>
-      <pre className="integrate-pack-command" data-testid="integrate-first-proof-quick">
-        {p.quickVerifyCommand}
-      </pre>
-      <h3>Contract truth check (decision-grade)</h3>
+      <p>A successful run gives you:</p>
+      <ul>
+        <li>
+          <code>stderr</code> beginning with <code>truth_check_verdict:</code>
+        </li>
+        <li>
+          <code>stdout</code> containing the Outcome Certificate JSON
+        </li>
+        <li>a reusable path for local verification and CI</li>
+      </ul>
       <p>
-        Run <code>agentskeptic check</code> against your registry, events file, and database. Stderr begins with{" "}
-        <code>truth_check_verdict:</code>; stdout is the Outcome Certificate JSON. Full guide:{" "}
+        Full guide:{" "}
         <a href={p.githubDeepLink} rel="noopener noreferrer" target="_blank">
-          docs/integrate.md
+          <code>docs/integrate.md</code>
         </a>
-        .
       </p>
-      <pre
-        id="integrate-truth-check-commands"
-        className="integrate-pack-command"
-        data-testid="integrate-truth-check-commands"
-      >
+      <MarketingCodeBlock id="integrate-truth-check-commands" data-testid="integrate-truth-check-commands">
         {p.truthCheckCommand}
-      </pre>
-      <p className="lede">
-        <strong>Production reference:</strong> Next.js (App Router) + Postgres —{" "}
-        <a href="https://github.com/jwekavanagh/agentskeptic/blob/main/docs/golden-path.md" rel="noopener noreferrer" target="_blank">
-          golden-path.md
-        </a>{" "}
-        (deployable app; use after your first truth check).
-      </p>
+      </MarketingCodeBlock>
       <p className="home-cta-row">
         <a
           className="btn"
@@ -78,148 +68,50 @@ export default function IntegratePage() {
           {conversionSpine.dominantByRoute["/integrate"]}
         </a>
       </p>
-      <p className="lede muted">
-        <Link href="#agentskeptic-first-five-minutes">First five minutes</Link> — anonymous id (browser where applicable),
-        CLI join, verify, and
-        optional telemetry (same checklist appears at the top of beacon-eligible pages).
-      </p>
 
-      <section
-        className="integrate-registry-draft-secondary"
-        data-testid="integrate-guided-cta"
-        aria-label="Formalize after proof"
-      >
-        <p className="lede">
-          <strong>Optional — Formalize this path:</strong>{" "}
-          <Link className="btn" href="/integrate/guided" data-testid="integrate-guided-link">
-            Guided activation
-          </Link>{" "}
-          — after a meaningful quick preview, generate local CLI inputs and an optional draft registry, then return here
-          for <code>agentskeptic check</code> and CI. For a full deployable reference, follow{" "}
-          <a href="https://github.com/jwekavanagh/agentskeptic/blob/main/docs/golden-path.md" rel="noopener noreferrer" target="_blank">
-            golden-path.md
-          </a>
-          .
-        </p>
-      </section>
-
-      <h2 id="integrate-crossing-commands-heading">Exportable activation and packs (advanced)</h2>
-      <p>
-        Use <code>agentskeptic activate</code> with BootstrapPackInput v1 JSON and your database URL. It progresses through
-        provisional inference, contract verification, and writes exportable bundles under <code>proof/</code> in your{" "}
-        <code>--out</code> directory (<code>run/</code>, <code>decision/</code>). For replay-only flows when you already have{" "}
-        <code>events.ndjson</code> and <code>tools.json</code>, see <code>agentskeptic crossing</code> below.
-      </p>
-      <pre id="integrate-crossing-commands" className="integrate-pack-command" data-testid="integrate-crossing-commands">
-        {p.packLedCommand}
-      </pre>
-      <p>
-        <a href={p.githubDeepLink} rel="noopener noreferrer" target="_blank" data-testid="integrate-gh-deep-link">
-          Integrator SSOT
-        </a>
-      </p>
-      <p>
-        What <code>agentskeptic activate</code> does:
-      </p>
+      <h2>Before you run it</h2>
+      <p>You need:</p>
       <ul>
-        <li>Loads your BootstrapPackInput v1 JSON and a readable SQLite or Postgres URL.</li>
-        <li>Runs provisional inference (read-only SQL), synthesizes the contract pack, then replays full contract verification.</li>
-        <li>
-          On contract termination (exit <code>0</code>, <code>1</code>, or <code>2</code>), writes exportable bundles under{" "}
-          <code>proof/run</code>, <code>proof/decision</code>, and <code>proof/activation.manifest.json</code> inside{" "}
-          <code>--out</code>.
-        </li>
-      </ul>
-      <p>
-        Success = <code>exit 0</code> with <code>VERDICT: complete</code> and <code>trust: TRUSTED</code>. For{" "}
-        <code>agentskeptic activate</code>, exit <code>0</code> pairs with <code>trustTerminal=decision_ready</code> in{" "}
-        <code>proof/activation.manifest.json</code>; exits <code>1</code>/<code>2</code> still retain <code>proof/</code> with{" "}
-        <code>contract_inconsistent</code> or <code>contract_incomplete</code>. <code>agentskeptic crossing</code> behavior is
-        unchanged.
-      </p>
-      <p className="muted">
-        Failure surfaces explicit issues like <code>ROW_ABSENT</code> instead of letting silent gaps reach production.
-      </p>
-
-      <h2>Requirements</h2>
-      <ul>
-        {requirements.map((line) => (
-          <li key={line}>{line}</li>
-        ))}
-      </ul>
-
-      <h2>Product completion: wire your emitters</h2>
-      <p>
-        Wire tool and workflow code so it emits the NDJSON and registry verification consumes. Product completion is your
-        emitters and stores matching the expected shape — not a long shell template.
-      </p>
-
-      <h2>What a green run shows</h2>
-      <p>You&apos;ll see output like the bundled demo:</p>
-      <ul>
-        <li>
-          <code>VERDICT: complete</code> + <code>trust: TRUSTED</code>
-        </li>
-        <li>Every step marked &quot;verified&quot; or &quot;matched&quot;</li>
+        <li>Node.js 22 or newer</li>
+        <li>read-only access to the database or snapshot you want to verify</li>
+        <li>structured tool activity exported as NDJSON</li>
       </ul>
       <p className="muted">
-        If anything is wrong, you get an immediate, actionable failure (e.g. <code>ROW_ABSENT</code>) — no more
-        silent green traces hiding bad data.
+        Learn guides include Next.js and Postgres paths alongside SQLite snapshots.
       </p>
 
-      <section
-        className="integrate-optional-spine integrate-framework-picker"
-        aria-label="Framework starter commands"
-        id="agentskeptic-init"
-      >
-        <h3>Framework starter (`init`)</h3>
-        <p className="muted">
-          AgentSkeptic v2 has one fully-supported onboarding stack: Next.js + Postgres. Commands below are local
-          contract-based bootstrap helpers. Full integrator SSOT:{" "}
-          <a href={p.githubDeepLink} rel="noopener noreferrer" target="_blank">
-            docs/integrate.md
-          </a>
-          .
-        </p>
-        <p>
-          <strong>TypeScript · Next.js (App Router)</strong>
-        </p>
-        <pre
-          className="integrate-pack-command"
-          data-testid="integrator-activation-commands"
-        >{`npx agentskeptic init --framework next --database sqlite --yes`}</pre>
-        <p>
-          <strong>TypeScript · bare</strong>
-        </p>
-        <pre className="integrate-pack-command">{`npx agentskeptic init --framework none --database sqlite --yes`}</pre>
-        <p>
-          <strong>Python</strong>
-        </p>
-        <pre className="integrate-pack-command">{`python -m agentskeptic init --framework none --database sqlite --yes`}</pre>
-      </section>
+      <h2>What a green run proves</h2>
+      <p>
+        A green run means AgentSkeptic re-read the configured store and found the expected state.
+      </p>
+      <p>You should see:</p>
+      <ul>
+        <li>
+          <code>VERDICT: complete</code>
+        </li>
+        <li>
+          <code>trust: TRUSTED</code>
+        </li>
+        <li>
+          every relevant step marked <code>verified</code> or <code>matched</code>
+        </li>
+      </ul>
+      <p className="muted">
+        If stored state is wrong, verification fails immediately with an actionable reason such as{" "}
+        <code>ROW_ABSENT</code>.
+      </p>
+      <p className="muted">No more silent green traces hiding bad data.</p>
 
       <h2>Next steps</h2>
       <ol>
         <li>
-          <Link href="/verify">Try the interactive demo</Link> (no account required)
+          <Link href="/verify">Try the interactive demo to see a missing-write failure.</Link>
         </li>
-        <li>Run the command above on your own data</li>
+        <li>Run the command above against your own readable data.</li>
         <li>
-          <Link href="/guides">Follow the integration guides in Learn</Link> for deeper setup
+          <Link href="/guides">Follow the Learn guides to wire the same check into CI.</Link>
         </li>
       </ol>
-
-      <h2>Full documentation</h2>
-      <p>
-        <a href={p.githubDeepLink} rel="noopener noreferrer" target="_blank">
-          Integrator SSOT
-        </a>{" "}
-        ·{" "}
-        <a href={p.githubFirstRunLink} rel="noopener noreferrer" target="_blank" data-testid="integrate-gh-first-run">
-          First-run integration
-        </a>{" "}
-        · <Link href="/guides">Learn hub</Link> · <Link href="/pricing">Pricing</Link>
-      </p>
-    </main>
+    </MarketingPageShell>
   );
 }

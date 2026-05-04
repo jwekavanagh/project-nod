@@ -12,11 +12,7 @@ import {
   STRIPE_CUSTOMER_MISSING_ERROR,
   STRIPE_CUSTOMER_MISSING_MESSAGE,
 } from "@/lib/billingPortalConstants";
-import {
-  ACCOUNT_ACTIVITY_SCOPE_LINE,
-  accountActivityMetaLine,
-  accountActivityStatusLabel,
-} from "@/lib/accountVerificationActivityUi";
+import { accountActivityMetaLine, accountActivityStatusLabel } from "@/lib/accountVerificationActivityUi";
 import type { LicensedVerifyOutcomeMetadata } from "@/lib/funnelCommercialMetadata";
 import { SignOutButton } from "../SignOutButton";
 
@@ -72,25 +68,6 @@ function ApiKeyOneTimeReveal({ apiKey, onAcknowledge }: { apiKey: string; onAckn
         </button>
       </p>
     </>
-  );
-}
-
-function TrustFootnoteSecondLine({ text }: { text: string }) {
-  const needle = "Security & Trust";
-  const i = text.indexOf(needle);
-  if (i < 0) {
-    return (
-      <p className="muted trust-footnote-line">
-        {text}
-      </p>
-    );
-  }
-  return (
-    <p className="muted trust-footnote-line">
-      {text.slice(0, i)}
-      <Link href="/security">{needle}</Link>
-      {text.slice(i + needle.length)}
-    </p>
   );
 }
 
@@ -398,12 +375,9 @@ export function AccountClient({
             </p>
           </>
         ) : showExactEmpty ? (
-          <>
-            <p>
-              <strong>{productCopy.account.verificationHeadlineEmpty}</strong>
-            </p>
-            <p className="muted">{productCopy.account.activityEmpty}</p>
-          </>
+          <p>
+            <strong>{productCopy.account.verificationHeadlineEmpty}</strong>
+          </p>
         ) : hasActivityRows ? (
           <>
             <p>
@@ -436,11 +410,6 @@ export function AccountClient({
             {productCopy.account.verificationMetricLine(monthCount)}
           </p>
         ) : null}
-        {activity.ok === true ? (
-          <p className="muted u-mt-05" data-testid="account-activity-scope">
-            {ACCOUNT_ACTIVITY_SCOPE_LINE}
-          </p>
-        ) : null}
         {activity.ok === true && !showExactEmpty && hasActivityRows ? (
           <ul className="account-activity-list">
             {activity.rows.map((row) => (
@@ -461,22 +430,8 @@ export function AccountClient({
           <Link href="/integrate" className="btn" data-testid="account-primary-cta">
             {hasActivityRows || monthCount > 0
               ? productCopy.account.primaryVerificationCtaAgain
-              : !hasActiveKey && !newlyIssuedKey
-                ? productCopy.account.primaryVerificationCtaFirstRunNeedsKey
-                : productCopy.account.primaryVerificationCtaFirstRun}
+              : productCopy.account.primaryVerificationCtaFirstRun}
           </Link>
-        </p>
-      </section>
-
-      <section
-        data-testid="account-starter-upgrade"
-        hidden={commercial.plan !== "starter"}
-        className="u-mt-125"
-      >
-        <h2 className="u-mt-0">Upgrade from Starter</h2>
-        <p className="muted">{productCopy.account.starterUpgradeBody}</p>
-        <p className="u-mt-05">
-          <Link href="/pricing">View plans and upgrade</Link>
         </p>
       </section>
 
@@ -577,7 +532,6 @@ export function AccountClient({
       <section data-testid="account-usage-region" className="u-mt-125">
         <div data-testid="account-monthly-quota">
           <h2 className="u-mt-0">{productCopy.account.monthlyQuotaHeading}</h2>
-          <p className="muted">{productCopy.account.monthlyQuotaYearMonth(commercial.monthlyQuota.yearMonth)}</p>
           <p className="muted" data-testid="quota-reset-date">
             Resets at {commercial.monthlyQuota.periodEndUtc}
           </p>
@@ -607,36 +561,17 @@ export function AccountClient({
               {commercial.monthlyQuota.overageUpgradeNudge}
             </p>
           ) : null}
-          <p
-            className="muted"
-            title={productCopy.account.monthlyQuotaDistinctDaysTitle}
-          >
-            {productCopy.account.monthlyQuotaDistinctDays(commercial.monthlyQuota.distinctReserveUtcDaysThisMonth)}
-          </p>
-          <p data-testid="quota-urgency-line">{quotaUrgencyLine}</p>
-          <p data-testid="quota-allowed-next">
-            {commercial.monthlyQuota.allowedNext
-              ? "Next licensed run is allowed."
-              : "Next licensed run will be denied at current usage."}
-          </p>
-          <p className="muted" data-testid="quota-estimated-overage-usd">
-            Estimated overage USD: {commercial.monthlyQuota.estimatedOverageUsd}
-          </p>
+          {commercial.monthlyQuota.worstUrgency === "ok" && noQuotaConsumptionThisMonth ? null : (
+            <p data-testid="quota-urgency-line">{quotaUrgencyLine}</p>
+          )}
         </div>
       </section>
 
       <section data-testid="account-api-key-region" className="u-mt-125">
         <h2 className="u-mt-0">API key</h2>
         <p className="muted u-mt-025">
-          <strong>{productCopy.account.apiKeyFlowHeading}</strong>
+          Generate an API key below. Copy it immediately; it is shown once.
         </p>
-        <ol className="muted account-api-key-flow-ol">
-          {productCopy.account.apiKeyFlowSteps.map((step) => (
-            <li key={step} className="account-api-key-flow-li">
-              {step}
-            </li>
-          ))}
-        </ol>
         <p className="u-mt-05">
           <button type="button" onClick={() => void createKey()}>
             Generate API key
@@ -664,13 +599,6 @@ export function AccountClient({
           </ul>
         ) : null}
         {newlyIssuedKey ? <ApiKeyOneTimeReveal apiKey={newlyIssuedKey} onAcknowledge={acknowledgeSavedKey} /> : null}
-      </section>
-
-      <section data-testid="account-trust-footnote" className="u-mt-125">
-        <p className="muted trust-footnote-line">
-          {productCopy.account.trustFootnoteLines[0]}
-        </p>
-        <TrustFootnoteSecondLine text={productCopy.account.trustFootnoteLines[1]} />
       </section>
     </div>
   );

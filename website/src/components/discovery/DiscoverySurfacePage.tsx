@@ -1,4 +1,5 @@
 import { ExampleVerificationEmbed } from "@/components/examples/ExampleVerificationEmbed";
+import { MarketingPageShell } from "@/components/marketing/MarketingPageShell";
 import { IndexedGuideShell } from "@/components/guides/IndexedGuideShell";
 import type { ParsedSurfaceFile } from "@/lib/surfaceMarkdown";
 import ReactMarkdown from "react-markdown";
@@ -35,10 +36,10 @@ export function DiscoverySurfacePage({ surface }: Props) {
     return (
       <>
         {jsonLd}
-        <main className="integrate-main">
+        <MarketingPageShell variant="document">
           {article}
           {progression}
-        </main>
+        </MarketingPageShell>
       </>
     );
   }
@@ -46,11 +47,11 @@ export function DiscoverySurfacePage({ surface }: Props) {
     return (
       <>
         {jsonLd}
-        <main className="integrate-main">
+        <MarketingPageShell variant="document">
           {article}
           <ExampleVerificationEmbed variant={surface.embedKey!} />
           {progression}
-        </main>
+        </MarketingPageShell>
       </>
     );
   }

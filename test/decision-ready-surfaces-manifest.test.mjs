@@ -13,8 +13,8 @@ test("decision-ready-surfaces.json manifest", () => {
     throw new Error(`unexpected __fixtureId: ${doc.__fixtureId}`);
   }
   const { surfaces } = doc;
-  if (!Array.isArray(surfaces) || surfaces.length !== 23) {
-    throw new Error(`expected 23 surfaces, got ${surfaces?.length}`);
+  if (!Array.isArray(surfaces) || surfaces.length !== 22) {
+    throw new Error(`expected 22 surfaces, got ${surfaces?.length}`);
   }
   for (const row of surfaces) {
     const body = readFileSync(join(root, row.repoRelativePath), "utf8");

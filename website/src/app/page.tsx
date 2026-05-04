@@ -1,8 +1,5 @@
 import { HeroTerminalHighlighted } from "@/components/HeroTerminalHighlighted";
-import { FunnelRouteCards } from "@/components/marketing/FunnelRouteCards";
 import { TrustPills } from "@/components/marketing/TrustPills";
-import { ValuePropTriptych } from "@/components/marketing/ValuePropTriptych";
-import { WhenToUseDecisionBox } from "@/components/marketing/WhenToUseDecisionBox";
 import { productCopy } from "@/content/productCopy";
 import marketing from "@/lib/marketing";
 import { indexableGuideCanonical } from "@/lib/indexableGuides";
@@ -10,26 +7,28 @@ import { publicProductAnchors } from "@/lib/publicProductAnchors";
 import type { Metadata } from "next";
 import { shareableTerminalFailureJsonOnly } from "@/lib/shareableTerminalFailureExcerpt";
 import {
-  getFrameworkFootnoteForHomepage,
-  getHomeCommercialSectionFromConfig,
-  HOME_COMMERCIAL_BOUNDARY_DOCS,
-} from "@/lib/commercialNarrative";
-import { homePageTitleFromMarketing, marketingOpenGraphAndTwitter } from "@/lib/marketingSocialMetadata";
-import { buildHomeTrustStripLinks, openapiHrefFromProcessEnv } from "@/lib/siteChrome";
+  homeIndexPlainDescriptionFromMarketing,
+  homePageTitleFromMarketing,
+  marketingOpenGraphAndTwitter,
+} from "@/lib/marketingSocialMetadata";
+import { buildHomeClosingFooterLinks } from "@/lib/siteChrome";
 import Link from "next/link";
 import { Fragment } from "react";
+import { MarketingPageShell } from "@/components/marketing/MarketingPageShell";
 import { HomeVerifyCta } from "./home/HomeVerifyCta";
 import { HOME_SECTION_ORDER, type HomeSectionId } from "./page.sections";
 
 const homePageTitle = homePageTitleFromMarketing(marketing.heroTitle);
 
+const homeIndexMetadataDescription = homeIndexPlainDescriptionFromMarketing();
+
 export const metadata: Metadata = {
   title: homePageTitle,
-  description: marketing.siteDefaultMetadata.description,
+  description: homeIndexMetadataDescription,
   alternates: { canonical: indexableGuideCanonical("/") },
   ...marketingOpenGraphAndTwitter({
     title: homePageTitle,
-    description: marketing.siteDefaultMetadata.description,
+    description: homeIndexMetadataDescription,
     openGraphType: "website",
   }),
 };
@@ -41,11 +40,7 @@ const anchors = {
 };
 
 export default async function HomePage() {
-  const homeCommercial = getHomeCommercialSectionFromConfig();
-  const trustLinks = buildHomeTrustStripLinks({
-    anchors,
-    openapiHref: openapiHrefFromProcessEnv(),
-  });
+  const footerLinks = buildHomeClosingFooterLinks({ anchors });
 
   const heroFailureJson = shareableTerminalFailureJsonOnly(
     marketing.shareableTerminalDemo.transcript,
@@ -63,10 +58,7 @@ export default async function HomePage() {
           <div className="home-hero-copy">
             <h1 id="hero-heading">{productCopy.hero.title}</h1>
             <p className="lede">{productCopy.heroOutcome}</p>
-            <p className="lede home-hero-supporting-outcome">
-              Catch missing DB writes before release with read-only verification against your actual
-              stores.
-            </p>
+            <p className="lede">{productCopy.heroMechanism}</p>
             <p className="home-cta-row" data-testid="home-hero-cta-row">
               <a
                 className="btn"
@@ -74,7 +66,7 @@ export default async function HomePage() {
                 data-testid="home-hero-demo-cta"
                 data-cta-priority="primary"
               >
-                {productCopy.ctaTaxonomy.topOfFunnel}
+                {productCopy.homePageMissingWriteDemoCta}
               </a>
             </p>
             <p className="muted home-hero-tertiary">
@@ -88,22 +80,23 @@ export default async function HomePage() {
               </Link>
               <span> · </span>
               <Link className="link-tertiary" href={productCopy.homeHeroSecondaryCta.href}>
-                {productCopy.homeHeroSecondaryCta.label}
+                {productCopy.homePageHeroIntegrateSecondaryLabel}
               </Link>
-              <span> — npm, CI, and your own data.</span>
             </p>
             <TrustPills items={productCopy.trustStripPills} />
-            <p className="muted" data-testid="home-guarantee-footnote">
-              {productCopy.guaranteeFootnote}{" "}
-              <Link href={marketing.slug} data-testid="home-guarantee-product-brief-link">
-                {productCopy.guaranteeProductBriefCtaLabel}
-              </Link>
-              .
-            </p>
           </div>
           <div className="home-hero-terminal" data-testid="home-hero-terminal">
+            <p className="muted home-hero-trace-bridge">
+              Agent traces show what the agent attempted.
+              <br />
+              AgentSkeptic checks whether the promised state actually exists.
+            </p>
             <p className="home-hero-terminal-label muted">{productCopy.homeHeroExampleLabel}</p>
-            <p className="home-hero-failure-caption muted">{productCopy.homeHeroFailureCaption}</p>
+            <p className="home-hero-failure-caption muted">
+              {productCopy.homeHeroFailureCaptionLead}{" "}
+              {productCopy.homeHeroFailureCaptionMid}{" "}
+              {productCopy.homeHeroFailureCaptionOutro}
+            </p>
             <p className="home-hero-verdict" aria-hidden="true">
               VERDICT: <span className="home-hero-verdict-failed">FAILED</span>
             </p>
@@ -113,74 +106,26 @@ export default async function HomePage() {
                 <span className="home-hero-flow-sep" aria-hidden="true">
                   →
                 </span>
-                <span>Store check</span>
+                <span>Store checked</span>
                 <span className="home-hero-flow-sep" aria-hidden="true">
                   →
                 </span>
                 <span className="home-hero-flow-miss">Row missing</span>
               </div>
             </div>
-            <details className="home-hero-raw-json">
-              <summary>Example verification details (JSON)</summary>
+            <div className="home-hero-example-json">
               <pre
                 className="home-hero-terminal-pre"
                 aria-label="Example verification failure JSON; verdict failed"
               >
                 <HeroTerminalHighlighted text={heroFailureJson} />
               </pre>
-            </details>
+            </div>
           </div>
         </div>
       </section>
     ),
-    tryIt: (
-      <HomeVerifyCta key="tryIt" />
-    ),
-    homeWhatCatches: (
-      <section
-        key="homeWhatCatches"
-        className="home-section home-what-catches"
-        data-testid={productCopy.uiTestIds.homeWhatCatches}
-        aria-labelledby="what-catches-heading"
-      >
-        <h2 id="what-catches-heading">{productCopy.homeWhatCatches.sectionTitle}</h2>
-        <ValuePropTriptych
-          problem={productCopy.coreValuePropTriptych.problem}
-          solution={productCopy.coreValuePropTriptych.solution}
-          outcome={productCopy.coreValuePropTriptych.outcome}
-        />
-        <ul>
-          {productCopy.homeWhatCatches.bullets.map((t) => (
-            <li key={t}>{t}</li>
-          ))}
-        </ul>
-      </section>
-    ),
-    homeStakes: (
-      <section
-        key="homeStakes"
-        className="home-section"
-        data-testid={productCopy.uiTestIds.homeStakes}
-        aria-labelledby="home-stakes-heading"
-      >
-        <h2 id="home-stakes-heading">{productCopy.homeStakes.sectionTitle}</h2>
-        <p className="lede home-stakes-tagline">{productCopy.homeStakes.stakesTagline}</p>
-        {productCopy.homeStakes.tensionBullets.length > 0 ? (
-          <ul className="home-stakes-tension">
-            {productCopy.homeStakes.tensionBullets.map((t) => (
-              <li key={t}>{t}</li>
-            ))}
-          </ul>
-        ) : null}
-        {productCopy.homeStakes.stakesBullets.length > 0 ? (
-          <ul>
-            {productCopy.homeStakes.stakesBullets.map((t) => (
-              <li key={t}>{t}</li>
-            ))}
-          </ul>
-        ) : null}
-      </section>
-    ),
+    tryIt: <HomeVerifyCta key="tryIt" />,
     howItWorks: (
       <section
         key="howItWorks"
@@ -189,55 +134,15 @@ export default async function HomePage() {
         aria-labelledby="how-it-works-heading"
       >
         <h2 id="how-it-works-heading">{productCopy.howItWorks.sectionTitle}</h2>
-        <p className="lede">{productCopy.mechanism.intro}</p>
         <ol className="mechanism-list home-how-tight">
-          {productCopy.mechanism.items.map((item) => (
-            <li key={item.slice(0, 48)}>{item}</li>
+          {productCopy.homeHowItWorksSteps.map((step) => (
+            <li key={step.lead}>
+              <strong>{step.lead}</strong>
+              <br />
+              {step.body}
+            </li>
           ))}
         </ol>
-        <p className="muted home-how-works-with">{productCopy.mechanism.worksWith}</p>
-        <p className="muted home-how-quick-path">{productCopy.mechanism.quickPathDisclaimer}</p>
-      </section>
-    ),
-    homeWhoFor: (
-      <section
-        key="homeWhoFor"
-        className="home-section"
-        data-testid={productCopy.uiTestIds.homeWhoFor}
-        aria-labelledby="who-for-heading"
-      >
-        <div id="who-for-heading">
-          <WhenToUseDecisionBox
-            id="home-when-to-use-heading"
-            title={productCopy.whenToUseDecisionBox.title}
-            strongFitHeading={productCopy.whenToUseDecisionBox.strongFitHeading}
-            notDesignedHeading={productCopy.whenToUseDecisionBox.notDesignedHeading}
-            strongFitBullets={productCopy.whenToUseDecisionBox.strongFitBullets}
-            notDesignedBullets={productCopy.whenToUseDecisionBox.notDesignedBullets}
-          />
-        </div>
-      </section>
-    ),
-    homeGuarantees: (
-      <section
-        key="homeGuarantees"
-        className="home-section"
-        data-testid={productCopy.uiTestIds.homeGuarantees}
-        aria-labelledby="guarantees-limits-heading"
-      >
-        <h2 id="guarantees-limits-heading">{productCopy.homeGuarantees.sectionTitle}</h2>
-        <h3 className="home-guarantee-h2">{productCopy.guarantees.title}</h3>
-        <ul>
-          {productCopy.guarantees.guaranteed.map((t) => (
-            <li key={t}>{t}</li>
-          ))}
-        </ul>
-        <h3 className="guarantee-sub">{productCopy.guarantees.importantLimitationsTitle}</h3>
-        <ul>
-          {productCopy.guarantees.notGuaranteed.map((t) => (
-            <li key={t}>{t}</li>
-          ))}
-        </ul>
       </section>
     ),
     homeClosing: (
@@ -249,14 +154,19 @@ export default async function HomePage() {
       >
         <h2 id="home-closing-heading">{productCopy.homeClosing.sectionTitle}</h2>
         <p className="lede">{productCopy.homeClosing.subtitle}</p>
-        <p className="muted" data-testid="home-framework-maturity">
-          {getFrameworkFootnoteForHomepage()}
+        <p className="home-cta-row">
+          <Link
+            className="btn"
+            href={productCopy.homeHeroSecondaryCta.href}
+            data-testid="home-closing-primary-cta"
+            data-cta-priority="primary"
+          >
+            {productCopy.homeHeroSecondaryCta.label}
+          </Link>
         </p>
-        <p className="muted home-closing-links-caption">{productCopy.homeClosing.integratorLinksCaption}</p>
-        <FunnelRouteCards />
         <ul className="home-trust-strip-list">
-          {trustLinks.map((item) => (
-            <li key={item.key} data-testid={`home-trust-strip-${item.key}`}>
+          {footerLinks.map((item) => (
+            <li key={item.key} data-testid={`home-footer-${item.key}`}>
               {item.external ? (
                 <a href={item.href} rel="noreferrer" target="_blank">
                   {item.label}
@@ -269,45 +179,13 @@ export default async function HomePage() {
         </ul>
       </section>
     ),
-    commercialSurface: (
-      <section
-        key="commercialSurface"
-        className="home-section"
-        data-testid={productCopy.uiTestIds.commercialSurface}
-        aria-labelledby="commercial-surface-heading"
-      >
-        <h2 id="commercial-surface-heading">{homeCommercial.title}</h2>
-        <p className="muted" data-testid="home-commercial-lead">
-          {homeCommercial.lead}
-        </p>
-        <p className="muted" data-testid="home-commercial-boundary">
-          <a
-            className="link-tertiary"
-            href={HOME_COMMERCIAL_BOUNDARY_DOCS.href}
-            rel="noreferrer"
-            target="_blank"
-          >
-            {HOME_COMMERCIAL_BOUNDARY_DOCS.label}
-          </a>
-        </p>
-        <p className="commercial-links">
-          <Link href="/pricing">Pricing</Link>
-          {" · "}
-          <Link href="/account">Account</Link>
-          {" · "}
-          <Link href="/compare">{productCopy.homeCommercialCompareApproachesLabel}</Link>
-          {" · "}
-          <a href={productCopy.links.openapiCommercial}>OpenAPI</a>
-        </p>
-      </section>
-    ),
   };
 
   return (
-    <main>
+    <MarketingPageShell variant="home">
       {HOME_SECTION_ORDER.map((id) => (
         <Fragment key={id}>{sectionRenderers[id]}</Fragment>
       ))}
-    </main>
+    </MarketingPageShell>
   );
 }

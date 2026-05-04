@@ -19,6 +19,12 @@ const ROOT_BLOCK = `:root {
   --danger-border: color-mix(in srgb, var(--danger) 55%, #1f0a0a);
   --card: #ffffff;
   --border: #d0d7e0;
+  --marketing-page-title-size: clamp(1.65rem, 3.2vw, 1.95rem);
+  --marketing-section-h2-size: clamp(1.35rem, 2.2vw, 1.65rem);
+  --marketing-code-bg: var(--card);
+  --marketing-code-border: 1px solid var(--border);
+  --marketing-code-radius: 10px;
+  --marketing-callout-bg: color-mix(in srgb, var(--card) 92%, var(--surface));
   /* Populated by next/font variable on <html> (see layout.tsx). */
   --font-sans: ui-sans-serif, system-ui, sans-serif;
 }`;
@@ -50,6 +56,7 @@ const PRELUDE_SELECTORS = [
   ".try-it-verdict-card",
   ".try-it-k",
   ".home-hero-grid",
+  ".home-hero-trace-bridge",
   ".home-hero-copy .home-cta-row",
   ".home-trust-strip",
   ".home-trust-strip-heading",
