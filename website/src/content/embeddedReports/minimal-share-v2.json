@@ -6,8 +6,8 @@
     "runKind": "contract_sql",
     "stateRelation": "does_not_match",
     "highStakesReliance": "prohibited",
-    "relianceRationale": "At least one step failed verification against the database (missing row, wrong values, or partial multi-effect failure). Do not treat this run as meeting its intended persisted outcome.",
-    "intentSummary": "NOT TRUSTED: At least one step failed verification against the database (determinate failure).",
+    "relianceRationale": "At least one step failed verification against expected downstream state (missing row, wrong values, or partial multi-effect failure). Do not treat this run as meeting its intended persisted outcome.",
+    "intentSummary": "NOT TRUSTED: At least one step failed verification against expected downstream state (determinate failure).",
     "explanation": {
       "headline": "Fixture headline for share POST v2",
       "details": [{ "code": "ROW_ABSENT", "message": "Expected row is missing." }]

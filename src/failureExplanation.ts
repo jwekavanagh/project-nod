@@ -114,14 +114,14 @@ export const FE_RUN_CONTEXT_DIVERGENCE =
   "Divergence at run_context before the failing tool observation: code=<C> meaning=<meaning>";
 
 export const FE_STEP_EXPECTED =
-  "Verification expected post-execution database state to satisfy verify_target \"<verifyTargetOrLiteralNull>\" and intended_effect \"<narrative>\" for seq=<seq> toolId=<toolId> under policy [<P>].";
+  "Verification expected downstream state to satisfy verify_target \"<verifyTargetOrLiteralNull>\" and intended_effect \"<narrative>\" for seq=<seq> toolId=<toolId> under policy [<P>].";
 export const FE_STEP_OBSERVED = "Step verification outcome: code=<primaryCode> detail=<detail><suffix>";
 export const FE_STEP_DIVERGENCE =
   "Divergence at step seq=<seq> toolId=<toolId>: primary_code=<primaryCode> meaning=<meaning>";
 
 export const FE_NO_STEPS_OBSERVED = "No tool_observed steps were produced for workflowId=<workflowId>.";
 export const FE_NO_STEPS_DIVERGENCE =
-  "Divergence: no steps to verify against the database under policy [<P>]";
+  "Divergence: no steps to verify against registry-backed expectations under policy [<P>]";
 
 /** All branch template literals (doc fences must match these). */
 export const FAILURE_EXPLANATION_BRANCH_TEMPLATES = {

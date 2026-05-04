@@ -3,20 +3,20 @@
   "workflowId": "wf_missing",
   "producer": {
     "name": "agentskeptic",
-    "version": "1.2.1"
+    "version": "1.2.2"
   },
   "verifiedAt": "2026-04-23T12:00:00.000Z",
   "schemaVersion": 1,
   "artifacts": {
     "workflowResult": {
       "relativePath": "workflow-result.json",
-      "sha256": "f48525076b7951bbfc13ff15690f40bef691e7dbddfa7262ebd1f0dbe3cf0d16",
-      "byteLength": 6407
+      "sha256": "23c381de25c9d237f3c02b1e7e1f85e41c25b07de989e45a1e1fd3491ad11dd1",
+      "byteLength": 6482
     },
     "events": {
       "relativePath": "events.ndjson",
-      "sha256": "83ce7f68ccec213934f3a0e63d8d4fc4e4e5ab1c28cda43d046d939a2a7d30ca",
-      "byteLength": 177
+      "sha256": "3b81b0f999dab70223a5ab024578283bc8f31c7402514f7eb6a3af2dd35dec8a",
+      "byteLength": 178
     }
   }
 }

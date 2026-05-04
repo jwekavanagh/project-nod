@@ -1,9 +1,9 @@
 #!/usr/bin/env node
 /**
- * Regenerates sealed bundles under examples/debug-corpus/ (except run_ok).
+ * Regenerates sealed bundles under examples/debug-corpus/ (including canonical JSON for run_ok).
  * Run after build: npm run build && node scripts/seed-debug-corpus.mjs
  */
-import { cpSync, readFileSync, rmSync } from "node:fs";
+import { readFileSync, rmSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { writeAgentRunBundle } from "../dist/agentRunBundle.js";
@@ -69,9 +69,31 @@ writeAgentRunBundle({
   verifiedAt,
 });
 
-const srcPath = join(root, "test", "fixtures", "debug-ui-compare", "run_path_nonempty");
+const pathNonemptySrc = join(root, "test", "fixtures", "debug-ui-compare", "run_path_nonempty");
+const pathNonemptyWf = JSON.parse(readFileSync(join(pathNonemptySrc, "workflow-result.json"), "utf8"));
+const pathNonemptyEv = readFileSync(join(pathNonemptySrc, "events.ndjson"));
 const dstPath = join(corpus, "run_path_nonempty");
 rmSync(dstPath, { recursive: true, force: true });
-cpSync(srcPath, dstPath, { recursive: true });
+writeAgentRunBundle({
+  outDir: dstPath,
+  eventsNdjson: pathNonemptyEv,
+  workflowResult: pathNonemptyWf,
+  producer,
+  verifiedAt,
+});
 
-console.error("seed-debug-corpus: wrote run_value_mismatch, run_row_absent, run_complete_b, run_path_nonempty");
+const runOkDir = join(corpus, "run_ok");
+const wfOkCanonical = JSON.parse(readFileSync(join(runOkDir, "workflow-result.json"), "utf8"));
+const evOkCanonical = readFileSync(join(runOkDir, "events.ndjson"));
+rmSync(runOkDir, { recursive: true, force: true });
+writeAgentRunBundle({
+  outDir: runOkDir,
+  eventsNdjson: evOkCanonical,
+  workflowResult: wfOkCanonical,
+  producer,
+  verifiedAt,
+});
+
+console.error(
+  "seed-debug-corpus: wrote run_value_mismatch, run_row_absent, run_complete_b, run_path_nonempty, run_ok",
+);

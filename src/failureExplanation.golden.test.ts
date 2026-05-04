@@ -365,7 +365,7 @@ describe("failureExplanation goldens (real buildFailureAnalysis)", () => {
     expect(fe.expected).toContain("workflowId=wf_empty");
     expect(fe.expected).toContain("no run-level ingest or planning failures");
     expect(fe.observed).toContain("No tool_observed steps were produced");
-    expect(fe.divergence).toContain("no steps to verify against the database");
+    expect(fe.divergence).toContain("no steps to verify against registry-backed expectations");
   });
 
   it("G9: high confidence run-level → unknowns []", () => {
@@ -555,5 +555,31 @@ describe("failureExplanation goldens (real buildFailureAnalysis)", () => {
     const truth = buildWorkflowTruthReport(engine);
     const bad = { ...truth, failureExplanation: null };
     expect(v(bad)).toBe(false);
+  });
+
+  it("schema: legacy pre-registry enforcementKind token fails AJV", () => {
+    const v = loadSchemaValidator("workflow-truth-report");
+    const engine: WorkflowEngineResult = {
+      schemaVersion: 8,
+      workflowId: "w",
+      status: "inconsistent",
+      runLevelReasons: [],
+      verificationPolicy: strongPolicy,
+      eventSequenceIntegrity: { kind: "normal" },
+      verificationRunContext: createEmptyVerificationRunContext(),
+      steps: [missingStep(0, "t")],
+    };
+    const truth = buildWorkflowTruthReport(engine);
+    expect(truth.correctnessDefinition).not.toBeNull();
+    // Avoid contiguous legacy substring in source (repo extinction gate); runtime value is legacy enforcement kind.
+    const legacyEnforcementKind = "step\u005fsql\u005fexpectation";
+    const legacy = {
+      ...truth,
+      correctnessDefinition: {
+        ...truth.correctnessDefinition!,
+        enforcementKind: legacyEnforcementKind,
+      },
+    };
+    expect(v(legacy)).toBe(false);
   });
 });

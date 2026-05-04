@@ -19,7 +19,7 @@ This document is the **behavioral single source of truth** for `workflowTruthRep
 | `run_ingest_integrity` | Primary failure scope is `run_level`, or `step` with `NO_STEPS_FOR_WORKFLOW` |
 | `event_capture_integrity` | Primary scope is `event_sequence` |
 | `run_context_fairness` | Primary scope is `run_context` |
-| `step_sql_expectation` | Primary scope is `step` (normal SQL-backed step; not plan-transition workflow) |
+| `step_registry_expectation` | Primary scope is `step` (registry-backed verification request; not plan-transition workflow) |
 | `plan_transition_expectation` | `workflowId === wf_plan_transition` and primary scope is `step` |
 | `quick_inferred_sql_row` | Quick Verify unit `kind === "row"`, has inferred `sql_row` request, verdict `fail` or `uncertain` |
 | `quick_inferred_relational` | Quick Verify unit `kind === "related_exists"`, verdict `fail` or `uncertain` |
@@ -27,7 +27,7 @@ This document is the **behavioral single source of truth** for `workflowTruthRep
 
 ## Integrator mapping
 
-- **`step_sql_expectation` / `plan_transition_expectation`:** `enforceableProjection.verificationRequest` (or plan-target fields) is **sufficient** to diff or author the corresponding tools-registry expectation and to re-run `agentskeptic` with the same logical check when events and DB are available.
+- **`step_registry_expectation` / `plan_transition_expectation`:** `enforceableProjection.verificationRequest` (or plan-target fields) is **sufficient** to diff or author the corresponding tools-registry expectation and to re-run `agentskeptic` with the same logical check when events and verification targets are available.
 - **`run_ingest_integrity` / `event_capture_integrity`:** `primaryFailureCodes` or `forbiddenEventSequenceCodes` plus `workflowId` and `verificationPolicyFragment` are **sufficient** to build ingest or capture CI gates that reject bad runs **before** verification.
 - **`run_context_fairness`:** `ingestIndex`, `requiredUpstreamContract`, and `primaryRunContextCodes` are **sufficient** to document upstream prerequisites for fair tool evaluation.
 - **`quick_inferred_sql_row` / `quick_inferred_relational`:** `sqlRowRequest` or relational fields are **sufficient** to build a provisional or exported registry check (subject to Quick Verify coverage limits in [`docs/verification-product.md`](verification-product.md)).
@@ -75,11 +75,11 @@ Implementation fills `<placeholders>` deterministically. Anchors **`CD_TPL_*`** 
 - **`enforceAs` [0]:** Orchestration SHALL record retrieval, model turns, controls, and tool_skipped events so fairness can be checked at the failing ingest index.
 - **`enforceAs` [1]:** Replays SHALL not evaluate downstream tool_observed steps when &lt;C&gt; is violated for that index.
 
-### `step_sql_expectation` — CD_TPL_STEP_SQL
+### `step_registry_expectation` — CD_TPL_STEP_REGISTRY
 
-- **`mustAlwaysHold`:** Must: after tool_observed seq=&lt;S&gt; toolId=&lt;T&gt;, database state SHALL satisfy the verification contract in verificationRequest under policy [&lt;P&gt;] for workflowId=&lt;W&gt;.
+- **`mustAlwaysHold`:** Must: after tool_observed seq=&lt;S&gt; toolId=&lt;T&gt;, authoritative downstream state SHALL satisfy the verification contract in verificationRequest under policy [&lt;P&gt;] for workflowId=&lt;W&gt;.
 - **`enforceAs` [0]:** Registry (or synthetic events plus registry) SHALL keep verificationRequest aligned with declared tool parameters for seq=&lt;S&gt;.
-- **`enforceAs` [1]:** Authoritative SQL state SHALL match identity, required fields, and relational checks encoded in verificationRequest.
+- **`enforceAs` [1]:** Read-only verification reads at verify time (SQL, HTTP witnesses, object metadata, vector fetches, Mongo findOne, etc.) SHALL match verificationRequest.
 
 ### `plan_transition_expectation` — CD_TPL_PLAN_TRANSITION
 

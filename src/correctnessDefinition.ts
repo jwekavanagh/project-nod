@@ -28,8 +28,8 @@ import {
   templateRunContextMustHold,
   templateRunIngestEnforceAs,
   templateRunIngestMustHold,
-  templateStepSqlEnforceAs,
-  templateStepSqlMustHold,
+  templateStepRegistryEnforceAs,
+  templateStepRegistryMustHold,
 } from "./correctnessDefinitionTemplates.js";
 
 export type CorrectnessDefinitionInvariantCode =
@@ -60,9 +60,9 @@ type RunContextProjection = Extract<
   CorrectnessDefinitionV1["enforceableProjection"],
   { projectionKind: "run_context_fairness" }
 >;
-type StepSqlProjection = Extract<
+type StepRegistryProjection = Extract<
   CorrectnessDefinitionV1["enforceableProjection"],
-  { projectionKind: "step_sql_expectation" }
+  { projectionKind: "step_registry_expectation" }
 >;
 type PlanTransitionProjection = Extract<
   CorrectnessDefinitionV1["enforceableProjection"],
@@ -267,19 +267,19 @@ export function buildWorkflowCorrectnessDefinition(
       };
     }
 
-    const projection: StepSqlProjection = {
-      projectionKind: "step_sql_expectation",
+    const projection: StepRegistryProjection = {
+      projectionKind: "step_registry_expectation",
       workflowId: W,
       verificationPolicyFragment: P,
       seq: e0.seq,
       toolId: T,
       verificationRequest: driver.verificationRequest,
     };
-    const [a0, a1] = templateStepSqlEnforceAs(S);
+    const [a0, a1] = templateStepRegistryEnforceAs(S);
     return {
       schemaVersion: 1,
-      enforcementKind: "step_sql_expectation",
-      mustAlwaysHold: formatOperationalMessage(templateStepSqlMustHold({ W, S, T, P })),
+      enforcementKind: "step_registry_expectation",
+      mustAlwaysHold: formatOperationalMessage(templateStepRegistryMustHold({ W, S, T, P })),
       enforceAs: [formatOperationalMessage(a0), formatOperationalMessage(a1)],
       enforceableProjection: projection,
       remediationAlignment,

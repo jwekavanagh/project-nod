@@ -26,7 +26,6 @@ const CANONICAL_UX_STRING_EXPORTS: string[] = [
 
 const README_EXEMPT_SUBSTRINGS = [
   "**Input contract:** We only accept **structured tool activity**—JSON or NDJSON that describes tool calls and parameters our ingest model can extract—not arbitrary logs, traces, or unstructured observability text.",
-  "Verification uses read-only SQL against your database; API-only or non-SQL systems are out of scope for this tool.",
 ];
 
 const FENCE_INFO_KEYWORDS = [

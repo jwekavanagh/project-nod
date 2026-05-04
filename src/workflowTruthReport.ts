@@ -39,15 +39,15 @@ import { userPhraseForReasonCode } from "./verificationUserPhrases.js";
 
 /** Plain-language `result=` line in the human report only. JSON `outcomeLabel` stays machine-stable (see STEP_STATUS_TRUTH_LABELS). */
 export const HUMAN_REPORT_RESULT_PHRASE: Record<WorkflowTruthStep["outcomeLabel"], string> = {
-  VERIFIED: "Matched the database.",
+  VERIFIED: "Matched registry-backed expected state.",
   FAILED_ROW_MISSING:
-    "Expected row is missing from the database (the log implies a write that is not present).",
-  FAILED_VALUE_MISMATCH: "A row was found, but required values do not match.",
+    "Expected state at the verification target was not found (for example a missing row or absent witness result).",
+  FAILED_VALUE_MISMATCH: "State was observed, but required values do not match.",
   INCOMPLETE_CANNOT_VERIFY:
     "This step could not be fully verified (registry, connector, or data shape issue).",
-  PARTIALLY_VERIFIED: "Some intended database effects matched; others did not.",
+  PARTIALLY_VERIFIED: "Some intended registry effects matched; others did not.",
   UNCERTAIN_NOT_OBSERVED_WITHIN_WINDOW:
-    "The expected row did not appear within the verification window.",
+    "The expected state did not appear within the verification window.",
 };
 
 /** Human `result=` lines when `workflowId` is plan-transition (git + Plan.md rules, not SQL). */
@@ -90,10 +90,10 @@ export const EFFECT_STATUS_TRUTH_LABELS: Record<
 };
 
 const TRUST_LINE_BY_STATUS: Record<WorkflowStatus, string> = {
-  complete: "TRUSTED: Every step matched the database under the configured verification rules.",
+  complete: "TRUSTED: Every step matched registry-backed expected state under the configured verification rules.",
   incomplete: "NOT TRUSTED: Verification is incomplete; the workflow cannot be fully confirmed.",
   inconsistent:
-    "NOT TRUSTED: At least one step failed verification against the database (determinate failure).",
+    "NOT TRUSTED: At least one step failed verification against expected downstream state (determinate failure).",
 };
 
 const TRUST_LINE_BY_STATUS_PLAN_TRANSITION: Record<WorkflowStatus, string> = {
@@ -105,7 +105,7 @@ const TRUST_LINE_BY_STATUS_PLAN_TRANSITION: Record<WorkflowStatus, string> = {
 
 /** Human report trust line when the only failures are `uncertain` (eventual window exhausted). */
 export const TRUST_LINE_UNCERTAIN_WITHIN_WINDOW =
-  "NOT TRUSTED: At least one step could not be confirmed within the verification window (row not observed; replication or processing delay is possible).";
+  "NOT TRUSTED: At least one step could not be confirmed within the verification window (expected state not observed; replication or processing delay is possible).";
 
 /** Appended to `trust:` when `eventSequenceIntegrity.kind === "irregular"` (normative; see docs). */
 export const TRUST_LINE_EVENT_SEQUENCE_IRREGULAR_SUFFIX =

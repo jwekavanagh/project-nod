@@ -797,7 +797,7 @@ export type CorrectnessEnforcementKind =
   | "run_ingest_integrity"
   | "event_capture_integrity"
   | "run_context_fairness"
-  | "step_sql_expectation"
+  | "step_registry_expectation"
   | "plan_transition_expectation"
   | "quick_inferred_sql_row"
   | "quick_inferred_relational"
@@ -838,7 +838,7 @@ export type CorrectnessDefinitionV1 = {
         primaryRunContextCodes: string[];
       }
     | {
-        projectionKind: "step_sql_expectation";
+        projectionKind: "step_registry_expectation";
         workflowId: string;
         verificationPolicyFragment: string;
         seq: number;

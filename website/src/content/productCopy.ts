@@ -479,7 +479,7 @@ export const productBriefPage = {
       steps: [
         "Emit structured tool activity for the actions and side effects you care about.",
         "Map tool IDs to real stores in a lightweight `tools.json` registry.",
-        "Run verification against a read-only snapshot of your data.",
+        "Run verification against read-only registry targets (SQL and configured HTTP, object storage, vector, or Mongo checks).",
         "Get a structured Outcome Certificate with trust and remediation fields.",
       ],
       outro: "The check happens at verification time, against stored state — not from trace color.",

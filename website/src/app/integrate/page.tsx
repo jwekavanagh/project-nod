@@ -38,7 +38,7 @@ export default function IntegratePage() {
 
       <h2>First proof: contract truth check</h2>
       <p>
-        Run <code>agentskeptic check</code> against your registry, events file, and readable database.
+        Run <code>agentskeptic check</code> against your registry, events file, and readable verification targets (database for SQL; remote URL for HTTP / object / vector / Mongo witnesses per registry).
       </p>
       <p>A successful run gives you:</p>
       <ul>
@@ -55,6 +55,17 @@ export default function IntegratePage() {
         <a href={p.githubDeepLink} rel="noopener noreferrer" target="_blank">
           <code>docs/integrate.md</code>
         </a>
+      </p>
+      <p>
+        <strong>Hybrid contract demo (SQL + HTTP witness):</strong>{" "}
+        <a
+          href={`${marketing.gitRepositoryUrl}/blob/main/examples/hybrid-contract-demo.mjs`}
+          rel="noopener noreferrer"
+          target="_blank"
+        >
+          <code>examples/hybrid-contract-demo.mjs</code>
+        </a>{" "}
+        (requires <code>npm run build</code> and <code>POSTGRES_VERIFICATION_URL</code>).
       </p>
       <MarketingCodeBlock id="integrate-truth-check-commands" data-testid="integrate-truth-check-commands">
         {p.truthCheckCommand}
@@ -73,7 +84,10 @@ export default function IntegratePage() {
       <p>You need:</p>
       <ul>
         <li>Node.js 22 or newer</li>
-        <li>read-only access to the database or snapshot you want to verify</li>
+        <li>
+          read-only access to verification targets you configure (database for SQL steps; witness URLs and credentials for
+          HTTP, object, vector, or Mongo per registry)
+        </li>
         <li>structured tool activity exported as NDJSON</li>
       </ul>
       <p className="muted">

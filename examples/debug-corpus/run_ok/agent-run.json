@@ -1,17 +1,17 @@
 {
-  "schemaVersion": 1,
   "runId": "run_ok",
   "workflowId": "wf_complete",
   "producer": {
     "name": "agentskeptic",
-    "version": "1.2.1"
+    "version": "1.2.2"
   },
-  "verifiedAt": "2026-04-04T00:00:00.000Z",
+  "verifiedAt": "2026-04-23T12:00:00.000Z",
+  "schemaVersion": 1,
   "artifacts": {
     "workflowResult": {
       "relativePath": "workflow-result.json",
-      "sha256": "3fd63cb0141b56f50767a9c5b4672ab146149b8fdf6648fda18a0b4c1b8c42fb",
-      "byteLength": 2105
+      "sha256": "d7ecc0233be5264e08f10183cda99d3677a2a470ca77cb839a9f42e34aeccc43",
+      "byteLength": 2122
     },
     "events": {
       "relativePath": "events.ndjson",

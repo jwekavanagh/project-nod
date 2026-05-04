@@ -6,7 +6,7 @@ This file is the **sole authored source** for normative **epistemic contract** p
 
 ---
 
-> **Production binding** is the earliest provable constraint on **grounded verification output** (read-only SQL vs expectations from integrator-owned structured activity and registry on the integrator’s authoritative database). **Which real-world funnel stage** loses the most integrators is **not inferable from committed repository evidence alone**—that ranking requires time-bounded telemetry and product context outside this repository.
+> **Production binding** is the earliest provable constraint on **grounded verification output** (read-only checks—SQL and, in contract mode, configured HTTP / object / vector / Mongo witnesses—vs expectations from integrator-owned structured activity and registry against the integrator’s authoritative targets). **Which real-world funnel stage** loses the most integrators is **not inferable from committed repository evidence alone**—that ranking requires time-bounded telemetry and product context outside this repository.
 
 ---
 
@@ -16,7 +16,7 @@ Proof split in the four-way model ([`adoption-epistemics.md`](adoption-epistemic
 
 ## First necessary constraint on grounded output (formal property)
 
-**Property (not a ranked funnel stage):** **Grounded verification throughput**—repeatable contract verification outcomes against the integrator’s authoritative SQLite or Postgres—is **structurally** limited by the **first dependency on integrator-owned, correctly-shaped inputs**: structured tool activity the engine can ingest, a registry that maps `toolId` to SQL expectations, and read-only access to that database. That is the moment the product becomes **epistemically “real”** (observed SQL vs expectations derived from declared activity) and **outside** what this repository can prove without the integrator’s data and credentials.
+**Property (not a ranked funnel stage):** **Grounded verification throughput**—repeatable contract verification outcomes against the integrator’s authoritative SQLite or Postgres **plus** optional remote witness targets (HTTP, object storage, vector, Mongo) configured in the registry—is **structurally** limited by the **first dependency on integrator-owned, correctly-shaped inputs**: structured tool activity the engine can ingest, a registry that maps `toolId` to verification expectations, and read-only access to those targets. That is the moment the product becomes **epistemically “real”** (observed reads vs expectations derived from declared activity) and **outside** what this repository can prove without the integrator’s data and credentials.
 
 **What “integrator-owned” excludes (for this property):** Bundled demo fixtures, README-only replay, **PatternComplete** temp paths alone, or telemetry **`workload_class`** alone—see [Integrate spine](first-run-integration.md#integrate-spine-normative) vs [Step 4 / ProductionComplete](first-run-integration.md#step-4-bootstrap-when-you-have-your-own-tool_calls-and-a-db-url). **IntegrateSpineComplete** still uses repository-pinned bootstrap inputs for the final segment; **ProductionComplete** requires **their** events/registry (or bootstrap pack from **their** `tool_calls`) on **their** database per [`first-run-integration.md`](first-run-integration.md).
 

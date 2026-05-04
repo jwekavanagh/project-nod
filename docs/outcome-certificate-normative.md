@@ -6,8 +6,10 @@ This document is the **sole product authority** for the **Outcome Certificate**:
 
 ## Trust boundary (unchanged intent)
 
-- The certificate proves **observed SQL state vs expectations** derived from structured tool activity and the registry (contract) or inferred mapping (quick preview)—**not** that a tool executed, and **not** generic observability.
+- The certificate proves **observed downstream state vs expectations** derived from structured tool activity and the registry (contract): SQL reads plus configured witnesses (HTTP, object storage, vector, Mongo) when present—or **inferred SQL-only checks** for **quick preview**—**not** that a tool executed, and **not** generic observability.
 - Verification is a **snapshot** at read time.
+
+**Quick vs contract:** **`agentskeptic quick`** is a **fast SQL-inference preview** (`runKind: quick_preview`, `highStakesReliance: prohibited`). **`agentskeptic check` / `verifyWorkflow`** is the **contract multi-store** path: the same Outcome Certificate envelope applies when steps include non-SQL `verification.kind` values, provided the verification runtime supports those witnesses (remote DB URL; not SQLite file mode for witnesses—see [`verification-state-stores.md`](verification-state-stores.md)).
 
 ## Top-level fields (v3)
 

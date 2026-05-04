@@ -67,7 +67,7 @@
       "schemaVersion": 9,
       "workflowId": "wf_complete",
       "workflowStatus": "complete",
-      "trustSummary": "TRUSTED: Every step matched the database under the configured verification rules.",
+      "trustSummary": "TRUSTED: Every step matched registry-backed expected state under the configured verification rules.",
       "runLevelIssues": [],
       "eventSequence": {
         "kind": "normal"
@@ -99,5 +99,5 @@
       "correctnessDefinition": null
     }
   },
-  "truthReportText": "workflow_id: wf_complete\nworkflow_status: complete\ntrust: TRUSTED: Every step matched the database under the configured verification rules.\nsteps:\n  - seq=0 tool=crm.upsert_contact result=Matched the database.\n"
+  "truthReportText": "workflow_id: wf_complete\nworkflow_status: complete\ntrust: TRUSTED: Every step matched registry-backed expected state under the configured verification rules.\nsteps:\n  - seq=0 tool=crm.upsert_contact result=Matched registry-backed expected state.\n"
 }

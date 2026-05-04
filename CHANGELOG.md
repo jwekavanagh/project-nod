@@ -1,3 +1,23 @@
+## [7.0.0](https://github.com/jwekavanagh/agentskeptic/compare/v6.5.0...v7.0.0) (2026-05-04)
+
+### ⚠ BREAKING CHANGES
+
+* **correctness:** `correctnessDefinition.enforcementKind` and matching `enforceable_projection.projectionKind` no longer accept **`step_sql_expectation`**. The canonical value is **`step_registry_expectation`** (same semantics: registry-backed expected downstream state for a step). Strict JSON Schema validation rejects archived payloads until migrated.
+
+### Features
+
+* **docs / examples:** store-neutral verification copy; Quick vs contract positioning; deterministic hybrid proof via **`examples/hybrid-contract-demo.mjs`** and **`test/pipeline.postgres.test.mjs`** (`wf_hybrid_demo`, local HTTP witness + SQL).
+
+### Migration (archived JSON)
+
+Re-emit or transform stored artifacts that still contain the legacy string. Non-interactive full-document example:
+
+```bash
+jq 'walk(if type == "string" and . == "step_sql_expectation" then "step_registry_expectation" else . end)' in.json > out.json
+```
+
+Scope the `walk` to your own retention paths; the pattern above updates every string occurrence in the file.
+
 ## [6.5.0](https://github.com/jwekavanagh/agentskeptic/compare/v6.4.0...v6.5.0) (2026-05-04)
 
 ### Features

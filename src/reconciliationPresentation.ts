@@ -16,7 +16,7 @@ export const RECONCILIATION_DIMENSION_VERIFICATION_VERDICT = "verification_verdi
 /** HTML <th> text (exact). */
 export const RECONCILIATION_TITLE_DECLARED = "Declared";
 export const RECONCILIATION_TITLE_EXPECTED = "Expected";
-export const RECONCILIATION_TITLE_OBSERVED_DATABASE = "Observed (database)";
+export const RECONCILIATION_TITLE_OBSERVED_DATABASE = "Observed (reads)";
 export const RECONCILIATION_TITLE_VERIFICATION_VERDICT = "Verification verdict";
 
 /** Stderr / human line prefixes (exact, including trailing space). */
@@ -25,7 +25,7 @@ export const LINE_PREFIX_EXPECTED = "expected: ";
 export const LINE_PREFIX_OBSERVED_DATABASE = "observed_database: ";
 export const LINE_PREFIX_VERIFICATION_VERDICT = "verification_verdict: ";
 
-export const EXPECTED_NONE_NO_SQL = "(none — no resolvable SQL expectation)";
+export const EXPECTED_NONE_NO_SQL = "(none — no resolvable registry expectation)";
 
 export const QUICK_OBSERVED_MAPPING_FAILED = "No database observation (verification not run).";
 export const QUICK_OBSERVED_CONNECTOR_EMPTY = "No database observation recorded (query did not return evidence).";

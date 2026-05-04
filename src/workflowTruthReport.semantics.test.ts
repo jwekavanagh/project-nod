@@ -65,7 +65,7 @@ describe("buildWorkflowTruthReport (formatter-independent semantics)", () => {
     expect(truth.workflowId).toBe("w");
     expect(truth.workflowStatus).toBe("complete");
     expect(truth.trustSummary).toBe(
-      "TRUSTED: Every step matched the database under the configured verification rules.",
+      "TRUSTED: Every step matched registry-backed expected state under the configured verification rules.",
     );
     expect(truth.runLevelIssues).toEqual([]);
     expect(truth.eventSequence).toEqual({ kind: "normal" });

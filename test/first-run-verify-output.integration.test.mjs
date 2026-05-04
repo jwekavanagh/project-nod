@@ -24,7 +24,7 @@ describe("first-run-verify output (integration)", () => {
     });
     assert.equal(r.status, 0, `partner-quickstart-verify stderr:\n${r.stderr}\nstdout:\n${r.stdout}`);
     assert.ok(
-      r.stderr.includes("Matched the database."),
+      r.stderr.includes("Matched registry-backed expected state."),
       `expected human report phrase in stderr, got:\n${r.stderr.slice(0, 2000)}`,
     );
     assert.ok(

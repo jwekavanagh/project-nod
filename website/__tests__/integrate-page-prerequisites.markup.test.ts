@@ -13,7 +13,8 @@ registerMarketingSiteTeardown();
 
 const REQUIREMENT_LINES = [
   "Node.js 22 or newer",
-  "read-only access to the database or snapshot you want to verify",
+  "read-only access to verification targets you configure (database for SQL steps; witness URLs and credentials for",
+  "HTTP, object, vector, or Mongo per registry)",
   "structured tool activity exported as NDJSON",
 ];
 

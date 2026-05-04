@@ -35,7 +35,7 @@ def _build_reliance_rationale(run_kind: str, state_relation: str, high_stakes: s
             )
         if state_relation == "does_not_match":
             return (
-                "At least one step failed verification against the database (missing row, wrong values, or "
+                "At least one step failed verification against expected downstream state (missing row, wrong values, or "
                 "partial multi-effect failure), or a LangGraph checkpoint rollup verdict is inconsistent. "
                 "Do not treat this run as meeting its intended persisted outcome."
             )
@@ -53,7 +53,7 @@ def _build_reliance_rationale(run_kind: str, state_relation: str, high_stakes: s
             )
         if state_relation == "does_not_match":
             return (
-                "At least one step failed verification against the database (missing row, wrong values, or "
+                "At least one step failed verification against expected downstream state (missing row, wrong values, or "
                 "partial multi-effect failure). Do not treat this run as meeting its intended persisted outcome."
             )
         return (

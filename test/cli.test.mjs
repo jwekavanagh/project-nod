@@ -438,7 +438,7 @@ describe("CLI agentskeptic", () => {
     const errText = (parsed.humanReport + "\n" + r.stderr).replace(/\r\n/g, "\n");
     assert.ok(
       errText.includes(
-        "trust: NOT TRUSTED: At least one step failed verification against the database (determinate failure).",
+        "trust: NOT TRUSTED: At least one step failed verification against expected downstream state (determinate failure).",
       ),
     );
   });

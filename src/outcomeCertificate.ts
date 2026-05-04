@@ -124,7 +124,7 @@ function buildRelianceRationale(
       return "Contract verification used your registry and read-only SQL; every captured step matched declared expectations under the configured rules, and every LangGraph checkpoint rollup verdict is verified. You may treat this artifact as decision-grade for those steps, subject to your own scope and retention policy.";
     }
     if (stateRelation === "does_not_match") {
-      return "At least one step failed verification against the database (missing row, wrong values, or partial multi-effect failure), or a LangGraph checkpoint rollup verdict is inconsistent. Do not treat this run as meeting its intended persisted outcome.";
+      return "At least one step failed verification against expected downstream state (missing row, wrong values, or partial multi-effect failure), or a LangGraph checkpoint rollup verdict is inconsistent. Do not treat this run as meeting its intended persisted outcome.";
     }
     return "LangGraph checkpoint trust mode did not establish a single approved production snapshot (ineligible wire, incomplete verification, incomplete checkpoint rollup, or sequence integrity). Do not treat absence of a mismatch as proof of success.";
   }
@@ -132,7 +132,7 @@ function buildRelianceRationale(
     return "Contract verification used your registry and read-only SQL; every captured step matched declared expectations under the configured rules. You may treat this artifact as decision-grade for those steps, subject to your own scope and retention policy.";
   }
   if (stateRelation === "does_not_match") {
-    return "At least one step failed verification against the database (missing row, wrong values, or partial multi-effect failure). Do not treat this run as meeting its intended persisted outcome.";
+    return "At least one step failed verification against expected downstream state (missing row, wrong values, or partial multi-effect failure). Do not treat this run as meeting its intended persisted outcome.";
   }
   return "Verification could not be completed or could not establish a determinate match (incomplete registry, empty capture, indeterminate window, or connector issue). Do not treat absence of a mismatch as proof of success.";
 }

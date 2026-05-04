@@ -159,7 +159,7 @@ describe("formatWorkflowTruthReport", () => {
     };
     const out = normTruthText(formatWorkflowTruthReport(r));
     const baseTrust =
-      "TRUSTED: Every step matched the database under the configured verification rules.";
+      "TRUSTED: Every step matched registry-backed expected state under the configured verification rules.";
     assert.ok(
       out.includes(`trust: ${baseTrust} ${TRUST_LINE_EVENT_SEQUENCE_IRREGULAR_SUFFIX}`),
     );

@@ -17,7 +17,17 @@ For the shared verification kernel (policy, step statuses, event replay), see [`
 | `http_witness` | **GET**/**POST** `fetch` witness: HTTP status + optional JSON pointer assertions | **Remote async** only. Same SQLite limitation. |
 | `mongo_document` | **`findOne`** against a collection with **scalar** `requiredFields` | **Remote async** only. Same SQLite limitation. |
 
-**Quick verify** (`agentskeptic quick`) remains **SQL-inference only**; it does not implement these witness kinds.
+**Quick verify** (`agentskeptic quick`) remains **SQL-inference only**; it does not implement these witness kinds. Contract verification (`agentskeptic check` / `verifyWorkflow`) is the **full multi-store** path: one workflow verdict can combine SQL steps with any witness kinds above when you use a **non-SQLite** `--db` / Postgres URL (see §3 for witness env vars).
+
+<a id="hybrid-contract-demo"></a>
+
+### Hybrid demo (SQL + HTTP witness, deterministic)
+
+The shared [`examples/events.ndjson`](../examples/events.ndjson) and [`examples/tools.json`](../examples/tools.json) are **not** extended for hybrid runs because an `http_witness` URL must include an **ephemeral localhost port** from a fixture HTTP server. Instead run **[`examples/hybrid-contract-demo.mjs`](../examples/hybrid-contract-demo.mjs)** after `npm run build` with **`POSTGRES_VERIFICATION_URL`** set; it starts a local server, materializes temp events/registry, and exits **`0`** on success (`workflow_status: complete` with two verified steps).
+
+### Not supported in this closed product set
+
+Queues, generic search indexes (non-vector), arbitrary filesystem trees, Kubernetes or deployment metadata, and other proprietary backends are **not** first-class `verification.kind` values here until a dedicated normative contract exists—do not infer roadmap coverage from marketing.
 
 ---
 

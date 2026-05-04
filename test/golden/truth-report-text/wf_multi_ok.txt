@@ -1,6 +1,6 @@
 workflow_id: wf_multi_ok
 workflow_status: complete
-trust: TRUSTED: Every step matched the database under the configured verification rules.
+trust: TRUSTED: Every step matched registry-backed expected state under the configured verification rules.
 execution_path: Full upstream execution-path visibility requires schemaVersion 2 run events (retrieval, model_turn, control, tool_skipped) with run graph fields.
 run_level: (none)
 event_sequence: normal
@@ -9,7 +9,7 @@ steps:
     declared: tool=demo.multi_contact; intent=Multi "c_ok" "c_side"; parameters_digest={"fieldsA":{"name":"Alice","status":"active"},"fieldsB":{"name":"Side","status":"active"},"recordIdA":"c_ok","recordIdB":"c_side"}
     expected: sql_effects count=2 primary:contacts identity=[id=c_ok]; secondary:contacts identity=[id=c_side]
     observed_database: multi_effect effect_rows=2
-    verification_verdict: outcome=VERIFIED; Matched the database.
+    verification_verdict: outcome=VERIFIED; Matched registry-backed expected state.
     observations: evaluated=1 of 1 in_capture_order
-    effect: id=primary result=Matched the database.
-    effect: id=secondary result=Matched the database.
+    effect: id=primary result=Matched registry-backed expected state.
+    effect: id=secondary result=Matched registry-backed expected state.

@@ -5,9 +5,9 @@
   "stateRelation": "matches_expectations",
   "highStakesReliance": "permitted",
   "relianceRationale": "Contract verification used your registry and read-only SQL; every captured step matched declared expectations under the configured rules. You may treat this artifact as decision-grade for those steps, subject to your own scope and retention policy.",
-  "intentSummary": "TRUSTED: Every step matched the database under the configured verification rules.",
+  "intentSummary": "TRUSTED: Every step matched registry-backed expected state under the configured verification rules.",
   "explanation": {
-    "headline": "TRUSTED: Every step matched the database under the configured verification rules.",
+    "headline": "TRUSTED: Every step matched registry-backed expected state under the configured verification rules.",
     "details": []
   },
   "steps": [
@@ -19,5 +19,5 @@
       "observedOutcome": "rowCount=1"
     }
   ],
-  "humanReport": "workflow_id: wf_partner\nworkflow_status: complete\ntrust: TRUSTED: Every step matched the database under the configured verification rules.\nexecution_path: Full upstream execution-path visibility requires schemaVersion 2 run events (retrieval, model_turn, control, tool_skipped) with run graph fields.\nrun_level: (none)\nevent_sequence: normal\nsteps:\n  - seq=0 tool=crm.upsert_contact\n    declared: tool=crm.upsert_contact; intent=Upsert contact \"partner_1\" with fields {\"name\":\"You\",\"status\":\"active\"}; parameters_digest={\"fields\":{\"name\":\"You\",\"status\":\"active\"},\"recordId\":\"partner_1\"}\n    expected: table=contacts identity=[id=partner_1] required_fields=[name, status]\n    observed_database: rowCount=1\n    verification_verdict: outcome=VERIFIED; Matched the database.\n    observations: evaluated=1 of 1 in_capture_order"
+  "humanReport": "workflow_id: wf_partner\nworkflow_status: complete\ntrust: TRUSTED: Every step matched registry-backed expected state under the configured verification rules.\nexecution_path: Full upstream execution-path visibility requires schemaVersion 2 run events (retrieval, model_turn, control, tool_skipped) with run graph fields.\nrun_level: (none)\nevent_sequence: normal\nsteps:\n  - seq=0 tool=crm.upsert_contact\n    declared: tool=crm.upsert_contact; intent=Upsert contact \"partner_1\" with fields {\"name\":\"You\",\"status\":\"active\"}; parameters_digest={\"fields\":{\"name\":\"You\",\"status\":\"active\"},\"recordId\":\"partner_1\"}\n    expected: table=contacts identity=[id=partner_1] required_fields=[name, status]\n    observed_database: rowCount=1\n    verification_verdict: outcome=VERIFIED; Matched registry-backed expected state.\n    observations: evaluated=1 of 1 in_capture_order"
 }

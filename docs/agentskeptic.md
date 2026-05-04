@@ -637,10 +637,10 @@ These fields are **verification** metadata for **external** consumers: they desc
    - `workflow_id: ` + workflow id (defensive: replace `\r`/`\n` in the id with `_`).
    - `workflow_status: ` + exactly `complete`, `incomplete`, or `inconsistent`.
    - `trust: ` + exactly one of:
-     - `TRUSTED: Every step matched the database under the configured verification rules.` when status is `complete`.
+     - `TRUSTED: Every step matched registry-backed expected state under the configured verification rules.` when status is `complete`.
      - `NOT TRUSTED: Verification is incomplete; the workflow cannot be fully confirmed.` when status is `incomplete`, **except** when the narrower rule below applies.
-     - `NOT TRUSTED: At least one step could not be confirmed within the verification window (row not observed; replication or processing delay is possible).` when status is `incomplete`, **`runLevelReasons` is empty**, at least one step has **`uncertain`**, and **no** step has status in **`{ missing, inconsistent, partially_verified, incomplete_verification }`**.
-     - `NOT TRUSTED: At least one step failed verification against the database (determinate failure).` when status is `inconsistent`.
+     - `NOT TRUSTED: At least one step could not be confirmed within the verification window (expected state not observed; replication or processing delay is possible).` when status is `incomplete`, **`runLevelReasons` is empty**, at least one step has **`uncertain`**, and **no** step has status in **`{ missing, inconsistent, partially_verified, incomplete_verification }`**.
+     - `NOT TRUSTED: At least one step failed verification against expected downstream state (determinate failure).` when status is `inconsistent`.
      - When **`eventSequenceIntegrity.kind`** is **`irregular`**, append **exactly** one ASCII space and this exact suffix to the trust sentence chosen above: `Event capture or timestamps were irregular; verification used seq-sorted order. See event_sequence below.` (same string as **`TRUST_LINE_EVENT_SEQUENCE_IRREGULAR_SUFFIX`** in `workflowTruthReport.ts`).
 
 2. **Run-level**
@@ -660,7 +660,7 @@ These fields are **verification** metadata for **external** consumers: they desc
      - One header line `  - seq=` + decimal seq + ` tool=` + toolId (defensive: `\r`/`\n` in toolId → `_`). **No** `result=` on this line.
      - Exactly four reconciliation lines (four leading spaces each), using the same prefixes as **`reconciliationPresentation.ts`** (see [SSOT table](reconciliation-vocabulary.md#reconciliation-vocabulary-canonical)):
        1. `    declared: ` + single line: `tool=<toolId>; intent=<narrative>` with empty narrative → `intent=(none)`; always `; parameters_digest=<observedExecution.paramsCanonical>` (operational-message normalized).
-       2. `    expected: ` + one-line **`verifyTarget`** from truth JSON when non-null; when **`verifyTarget`** is JSON **`null`**, the literal **`(none — no resolvable SQL expectation)`** (same string as **`EXPECTED_NONE_NO_SQL`** in code).
+       2. `    expected: ` + one-line **`verifyTarget`** from truth JSON when non-null; when **`verifyTarget`** is JSON **`null`**, the literal **`(none — no resolvable registry expectation)`** (same string as **`EXPECTED_NONE_NO_SQL`** in code).
        3. `    observed_database: ` + **`observedStateSummary`** (must equal JSON **`workflowTruthReport.steps[].observedStateSummary`** byte-for-byte).
        4. `    verification_verdict: ` + `outcome=<outcomeLabel>; ` + human phrase from **`HUMAN_REPORT_RESULT_PHRASE[outcomeLabel]`** (or plan-transition map when **`workflowId === wf_plan_transition`**); when the step is not **`verified`** and **`failureCategory`** is set, append `; failure_category=<value>`.
 
@@ -668,12 +668,12 @@ These fields are **verification** metadata for **external** consumers: they desc
 
 | Step status | JSON `outcomeLabel` | Human phrase after `outcome=…; ` (exact strings in `HUMAN_REPORT_RESULT_PHRASE`) |
 |-------------|---------------------|------------------------------------------------------------------------|
-| `verified` | `VERIFIED` | `Matched the database.` |
-| `missing` | `FAILED_ROW_MISSING` | `Expected row is missing from the database (the log implies a write that is not present).` |
-| `inconsistent` | `FAILED_VALUE_MISMATCH` | `A row was found, but required values do not match.` |
+| `verified` | `VERIFIED` | `Matched registry-backed expected state.` |
+| `missing` | `FAILED_ROW_MISSING` | `Expected state at the verification target was not found (for example a missing row or absent witness result).` |
+| `inconsistent` | `FAILED_VALUE_MISMATCH` | `State was observed, but required values do not match.` |
 | `incomplete_verification` | `INCOMPLETE_CANNOT_VERIFY` | `This step could not be fully verified (registry, connector, or data shape issue).` |
-| `partially_verified` | `PARTIALLY_VERIFIED` | `Some intended database effects matched; others did not.` |
-| `uncertain` | `UNCERTAIN_NOT_OBSERVED_WITHIN_WINDOW` | `The expected row did not appear within the verification window.` |
+| `partially_verified` | `PARTIALLY_VERIFIED` | `Some intended registry effects matched; others did not.` |
+| `uncertain` | `UNCERTAIN_NOT_OBSERVED_WITHIN_WINDOW` | `The expected state did not appear within the verification window.` |
 
    - Next: exactly one line `    observations: evaluated=` + decimal `evaluatedObservationOrdinal` + ` of ` + decimal `repeatObservationCount` + ` in_capture_order` (four spaces before `observations:`; no trailing spaces; no period).
    - For each step-level reason: line `    detail: ` + trimmed message, or `(no message)` if empty after trim; if `field` is set and non-empty, append ` field=` + field value to the same line; then line `    reference_code: ` + code; then line `    user_meaning: ` + fixed phrase from **`verificationUserPhrases.ts`**.
@@ -685,12 +685,12 @@ These fields are **verification** metadata for **external** consumers: they desc
 
 | Phrase after `outcome=<outcomeLabel>; ` on **`verification_verdict:`** | JSON `workflowTruthReport.steps[].outcomeLabel` | Typical `WorkflowResult.steps[].status` |
 |---------------------------------|-------------------------------------------------|----------------------------------------|
-| `Matched the database.` | `VERIFIED` | `verified` |
-| `Expected row is missing from the database` … | `FAILED_ROW_MISSING` | `missing` |
-| `A row was found, but required values do not match.` | `FAILED_VALUE_MISMATCH` | `inconsistent` |
+| `Matched registry-backed expected state.` | `VERIFIED` | `verified` |
+| `Expected state at the verification target was not found` … | `FAILED_ROW_MISSING` | `missing` |
+| `State was observed, but required values do not match.` | `FAILED_VALUE_MISMATCH` | `inconsistent` |
 | `This step could not be fully verified` … | `INCOMPLETE_CANNOT_VERIFY` | `incomplete_verification` |
-| `Some intended database effects matched` … | `PARTIALLY_VERIFIED` | `partially_verified` |
-| `The expected row did not appear within the verification window.` | `UNCERTAIN_NOT_OBSERVED_WITHIN_WINDOW` | `uncertain` |
+| `Some intended registry effects matched` … | `PARTIALLY_VERIFIED` | `partially_verified` |
+| `The expected state did not appear within the verification window.` | `UNCERTAIN_NOT_OBSERVED_WITHIN_WINDOW` | `uncertain` |
 
 Step- and effect-level **`detail:`** / **`reference_code:`** / **`user_meaning:`** triples align with **`reasons[].message`** and **`reasons[].code`** on the same object in stdout JSON. **Alerts and automation** should prefer **`stdout` JSON** or structured **`workflowTruthReport`**, not regex on stderr, because human wording may evolve while JSON labels stay versioned. Older integrations that matched **`result=`** on the step header or standalone **`observed_execution:`** must migrate to JSON fields or to **`verification_verdict:`** / **`reference_code:`** lines.
 
@@ -1197,7 +1197,7 @@ Divergence at run_context before the failing tool observation: code=<C> meaning=
 ```
 
 ```text failureExplanation.ts FE_STEP_EXPECTED
-Verification expected post-execution database state to satisfy verify_target "<verifyTargetOrLiteralNull>" and intended_effect "<narrative>" for seq=<seq> toolId=<toolId> under policy [<P>].
+Verification expected downstream state to satisfy verify_target "<verifyTargetOrLiteralNull>" and intended_effect "<narrative>" for seq=<seq> toolId=<toolId> under policy [<P>].
 ```
 
 ```text failureExplanation.ts FE_STEP_OBSERVED
@@ -1213,7 +1213,7 @@ No tool_observed steps were produced for workflowId=<workflowId>.
 ```
 
 ```text failureExplanation.ts FE_NO_STEPS_DIVERGENCE
-Divergence: no steps to verify against the database under policy [<P>]
+Divergence: no steps to verify against registry-backed expectations under policy [<P>]
 ```
 
 ### Placeholder precedence (normative summaries)

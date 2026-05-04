@@ -7,7 +7,7 @@ export const CD_DOC_ANCHORS = [
   "CD_TPL_RUN_INGEST",
   "CD_TPL_EVENT_CAPTURE",
   "CD_TPL_RUN_CONTEXT",
-  "CD_TPL_STEP_SQL",
+  "CD_TPL_STEP_REGISTRY",
   "CD_TPL_PLAN_TRANSITION",
   "CD_TPL_QUICK_ROW",
   "CD_TPL_QUICK_REL",
@@ -18,7 +18,7 @@ export const CORRECTNESS_ENFORCEMENT_KINDS = [
   "run_ingest_integrity",
   "event_capture_integrity",
   "run_context_fairness",
-  "step_sql_expectation",
+  "step_registry_expectation",
   "plan_transition_expectation",
   "quick_inferred_sql_row",
   "quick_inferred_relational",
@@ -96,20 +96,20 @@ export function templateRunContextEnforceAs(C: string): [string, string] {
   ];
 }
 
-/** CD_TPL_STEP_SQL */
-export function templateStepSqlMustHold(vars: { W: string; S: string; T: string; P: string }): string {
+/** CD_TPL_STEP_REGISTRY */
+export function templateStepRegistryMustHold(vars: { W: string; S: string; T: string; P: string }): string {
   return fill(
-    "Must: after tool_observed seq=<S> toolId=<T>, database state SHALL satisfy the verification contract in verificationRequest under policy [<P>] for workflowId=<W>.",
+    "Must: after tool_observed seq=<S> toolId=<T>, authoritative downstream state SHALL satisfy the verification contract in verificationRequest under policy [<P>] for workflowId=<W>.",
     { W: vars.W, S: vars.S, T: vars.T, P: vars.P },
   );
 }
 
-export function templateStepSqlEnforceAs(S: string): [string, string] {
+export function templateStepRegistryEnforceAs(S: string): [string, string] {
   return [
     fill("Registry (or synthetic events plus registry) SHALL keep verificationRequest aligned with declared tool parameters for seq=<S>.", {
       S,
     }),
-    "Authoritative SQL state SHALL match identity, required fields, and relational checks encoded in verificationRequest.",
+    "Read-only verification reads at verify time (SQL, HTTP witnesses, object metadata, vector fetches, Mongo findOne, etc.) SHALL match verificationRequest.",
   ];
 }
 

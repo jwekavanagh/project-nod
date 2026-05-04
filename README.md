@@ -18,9 +18,9 @@ AgentSkeptic re-checks the stores your agent claims to change, then returns a de
 
 workflow_id: wf_complete
 workflow_status: complete
-trust: TRUSTED: Every step matched the database under the configured verification rules.
+trust: TRUSTED: Every step matched registry-backed expected state under the configured verification rules.
 steps:
-  - seq=0 tool=crm.upsert_contact result=Matched the database.
+  - seq=0 tool=crm.upsert_contact result=Matched registry-backed expected state.
 
 {
   "schemaVersion": 15,
@@ -34,7 +34,7 @@ steps:
 workflow_id: wf_missing
 workflow_status: inconsistent
 steps:
-  - seq=0 tool=crm.upsert_contact result=Expected row is missing from the database.
+  - seq=0 tool=crm.upsert_contact result=Expected state at the verification target was not found (for example a missing row or absent witness result).
     reference_code: ROW_ABSENT
 
 {
@@ -58,7 +58,7 @@ steps:
 <!-- adoption-canonical:start -->
 ## Default path: one truth check
 
-Compare recorded tool activity to your database and get an **Outcome Certificate** (stdout) plus a **`truth_check_verdict`** line on stderr:
+Compare recorded tool activity to downstream state (SQL and, in contract mode, HTTP witnesses, object storage, vectors, Mongo per your registry) and get an **Outcome Certificate** (stdout) plus a **`truth_check_verdict`** line on stderr:
 
 ```bash
 npx agentskeptic check --workflow-id wf_example \
@@ -72,7 +72,7 @@ With the conventional layout, **`--registry`** and **`--events`** default to **`
 
 ### Lifecycle
 
-1. Keep **`agentskeptic/tools.json`** in version control; update when `toolId` → SQL mapping changes.
+1. Keep **`agentskeptic/tools.json`** in version control; update when `toolId` → verification mapping changes.
 2. Emit observations via the canonical SDK emitter, then append emitted rows to the gate buffer. Optionally mirror the same JSON lines to **`agentskeptic/events.ndjson`** for CI replay.
 3. On the code path **before** irreversible work you control (ship, bill, ticket close), call **`await gate.assertSafeForIrreversibleAction()`** so **unsafe** trust (or required emissions that never reached the gate) blocks **that** branch — it is not a substitute for wiring the gate everywhere it matters, and outcomes can still be **`unknown`** when **`highStakesReliance`** is not **`permitted`** (see [`docs/outcome-certificate-normative.md`](docs/outcome-certificate-normative.md)).
 
@@ -272,7 +272,7 @@ Replay the bundled files: **`wf_complete`** / **`examples/events.ndjson`** / **`
 **Quick Verify** (`agentskeptic quick`): inferred checks, **no registry file**; **provisional**, not audit-final—graduate to **contract mode** for explicit per-tool expectations. Full contract: **[`docs/quick-verify-normative.md`](docs/quick-verify-normative.md)**.
 
 **Input contract:** We only accept **structured tool activity**—JSON or NDJSON that describes tool calls and parameters our ingest model can extract—not arbitrary logs, traces, or unstructured observability text.
-Verification uses read-only SQL against your database; API-only or non-SQL systems are out of scope for this tool.
+**Quick** uses read-only SQL against the database you pass in. **Contract** verification adds registry-backed checks for HTTP witnesses, object storage, vector indexes, and Mongo where configured—see [`docs/verification-state-stores.md`](docs/verification-state-stores.md).
 
 ```bash
 npm run build

@@ -1,6 +1,6 @@
 workflow_id: w
 workflow_status: complete
-trust: TRUSTED: Every step matched the database under the configured verification rules.
+trust: TRUSTED: Every step matched registry-backed expected state under the configured verification rules.
 execution_path: execution_path_concerns=1; codes=RUN_LEVEL_INGEST_ISSUES
   - path_finding: code=RUN_LEVEL_INGEST_ISSUES severity=high concern=capture_integrity scope=run_level codes=UNKNOWN_CODE_X
     detail: Run-level ingest or parse issues (UNKNOWN_CODE_X).
@@ -13,7 +13,7 @@ event_sequence: normal
 steps:
   - seq=0 tool=t
     declared: tool=t; intent=(none); parameters_digest={}
-    expected: (none — no resolvable SQL expectation)
+    expected: (none — no resolvable registry expectation)
     observed_database: No SQL verification request (registry resolution or unknown tool).
-    verification_verdict: outcome=VERIFIED; Matched the database.
+    verification_verdict: outcome=VERIFIED; Matched registry-backed expected state.
     observations: evaluated=1 of 1 in_capture_order

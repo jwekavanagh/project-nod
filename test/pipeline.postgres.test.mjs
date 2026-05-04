@@ -9,6 +9,7 @@ import { tmpdir } from "node:os";
 import { fileURLToPath } from "node:url";
 import { dirname } from "node:path";
 import { spawnSync } from "node:child_process";
+import { createServer } from "node:http";
 import { verifyWorkflow } from "../dist/pipeline.js";
 import { loadSchemaValidator } from "../dist/schemaLoad.js";
 import { parseExecutionTruthLayerJsonFromStderr } from "./oss-product-activation-cli-stderr.lib.mjs";
@@ -106,6 +107,92 @@ describe("verifyWorkflow Postgres integration", () => {
     const v = loadSchemaValidator("workflow-result");
     if (!v(r)) {
       assert.fail(JSON.stringify(v.errors ?? []));
+    }
+  });
+
+  it("wf_hybrid_demo: sql_row + http_witness (local server)", async () => {
+    const dir = mkdtempSync(join(tmpdir(), "hybrid-pg-"));
+    const server = createServer((req, res) => {
+      if (req.url === "/witness") {
+        res.writeHead(200, { "Content-Type": "text/plain" });
+        res.end("ok");
+      } else {
+        res.writeHead(404);
+        res.end();
+      }
+    });
+    await new Promise((resolve, reject) => {
+      server.listen(0, "127.0.0.1", () => resolve());
+      server.on("error", reject);
+    });
+    const port = server.address().port;
+    const witnessBase = `http://127.0.0.1:${port}`;
+    const eventsHybrid = join(dir, "events.ndjson");
+    const regHybrid = join(dir, "tools.json");
+    writeFileSync(
+      eventsHybrid,
+      [
+        JSON.stringify({
+          schemaVersion: 1,
+          workflowId: "wf_hybrid_demo",
+          seq: 0,
+          type: "tool_observed",
+          toolId: "crm.upsert_contact",
+          params: { recordId: "c_ok", fields: { name: "Alice", status: "active" } },
+        }),
+        JSON.stringify({
+          schemaVersion: 1,
+          workflowId: "wf_hybrid_demo",
+          seq: 1,
+          type: "tool_observed",
+          toolId: "demo.hybrid_witness",
+          params: {},
+        }),
+      ].join("\n") + "\n",
+    );
+    const reg = [
+      {
+        toolId: "crm.upsert_contact",
+        effectDescriptionTemplate: "Upsert contact {/recordId} with fields {/fields}",
+        verification: {
+          kind: "sql_row",
+          table: { const: "contacts" },
+          identityEq: [{ column: { const: "id" }, value: { pointer: "/recordId" } }],
+          requiredFields: { pointer: "/fields" },
+        },
+      },
+      {
+        toolId: "demo.hybrid_witness",
+        effectDescriptionTemplate: "HTTP witness",
+        verification: {
+          kind: "http_witness",
+          method: "GET",
+          url: { const: `${witnessBase}/witness` },
+          expectedStatus: { const: 200 },
+        },
+      },
+    ];
+    writeFileSync(regHybrid, JSON.stringify(reg));
+    try {
+      const r = await verifyWorkflow({
+        workflowId: "wf_hybrid_demo",
+        eventsPath: eventsHybrid,
+        registryPath: regHybrid,
+        database: pgDb(),
+        logStep: noopLog,
+        truthReport: () => {},
+      });
+      assert.equal(r.workflowId, "wf_hybrid_demo");
+      assert.equal(r.status, "complete");
+      assert.equal(r.steps.length, 2);
+      assert.equal(r.steps[0].toolId, "crm.upsert_contact");
+      assert.equal(r.steps[0].status, "verified");
+      assert.equal(r.steps[1].toolId, "demo.hybrid_witness");
+      assert.equal(r.steps[1].status, "verified");
+      assert.equal(r.steps[1].reasons?.length ?? 0, 0);
+    } finally {
+      await new Promise((resolve) => server.close(() => resolve()));
+      rmSync(dir, { recursive: true, force: true });
     }
   });
 

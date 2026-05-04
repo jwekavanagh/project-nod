@@ -1,7 +1,7 @@
 {
   "ok": true,
   "scenarioId": "wf_complete",
-  "humanReport": "workflow_id: wf_complete\nworkflow_status: complete\ntrust: TRUSTED: Every step matched the database under the configured verification rules.\nsteps:\n  - seq=0 tool=crm.upsert_contact result=Matched the database.\n",
+  "humanReport": "workflow_id: wf_complete\nworkflow_status: complete\ntrust: TRUSTED: Every step matched registry-backed expected state under the configured verification rules.\nsteps:\n  - seq=0 tool=crm.upsert_contact result=Matched registry-backed expected state.\n",
   "certificate": {
     "schemaVersion": 1,
     "workflowId": "wf_complete",
@@ -9,10 +9,10 @@
     "stateRelation": "matches_expectations",
     "highStakesReliance": "permitted",
     "relianceRationale": "Contract verification completed with matches_expectations; high-stakes reliance permitted per normative table.",
-    "intentSummary": "TRUSTED: Every step matched the database under the configured verification rules.",
+    "intentSummary": "TRUSTED: Every step matched registry-backed expected state under the configured verification rules.",
     "explanation": {
       "headline": "Fixture wf_complete",
-      "details": [{ "code": "OK", "message": "Matched the database." }]
+      "details": [{ "code": "OK", "message": "Matched registry-backed expected state." }]
     },
     "steps": [
       {
@@ -20,9 +20,9 @@
         "toolId": "crm.upsert_contact",
         "declaredAction": "Upsert contact",
         "expectedOutcome": "Row present with required fields",
-        "observedOutcome": "Matched the database."
+        "observedOutcome": "Matched registry-backed expected state."
       }
     ],
-    "humanReport": "workflow_id: wf_complete\nworkflow_status: complete\ntrust: TRUSTED: Every step matched the database under the configured verification rules.\nsteps:\n  - seq=0 tool=crm.upsert_contact result=Matched the database.\n"
+    "humanReport": "workflow_id: wf_complete\nworkflow_status: complete\ntrust: TRUSTED: Every step matched registry-backed expected state under the configured verification rules.\nsteps:\n  - seq=0 tool=crm.upsert_contact result=Matched registry-backed expected state.\n"
   }
 }

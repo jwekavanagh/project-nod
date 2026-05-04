@@ -218,7 +218,7 @@
             },
             {
               "type": "string",
-              "const": "Only proves that current database state matches expectations derived from structured tool activity (quick: inferred expectations)."
+              "const": "Quick-only: inferred SQL checks against read-only database reads—not the full contract surface (multi-store registry checks are contract verify)."
             }
           ],
           "minItems": 3,
@@ -236,11 +236,11 @@
             },
             "expected": {
               "type": "string",
-              "const": "Expected: in quick mode, row and FK checks inferred from declared parameters (provisional, not a signed contract). In contract mode, registry-defined expectations from events."
+              "const": "Expected: quick mode uses provisional row/FK checks inferred from parameters. Contract verify uses registry-defined expectations (SQL plus HTTP witness, object storage, vector, Mongo where configured)."
             },
             "observed": {
               "type": "string",
-              "const": "Observed: read-only SQL results at verification time."
+              "const": "Observed: read-only SQL at verification time (quick mode)."
             }
           }
         },

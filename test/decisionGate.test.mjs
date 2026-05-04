@@ -57,7 +57,7 @@ describe("DecisionGate", () => {
     assert.equal(Object.hasOwn(api, "STEP_STATUS_TRUTH_LABELS"), true);
     assert.equal(api.STEP_STATUS_TRUTH_LABELS.verified, "VERIFIED");
     assert.equal(Object.hasOwn(api, "HUMAN_REPORT_RESULT_PHRASE"), true);
-    assert.equal(api.HUMAN_REPORT_RESULT_PHRASE.VERIFIED, "Matched the database.");
+    assert.equal(api.HUMAN_REPORT_RESULT_PHRASE.VERIFIED, "Matched registry-backed expected state.");
     assert.equal(Object.hasOwn(api, "withWorkflowVerification"), false);
   });
 

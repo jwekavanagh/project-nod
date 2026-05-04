@@ -6,13 +6,13 @@ export const DEFAULT_QUICK_VERIFY_PRODUCT_TRUTH = {
   doesNotProve: [
     "Does not prove the tool or action actually executed.",
     "Does not prove a write or other state change occurred.",
-    "Only proves that current database state matches expectations derived from structured tool activity (quick: inferred expectations).",
+    "Quick-only: inferred SQL checks against read-only database reads—not the full contract surface (multi-store registry checks are contract verify).",
   ],
   layers: {
     declared: "Declared: tool identity and parameters extracted from ingest (structured tool activity).",
     expected:
-      "Expected: in quick mode, row and FK checks inferred from declared parameters (provisional, not a signed contract). In contract mode, registry-defined expectations from events.",
-    observed: "Observed: read-only SQL results at verification time.",
+      "Expected: quick mode uses provisional row/FK checks inferred from parameters. Contract verify uses registry-defined expectations (SQL plus HTTP witness, object storage, vector, Mongo where configured).",
+    observed: "Observed: read-only SQL at verification time (quick mode).",
   },
   quickVerifyProvisional: true as const,
   contractReplayPartialCoverage: true,
