@@ -776,10 +776,6 @@ export const productCopy = {
     title: "Sign in",
     intro:
       "Use your email for a magic link to manage plans, account settings, and API keys.",
-    benefits: [
-      "Subscribe to Individual, Team, or Business (Stripe Checkout; trial available on eligible plans)—required before licensed npm verify.",
-      "Create and view API keys on the account page after sign-in.",
-    ],
   },
 
   homeHeroCtaLabels,

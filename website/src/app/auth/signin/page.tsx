@@ -1,9 +1,6 @@
-import { getMeteringClarifier } from "@/lib/commercialNarrative";
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import { SignInFormClient } from "./SignInFormClient";
-
-const meteringClarifier = getMeteringClarifier();
 
 export const metadata: Metadata = {
   title: "Sign in",
@@ -15,7 +12,7 @@ export default function SignInPage() {
   return (
     <main>
       <Suspense fallback={<p className="muted">Loading…</p>}>
-        <SignInFormClient meteringClarifier={meteringClarifier} />
+        <SignInFormClient />
       </Suspense>
     </main>
   );

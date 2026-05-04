@@ -7,7 +7,7 @@ import { signIn } from "next-auth/react";
 import { useSearchParams } from "next/navigation";
 import { useState } from "react";
 
-export function SignInFormClient({ meteringClarifier }: { meteringClarifier: string }) {
+export function SignInFormClient() {
   const searchParams = useSearchParams();
   const rawCallback = searchParams.get("callbackUrl");
 
@@ -61,17 +61,6 @@ export function SignInFormClient({ meteringClarifier }: { meteringClarifier: str
           Send magic link
         </button>
       </form>
-      <details className="signin-details u-mt-1">
-        <summary>Details</summary>
-        <ul className="signin-benefits">
-          {productCopy.signInPurpose.benefits.map((b) => (
-            <li key={b}>{b}</li>
-          ))}
-        </ul>
-        <p className="muted u-mt-1" data-testid="signin-metering-clarifier">
-          {meteringClarifier}
-        </p>
-      </details>
       {notice && (
         <LiveStatus mode={notice.mode}>
           <p className="u-mt-1">{notice.text}</p>
