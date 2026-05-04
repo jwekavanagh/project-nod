@@ -2,10 +2,9 @@ import { indexableGuideCanonical } from "@/lib/indexableGuides";
 import { brandedMarketingTitle, marketingOpenGraphAndTwitter } from "@/lib/marketingSocialMetadata";
 import type { Metadata } from "next";
 
-const title = "Guided first verification";
+const title = "Guided activation";
 const socialTitle = brandedMarketingTitle(title);
-const description =
-  "Generate a tools.json draft and quick-ingest input in one step, then run a single local verify command—no separate synthesis.";
+const description = `Proof-first: run agentskeptic quick on your machine, then optionally Formalize a draft registry for contract check and CI enforcement.`;
 
 export const metadata: Metadata = {
   title,

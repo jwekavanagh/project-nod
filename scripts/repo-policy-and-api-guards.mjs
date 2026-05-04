@@ -39,6 +39,7 @@ export function runRepoPolicyAndApiGuards() {
       "node scripts/assert-error-code-parity.mjs && " +
       "node scripts/assert-pydantic-matches-openapi.mjs && " +
       "node scripts/assert-python-httpx-scope.mjs && " +
-      "node scripts/assert-no-verification-receipt-bypass-env.mjs",
+      "node scripts/assert-no-verification-receipt-bypass-env.mjs && " +
+      "node scripts/validate-activation-journey-copy.mjs",
   );
 }

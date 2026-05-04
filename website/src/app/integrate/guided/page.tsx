@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
+import marketing from "@/lib/marketing";
 
 const DEFAULT_OPENAI_ENVELOPE = JSON.stringify(
   {
@@ -63,14 +64,6 @@ const DEFAULT_BOOTSTRAP_ENVELOPE = JSON.stringify(
   2,
 );
 
-const QUICK_CMD_MULTILINE = `npx agentskeptic quick \\
-  --input path/to/quick-input.ndjson \\
-  --export-registry path/to/tools.json \\
-  --db path/to/readable.sqlite \\
-  --no-human-report`;
-const QUICK_CMD_ONE_LINE =
-  "npx agentskeptic quick --input path/to/quick-input.ndjson --export-registry path/to/tools.json --db path/to/readable.sqlite --no-human-report";
-
 /** POST /api/integrator/registry-draft success body (schemas/registry-draft-response.schema.json). */
 type DraftEngineResponseSuccess = {
   schemaVersion: 3;
@@ -97,7 +90,14 @@ function copyToClipboard(text: string): void {
   void navigator.clipboard.writeText(text);
 }
 
+const ENFORCE_DOC_HREF = "https://github.com/jwekavanagh/agentskeptic/blob/main/docs/agentskeptic.md";
+
 export default function IntegrateGuidedPage() {
+  const p = marketing.integratePage;
+  const quickOneLine = useMemo(
+    () => p.quickVerifyCommand.replace(/\\\n/g, " ").replace(/\s+/g, " ").trim(),
+    [p.quickVerifyCommand],
+  );
   const [mode, setMode] = useState<"openai" | "bootstrap">("openai");
   const [bodyText, setBodyText] = useState(DEFAULT_OPENAI_ENVELOPE);
   const [loading, setLoading] = useState(false);
@@ -172,10 +172,12 @@ export default function IntegrateGuidedPage() {
       className="integrate-main integrate-prose registry-draft-technical"
       data-testid="integrate-guided-page"
     >
-      <h1>Guided first verification</h1>
+      <h1>Guided activation</h1>
       <p className="lede">
-        Paste a registry-draft request (OpenAI tool calls or a bootstrap pack), generate a draft registry and the matching
-        <code> quick</code> ingest file in <strong>one</strong> request, then run the command below on your machine.
+        Your <strong>first proof</strong> is <code>agentskeptic quick</code> on captured tool activity against a readable
+        database (stdout <code>QuickVerifyReport</code>). The form below prepares local NDJSON + a suggested command;
+        use <strong>Formalize</strong> only when you want a repeatable registry for <code>agentskeptic check</code> and
+        CI.
       </p>
       <p className="lede muted">
         <Link href="/integrate">Back to Get started</Link> ·{" "}
@@ -188,6 +190,36 @@ export default function IntegrateGuidedPage() {
         </a>{" "}
         (raw)
       </p>
+
+      <section
+        className="integrate-registry-draft-secondary"
+        data-testid="integrate-guided-graduation"
+        aria-label="Graduate from preview to contract and CI"
+      >
+        <h2>After your first proof</h2>
+        <ol className="lede">
+          <li>
+            <strong>Preview confidence:</strong> keep using <code>agentskeptic quick</code> for cheap reads; it stays
+            preview-only for high-stakes reliance (see <code>highStakesReliance</code> in{" "}
+            <a href={p.githubDeepLink} rel="noopener noreferrer" target="_blank">
+              docs/integrate.md
+            </a>
+            ).
+          </li>
+          <li>
+            <strong>Decision-grade verification:</strong> run <code>agentskeptic check</code> with a saved registry and
+            events when a human decision depends on the artifact.
+          </li>
+          <li>
+            <strong>Repeatable verification / CI gate:</strong> use <code>agentskeptic enforce</code> for lifecycle
+            baselines in CI — see{" "}
+            <a href={ENFORCE_DOC_HREF} rel="noopener noreferrer" target="_blank">
+              docs/agentskeptic.md (enforce)
+            </a>
+            .
+          </li>
+        </ol>
+      </section>
 
       {unavailable && (
         <p className="lede" role="alert">
@@ -234,7 +266,7 @@ export default function IntegrateGuidedPage() {
         />
         <p className="home-cta-row" style={{ marginTop: "1rem" }}>
           <button className="btn" type="submit" disabled={loading} data-testid="integrate-guided-generate">
-            {loading ? "Generating…" : "Generate draft + quick input"}
+            {loading ? "Generating…" : "Generate artifacts"}
           </button>
         </p>
       </form>
@@ -261,24 +293,7 @@ export default function IntegrateGuidedPage() {
               before shipping.
             </p>
             <p>
-              <strong>1) tools.json</strong> (array file — save as e.g. <code>path/to/tools.json</code>)
-            </p>
-            <pre
-              className="integrate-pack-command"
-              data-testid="integrate-guided-tools-json"
-            >{toolsFileText}</pre>
-            <p>
-              <button
-                type="button"
-                className="btn secondary"
-                data-testid="integrate-guided-copy-tools"
-                onClick={() => copyToClipboard(toolsFileText)}
-              >
-                Copy tools array
-              </button>
-            </p>
-            <p>
-              <strong>2) quick-input.ndjson</strong> (ingest for <code>--input</code>)
+              <strong>1) quick-input.ndjson</strong> (ingest for <code>--input</code>)
             </p>
             <pre
               className="integrate-pack-command"
@@ -295,20 +310,37 @@ export default function IntegrateGuidedPage() {
               </button>
             </p>
             <p>
-              <strong>3) Run verify locally</strong> (edit paths; use <code>--postgres-url</code> instead of{" "}
-              <code>--db</code> if you use Postgres)
+              <strong>2) Run your first proof locally</strong> (edit paths; use <code>--postgres-url</code> instead of{" "}
+              <code>--db</code> if you use Postgres). Read <code>QuickVerifyReport</code> on stdout.
             </p>
             <pre className="integrate-pack-command" data-testid="integrate-guided-command">
-              {QUICK_CMD_MULTILINE}
+              {p.quickVerifyCommand}
             </pre>
             <p>
               <button
                 type="button"
                 className="btn"
                 data-testid="integrate-guided-copy-cmd"
-                onClick={() => copyToClipboard(QUICK_CMD_ONE_LINE)}
+                onClick={() => copyToClipboard(quickOneLine)}
               >
                 Copy one-line command
+              </button>
+            </p>
+            <p>
+              <strong>3) Formalize — tools.json</strong> (optional array for contract replay when this path matters)
+            </p>
+            <pre
+              className="integrate-pack-command"
+              data-testid="integrate-guided-tools-json"
+            >{toolsFileText}</pre>
+            <p>
+              <button
+                type="button"
+                className="btn secondary"
+                data-testid="integrate-guided-copy-tools"
+                onClick={() => copyToClipboard(toolsFileText)}
+              >
+                Copy tools array
               </button>
             </p>
           </div>

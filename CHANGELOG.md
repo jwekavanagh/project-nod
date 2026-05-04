@@ -1,3 +1,9 @@
+## [Unreleased]
+
+### Features
+
+* **web:** proof-first `/integrate` and `/integrate/guided` activation (quick before contract check, optional Formalize CTA, graduation to `check` / `enforce`); marketing `integratePage.quickVerifyCommand` SSOT and `validate-activation-journey-copy` merge gate
+
 ## [6.3.1](https://github.com/jwekavanagh/agentskeptic/compare/v6.3.0...v6.3.1) (2026-05-04)
 
 ### Bug Fixes

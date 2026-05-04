@@ -82,6 +82,7 @@
   },
   "integratePage": {
     "truthCheckCommand": "npx agentskeptic check --workflow-id YOUR_WORKFLOW_ID \\\n  --project ./your-app \\\n  --db ./path/to/readable.sqlite\n\n# Or explicit registry/events paths:\n# npx agentskeptic check --workflow-id YOUR_WORKFLOW_ID \\\n#   --events ./agentskeptic/events.ndjson \\\n#   --registry ./agentskeptic/tools.json \\\n#   --db ./path/to/readable.sqlite",
+    "quickVerifyCommand": "npx agentskeptic quick \\\n  --input path/to/quick-input.ndjson \\\n  --export-registry path/to/tools.json \\\n  --db path/to/readable.sqlite \\\n  --no-human-report",
     "packLedCommand": "npx agentskeptic activate --input ./path/to/workflow-bootstrap-input.json \\\n  --db ./path/to/readable.sqlite \\\n  --out ./path/to/agent-pack\n\n# Replay only (advanced): NDJSON pack you already authored\nnpx agentskeptic crossing \\\n  --workflow-id YOUR_WORKFLOW_ID \\\n  --events ./path/to/events.ndjson \\\n  --registry ./path/to/tools.json \\\n  --db ./path/to/readable.sqlite",
     "githubDeepLink": "https://github.com/jwekavanagh/agentskeptic/blob/main/docs/integrate.md",
     "githubFirstRunLink": "https://github.com/jwekavanagh/agentskeptic/blob/main/docs/integrate.md"

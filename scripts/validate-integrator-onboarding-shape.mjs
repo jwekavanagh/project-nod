@@ -16,6 +16,10 @@ function fail(msg) {
 
 const marketingPath = join(root, "config", "marketing.json");
 const marketingRaw = JSON.parse(readFileSync(marketingPath, "utf8"));
+const qvc = marketingRaw.integratePage?.quickVerifyCommand;
+if (typeof qvc !== "string" || !qvc.includes("agentskeptic quick")) {
+  fail("config/marketing.json integratePage.quickVerifyCommand must include the substring agentskeptic quick");
+}
 const tcc = marketingRaw.integratePage?.truthCheckCommand;
 if (typeof tcc !== "string" || !tcc.includes("agentskeptic check")) {
   fail("config/marketing.json integratePage.truthCheckCommand must include the substring agentskeptic check");
@@ -54,13 +58,22 @@ const page = readFileSync(join(root, "website", "src", "app", "integrate", "page
 if (!page.includes("marketing.integratePage")) {
   fail("integrate/page.tsx must read pack-led copy from marketing.integratePage");
 }
+if (!page.includes("quickVerifyCommand")) fail("integrate/page.tsx must reference quickVerifyCommand");
 if (!page.includes("truthCheckCommand")) fail("integrate/page.tsx must reference truthCheckCommand");
 if (!page.includes("packLedCommand")) fail("integrate/page.tsx must render packLedCommand");
 if (!page.includes("<pre")) fail("integrate/page.tsx must contain a <pre> for commands");
+const quickIdx = page.indexOf("quickVerifyCommand");
 const truthIdx = page.indexOf("truthCheckCommand");
 const packIdx = page.indexOf("packLedCommand");
-if (truthIdx === -1 || packIdx === -1 || truthIdx >= packIdx) {
-  fail("integrate/page.tsx must reference truthCheckCommand before packLedCommand");
+if (quickIdx === -1 || truthIdx === -1 || packIdx === -1 || quickIdx >= truthIdx || truthIdx >= packIdx) {
+  fail(
+    "integrate/page.tsx must reference quickVerifyCommand before truthCheckCommand before packLedCommand (source order)",
+  );
+}
+const fq = page.indexOf('data-testid="integrate-first-proof-quick"');
+const gc = page.indexOf('data-testid="integrate-guided-cta"');
+if (fq === -1 || gc === -1 || fq >= gc) {
+  fail("integrate/page.tsx must place data-testid integrate-first-proof-quick before integrate-guided-cta");
 }
 if (page.includes("IntegrateActivationBlock") || page.includes("IntegrateCrossingCommands")) {
   fail("integrate/page.tsx must not import legacy IntegrateActivationBlock / IntegrateCrossingCommands");

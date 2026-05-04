@@ -1,7 +1,8 @@
 // @vitest-environment jsdom
 
 import IntegrateGuidedPage from "@/app/integrate/guided/page";
-import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import marketing from "@/lib/marketing";
+import { cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const fetchMock = vi.fn();
@@ -15,6 +16,16 @@ describe("/integrate/guided (RTL)", () => {
   afterEach(() => {
     cleanup();
     vi.unstubAllGlobals();
+  });
+
+  it("shows static graduation before submit with check, enforce, and Formalize", () => {
+    render(<IntegrateGuidedPage />);
+    const main = screen.getByTestId("integrate-guided-page");
+    expect(within(main).getByTestId("integrate-guided-graduation")).toBeTruthy();
+    const t = main.textContent ?? "";
+    expect(t).toContain("Formalize");
+    expect(t).toContain("agentskeptic check");
+    expect(t).toContain("agentskeptic enforce");
   });
 
   it("POSTs registry-draft and shows tools, ndjson, and command; 404 shows operator hint", async () => {
@@ -37,9 +48,15 @@ describe("/integrate/guided (RTL)", () => {
       expect(screen.getByTestId("integrate-guided-results")).toBeTruthy();
     });
     expect(screen.getByTestId("integrate-guided-readiness").textContent).toMatch(/ready/i);
-    expect(screen.getByTestId("integrate-guided-tools-json").textContent).toContain("a.b");
     expect(screen.getByTestId("integrate-guided-ndjson").textContent).toBe("LINE\n");
-    const cmd = screen.getByTestId("integrate-guided-command").textContent ?? "";
+    const nd = screen.getByTestId("integrate-guided-ndjson");
+    const cmdEl = screen.getByTestId("integrate-guided-command");
+    const toolsEl = screen.getByTestId("integrate-guided-tools-json");
+    expect(nd.compareDocumentPosition(cmdEl) & Node.DOCUMENT_POSITION_FOLLOWING).toBeGreaterThan(0);
+    expect(cmdEl.compareDocumentPosition(toolsEl) & Node.DOCUMENT_POSITION_FOLLOWING).toBeGreaterThan(0);
+    expect(screen.getByTestId("integrate-guided-tools-json").textContent).toContain("a.b");
+    const cmd = cmdEl.textContent ?? "";
+    expect(cmd.trim()).toBe(marketing.integratePage.quickVerifyCommand.trim());
     expect(cmd).toContain("agentskeptic quick");
     expect(cmd).toContain("--export-registry");
     expect(cmd).toContain("path/to/quick-input.ndjson");

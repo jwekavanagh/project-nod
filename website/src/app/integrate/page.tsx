@@ -26,19 +26,6 @@ export default function IntegratePage() {
   return (
     <main className="integrate-main integrate-prose" data-testid="integrate-page">
       <h1>{siteMetadata.integrate.title}</h1>
-      <section
-        className="integrate-registry-draft-secondary"
-        data-testid="integrate-guided-cta"
-        aria-label="Guided first verification"
-      >
-        <p className="lede">
-          <strong>Optional guided drafting:</strong>{" "}
-          <Link className="btn" href="/integrate/guided" data-testid="integrate-guided-link">
-            Guided: generate registry and quick input
-          </Link>{" "}
-          — generate artifacts quickly, then follow the production Next.js + Postgres reference (golden-path.md).
-        </p>
-      </section>
       <p className="lede integrate-benefit-lede">
         <strong>{siteMetadata.integrate.description}</strong>
       </p>
@@ -47,6 +34,19 @@ export default function IntegratePage() {
       </p>
       <p className="lede">Get a clear, binary verdict before you ship, bill, or hand off to customers.</p>
       <h2>Truth check (primary)</h2>
+      <h3>First proof (quick, preview-only)</h3>
+      <p>
+        Start with <code>agentskeptic quick</code> on your capture for a read-only, inferred preview (
+        <code>QuickVerifyReport</code> on stdout). Preview stays decision-light; see the preview boundary in{" "}
+        <a href={p.githubDeepLink} rel="noopener noreferrer" target="_blank">
+          docs/integrate.md
+        </a>
+        .
+      </p>
+      <pre className="integrate-pack-command" data-testid="integrate-first-proof-quick">
+        {p.quickVerifyCommand}
+      </pre>
+      <h3>Contract truth check (decision-grade)</h3>
       <p>
         Run <code>agentskeptic check</code> against your registry, events file, and database. Stderr begins with{" "}
         <code>truth_check_verdict:</code>; stdout is the Outcome Certificate JSON. Full guide:{" "}
@@ -83,6 +83,25 @@ export default function IntegratePage() {
         CLI join, verify, and
         optional telemetry (same checklist appears at the top of beacon-eligible pages).
       </p>
+
+      <section
+        className="integrate-registry-draft-secondary"
+        data-testid="integrate-guided-cta"
+        aria-label="Formalize after proof"
+      >
+        <p className="lede">
+          <strong>Optional — Formalize this path:</strong>{" "}
+          <Link className="btn" href="/integrate/guided" data-testid="integrate-guided-link">
+            Guided activation
+          </Link>{" "}
+          — after a meaningful quick preview, generate local CLI inputs and an optional draft registry, then return here
+          for <code>agentskeptic check</code> and CI. For a full deployable reference, follow{" "}
+          <a href="https://github.com/jwekavanagh/agentskeptic/blob/main/docs/golden-path.md" rel="noopener noreferrer" target="_blank">
+            golden-path.md
+          </a>
+          .
+        </p>
+      </section>
 
       <h2 id="integrate-crossing-commands-heading">Exportable activation and packs (advanced)</h2>
       <p>

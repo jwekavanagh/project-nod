@@ -120,6 +120,13 @@ function validateMarketingValue(m) {
   if (!cmd.includes("tools.json")) {
     throw new Error("marketing: packLedCommand must reference tools.json");
   }
+  const qv = String(m.integratePage.quickVerifyCommand);
+  if (!qv.includes("agentskeptic quick")) {
+    throw new Error("marketing: integratePage.quickVerifyCommand must include agentskeptic quick");
+  }
+  if (!qv.includes("--export-registry")) {
+    throw new Error("marketing: integratePage.quickVerifyCommand must include --export-registry");
+  }
   if ("requirements" in m.integratePage) {
     throw new Error(
       "marketing: integratePage.requirements removed — use Buyer Truth integrateRequirements (/integrate page)",

@@ -59,6 +59,7 @@
     "check:integrate-activation-shell": "node scripts/generate-integrate-activation-shell.mjs --check",
     "validate:activation-spine": "node scripts/validate-activation-spine.mjs",
     "validate:integrator-onboarding-shape": "node scripts/validate-integrator-onboarding-shape.mjs",
+    "check:activation-journey-copy": "node scripts/validate-activation-journey-copy.mjs",
     "test:commercial-layer": "node scripts/validate-commercial-funnel.mjs",
     "build:website": "npm run build && npm run build --prefix website",
     "check:web-demo-prereqs": "node scripts/check-web-demo-prereqs.mjs",

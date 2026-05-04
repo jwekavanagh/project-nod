@@ -4,6 +4,8 @@
 
 Optional accelerator: [/integrate/guided](https://agentskeptic.com/integrate/guided) in the hosted app (this file is the raw integrator SSOT).
 
+The hosted guided page helps you produce local CLI inputs; it does not replace a first quick proof, and registry drafting is optional formalization after you have a meaningful verification outcome.
+
 Hosted trust capture (blocked-decision records + alerts) lives in **[trust-authority-layer.md](trust-authority-layer.md)**.
 
 ## Zero-ceremony first pass (quick)
