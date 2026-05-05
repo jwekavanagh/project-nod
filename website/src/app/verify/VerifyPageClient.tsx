@@ -169,7 +169,7 @@ export function VerifyPageClient() {
               Developer evidence
             </h2>
             <p className="muted verify-page-evidence-intro">
-              Open these when you need the full verifier narrative or the raw integration payload.
+              Open these when you need the full verifier narrative or raw Outcome Certificate JSON.
             </p>
             {parsedSuccess.data.certificate.evidenceCompleteness.nextActions[0]?.text ? (
               <p className="muted verify-page-verifier-guidance" data-testid="remediation-primary-action">
