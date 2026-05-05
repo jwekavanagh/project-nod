@@ -1,3 +1,9 @@
+## [7.1.2](https://github.com/jwekavanagh/agentskeptic/compare/v7.1.1...v7.1.2) (2026-05-05)
+
+### Bug Fixes
+
+* **ci:** default OSS GitHub Actions truth check workflow ([5082149](https://github.com/jwekavanagh/agentskeptic/commit/508214963dd34f67718ffe599b0d2ed65a8aea99))
+
 ## [7.1.1](https://github.com/jwekavanagh/agentskeptic/compare/v7.1.0...v7.1.1) (2026-05-05)
 
 ### Bug Fixes
