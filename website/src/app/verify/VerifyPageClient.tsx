@@ -1,6 +1,7 @@
 "use client";
 
 import { CertificateRemediationPanel } from "@/components/verify/CertificateRemediationPanel";
+import { VerifyDeveloperEvidence } from "@/components/verify/VerifyDeveloperEvidence";
 import { EXAMPLE_WF_MISSING_NDJSON } from "@/lib/verifyDefaultSample";
 import {
   verifyBundledSuccessResponseClientSchema,
@@ -50,6 +51,15 @@ export function VerifyPageClient() {
       certificate: result.certificate,
       humanReport: result.humanReport,
     });
+  }, [result]);
+
+  const outcomeCertificateJson = useMemo(() => {
+    if (!result?.ok) return "";
+    try {
+      return JSON.stringify(result.certificate, null, 2);
+    } catch {
+      return "";
+    }
   }, [result]);
 
   async function run() {
@@ -176,14 +186,9 @@ export function VerifyPageClient() {
                 {parsedSuccess.data.certificate.evidenceCompleteness.nextActions[0]?.text}
               </p>
             ) : null}
-            <details className="try-it-human-details">
-              <summary>Full human report</summary>
-              <pre className="code-block">{result.humanReport}</pre>
-            </details>
-            <details className="try-it-json-details">
-              <summary>Raw outcome JSON</summary>
-              <pre className="code-block">{JSON.stringify(result.certificate, null, 2)}</pre>
-            </details>
+            {outcomeCertificateJson ? (
+              <VerifyDeveloperEvidence humanReport={result.humanReport} outcomeCertificateJson={outcomeCertificateJson} />
+            ) : null}
           </section>
         </div>
       )}
