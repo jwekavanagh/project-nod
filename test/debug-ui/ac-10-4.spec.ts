@@ -10,13 +10,21 @@ const expected = JSON.parse(
 
 test("AC_10_4_execution_path", async ({ page }) => {
   await page.goto("/");
+  const nonemptyDetail = page.waitForResponse(
+    (r) => r.url().includes("/api/runs/run_path_nonempty") && r.status() === 200,
+  );
   await page.getByRole("button", { name: "run_path_nonempty" }).click();
+  await nonemptyDetail;
   await expect(
     page.locator(`[data-etl-finding-code="${expected.executionPathFindingCode}"]`),
   ).toBeVisible();
 
   await page.getByRole("button", { name: "Close" }).click();
+  const emptyDetail = page.waitForResponse(
+    (r) => r.url().includes("/api/runs/run_path_empty") && r.status() === 200,
+  );
   await page.getByRole("button", { name: "run_path_empty" }).click();
+  await emptyDetail;
   const emptyP = page.locator("[data-etl-execution-path-empty]");
   await expect(emptyP).toBeVisible();
   await expect(emptyP).toHaveText(expected.executionPathEmpty);

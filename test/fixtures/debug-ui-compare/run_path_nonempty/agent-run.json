@@ -10,8 +10,8 @@
   "artifacts": {
     "workflowResult": {
       "relativePath": "workflow-result.json",
-      "sha256": "fb5b366972eecab02d60e08204d09800caf0e9f6f6f8a338d8978356b8867f30",
-      "byteLength": 2260
+      "sha256": "dea0f082089c602e6b38a8690954defccb9cb474d3ecbc4cd05413571025c658",
+      "byteLength": 2279
     },
     "events": {
       "relativePath": "events.ndjson",
