@@ -1,6 +1,8 @@
 # Agent-run bundles pin SHA-256 + byteLength; CRLF/LF drift breaks Linux CI.
 examples/debug-corpus/** text eol=lf
+examples/events.ndjson text eol=lf
 test/fixtures/corpus-negative/** text eol=lf
+test/fixtures/debug-ui-compare/** text eol=lf
 
 # verification-truth gating surfaces (deterministic bytes on Ubuntu runners)
 schemas/** text eol=lf
