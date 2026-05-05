@@ -5,6 +5,7 @@ test/fixtures/corpus-negative/** text eol=lf
 test/fixtures/debug-ui-compare/** text eol=lf
 
 # verification-truth gating surfaces (deterministic bytes on Ubuntu runners)
+.github/actions/** text eol=lf
 schemas/** text eol=lf
 AGENTS.md text eol=lf
 llms.txt text eol=lf

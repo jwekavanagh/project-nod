@@ -1,0 +1,75 @@
+# Thin composite wrapper over `npx agentskeptic check|enforce` — no second verifier.
+# Ships with run-action.sh; safe for `uses: org/repo/.github/actions/agentskeptic-check@ref`.
+name: "AgentSkeptic verification"
+description: "Run AgentSkeptic CLI check or enforce — capture stdout/stderr, optionally fail on verdict thresholds"
+inputs:
+  workflow-id:
+    description: Workflow identifier to verify.
+    required: true
+  events:
+    description: Path to NDJSON event observations.
+    required: true
+  registry:
+    description: Path to tools registry JSON.
+    required: true
+  db:
+    description: Path to database or verification state store used by the CLI.
+    required: false
+    default: ""
+  mode:
+    description: 'Verification mode. Use "check" for stateless truth check or "enforce" for commercial/stateful enforcement.'
+    required: false
+    default: "check"
+  fail-on:
+    description: 'Verdict threshold for failing the job. Supported initially: not_trusted_or_unknown, not_trusted, never.'
+    required: false
+    default: "not_trusted_or_unknown"
+  package:
+    description: 'npm package spec to execute, for example "agentskeptic@latest" or ".".'
+    required: false
+    default: "agentskeptic@latest"
+  share-report-origin:
+    description: Optional hosted report origin for check-mode shareable reports (https origin only — see CLI docs).
+    required: false
+    default: ""
+  extra-args:
+    description: Additional CLI arguments appended to the command (shell word-splitting).
+    required: false
+    default: ""
+
+outputs:
+  verdict:
+    description: Parsed truth_check_verdict value (trusted|not_trusted|unknown) if present; otherwise empty.
+    value: ${{ steps.agentskeptic.outputs.verdict }}
+  stdout-path:
+    description: Path to the captured Outcome Certificate stdout file.
+    value: ${{ steps.agentskeptic.outputs.stdout-path }}
+  stderr-path:
+    description: Path to the captured stderr/human report file.
+    value: ${{ steps.agentskeptic.outputs.stderr-path }}
+  exit-code:
+    description: Raw CLI exit code.
+    value: ${{ steps.agentskeptic.outputs.exit-code }}
+
+runs:
+  using: composite
+  steps:
+    - uses: actions/setup-node@v5
+      env:
+        NODE_OPTIONS: "--disable-warning=DEP0040"
+      with:
+        node-version: "22"
+
+    - id: agentskeptic
+      shell: bash
+      env:
+        INPUT_WORKFLOW_ID: ${{ inputs.workflow-id }}
+        INPUT_EVENTS: ${{ inputs.events }}
+        INPUT_REGISTRY: ${{ inputs.registry }}
+        INPUT_DB: ${{ inputs.db }}
+        INPUT_MODE: ${{ inputs.mode }}
+        INPUT_FAIL_ON: ${{ inputs.fail-on }}
+        INPUT_PACKAGE: ${{ inputs.package }}
+        INPUT_SHARE_REPORT_ORIGIN: ${{ inputs.share-report-origin }}
+        INPUT_EXTRA_ARGS: ${{ inputs.extra-args }}
+      run: bash "$GITHUB_ACTION_PATH/run-action.sh"

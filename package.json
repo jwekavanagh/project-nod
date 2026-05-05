@@ -88,7 +88,7 @@
     "measure:emission-onboarding-metrics": "node scripts/measure-emission-onboarding-metrics.mjs",
     "release:dry": "semantic-release --dry-run",
     "lock:align-esbuild-nested": "node scripts/align-esbuild-kit-lock-nested.mjs",
-    "prepare": "npx --yes patch-package@8.0.1 && node scripts/patch-lhci-punycode.mjs && husky"
+    "prepare": "npx --yes patch-package@8.0.1 && node scripts/patch-lhci-punycode.mjs && node scripts/sync-npm-bundled-ip-address.mjs && husky"
   },
   "engines": {
     "node": "22.x || 24.x"
@@ -122,6 +122,7 @@
     "ajv-formats": "^3.0.1",
     "mongodb": "^6.21.0",
     "mysql2": "^3.14.0",
+    "npm": "^11.13.0",
     "pg": "^8.20.0",
     "picomatch": "^4.0.4",
     "ts-morph": "^25.0.1",
@@ -132,6 +133,7 @@
     "encoding-sniffer": "1.0.2",
     "uuid": "14.0.0",
     "fast-xml-parser": "5.7.1",
+    "ip-address": "10.1.1",
     "basic-ftp": "5.3.0",
     "chrome-launcher": "1.2.1",
     "node-domexception": "file:./internal-packages/node-domexception-native",

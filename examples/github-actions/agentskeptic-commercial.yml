@@ -1,4 +1,5 @@
 # Example (opt-in): commercial / stateful CI enforcement — not the default OSS path.
+# Alternate minimal shape: `./.github/actions/agentskeptic-check` with `mode: enforce` (same CLI — no parallel verifier).
 # Run the published CLI (npm `agentskeptic`) against this repo's examples/ with AGENTSKEPTIC_API_KEY
 # and a reachable license API (COMMERCIAL_LICENSE_API_BASE_URL). For default stateless CI, see agentskeptic-check.yml.
 #

@@ -116,7 +116,7 @@ See **[`docs/integrate.md`](docs/integrate.md)** (v2 integrator SSOT) and [`docs
 
 ### CI (GitHub Actions)
 
-**Default:** copy **[`examples/github-actions/agentskeptic-check.yml`](examples/github-actions/agentskeptic-check.yml)** — stateless **truth check** (`npx agentskeptic check`), no `AGENTSKEPTIC_API_KEY`. Details: **[`docs/ambient-ci-distribution.md`](docs/ambient-ci-distribution.md)**.
+**Default:** copy **[`examples/github-actions/agentskeptic-check.yml`](examples/github-actions/agentskeptic-check.yml)** — first-party **[composite action](https://docs.github.com/en/actions/how-tos/sharing-actions-and-workflows/recording-deployment-history-and-assignments/creating-composite-actions)** at [`.github/actions/agentskeptic-check`](.github/actions/agentskeptic-check) wrapping **`agentskeptic check`** (default **`mode`**). No `AGENTSKEPTIC_API_KEY` on the OSS path. In another repo, pin upstream with `uses: jwekavanagh/agentskeptic/.github/actions/agentskeptic-check@<ref>` (not Marketplace). Advanced CLI flags pass through **`extra-args`**. Transparent manual fallback: invoke `npx agentskeptic check …` inline (same CLI contract). Details: **[`docs/ambient-ci-distribution.md`](docs/ambient-ci-distribution.md)**.
 
 **Opt-in commercial / stateful enforcement** (baseline, drift, acceptance): **[`examples/github-actions/agentskeptic-commercial.yml`](examples/github-actions/agentskeptic-commercial.yml)** requires an API key and license server ([`docs/commercial-enforce-gate-normative.md`](docs/commercial-enforce-gate-normative.md)).
 <!-- adoption-canonical:end -->
@@ -363,7 +363,7 @@ Everything beyond core contract verification lives in **[`docs/agentskeptic.md`]
 
 Canonical write-up: **[`docs/commercial.md`](docs/commercial.md)** (npm package, Stripe, keys, telemetry, validation, entitlements; operator metrics in **[`docs/funnel-observability.md`](docs/funnel-observability.md)**—OSS CLI product-activation posts are **opt-in** via **`AGENTSKEPTIC_TELEMETRY=1`** or persisted config; **`AGENTSKEPTIC_TELEMETRY=0`** forces them off). OSS builds in this repo run stateless contract checks via **`agentskeptic check`** (and positional compatibility invocation) / **`quick`** without a license server. Stateful **`agentskeptic enforce`** (commercial / stateful / opt-in) and over-time guarantees require a commercial build per **[`docs/commercial-enforce-gate-normative.md`](docs/commercial-enforce-gate-normative.md)**.
 
-**GitHub Actions:** default OSS **truth check** — **[`examples/github-actions/agentskeptic-check.yml`](examples/github-actions/agentskeptic-check.yml)**. Opt-in **enforcement** — **[`examples/github-actions/agentskeptic-commercial.yml`](examples/github-actions/agentskeptic-commercial.yml)**. See **[`docs/ambient-ci-distribution.md`](docs/ambient-ci-distribution.md)**.
+**GitHub Actions:** default OSS **truth check** (composite **`agentskeptic check`**) — **[`examples/github-actions/agentskeptic-check.yml`](examples/github-actions/agentskeptic-check.yml)** + [`.github/actions/agentskeptic-check`](.github/actions/agentskeptic-check). Opt-in **enforcement** — **[`examples/github-actions/agentskeptic-commercial.yml`](examples/github-actions/agentskeptic-commercial.yml)**. See **[`docs/ambient-ci-distribution.md`](docs/ambient-ci-distribution.md)**.
 
 ## Status, contributing, security
 

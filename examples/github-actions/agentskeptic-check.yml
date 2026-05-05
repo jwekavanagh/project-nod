@@ -1,11 +1,13 @@
-# Example: stateless truth check (OSS) with the published CLI — no AGENTSKEPTIC_API_KEY or license server.
+# Example: stateless truth check (OSS) via composite action — default `agentskeptic check`, no AGENTSKEPTIC_API_KEY.
 #
-# Default low-friction CI: Outcome Certificate on stdout, truth_check_verdict on stderr (see docs/integrate.md).
-# For opt-in commercial/stateful baseline enforcement and drift detection, see agentskeptic-commercial.yml.
+# In this monorepo, use `./.github/actions/agentskeptic-check`. In another repo, pin the upstream action, e.g.:
+#   uses: jwekavanagh/agentskeptic/.github/actions/agentskeptic-check@main
+# (substitute fork/org and ref as needed — not GitHub Marketplace).
 #
-# Copy to .github/workflows/ in a repo that vendors the same examples/ layout (events.ndjson, tools.json, seed.sql), or run from this monorepo.
+# Transparent manual alternative: invoke `npx agentskeptic check …` inline (same CLI contract — Outcome Certificate on stdout,
+# truth_check_verdict on stderr). For opt-in commercial/stateful enforcement see agentskeptic-commercial.yml.
 #
-# Ambient discovery job summary: uses scripts/render-discovery-ci.mjs from the installed package; contract details in docs/ambient-ci-distribution.md
+# Ambient discovery job summary contract: docs/ambient-ci-distribution.md
 name: AgentSkeptic Truth Check
 
 on:
@@ -23,10 +25,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: actions/setup-node@v4
-        with:
-          node-version: "22"
-
       - name: Create examples/demo.db from seed.sql
         run: |
           node --input-type=module -e "
@@ -37,38 +35,15 @@ jobs:
           d.close();
           "
 
-      - name: Install published agentskeptic
-        run: npm install agentskeptic@latest
-
-      - name: Run stateless truth check
-        id: agentskeptic_check
-        shell: bash
-        run: |
-          set +e
-          npx agentskeptic check \
-            --workflow-id wf_complete \
-            --events examples/events.ndjson \
-            --registry examples/tools.json \
-            --db examples/demo.db \
-            > verify.stdout 2> verify.stderr
-          status=$?
-
-          {
-            echo "## AgentSkeptic truth check"
-            echo ""
-            echo "### Captured stderr"
-            echo ""
-            echo '```text'
-            cat verify.stderr || true
-            echo '```'
-          } >> "$GITHUB_STEP_SUMMARY"
-
-          cat verify.stderr >&2 || true
-          cat verify.stdout || true
-
-          exit "$status"
+      - uses: ./.github/actions/agentskeptic-check
+        with:
+          workflow-id: wf_complete
+          events: examples/events.ndjson
+          registry: examples/tools.json
+          db: examples/demo.db
 
       - name: Append AgentSkeptic discovery summary
         if: always()
         run: |
+          npm install agentskeptic@latest
           node "${AS_REPO_ROOT}/scripts/render-discovery-ci.mjs" summary >> "$GITHUB_STEP_SUMMARY"

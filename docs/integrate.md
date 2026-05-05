@@ -43,7 +43,7 @@ When using `--project`, defaults are **`./your-repo-root/agentskeptic/tools.json
 
 - **Proof export:** `--proof <dir>` is equivalent to `--write-decision-bundle` (decision evidence bundle; see [decision-evidence-bundle.md](decision-evidence-bundle.md)).
 - **Full flag reference:** [agentskeptic.md](agentskeptic.md). **Advanced subcommands** (`activate`, `loop`, `quick`, …): `agentskeptic help advanced`.
-- **GitHub Actions:** copy **[`examples/github-actions/agentskeptic-check.yml`](../examples/github-actions/agentskeptic-check.yml)** for a default OSS **truth check** (no API key). Opt-in commercial **enforcement**: **[`examples/github-actions/agentskeptic-commercial.yml`](../examples/github-actions/agentskeptic-commercial.yml)** — see **[`ambient-ci-distribution.md`](ambient-ci-distribution.md)**.
+- **GitHub Actions:** copy **[`examples/github-actions/agentskeptic-check.yml`](../examples/github-actions/agentskeptic-check.yml)** (composite **`./.github/actions/agentskeptic-check`**, wraps **`agentskeptic check`**; pin upstream `OWNER/agentskeptic/.github/actions/agentskeptic-check@REF` externally) — default OSS **truth check**, no API key on **`mode: check`**; use **`extra-args`** for uncommon CLI flags. Opt-in commercial **enforcement**: **[`examples/github-actions/agentskeptic-commercial.yml`](../examples/github-actions/agentskeptic-commercial.yml)** or composite **`mode: enforce`** plus commercial secrets — see **[`ambient-ci-distribution.md`](ambient-ci-distribution.md)**.
 
 ### stderr: `truth_check_verdict`
 

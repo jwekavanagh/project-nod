@@ -262,7 +262,7 @@ test("examples/github-actions/agentskeptic-check.yml parses as OSS truth-check w
   const yml = readFileSync(join(root, "examples", "github-actions", "agentskeptic-check.yml"), "utf8");
   const doc = parseYaml(yml);
   assert.equal(doc.name, "AgentSkeptic Truth Check");
-  assert.ok(yml.includes("npx agentskeptic check"));
+  assert.ok(yml.includes("./.github/actions/agentskeptic-check"));
   assert.ok(!/\bsecrets\./m.test(yml));
   assert.ok(!/\bAGENTSKEPTIC_API_KEY\s*:/m.test(yml));
   assert.ok(!yml.includes("agentskeptic enforce"));

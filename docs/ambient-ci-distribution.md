@@ -14,13 +14,14 @@ Normative contract for **active discovery**: branded AgentSkeptic output appears
 
 ### Default: stateless truth check (OSS)
 
-**Canonical low-friction CI** is a **truth check** — **`agentskeptic check`** — with **no** `AGENTSKEPTIC_API_KEY` and **no** license server. Copy [`examples/github-actions/agentskeptic-check.yml`](../examples/github-actions/agentskeptic-check.yml) into `.github/workflows/`.
+**Canonical low-friction CI** is a **truth check** — **`agentskeptic check`** (default **`mode`** on the composite action) — with **no** `AGENTSKEPTIC_API_KEY` and **no** license server. Copy [`examples/github-actions/agentskeptic-check.yml`](../examples/github-actions/agentskeptic-check.yml) into `.github/workflows/`.
 
 - **stdout:** one **Outcome Certificate** (machine JSON).
 - **stderr:** includes **`truth_check_verdict: trusted|not_trusted|unknown`** (see [`integrate.md`](integrate.md)).
-- The example captures stdout/stderr to files, mirrors them in the job log, appends a fenced stderr block to the **job summary** (so the verdict is visible there), and runs **`render-discovery-ci.mjs summary`** on **`if: always()`** so the branded discovery block appears even when the truth check fails.
+- **Recommended wiring:** `.github/workflows/…` uses the first-party composite [`.github/actions/agentskeptic-check`](../.github/actions/agentskeptic-check) (in another repo: `uses: OWNER/agentskeptic/.github/actions/agentskeptic-check@REF`). The action shells out to **`npx agentskeptic@latest check`** (thin wrapper — no parallel verifier): it captures stdout/stderr, echoes them to the step log (preserving the contract), appends human-readable excerpt blocks to the **job summary** (truncate long captures), exposes paths and verdict outputs, and enforces **`fail-on`** thresholds. Advanced flags flow through **`extra-args`** without documenting every knob.
+- After the composite step, **`render-discovery-ci.mjs summary`** on **`if: always()`** still appends branded discovery Markdown (ambient contract). Transparent alternative: omit the composite and run **`npx agentskeptic check …`** manually with equivalent capture.
 
-Install the published package (`npm install agentskeptic@latest`) so `${AS_REPO_ROOT}/scripts/render-discovery-ci.mjs` and `dist/discovery-payload-v1.json` exist; set `AS_REPO_ROOT` to `node_modules/agentskeptic` as in the example.
+Install the published package (`npm install agentskeptic@latest`) **before** the renderer step so `${AS_REPO_ROOT}/scripts/render-discovery-ci.mjs` and `dist/discovery-payload-v1.json` exist; set `AS_REPO_ROOT` to `node_modules/agentskeptic` as in the example.
 
 **Optional hosted report sharing:** you may add **`--share-report-origin <https://host>`** to **`agentskeptic check`** when you want a persisted public report on your AgentSkeptic deployment — see [`shareable-verification-reports.md`](shareable-verification-reports.md). That flag is **not** supported with **`agentskeptic enforce`** (same doc).
 

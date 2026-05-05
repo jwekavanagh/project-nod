@@ -67,6 +67,7 @@ export const sqliteNodeTestFiles = [
   "test/docs-enforce-stream-contract.test.mjs",
   "test/docs-quick-enforce-link.test.mjs",
   "test/discovery-payload.test.mjs",
+  "test/agentskeptic-github-action.script.test.mjs",
   "test/ci-renderer-discovery-payload.contract.test.mjs",
   "test/redaction-rules.test.mjs",
   "test/remediation-ssot.contract.test.mjs",
