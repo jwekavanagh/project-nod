@@ -1,3 +1,9 @@
+## [7.1.1](https://github.com/jwekavanagh/agentskeptic/compare/v7.1.0...v7.1.1) (2026-05-05)
+
+### Bug Fixes
+
+* **cli:** align check/quick UX docs and generated surfaces ([#63](https://github.com/jwekavanagh/agentskeptic/issues/63)) ([c24aa7c](https://github.com/jwekavanagh/agentskeptic/commit/c24aa7cb78a090953e521afb548e883e1b42dadd))
+
 ## [7.1.0](https://github.com/jwekavanagh/agentskeptic/compare/v7.0.0...v7.1.0) (2026-05-05)
 
 ### Features
