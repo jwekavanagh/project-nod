@@ -1,3 +1,13 @@
+## [7.0.0](https://github.com/jwekavanagh/agentskeptic/compare/v6.5.0...v7.0.0) (2026-05-05)
+
+### ⚠ BREAKING CHANGES
+
+* **core,web:** multi-store legibility and step_registry_expectation v7 (#61)
+
+### Features
+
+* **core,web:** multi-store legibility and step_registry_expectation v7 ([#61](https://github.com/jwekavanagh/agentskeptic/issues/61)) ([56e0894](https://github.com/jwekavanagh/agentskeptic/commit/56e08941ecba6e702dcefcbdd107a5978cd2a542))
+
 ## [7.0.0](https://github.com/jwekavanagh/agentskeptic/compare/v6.5.0...v7.0.0) (2026-05-04)
 
 ### ⚠ BREAKING CHANGES
