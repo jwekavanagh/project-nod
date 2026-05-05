@@ -1,3 +1,9 @@
+## [7.1.0](https://github.com/jwekavanagh/agentskeptic/compare/v7.0.0...v7.1.0) (2026-05-05)
+
+### Features
+
+* **web:** shared report executive summary + /verify demo polish ([#62](https://github.com/jwekavanagh/agentskeptic/issues/62)) ([7b1addb](https://github.com/jwekavanagh/agentskeptic/commit/7b1addbac3ce5835005135cbcc7746b740a370c6))
+
 ## [7.0.0](https://github.com/jwekavanagh/agentskeptic/compare/v6.5.0...v7.0.0) (2026-05-05)
 
 ### ⚠ BREAKING CHANGES
