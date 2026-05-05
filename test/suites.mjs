@@ -63,6 +63,7 @@ export const sqliteNodeTestFiles = [
   "test/oss-output-lock-batch.test.mjs",
   "test/lock-success-monetized-footer.integration.test.mjs",
   "test/lock-flags-removed.guard.test.mjs",
+  "test/cli-ux-contract-cleanup.test.mjs",
   "test/docs-enforce-stream-contract.test.mjs",
   "test/docs-quick-enforce-link.test.mjs",
   "test/discovery-payload.test.mjs",
