@@ -109,6 +109,7 @@ export const sqliteNodeTestFiles = [
   "test/golden-path-drift.contract.test.mjs",
   "test/integrate-spine-step3-chain.happy.test.mjs",
   "test/integrate-spine-step3-chain.negative.test.mjs",
+  "test/integration-story-drift.test.mjs",
   "test/no-handrolled-node-test-lists.mjs",
   "test/suite-coverage.mjs",
   "test/sync-buyer-authority-fences.test.mjs",
