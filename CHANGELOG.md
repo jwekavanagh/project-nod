@@ -1,3 +1,9 @@
+## [7.1.4](https://github.com/jwekavanagh/agentskeptic/compare/v7.1.3...v7.1.4) (2026-05-06)
+
+### Bug Fixes
+
+* **ci:** cursor integration template and npm pack footprint baseline ([8a693c2](https://github.com/jwekavanagh/agentskeptic/commit/8a693c2ad7621a95249d45c27eeedea0414c8076))
+
 ## [7.1.3](https://github.com/jwekavanagh/agentskeptic/compare/v7.1.2...v7.1.3) (2026-05-06)
 
 ### Bug Fixes
