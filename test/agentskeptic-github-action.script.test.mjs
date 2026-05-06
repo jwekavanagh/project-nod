@@ -280,6 +280,21 @@ test(
     assert.ok(out.includes("stdout-path="), out);
     const sum = readFileSync(sumP, "utf8");
     assert.ok(sum.includes("## AgentSkeptic truth check"), sum);
+    assert.ok(sum.includes("### Verdict meanings"), sum);
+    assert.ok(sum.includes("`trusted`"), sum);
+    assert.ok(
+      sum.includes("only this verdict means the workflow can be relied on"),
+      sum,
+    );
+    assert.ok(sum.includes("`not_trusted`"), sum);
+    assert.ok(sum.includes("Do not claim verified; fix the mismatch"), sum);
+    assert.ok(sum.includes("`unknown`"), sum);
+    assert.ok(
+      sum.includes("collect missing evidence or narrow checked scope"),
+      sum,
+    );
+    assert.ok(sum.includes("**Human report / stderr**"), sum);
+    assert.ok(sum.includes("- Verdict: `trusted`"), sum);
     assert.ok(sum.includes("### Human report / stderr"), sum);
     assert.ok(sum.includes("### Outcome Certificate / stdout"), sum);
   },

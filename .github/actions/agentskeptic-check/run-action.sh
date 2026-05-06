@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 # Entry for composite action agentskeptic-check; env INPUT_* comes from action.yml mapping.
+# Verdict wording: mirror README adoption-canonical verdict table (trusted / not_trusted / unknown).
 set -euo pipefail
 
 MAX_SUMMARY_LINES="${MAX_SUMMARY_LINES:-200}"
@@ -114,6 +115,14 @@ if [[ -n "${GITHUB_STEP_SUMMARY:-}" ]]; then
     echo "- Exit code: \`$exit_code\`"
     echo "- Stdout: \`$stdout_path\`"
     echo "- Stderr: \`$stderr_path\`"
+    echo ""
+    echo "### Verdict meanings"
+    echo ""
+    echo "- **\`trusted\`** — Checked outcome matched expected downstream state — only this verdict means the workflow can be relied on."
+    echo "- **\`not_trusted\`** — Determinate mismatch or required state missing. Do not claim verified; fix the mismatch."
+    echo "- **\`unknown\`** — Evidence incomplete or not established. Do not claim verified; collect missing evidence or narrow checked scope."
+    echo ""
+    echo "Run-specific output: see **Human report / stderr** below (and Outcome Certificate in stdout)."
     echo ""
     echo "### Human report / stderr"
     echo ""

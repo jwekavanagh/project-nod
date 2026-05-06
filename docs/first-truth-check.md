@@ -76,6 +76,9 @@ If anything else says “verified” but the Outcome Certificate or **`truth_che
 
 ## Add it to GitHub Actions
 
+<!-- agentskeptic-ci-summary-legend:v1 -->
+The composite action’s GitHub **job summary** includes a **Verdict meanings** block (trusted / **not_trusted** / unknown) before the streamed stderr excerpts — operators should read **[`ambient-ci-distribution.md`](ambient-ci-distribution.md)** alongside this page.
+
 After the local command works, wire the same CLI contract in CI.
 
 - Default OSS path: composite action **[`../.github/actions/agentskeptic-check/action.yml`](../.github/actions/agentskeptic-check/action.yml)** — default **`mode`** is **`check`**; **no** **`AGENTSKEPTIC_API_KEY`** on that path.

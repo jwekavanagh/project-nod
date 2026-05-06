@@ -260,6 +260,10 @@ test("examples/github-actions/agentskeptic-commercial.yml references PR marker",
 
 test("examples/github-actions/agentskeptic-check.yml parses as OSS truth-check workflow", () => {
   const yml = readFileSync(join(root, "examples", "github-actions", "agentskeptic-check.yml"), "utf8");
+  assert.ok(
+    !/\n\s+share-report-origin\s*:/m.test(yml),
+    "OSS workflow must not include an uncommented share-report-origin input line (hosted publish stays opt-in)",
+  );
   const doc = parseYaml(yml);
   assert.equal(doc.name, "AgentSkeptic Truth Check");
   assert.ok(yml.includes("./.github/actions/agentskeptic-check"));
@@ -268,4 +272,24 @@ test("examples/github-actions/agentskeptic-check.yml parses as OSS truth-check w
   assert.ok(!yml.includes("agentskeptic enforce"));
   assert.ok(yml.includes("render-discovery-ci.mjs"));
   assert.ok(yml.includes("${AS_REPO_ROOT}"));
+
+  const job = doc.jobs["truth-check"];
+  assert.ok(Array.isArray(job?.steps));
+  /** @type {any[]} */
+  const steps = job.steps;
+  const compositeSteps = steps.filter((s) => s?.uses === "./.github/actions/agentskeptic-check");
+  assert.equal(compositeSteps.length, 1, "OSS example must declare exactly one agentskeptic-check composite step");
+  const withInputs = compositeSteps[0].with ?? {};
+  assert.ok(
+    !Object.hasOwn(withInputs, "share-report-origin"),
+    "composite with: must omit share-report-origin on the default OSS path",
+  );
+
+  let shareEnv = false;
+  for (const s of steps) {
+    const env = s?.env;
+    if (!env || typeof env !== "object") continue;
+    if (env.INPUT_SHARE_REPORT_ORIGIN ?? env.SHARE_REPORT_ORIGIN) shareEnv = true;
+  }
+  assert.ok(!shareEnv, "OSS workflow steps must not set share-report-origin via env hacks");
 });

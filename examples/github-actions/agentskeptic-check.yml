@@ -35,6 +35,10 @@ jobs:
           d.close();
           "
 
+      # Optional persisted report (stay OFF for default OSS CI): uncomment under `with:` only after reading
+      # docs/shareable-verification-reports.md (HTTPS origin-only, POST body caps, privacy, feature flags — not supported with enforce).
+      # Example only (do not commit enabled unless you intend hosted publish):
+      #   share-report-origin: https://agentskeptic.com
       - uses: ./.github/actions/agentskeptic-check
         with:
           workflow-id: wf_complete
