@@ -236,7 +236,12 @@ paths:
   /api/v1/governance/export:
     get:
       operationId: exportGovernanceAuditBundle
-      summary: Export governance audit bundle for one workflow (session auth)
+      summary: Export governance timeline JSON for one workflow (session auth)
+      description: >
+        Returns schemaVersion 2 JSON with lifecycle, baselines, FSM transitions, verification decisions, events,
+        and decisionEvidenceExport (manifest completeness + embedded certificate-oriented fields).
+        This response is not equivalent to a CLI-written decision evidence bundle on disk; CLI flags
+        --write-decision-bundle / --write-run-bundle produce the full on-disk audit file set (see /docs/decision-evidence-bundle.md in the agentskeptic repository).
       parameters:
         - name: workflow_id
           in: query
@@ -257,7 +262,7 @@ paths:
             format: date-time
       responses:
         "200":
-          description: Governance audit bundle
+          description: Governance timeline export including decisionEvidenceExport
           content:
             application/json:
               schema:
@@ -655,9 +660,121 @@ components:
           items:
             type: object
             additionalProperties: true
+    DecisionEvidenceBundleManifestHosted:
+      type: object
+      description: Subset of decision-evidence-bundle-manifest-v1 validated server-side for governance export.
+      required: [schemaVersion, bundleKind, producer, createdAt, workflowId, completeness]
+      additionalProperties: false
+      properties:
+        schemaVersion:
+          type: integer
+          enum: [1]
+        bundleKind:
+          type: string
+          enum: [decision_evidence]
+        producer:
+          type: object
+          required: [name, version]
+          additionalProperties: false
+          properties:
+            name:
+              type: string
+            version:
+              type: string
+        createdAt:
+          type: string
+          format: date-time
+        workflowId:
+          type: string
+        completeness:
+          type: object
+          required: [status, artifacts]
+          additionalProperties: false
+          properties:
+            status:
+              type: string
+              enum: [complete, partial, invalid]
+            artifacts:
+              type: object
+              required: [a4Present, a5Present, a5Required]
+              additionalProperties: false
+              properties:
+                a4Present:
+                  type: boolean
+                a5Present:
+                  type: boolean
+                a5Required:
+                  type: boolean
+    DecisionEvidenceExportEmbeddedExitHosted:
+      type: object
+      description: CLI exit record files are not persisted server-side; use hosted_not_recorded for exit semantics.
+      required: [kind, reason]
+      additionalProperties: false
+      properties:
+        kind:
+          type: string
+          enum: [hosted_not_recorded]
+        reason:
+          type: string
+    DecisionEvidenceExportEmbeddedHumanLayerFromCertificate:
+      type: object
+      required: [kind, text]
+      additionalProperties: false
+      properties:
+        kind:
+          type: string
+          enum: [from_certificate]
+        text:
+          type: string
+    DecisionEvidenceExportEmbeddedHumanLayerMissing:
+      type: object
+      required: [kind, reason]
+      additionalProperties: false
+      properties:
+        kind:
+          type: string
+          enum: [missing]
+        reason:
+          type: string
+    DecisionEvidenceExportEmbedded:
+      type: object
+      required: [outcomeCertificate, exit, humanLayer, attestation, nextAction]
+      additionalProperties: false
+      properties:
+        outcomeCertificate:
+          nullable: true
+          type: object
+          description: Outcome Certificate v2 or v3 when valid; null if none.
+          additionalProperties: true
+        exit:
+          $ref: "#/components/schemas/DecisionEvidenceExportEmbeddedExitHosted"
+        humanLayer:
+          oneOf:
+            - $ref: "#/components/schemas/DecisionEvidenceExportEmbeddedHumanLayerFromCertificate"
+            - $ref: "#/components/schemas/DecisionEvidenceExportEmbeddedHumanLayerMissing"
+        attestation:
+          nullable: true
+          type: object
+          description: Not populated by current governance export (always null).
+        nextAction:
+          nullable: true
+          type: object
+          description: Not populated by current governance export (always null).
+    DecisionEvidenceExport:
+      type: object
+      description: Certificate-oriented embed for governance JSON; not a full CLI decision bundle directory.
+      required: [manifest, embedded]
+      additionalProperties: false
+      properties:
+        manifest:
+          $ref: "#/components/schemas/DecisionEvidenceBundleManifestHosted"
+        embedded:
+          $ref: "#/components/schemas/DecisionEvidenceExportEmbedded"
     GovernanceAuditBundleV2:
       type: object
-      description: Governance export including authoritative lifecycle FSM rows and verification decisions.
+      description: >
+        Governance timeline export (schemaVersion 2). Includes lifecycle FSM rows, verification decisions, baselines, and events.
+        decisionEvidenceExport provides manifest completeness and certificate-oriented embeds; it is not equivalent to on-disk files from agentskeptic --write-decision-bundle.
       required: [schemaVersion, generatedAt, userId, workflowId, baseline, events]
       properties:
         schemaVersion:
@@ -704,8 +821,7 @@ components:
             type: object
             additionalProperties: true
         decisionEvidenceExport:
-          type: object
-          additionalProperties: true
+          $ref: "#/components/schemas/DecisionEvidenceExport"
       additionalProperties: true
     ProblemDetails:
       type: object

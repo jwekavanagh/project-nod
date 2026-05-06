@@ -108,6 +108,15 @@ Read-only checks at verify time—not color.
 - Verification Contract Manifest (canonical): https://agentskeptic.com/contract/v1.json
 - Verification Contract Manifest (repo raw): https://raw.githubusercontent.com/jwekavanagh/agentskeptic/refs/heads/main/schemas/contract/v1.json
 
+## Evidence retention (progressive)
+
+- Default truth check: `agentskeptic check` — Outcome Certificate on stdout; no bundle files written unless you opt in.
+- Decision evidence on disk: add `--proof <dir>` or `--write-decision-bundle <dir>`.
+- Full local proof (technical + decision bundles): add `--write-run-bundle <dir>` alongside `--write-decision-bundle` (two output directories).
+- Hosted commercial `GET /api/v1/governance/export` returns governance timeline JSON and certificate-oriented `decisionEvidenceExport` — not the same as a CLI-written bundle directory.
+
+- Operational SSOT (artifact names, completeness, handoff zip recipe): https://raw.githubusercontent.com/jwekavanagh/agentskeptic/refs/heads/main/docs/decision-evidence-bundle.md
+
 ## Indexable guides
 - https://agentskeptic.com/guides/ai-agent-wrong-crm-data
 - https://agentskeptic.com/guides/automation-success-database-mismatch

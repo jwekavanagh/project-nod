@@ -47,7 +47,7 @@ Server recomputes both hashes from canonical bytes and rejects mismatches.
 ## Shared visibility and export
 
 - Read-only UI: `/account/governance`.
-- Export endpoint: `GET /api/v1/governance/export`.
+- Export endpoint: `GET /api/v1/governance/export` returns JSON (**`schemaVersion: 2`**) with lifecycle, baseline, events, and a **`decisionEvidenceExport`** object (manifest completeness + embedded certificate-oriented fields). This response is a **governance timeline and certificate slice** for the authenticated workflow; it is **not** the same artifact as a **CLI-written decision evidence bundle directory** (`outcome-certificate.json`, `exit.json`, `human-layer.json`, optional A4/A5 on disk). For full on-disk audit files and packaging, use the CLI as in **[`decision-evidence-bundle.md`](decision-evidence-bundle.md)**.
 
 ## Removed surfaces
 

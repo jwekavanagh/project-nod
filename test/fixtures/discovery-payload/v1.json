@@ -15,6 +15,7 @@
     "llmsBlob": "https://github.com/jwekavanagh/agentskeptic/blob/main/llms.txt",
     "integratorGuideSsotRaw": "https://raw.githubusercontent.com/jwekavanagh/agentskeptic/refs/heads/main/docs/integrate.md",
     "cursorIntegrationDocRaw": "https://raw.githubusercontent.com/jwekavanagh/agentskeptic/refs/heads/main/docs/cursor-integration.md",
+    "decisionEvidenceBundleDocRaw": "https://raw.githubusercontent.com/jwekavanagh/agentskeptic/refs/heads/main/docs/decision-evidence-bundle.md",
     "contractManifestCanonical": "https://agentskeptic.com/contract/v1.json",
     "contractManifestRaw": "https://raw.githubusercontent.com/jwekavanagh/agentskeptic/refs/heads/main/schemas/contract/v1.json"
   },

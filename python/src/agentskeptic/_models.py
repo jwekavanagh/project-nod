@@ -104,6 +104,83 @@ class EnforcementHistoryResponse(BaseModel):
     events: list[dict[str, Any]]
 
 
+class HostedEvidenceProducer(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    name: str
+    version: str
+
+
+class DecisionEvidenceArtifactsFlags(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    a4Present: bool
+    a5Present: bool
+    a5Required: bool
+
+
+class DecisionEvidenceCompletenessHosted(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    status: Literal["complete", "partial", "invalid"]
+    artifacts: DecisionEvidenceArtifactsFlags
+
+
+class DecisionEvidenceBundleManifestHosted(BaseModel):
+    """Hosted governance export manifest slice (OpenAPI `DecisionEvidenceBundleManifestHosted`)."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    schemaVersion: Literal[1] = 1
+    bundleKind: Literal["decision_evidence"] = "decision_evidence"
+    producer: HostedEvidenceProducer
+    createdAt: str
+    workflowId: str
+    completeness: DecisionEvidenceCompletenessHosted
+
+
+class DecisionEvidenceExportEmbeddedExitHosted(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    kind: Literal["hosted_not_recorded"]
+    reason: str
+
+
+class DecisionEvidenceExportEmbeddedHumanLayerFromCertificate(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    kind: Literal["from_certificate"]
+    text: str
+
+
+class DecisionEvidenceExportEmbeddedHumanLayerMissing(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    kind: Literal["missing"]
+    reason: str
+
+
+class DecisionEvidenceExportEmbedded(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    outcomeCertificate: dict[str, Any] | None
+    exit: DecisionEvidenceExportEmbeddedExitHosted
+    humanLayer: (
+        DecisionEvidenceExportEmbeddedHumanLayerFromCertificate | DecisionEvidenceExportEmbeddedHumanLayerMissing
+    )
+    attestation: dict[str, Any] | None = None
+    nextAction: dict[str, Any] | None = None
+
+
+class DecisionEvidenceExport(BaseModel):
+    """`decisionEvidenceExport` on governance timeline JSON (OpenAPI `DecisionEvidenceExport`)."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    manifest: DecisionEvidenceBundleManifestHosted
+    embedded: DecisionEvidenceExportEmbedded
+
+
 class GovernanceAuditBundleV1(BaseModel):
     schemaVersion: Literal[1] = 1
     generatedAt: str
@@ -127,7 +204,7 @@ class GovernanceAuditBundleV2(BaseModel):
     lifecycle: dict[str, Any] | None = None
     fsmTransitions: list[dict[str, Any]] | None = None
     verificationDecisions: list[dict[str, Any]] | None = None
-    decisionEvidenceExport: dict[str, Any] | None = None
+    decisionEvidenceExport: DecisionEvidenceExport | None = None
 
 
 class VerifyOutcomeRequestV3(BaseModel):

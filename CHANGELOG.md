@@ -1,3 +1,9 @@
+## [Unreleased]
+
+### Documentation
+
+* progressive evidence ladder (CLI decision/run bundles vs hosted governance export), packaging handoff recipe, and explicit OpenAPI schemas for `decisionEvidenceExport` on `GET /api/v1/governance/export`; Python `_models.py` updated for OpenAPI component parity.
+
 ## [7.2.0](https://github.com/jwekavanagh/agentskeptic/compare/v7.1.4...v7.2.0) (2026-05-06)
 
 ### Features

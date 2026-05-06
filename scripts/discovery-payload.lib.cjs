@@ -152,6 +152,7 @@ function buildDiscoveryPayload(root) {
   const integratorGuideSsotRaw = `https://raw.githubusercontent.com/${owner}/${repo}/refs/heads/${DISCOVERY_LLM_BRANCH}/docs/integrate.md`;
   const openapiRaw = `https://raw.githubusercontent.com/${owner}/${repo}/refs/heads/${DISCOVERY_LLM_BRANCH}/schemas/openapi-commercial-v1.yaml`;
   const cursorIntegrationDocRaw = `https://raw.githubusercontent.com/${owner}/${repo}/refs/heads/${DISCOVERY_LLM_BRANCH}/docs/cursor-integration.md`;
+  const decisionEvidenceBundleDocRaw = `https://raw.githubusercontent.com/${owner}/${repo}/refs/heads/${DISCOVERY_LLM_BRANCH}/docs/decision-evidence-bundle.md`;
   const contractManifestCanonical = `${canonicalOrigin}/contract/v1.json`;
   const contractManifestRaw = `https://raw.githubusercontent.com/${owner}/${repo}/refs/heads/${DISCOVERY_LLM_BRANCH}/schemas/contract/v1.json`;
   const llms = /** @type {{ intentPhrases: string[]; notFor: string[]; relatedQueries: string[] }} */ (
@@ -175,6 +176,7 @@ function buildDiscoveryPayload(root) {
       llmsBlob,
       integratorGuideSsotRaw,
       cursorIntegrationDocRaw,
+      decisionEvidenceBundleDocRaw,
       contractManifestCanonical,
       contractManifestRaw,
     },
@@ -272,6 +274,15 @@ function renderLlmsTextFromPayload(payload) {
     `- llms.txt (repo raw): ${links.llmsRaw}`,
     `- Verification Contract Manifest (canonical): ${links.contractManifestCanonical}`,
     `- Verification Contract Manifest (repo raw): ${links.contractManifestRaw}`,
+    "",
+    "## Evidence retention (progressive)",
+    "",
+    "- Default truth check: `agentskeptic check` — Outcome Certificate on stdout; no bundle files written unless you opt in.",
+    "- Decision evidence on disk: add `--proof <dir>` or `--write-decision-bundle <dir>`.",
+    "- Full local proof (technical + decision bundles): add `--write-run-bundle <dir>` alongside `--write-decision-bundle` (two output directories).",
+    "- Hosted commercial `GET /api/v1/governance/export` returns governance timeline JSON and certificate-oriented `decisionEvidenceExport` — not the same as a CLI-written bundle directory.",
+    "",
+    `- Operational SSOT (artifact names, completeness, handoff zip recipe): ${links.decisionEvidenceBundleDocRaw}`,
     "",
   ];
   const base = lines.join("\n");

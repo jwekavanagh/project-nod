@@ -8,6 +8,14 @@
 # truth_check_verdict on stderr). For opt-in commercial/stateful enforcement see agentskeptic-commercial.yml.
 #
 # Ambient discovery job summary contract: docs/ambient-ci-distribution.md
+#
+# Optional: retain decision evidence (NOT the default first-run path). After reading
+# docs/decision-evidence-bundle.md (evidence maturity ladder), you can add a second job or
+# extra-args on the step below, e.g.:
+#   extra-args: --write-decision-bundle ${{ runner.temp }}/proof/decision
+# then upload-artifact on ${{ runner.temp }}/proof. For full local proof (decision + technical
+# run bundle), also pass --write-run-bundle ${{ runner.temp }}/proof/run with a second directory.
+# Do not enable artifact retention until you intend to store verification outputs.
 name: AgentSkeptic Truth Check
 
 on:

@@ -45,7 +45,7 @@ export default async function GovernancePage() {
     <main>
       <h1>Governance</h1>
       <p className="u-mb-1">
-        Read-only baseline and event timeline. Export returns JSON schemaVersion 2 including decision evidence alignment (
+        Read-only baseline and event timeline. Export returns JSON schemaVersion 2 (governance timeline plus certificate-oriented decisionEvidenceExport). That is not the same as a CLI-written decision bundle on disk; for full on-disk audit files use the CLI (
         <Link href="https://github.com/jwekavanagh/agentskeptic/blob/main/docs/decision-evidence-bundle.md">docs</Link>
         ).
       </p>

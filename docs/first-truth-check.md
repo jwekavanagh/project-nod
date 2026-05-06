@@ -17,6 +17,8 @@ For TypeScript, the same contract is **`await skeptic.check({ … })`** / **`Age
 
 Logs, traces, CI green, wrapper summaries, or agent claims are **not** the source of truth when they disagree with the Outcome Certificate or the verdict line.
 
+When you need **retained files** for CI artifacts, customer review, or audit handoff (beyond stdout/stderr), follow the **three-step evidence ladder** in **[`decision-evidence-bundle.md`](decision-evidence-bundle.md)** (default check → optional `--proof` / `--write-decision-bundle` → optional `--write-run-bundle` for full local proof). The default first run stays exactly as above; bundle flags are opt-in.
+
 ## Before you start
 
 You supply:

@@ -133,7 +133,10 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Export governance audit bundle for one workflow (session auth) */
+        /**
+         * Export governance timeline JSON for one workflow (session auth)
+         * @description Returns schemaVersion 2 JSON with lifecycle, baselines, FSM transitions, verification decisions, events, and decisionEvidenceExport (manifest completeness + embedded certificate-oriented fields). This response is not equivalent to a CLI-written decision evidence bundle on disk; CLI flags --write-decision-bundle / --write-run-bundle produce the full on-disk audit file set (see /docs/decision-evidence-bundle.md in the agentskeptic repository).
+         */
         get: operations["exportGovernanceAuditBundle"];
         put?: never;
         post?: never;
@@ -333,7 +336,63 @@ export interface components {
                 [key: string]: unknown;
             }[];
         };
-        /** @description Governance export including authoritative lifecycle FSM rows and verification decisions. */
+        /** @description Subset of decision-evidence-bundle-manifest-v1 validated server-side for governance export. */
+        DecisionEvidenceBundleManifestHosted: {
+            /** @enum {integer} */
+            schemaVersion: 1;
+            /** @enum {string} */
+            bundleKind: "decision_evidence";
+            producer: {
+                name: string;
+                version: string;
+            };
+            /** Format: date-time */
+            createdAt: string;
+            workflowId: string;
+            completeness: {
+                /** @enum {string} */
+                status: "complete" | "partial" | "invalid";
+                artifacts: {
+                    a4Present: boolean;
+                    a5Present: boolean;
+                    a5Required: boolean;
+                };
+            };
+        };
+        /** @description CLI exit record files are not persisted server-side; use hosted_not_recorded for exit semantics. */
+        DecisionEvidenceExportEmbeddedExitHosted: {
+            /** @enum {string} */
+            kind: "hosted_not_recorded";
+            reason: string;
+        };
+        DecisionEvidenceExportEmbeddedHumanLayerFromCertificate: {
+            /** @enum {string} */
+            kind: "from_certificate";
+            text: string;
+        };
+        DecisionEvidenceExportEmbeddedHumanLayerMissing: {
+            /** @enum {string} */
+            kind: "missing";
+            reason: string;
+        };
+        DecisionEvidenceExportEmbedded: {
+            /** @description Outcome Certificate v2 or v3 when valid; null if none. */
+            outcomeCertificate: {
+                [key: string]: unknown;
+            } | null;
+            exit: components["schemas"]["DecisionEvidenceExportEmbeddedExitHosted"];
+            humanLayer: components["schemas"]["DecisionEvidenceExportEmbeddedHumanLayerFromCertificate"] | components["schemas"]["DecisionEvidenceExportEmbeddedHumanLayerMissing"];
+            /** @description Not populated by current governance export (always null). */
+            attestation: Record<string, never> | null;
+            /** @description Not populated by current governance export (always null). */
+            nextAction: Record<string, never> | null;
+        };
+        /** @description Certificate-oriented embed for governance JSON; not a full CLI decision bundle directory. */
+        DecisionEvidenceExport: {
+            manifest: components["schemas"]["DecisionEvidenceBundleManifestHosted"];
+            embedded: components["schemas"]["DecisionEvidenceExportEmbedded"];
+        };
+        /** @description Governance timeline export (schemaVersion 2). Includes lifecycle FSM rows, verification decisions, baselines, and events. decisionEvidenceExport provides manifest completeness and certificate-oriented embeds; it is not equivalent to on-disk files from agentskeptic --write-decision-bundle. */
         GovernanceAuditBundleV2: {
             /** @constant */
             schemaVersion: 2;
@@ -362,9 +421,7 @@ export interface components {
             events: {
                 [key: string]: unknown;
             }[];
-            decisionEvidenceExport?: {
-                [key: string]: unknown;
-            };
+            decisionEvidenceExport?: components["schemas"]["DecisionEvidenceExport"];
         } & {
             [key: string]: unknown;
         };
@@ -855,7 +912,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description Governance audit bundle */
+            /** @description Governance timeline export including decisionEvidenceExport */
             200: {
                 headers: {
                     [name: string]: unknown;
