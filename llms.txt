@@ -72,6 +72,7 @@ Read-only checks at verify time—not color.
 ## Primary links
 - Canonical site: https://agentskeptic.com/
 - Integrator guide (v2 SSOT): https://raw.githubusercontent.com/jwekavanagh/agentskeptic/refs/heads/main/docs/integrate.md
+- Cursor integration (consumer rule): https://raw.githubusercontent.com/jwekavanagh/agentskeptic/refs/heads/main/docs/cursor-integration.md
 - First-run integration: https://agentskeptic.com/integrate
 - Learn: https://agentskeptic.com/guides
 - OpenAPI (canonical): https://agentskeptic.com/openapi-commercial-v1.yaml

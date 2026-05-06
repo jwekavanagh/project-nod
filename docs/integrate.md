@@ -44,6 +44,7 @@ When using `--project`, defaults are **`./your-repo-root/agentskeptic/tools.json
 - **Proof export:** `--proof <dir>` is equivalent to `--write-decision-bundle` (decision evidence bundle; see [decision-evidence-bundle.md](decision-evidence-bundle.md)).
 - **Full flag reference:** [agentskeptic.md](agentskeptic.md). **Advanced subcommands** (`activate`, `loop`, `quick`, …): `agentskeptic help advanced`.
 - **GitHub Actions:** copy **[`examples/github-actions/agentskeptic-check.yml`](../examples/github-actions/agentskeptic-check.yml)** (composite **`./.github/actions/agentskeptic-check`**, wraps **`agentskeptic check`**; pin upstream `OWNER/agentskeptic/.github/actions/agentskeptic-check@REF` externally) — default OSS **truth check**, no API key on **`mode: check`**; use **`extra-args`** for uncommon CLI flags. Opt-in commercial **enforcement**: **[`examples/github-actions/agentskeptic-commercial.yml`](../examples/github-actions/agentskeptic-commercial.yml)** or composite **`mode: enforce`** plus commercial secrets — see **[`ambient-ci-distribution.md`](ambient-ci-distribution.md)**.
+- **Cursor local loop (optional):** copy **[`examples/cursor/agentskeptic-check.mdc`](../examples/cursor/agentskeptic-check.mdc)** into your consumer repo rules and run the same `agentskeptic check` contract in agent-assisted coding workflows — see **[`cursor-integration.md`](cursor-integration.md)**.
 
 ### stderr: `truth_check_verdict`
 

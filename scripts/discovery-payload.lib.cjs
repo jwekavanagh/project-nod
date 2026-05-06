@@ -148,6 +148,7 @@ function buildDiscoveryPayload(root) {
   const llmsBlob = `https://github.com/${owner}/${repo}/blob/${DISCOVERY_LLM_BRANCH}/llms.txt`;
   const integratorGuideSsotRaw = `https://raw.githubusercontent.com/${owner}/${repo}/refs/heads/${DISCOVERY_LLM_BRANCH}/docs/integrate.md`;
   const openapiRaw = `https://raw.githubusercontent.com/${owner}/${repo}/refs/heads/${DISCOVERY_LLM_BRANCH}/schemas/openapi-commercial-v1.yaml`;
+  const cursorIntegrationDocRaw = `https://raw.githubusercontent.com/${owner}/${repo}/refs/heads/${DISCOVERY_LLM_BRANCH}/docs/cursor-integration.md`;
   const contractManifestCanonical = `${canonicalOrigin}/contract/v1.json`;
   const contractManifestRaw = `https://raw.githubusercontent.com/${owner}/${repo}/refs/heads/${DISCOVERY_LLM_BRANCH}/schemas/contract/v1.json`;
   const llms = /** @type {{ intentPhrases: string[]; notFor: string[]; relatedQueries: string[] }} */ (
@@ -169,6 +170,7 @@ function buildDiscoveryPayload(root) {
       llmsRaw,
       llmsBlob,
       integratorGuideSsotRaw,
+      cursorIntegrationDocRaw,
       contractManifestCanonical,
       contractManifestRaw,
     },
@@ -255,6 +257,7 @@ function renderLlmsTextFromPayload(payload) {
     "## Primary links",
     `- Canonical site: ${links.site}`,
     `- Integrator guide (v2 SSOT): ${links.integratorGuideSsotRaw}`,
+    `- Cursor integration (consumer rule): ${links.cursorIntegrationDocRaw}`,
     `- First-run integration: ${integrateUrl}`,
     `- Learn: ${learnHubUrl}`,
     `- OpenAPI (canonical): ${openapiSelfCanonical}`,
@@ -289,6 +292,7 @@ function renderCiSummaryMarkdownFromPayload(payload) {
     "- Learn: " + L.learnHub,
     "- OpenAPI: " + L.openapiCanonical,
     "- OpenAPI (repo raw): " + L.openapiRaw,
+    "- Cursor integration (consumer rule): " + L.cursorIntegrationDocRaw,
     "- Repository: " + L.repo,
     "- npm: " + L.npm,
     "- llms.txt (raw): " + L.llmsRaw,

@@ -7,6 +7,7 @@ Read-only checks at verify time—not color.
 - Learn: https://agentskeptic.com/guides
 - OpenAPI: https://agentskeptic.com/openapi-commercial-v1.yaml
 - OpenAPI (repo raw): https://raw.githubusercontent.com/jwekavanagh/agentskeptic/refs/heads/main/schemas/openapi-commercial-v1.yaml
+- Cursor integration (consumer rule): https://raw.githubusercontent.com/jwekavanagh/agentskeptic/refs/heads/main/docs/cursor-integration.md
 - Repository: https://github.com/jwekavanagh/agentskeptic
 - npm: https://www.npmjs.com/package/agentskeptic
 - llms.txt (raw): https://raw.githubusercontent.com/jwekavanagh/agentskeptic/refs/heads/main/llms.txt

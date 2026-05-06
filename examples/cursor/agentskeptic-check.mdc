@@ -1,0 +1,45 @@
+---
+description: Run AgentSkeptic truth checks after agent workflow changes
+globs:
+  - "**/*.ts"
+  - "**/*.tsx"
+  - "**/*.js"
+  - "**/*.jsx"
+  - "**/*.py"
+alwaysApply: false
+---
+
+# AgentSkeptic truth check
+
+When editing agent tools, event emitters, workflow orchestration, database-write code, or verification fixtures, run an AgentSkeptic truth check before claiming the change is verified.
+
+Use the project's configured command if present. Otherwise:
+
+```bash
+npx agentskeptic check \
+  --workflow-id <workflow-id> \
+  --events <events.ndjson> \
+  --registry <tools.json> \
+  --db <database-or-state-store>
+```
+
+Contract:
+
+- stdout: Outcome Certificate
+- stderr: `truth_check_verdict: trusted|not_trusted|unknown` plus the human report
+
+Interpretation:
+
+- `trusted`: the checked outcome can be relied on
+- `not_trusted`: do not claim the workflow is verified; fix mismatch or missing state
+- `unknown`: do not claim the workflow is verified; collect missing evidence or narrow checked scope
+
+Do not rely on logs, traces, or test pass/fail status if the Outcome Certificate disagrees.
+
+When the check fails, report:
+
+1. Exact command run
+2. `truth_check_verdict`
+3. Key blocker from stderr
+4. File/code change most likely responsible
+5. Next concrete fix
