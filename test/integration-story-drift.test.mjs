@@ -93,6 +93,7 @@ const API_VERIFY_SAFE = ["demo", "example", "non-production", "not the productio
 
 const ADOPTION_REL_PATHS = [
   "README.md",
+  "docs/first-truth-check.md",
   "docs/integrate.md",
   "docs/ambient-ci-distribution.md",
   "docs/cursor-integration.md",
@@ -104,7 +105,13 @@ const ADOPTION_REL_PATHS = [
   "llms.txt",
 ];
 
-const GA_PAIRING_REL_PATHS = ["README.md", "docs/integrate.md", "docs/ambient-ci-distribution.md", "llms.txt"];
+const GA_PAIRING_REL_PATHS = [
+  "README.md",
+  "docs/first-truth-check.md",
+  "docs/integrate.md",
+  "docs/ambient-ci-distribution.md",
+  "llms.txt",
+];
 
 const NEEDLE_ENFORCE = "agentskeptic enforce";
 const NEEDLE_LOOP = "agentskeptic loop";
@@ -150,6 +157,7 @@ describe("integration story drift gate", () => {
     const integrate = read("docs/integrate.md");
     assertSdkTruthCheck(readme, "README.md");
     assertSdkTruthCheck(integrate, "docs/integrate.md");
+    assertSdkTruthCheck(read("docs/first-truth-check.md"), "docs/first-truth-check.md");
 
     assertCheckMention(read("docs/ambient-ci-distribution.md"), "docs/ambient-ci-distribution.md");
     assertCheckMention(read("docs/cursor-integration.md"), "docs/cursor-integration.md");
@@ -169,7 +177,13 @@ describe("integration story drift gate", () => {
   });
 
   test("invariant 2: result contract in primary docs", () => {
-    for (const rel of ["README.md", "docs/integrate.md", "docs/ambient-ci-distribution.md", "docs/cursor-integration.md"]) {
+    for (const rel of [
+      "README.md",
+      "docs/first-truth-check.md",
+      "docs/integrate.md",
+      "docs/ambient-ci-distribution.md",
+      "docs/cursor-integration.md",
+    ]) {
       assertResultContract(read(rel), rel);
     }
   });
@@ -240,7 +254,7 @@ describe("integration story drift gate", () => {
     assert.ok(doc && typeof doc === "object");
     const ext = doc.externalDocs;
     assert.ok(ext && typeof ext === "object", "top-level externalDocs must exist");
-    assert.equal(ext.url, "https://agentskeptic.com/integrate#first-truth-check");
+    assert.equal(ext.url, "https://github.com/jwekavanagh/agentskeptic/blob/main/docs/first-truth-check.md");
     assert.match(String(ext.description ?? "").toLowerCase(), /agentskeptic check|agentskeptic\.check/);
 
     const paths = doc.paths;

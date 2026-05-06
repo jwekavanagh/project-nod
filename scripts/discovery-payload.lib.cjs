@@ -30,6 +30,8 @@ const STDERR_TAIL_LINES = 20;
 /** Max UTF-8 bytes of stdout parsed for Outcome Certificate JSON (`failureSpine` extraction). */
 const MAX_STDOUT_PARSE_BYTES = 262144;
 
+const { runtimeTruthCheckGuideBlobUrl } = require("./origin.cjs");
+
 const REPO_ROOT = join(__dirname, "..");
 const README_ADOPTION_START = "<!-- adoption-canonical:start -->";
 const README_ADOPTION_END = "<!-- adoption-canonical:end -->";
@@ -141,7 +143,7 @@ function buildDiscoveryPayload(root) {
   const anchors = pm;
   const canonicalOrigin = normalizeOrigin(anchors.productionCanonicalOrigin);
   const integrateUrl = `${canonicalOrigin}/integrate`;
-  const runtimeTruthCheckGuideUrl = `${canonicalOrigin}/integrate#first-truth-check`;
+  const runtimeTruthCheckGuideUrl = runtimeTruthCheckGuideBlobUrl(String(anchors.gitRepositoryUrl));
   const learnHubUrl = `${canonicalOrigin}/guides`;
   const openapiSelfCanonical = `${canonicalOrigin}/openapi-commercial-v1.yaml`;
   const { owner, repo } = parseGithubRepoFromUrl(anchors.gitRepositoryUrl);

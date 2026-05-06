@@ -1,6 +1,13 @@
 /** Shared assertions for OpenAPI commercial distribution shape (derived disk vs served YAML) to prevent drift between openapi-commercial.contract and marketing URL tests. */
+import { createRequire } from "node:module";
+import { join } from "node:path";
 import { expect } from "vitest";
-import type { PublicProductAnchors } from "./distributionGraphHelpers";
+import { getRepoRoot, type PublicProductAnchors } from "./distributionGraphHelpers";
+
+const require = createRequire(import.meta.url);
+const { runtimeTruthCheckGuideBlobUrl } = require(join(getRepoRoot(), "scripts", "origin.cjs")) as {
+  runtimeTruthCheckGuideBlobUrl: (gitRepositoryUrl: string) => string;
+};
 
 export function assertDerivedOpenApiCommercialDistribution(
   doc: Record<string, unknown>,
@@ -15,7 +22,7 @@ export function assertDerivedOpenApiCommercialDistribution(
   expect("externalDocs" in info).toBe(false);
   const { anchors, normalize } = ctx;
   const canonicalOrigin = normalize(anchors.productionCanonicalOrigin);
-  const integrateRuntimeTruthGuideUrl = `${canonicalOrigin}/integrate#first-truth-check`;
+  const integrateRuntimeTruthGuideUrl = runtimeTruthCheckGuideBlobUrl(anchors.gitRepositoryUrl);
   expect(normalize(String(ext.url))).toBe(normalize(integrateRuntimeTruthGuideUrl));
   const rtc = doc["x-agentskeptic-runtime-truth-check"] as Record<string, string>;
   expect(rtc?.status).toBe("documented-outside-commercial-api");
@@ -50,7 +57,7 @@ export function assertServedOpenApiCommercialDistribution(
   );
   const info = doc.info as Record<string, unknown>;
   expect("externalDocs" in info).toBe(false);
-  const integrateRuntimeTruthGuideUrl = `${canonicalOrigin}/integrate#first-truth-check`;
+  const integrateRuntimeTruthGuideUrl = runtimeTruthCheckGuideBlobUrl(anchors.gitRepositoryUrl);
   expect(normalize(String(ext.url))).toBe(normalize(integrateRuntimeTruthGuideUrl));
   const rtc = doc["x-agentskeptic-runtime-truth-check"] as Record<string, string>;
   expect(rtc?.status).toBe("documented-outside-commercial-api");

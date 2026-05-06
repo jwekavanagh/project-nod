@@ -1,5 +1,7 @@
 # Cursor integration: local truth check loop
 
+**Canonical first-run:** [`first-truth-check.md`](first-truth-check.md) — same **`agentskeptic check`** command and stdout/stderr contract as everywhere else; this page adds Cursor-specific wiring.
+
 This page is for teams using Cursor or agent-assisted coding in their own repositories.
 It helps agents verify database or state outcomes before they claim a workflow change succeeded.
 

@@ -2,7 +2,7 @@
 
 const { readFileSync, writeFileSync, mkdirSync } = require("node:fs");
 const { join, dirname } = require("node:path");
-const { normalize, assertNextPublicOriginParity, MARKETING_PATH } = require("./origin.cjs");
+const { normalize, runtimeTruthCheckGuideBlobUrl, assertNextPublicOriginParity, MARKETING_PATH } = require("./origin.cjs");
 
 const ROOT = join(__dirname, "..");
 
@@ -239,7 +239,7 @@ function syncPrimaryMarketing() {
   const openapiSelfEffective = `${publicOriginNormalized}/openapi-commercial-v1.yaml`;
 
   const integrateLandingUrl = `${canonicalOrigin}/integrate`;
-  const integrateRuntimeTruthGuideUrl = `${canonicalOrigin}/integrate#first-truth-check`;
+  const integrateRuntimeTruthGuideUrl = runtimeTruthCheckGuideBlobUrl(anchors.gitRepositoryUrl);
 
   const template = readFileSync(OPENAPI_IN, "utf8");
   const pkgForVersion = JSON.parse(readFileSync(PKG_PATH, "utf8"));

@@ -15,7 +15,8 @@ export const WEDGE_HEADING_LINE = "## Buy vs build: why not only SQL checks";
 export const WEDGE_FRAGMENT = "buy-vs-build-why-not-only-sql-checks";
 export const README_WEDGE_LINK = `../README.md#${WEDGE_FRAGMENT}`;
 export const README_DEFAULT_PATH_LINK = "../README.md#default-path-one-truth-check";
-export const INTEGRATE_FIRST_TRUTH_LINK = "integrate.md#first-truth-check";
+/** Canonical minimum-path doc (Phase 8); integrate.md#first-truth-check remains for deep SSOT anchor */
+export const FIRST_TRUTH_CHECK_DOC_LINK = "first-truth-check.md";
 
 /** Minimum concepts: drift, ownership, shared contract/registry, CI or audit gates */
 const ANTI_SCRIPT_TOKENS = [/drift/i, /ownership/i, /registry/i, /\bCI\b|audit/i];
@@ -75,11 +76,11 @@ describe("readme adoption + wedge", () => {
     assert.ok(iLink < iNpmStartBlock, "prerequisite link must precede npm start demo block");
   });
 
-  it("O6 golden-path: first markdown link is integrate first-truth anchor", () => {
+  it("O6 golden-path: first markdown link is canonical first-truth-check doc", () => {
     const s = readFileSync(join(root, "docs", "golden-path.md"), "utf8");
     const m = s.match(/\[([^\]]*)\]\(([^)]+)\)/);
     assert.ok(m, "no markdown link found");
-    assert.equal(m[2], INTEGRATE_FIRST_TRUTH_LINK, "first link must be integrate.md#first-truth-check");
+    assert.equal(m[2], FIRST_TRUTH_CHECK_DOC_LINK, "first link must be first-truth-check.md");
   });
 
   it("O7 integrate: commercial anchors after first npm start instruction", () => {

@@ -6,7 +6,7 @@ Executable reference stack for **deployable** AgentSkeptic integration:
 - Goal: run deterministic pass/fail verification against a real database in one sitting
 - Contract: if you follow these steps, you will get either a trusted pass or an actionable mismatch
 
-**First truth check (minimum path):** use **`agentskeptic check`** and **`AgentSkeptic.check`** — see [integrate.md](integrate.md#first-truth-check).
+**First truth check (minimum path):** use **`agentskeptic check`** and **`AgentSkeptic.check`** — see [first-truth-check.md](first-truth-check.md).
 
 All other stack combinations are contract-based only and are out of scope for this golden reference tree.
 

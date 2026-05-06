@@ -31,6 +31,17 @@ function readProductionCanonicalOrigin() {
   return String(pm.productionCanonicalOrigin);
 }
 
+/**
+ * Canonical browser URL for the repo markdown SSOT `docs/first-truth-check.md` (OpenAPI externalDocs + discovery).
+ * @param {string} gitRepositoryUrl e.g. https://github.com/org/repo or …/repo.git
+ */
+function runtimeTruthCheckGuideBlobUrl(gitRepositoryUrl) {
+  const base = String(gitRepositoryUrl)
+    .replace(/\.git$/i, "")
+    .replace(/\/$/, "");
+  return `${base}/blob/main/docs/first-truth-check.md`;
+}
+
 function assertNextPublicOriginParity() {
   const canonicalFromJson = readProductionCanonicalOrigin();
   const skip = process.env.NODE_ENV !== "production" || process.env.VERCEL_ENV === "preview";
@@ -45,6 +56,7 @@ function assertNextPublicOriginParity() {
 
 module.exports = {
   normalize,
+  runtimeTruthCheckGuideBlobUrl,
   assertNextPublicOriginParity,
   MARKETING_PATH,
   /** @deprecated use MARKETING_PATH */

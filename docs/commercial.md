@@ -171,7 +171,7 @@ From the repo root, **`npm run validate-commercial`** requires **`DATABASE_URL`*
 
 - **Normative file (repo):** [`schemas/openapi-commercial-v1.yaml`](../schemas/openapi-commercial-v1.yaml)
 - **Deployed URL (static):** **`/openapi-commercial-v1.yaml`** on the app origin. The file is generated into **`website/public/`** during **`website` `prebuild`** by **`npm run sync:public-product-anchors`** (which runs **`emit-primary-marketing`**) from the repo root, then served as a static asset. The committed copy under `schemas/` is the canonical spec for review; the public copy may use the effective deployment origin for `servers` and the self-URL.
-- **Scope:** this bundle describes **hosted** commercial, reporting, enforcement, and related HTTP APIs. The default runtime truth-check integration is **`agentskeptic check`** / **`AgentSkeptic.check`** (Outcome Certificate + `truth_check_verdict` stderr); start at [`docs/integrate.md`](../docs/integrate.md#first-truth-check), not `/api/verify` demo routes.
+- **Scope:** this bundle describes **hosted** commercial, reporting, enforcement, and related HTTP APIs. The default runtime truth-check integration is **`agentskeptic check`** / **`AgentSkeptic.check`** (Outcome Certificate + `truth_check_verdict` stderr); start at [`docs/first-truth-check.md`](../docs/first-truth-check.md), then [`docs/integrate.md`](../docs/integrate.md) for depth — not `/api/verify` demo routes.
 
 ### Public anchors and OpenAPI source
 

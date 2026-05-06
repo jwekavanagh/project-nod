@@ -58,6 +58,8 @@ steps:
 <!-- adoption-canonical:start -->
 ## Default path: one truth check
 
+**Start here:** **[`docs/first-truth-check.md`](docs/first-truth-check.md)** — canonical first-run steps (command, inputs, stdout/stderr, CI, Cursor, troubleshooting).
+
 Compare recorded tool activity to downstream state (SQL and, in contract mode, HTTP witnesses, object storage, vectors, Mongo per your registry) and get an **Outcome Certificate** (stdout) plus a **`truth_check_verdict`** line on stderr:
 
 ```bash
@@ -66,7 +68,7 @@ npx agentskeptic check --workflow-id wf_example \
   --db ./path/to/readable.sqlite
 ```
 
-With the conventional layout, **`--registry`** and **`--events`** default to **`./path/to/your-app/agentskeptic/tools.json`** and **`events.ndjson`**. Pass them explicitly when your paths differ. Full reference: [`docs/integrate.md`](docs/integrate.md#first-truth-check).
+With the conventional layout, **`--registry`** and **`--events`** default to **`./path/to/your-app/agentskeptic/tools.json`** and **`events.ndjson`**. Pass them explicitly when your paths differ. Shortest path: [`docs/first-truth-check.md`](docs/first-truth-check.md). Full integrator SSOT: [`docs/integrate.md`](docs/integrate.md).
 
 **No license required.** The default `agentskeptic check` path needs no `AGENTSKEPTIC_API_KEY` and no license server; it runs stateless contract verification locally. (Stateful **`agentskeptic enforce`** for baselines, drift, and acceptance is a later opt-in commercial path — see below.)
 
@@ -84,7 +86,7 @@ truth_check_verdict: unknown
 | `not_trusted` | Determinate mismatch or required state missing. Do not claim verified; fix the mismatch. |
 | `unknown` | Evidence incomplete or not established. Do not claim verified; collect missing evidence or narrow checked scope. |
 
-Full verdict and stderr contract: [`docs/integrate.md`](docs/integrate.md#first-truth-check).
+Full verdict and stderr contract: [`docs/first-truth-check.md`](docs/first-truth-check.md) (details in [`docs/integrate.md`](docs/integrate.md#first-truth-check)).
 
 **Exportable activation (advanced):** `BootstrapPackInput` v1 + **`agentskeptic activate`** (writes **`proof/`** under **`--out`** on exits 0–2; **`bootstrap`** is legacy — [`docs/bootstrap-pack-normative.md`](docs/bootstrap-pack-normative.md)).
 
@@ -161,7 +163,7 @@ Read-only checks at verify time—not color.
 - **npm package:** https://www.npmjs.com/package/agentskeptic
 - **Canonical site:** https://agentskeptic.com
 - **Integrate:** https://agentskeptic.com/integrate
-- **Runtime truth-check (CLI / SDK):** https://agentskeptic.com/integrate#first-truth-check
+- **Runtime truth-check (CLI / SDK):** https://github.com/jwekavanagh/agentskeptic/blob/main/docs/first-truth-check.md
 - **OpenAPI (hosted commercial API):** https://agentskeptic.com/openapi-commercial-v1.yaml
 - **Verification Contract Manifest:** https://agentskeptic.com/contract/v1.json
 - **llms.txt (agents, site):** https://agentskeptic.com/llms.txt

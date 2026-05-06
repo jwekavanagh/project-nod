@@ -5,7 +5,7 @@
   "links": {
     "site": "https://agentskeptic.com/",
     "integrate": "https://agentskeptic.com/integrate",
-    "runtimeTruthCheckGuide": "https://agentskeptic.com/integrate#first-truth-check",
+    "runtimeTruthCheckGuide": "https://github.com/jwekavanagh/agentskeptic/blob/main/docs/first-truth-check.md",
     "learnHub": "https://agentskeptic.com/guides",
     "openapiCanonical": "https://agentskeptic.com/openapi-commercial-v1.yaml",
     "openapiRaw": "https://raw.githubusercontent.com/jwekavanagh/agentskeptic/refs/heads/main/schemas/openapi-commercial-v1.yaml",

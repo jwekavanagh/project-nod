@@ -1,5 +1,7 @@
 # Ambient CI distribution (GitHub Actions)
 
+**Canonical first-run steps:** [`first-truth-check.md`](first-truth-check.md) — the GitHub Action below is the **CI wrapper** around the same **`agentskeptic check`** stdout (**Outcome Certificate**) / stderr (**`truth_check_verdict`**) contract as local CLI.
+
 Normative contract for **active discovery**: branded AgentSkeptic output appears inside **another repository’s** GitHub Actions run (job summary on every run; optional pull-request comment on verification failure for the **commercial / stateful enforcement** path).
 
 **Licensing** for the published CLI is unchanged — see [`commercial.md`](commercial.md).

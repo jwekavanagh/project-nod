@@ -1,5 +1,7 @@
 # AgentSkeptic integrator guide (v3 SSOT)
 
+**Shortest first-run path:** **[`first-truth-check.md`](first-truth-check.md)** — one page for the default **`agentskeptic check`** flow, inputs, stdout/stderr, CI, and Cursor. This file remains the **full** integrator SSOT below.
+
 **Start here:** run **one stateless contract truth check** with **`agentskeptic check`** (CLI) or **`AgentSkeptic.check`** (TypeScript) — compare structured tool activity to **downstream state** (SQL plus registry-defined HTTP / object / vector / Mongo checks when configured). The default `check` path needs **no API key and no license server**. Read the **Outcome Certificate** on stdout (**v3**, includes **`evidenceCompleteness`**) and the **`truth_check_verdict: trusted|not_trusted|unknown`** line on stderr — only `trusted` means the workflow can be relied on. Optional pre-step: **`agentskeptic quick`** for a cheap **SQL-inference preview** on captured activity (provisional, not audit-final).
 
 **Hybrid proof (Postgres):** after `npm run build`, with **`POSTGRES_VERIFICATION_URL`** set, run **`node examples/hybrid-contract-demo.mjs`** — one workflow, one trust line, SQL + local HTTP witness (see [`verification-state-stores.md`](verification-state-stores.md#hybrid-contract-demo)).
