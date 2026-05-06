@@ -238,10 +238,12 @@ paths:
       operationId: exportGovernanceAuditBundle
       summary: Export governance timeline JSON for one workflow (session auth)
       description: >
-        Returns schemaVersion 2 JSON with lifecycle, baselines, FSM transitions, verification decisions, events,
-        and decisionEvidenceExport (manifest completeness + embedded certificate-oriented fields).
-        This response is not equivalent to a CLI-written decision evidence bundle on disk; CLI flags
-        --write-decision-bundle / --write-run-bundle produce the full on-disk audit file set (see /docs/decision-evidence-bundle.md in the agentskeptic repository).
+        **Breaking:** Returns GovernanceAuditBundleV3 only (schemaVersion 3). Includes governance window, lifecycle,
+        baselines, timeline rows, and slice-keyed evidenceSlices (per governance_evidence row: Outcome Certificate v3,
+        fingerprints, hostedExit, decisionCompleteness, truthCheckVerdict). Not equivalent to CLI --write-run-bundle
+        (NDJSON technical bundle) or full on-disk decision directories; see docs/decision-evidence-bundle.md.
+        If any referenced evidence row fails v3 validation or stored fingerprints disagree with recomputed hashes,
+        responds 500 CORRUPTED_EVIDENCE_ROW with a fixed JSON body (no degraded export).
       parameters:
         - name: workflow_id
           in: query
@@ -262,11 +264,11 @@ paths:
             format: date-time
       responses:
         "200":
-          description: Governance timeline export including decisionEvidenceExport
+          description: GovernanceAuditBundleV3 governance timeline + slice-keyed evidence
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/GovernanceAuditBundleV2"
+                $ref: "#/components/schemas/GovernanceAuditBundleV3"
         "400":
           description: Invalid request
           content:
@@ -279,6 +281,12 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ProblemDetails"
+        "500":
+          description: Referenced governance_evidence row failed validation or fingerprint invariant
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GovernanceExportCorruptedEvidenceRow"
   /api/public/verification-reports:
     post:
       operationId: createPublicVerificationReport
@@ -660,126 +668,126 @@ components:
           items:
             type: object
             additionalProperties: true
-    DecisionEvidenceBundleManifestHosted:
+    GovernanceExportCorruptedEvidenceRow:
       type: object
-      description: Subset of decision-evidence-bundle-manifest-v1 validated server-side for governance export.
-      required: [schemaVersion, bundleKind, producer, createdAt, workflowId, completeness]
       additionalProperties: false
+      description: Hosted governance export — stored evidence invariant failure.
+      required: [code, evidence_id, message]
+      properties:
+        code:
+          type: string
+          const: CORRUPTED_EVIDENCE_ROW
+        evidence_id:
+          type: string
+          format: uuid
+        message:
+          type: string
+          const: "Stored evidence row failed certificate schema validation or fingerprints do not match stored columns."
+    GovernanceEvidenceFingerprints:
+      type: object
+      additionalProperties: false
+      required: [certificateSha256, materialTruthSha256]
+      properties:
+        certificateSha256:
+          type: string
+        materialTruthSha256:
+          type: string
+    HostedEvidenceExitDecisionV1:
+      type: object
+      additionalProperties: false
+      required: [schemaVersion, exitCode, cliConvention]
       properties:
         schemaVersion:
           type: integer
-          enum: [1]
-        bundleKind:
+          const: 1
+        exitCode:
+          type: integer
+          minimum: 0
+          maximum: 3
+        cliConvention:
           type: string
-          enum: [decision_evidence]
-        producer:
-          type: object
-          required: [name, version]
-          additionalProperties: false
-          properties:
-            name:
-              type: string
-            version:
-              type: string
-        createdAt:
-          type: string
-          format: date-time
-        workflowId:
-          type: string
-        completeness:
-          type: object
-          required: [status, artifacts]
-          additionalProperties: false
-          properties:
-            status:
-              type: string
-              enum: [complete, partial, invalid]
-            artifacts:
-              type: object
-              required: [a4Present, a5Present, a5Required]
-              additionalProperties: false
-              properties:
-                a4Present:
-                  type: boolean
-                a5Present:
-                  type: boolean
-                a5Required:
-                  type: boolean
-    DecisionEvidenceExportEmbeddedExitHosted:
+          const: outcome_certificate_v2
+    HostedDecisionEvidenceCompletenessArtifacts:
       type: object
-      description: CLI exit record files are not persisted server-side; use hosted_not_recorded for exit semantics.
-      required: [kind, reason]
       additionalProperties: false
+      required: [a4Present, a5Present, a5Required]
       properties:
-        kind:
-          type: string
-          enum: [hosted_not_recorded]
-        reason:
-          type: string
-    DecisionEvidenceExportEmbeddedHumanLayerFromCertificate:
+        a4Present:
+          type: boolean
+        a5Present:
+          type: boolean
+        a5Required:
+          type: boolean
+    HostedDecisionEvidenceCompleteness:
       type: object
-      required: [kind, text]
       additionalProperties: false
+      required: [status, artifacts]
       properties:
-        kind:
+        status:
           type: string
-          enum: [from_certificate]
-        text:
-          type: string
-    DecisionEvidenceExportEmbeddedHumanLayerMissing:
+          enum: [complete, partial, invalid]
+        artifacts:
+          $ref: "#/components/schemas/HostedDecisionEvidenceCompletenessArtifacts"
+    HostedEvidenceSliceV1:
       type: object
-      required: [kind, reason]
       additionalProperties: false
+      required:
+        - runId
+        - outcomeCertificate
+        - fingerprints
+        - hostedExit
+        - decisionCompleteness
+        - truthCheckVerdict
       properties:
-        kind:
+        runId:
           type: string
-          enum: [missing]
-        reason:
-          type: string
-    DecisionEvidenceExportEmbedded:
-      type: object
-      required: [outcomeCertificate, exit, humanLayer, attestation, nextAction]
-      additionalProperties: false
-      properties:
         outcomeCertificate:
-          nullable: true
           type: object
-          description: Outcome Certificate v2 or v3 when valid; null if none.
           additionalProperties: true
-        exit:
-          $ref: "#/components/schemas/DecisionEvidenceExportEmbeddedExitHosted"
-        humanLayer:
-          oneOf:
-            - $ref: "#/components/schemas/DecisionEvidenceExportEmbeddedHumanLayerFromCertificate"
-            - $ref: "#/components/schemas/DecisionEvidenceExportEmbeddedHumanLayerMissing"
-        attestation:
-          nullable: true
-          type: object
-          description: Not populated by current governance export (always null).
-        nextAction:
-          nullable: true
-          type: object
-          description: Not populated by current governance export (always null).
-    DecisionEvidenceExport:
+          description: Stored Outcome Certificate v3 (schema outcome-certificate-v3).
+        fingerprints:
+          $ref: "#/components/schemas/GovernanceEvidenceFingerprints"
+        hostedExit:
+          $ref: "#/components/schemas/HostedEvidenceExitDecisionV1"
+        decisionCompleteness:
+          $ref: "#/components/schemas/HostedDecisionEvidenceCompleteness"
+        truthCheckVerdict:
+          type: string
+    GovernanceBaselineAcceptedEvidenceV3:
       type: object
-      description: Certificate-oriented embed for governance JSON; not a full CLI decision bundle directory.
-      required: [manifest, embedded]
       additionalProperties: false
+      required: [evidenceSliceKey, runId, fingerprints, runKind]
       properties:
-        manifest:
-          $ref: "#/components/schemas/DecisionEvidenceBundleManifestHosted"
-        embedded:
-          $ref: "#/components/schemas/DecisionEvidenceExportEmbedded"
-    GovernanceAuditBundleV2:
+        evidenceSliceKey:
+          type: string
+          format: uuid
+        runId:
+          type: string
+        fingerprints:
+          $ref: "#/components/schemas/GovernanceEvidenceFingerprints"
+        runKind:
+          type: string
+    GovernanceAuditBundleV3:
       type: object
-      description: >
-        Governance timeline export (schemaVersion 2). Includes lifecycle FSM rows, verification decisions, baselines, and events.
-        decisionEvidenceExport provides manifest completeness and certificate-oriented embeds; it is not equivalent to on-disk files from agentskeptic --write-decision-bundle.
-      required: [schemaVersion, generatedAt, userId, workflowId, baseline, events]
+      additionalProperties: false
+      description: Hosted governance ledger export (breaking; replaces prior schemaVersion 2 governance export payloads).
+      required:
+        - schemaVersion
+        - generatedAt
+        - userId
+        - workflowId
+        - window
+        - lifecycle
+        - fsmTransitions
+        - verificationDecisions
+        - baseline
+        - events
+        - evidenceSlices
+        - baselineAcceptedEvidence
       properties:
         schemaVersion:
           type: integer
-          const: 2
+          const: 3
         generatedAt:
           type: string
           format: date-time
@@ -789,6 +797,7 @@ components:
           type: string
         window:
           type: object
+          additionalProperties: false
           required: [from, to]
           properties:
             from:
@@ -820,9 +829,15 @@ components:
           items:
             type: object
             additionalProperties: true
-        decisionEvidenceExport:
-          $ref: "#/components/schemas/DecisionEvidenceExport"
-      additionalProperties: true
+        evidenceSlices:
+          type: object
+          additionalProperties:
+            $ref: "#/components/schemas/HostedEvidenceSliceV1"
+        baselineAcceptedEvidence:
+          nullable: true
+          anyOf:
+            - $ref: "#/components/schemas/GovernanceBaselineAcceptedEvidenceV3"
+            - type: "null"
     ProblemDetails:
       type: object
       required: [type, title, status, detail]

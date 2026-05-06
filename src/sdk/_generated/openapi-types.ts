@@ -135,7 +135,7 @@ export interface paths {
         };
         /**
          * Export governance timeline JSON for one workflow (session auth)
-         * @description Returns schemaVersion 2 JSON with lifecycle, baselines, FSM transitions, verification decisions, events, and decisionEvidenceExport (manifest completeness + embedded certificate-oriented fields). This response is not equivalent to a CLI-written decision evidence bundle on disk; CLI flags --write-decision-bundle / --write-run-bundle produce the full on-disk audit file set (see /docs/decision-evidence-bundle.md in the agentskeptic repository).
+         * @description **Breaking:** Returns GovernanceAuditBundleV3 only (schemaVersion 3). Includes governance window, lifecycle, baselines, timeline rows, and slice-keyed evidenceSlices (per governance_evidence row: Outcome Certificate v3, fingerprints, hostedExit, decisionCompleteness, truthCheckVerdict). Not equivalent to CLI --write-run-bundle (NDJSON technical bundle) or full on-disk decision directories; see docs/decision-evidence-bundle.md. If any referenced evidence row fails v3 validation or stored fingerprints disagree with recomputed hashes, responds 500 CORRUPTED_EVIDENCE_ROW with a fixed JSON body (no degraded export).
          */
         get: operations["exportGovernanceAuditBundle"];
         put?: never;
@@ -336,83 +336,75 @@ export interface components {
                 [key: string]: unknown;
             }[];
         };
-        /** @description Subset of decision-evidence-bundle-manifest-v1 validated server-side for governance export. */
-        DecisionEvidenceBundleManifestHosted: {
-            /** @enum {integer} */
+        /** @description Hosted governance export — stored evidence invariant failure. */
+        GovernanceExportCorruptedEvidenceRow: {
+            /** @constant */
+            code: "CORRUPTED_EVIDENCE_ROW";
+            /** Format: uuid */
+            evidence_id: string;
+            /** @constant */
+            message: "Stored evidence row failed certificate schema validation or fingerprints do not match stored columns.";
+        };
+        GovernanceEvidenceFingerprints: {
+            certificateSha256: string;
+            materialTruthSha256: string;
+        };
+        HostedEvidenceExitDecisionV1: {
+            /** @constant */
             schemaVersion: 1;
-            /** @enum {string} */
-            bundleKind: "decision_evidence";
-            producer: {
-                name: string;
-                version: string;
-            };
-            /** Format: date-time */
-            createdAt: string;
-            workflowId: string;
-            completeness: {
-                /** @enum {string} */
-                status: "complete" | "partial" | "invalid";
-                artifacts: {
-                    a4Present: boolean;
-                    a5Present: boolean;
-                    a5Required: boolean;
-                };
-            };
+            exitCode: number;
+            /** @constant */
+            cliConvention: "outcome_certificate_v2";
         };
-        /** @description CLI exit record files are not persisted server-side; use hosted_not_recorded for exit semantics. */
-        DecisionEvidenceExportEmbeddedExitHosted: {
-            /** @enum {string} */
-            kind: "hosted_not_recorded";
-            reason: string;
+        HostedDecisionEvidenceCompletenessArtifacts: {
+            a4Present: boolean;
+            a5Present: boolean;
+            a5Required: boolean;
         };
-        DecisionEvidenceExportEmbeddedHumanLayerFromCertificate: {
+        HostedDecisionEvidenceCompleteness: {
             /** @enum {string} */
-            kind: "from_certificate";
-            text: string;
+            status: "complete" | "partial" | "invalid";
+            artifacts: components["schemas"]["HostedDecisionEvidenceCompletenessArtifacts"];
         };
-        DecisionEvidenceExportEmbeddedHumanLayerMissing: {
-            /** @enum {string} */
-            kind: "missing";
-            reason: string;
-        };
-        DecisionEvidenceExportEmbedded: {
-            /** @description Outcome Certificate v2 or v3 when valid; null if none. */
+        HostedEvidenceSliceV1: {
+            runId: string;
+            /** @description Stored Outcome Certificate v3 (schema outcome-certificate-v3). */
             outcomeCertificate: {
                 [key: string]: unknown;
-            } | null;
-            exit: components["schemas"]["DecisionEvidenceExportEmbeddedExitHosted"];
-            humanLayer: components["schemas"]["DecisionEvidenceExportEmbeddedHumanLayerFromCertificate"] | components["schemas"]["DecisionEvidenceExportEmbeddedHumanLayerMissing"];
-            /** @description Not populated by current governance export (always null). */
-            attestation: Record<string, never> | null;
-            /** @description Not populated by current governance export (always null). */
-            nextAction: Record<string, never> | null;
+            };
+            fingerprints: components["schemas"]["GovernanceEvidenceFingerprints"];
+            hostedExit: components["schemas"]["HostedEvidenceExitDecisionV1"];
+            decisionCompleteness: components["schemas"]["HostedDecisionEvidenceCompleteness"];
+            truthCheckVerdict: string;
         };
-        /** @description Certificate-oriented embed for governance JSON; not a full CLI decision bundle directory. */
-        DecisionEvidenceExport: {
-            manifest: components["schemas"]["DecisionEvidenceBundleManifestHosted"];
-            embedded: components["schemas"]["DecisionEvidenceExportEmbedded"];
+        GovernanceBaselineAcceptedEvidenceV3: {
+            /** Format: uuid */
+            evidenceSliceKey: string;
+            runId: string;
+            fingerprints: components["schemas"]["GovernanceEvidenceFingerprints"];
+            runKind: string;
         };
-        /** @description Governance timeline export (schemaVersion 2). Includes lifecycle FSM rows, verification decisions, baselines, and events. decisionEvidenceExport provides manifest completeness and certificate-oriented embeds; it is not equivalent to on-disk files from agentskeptic --write-decision-bundle. */
-        GovernanceAuditBundleV2: {
+        /** @description Hosted governance ledger export (breaking; replaces prior schemaVersion 2 governance export payloads). */
+        GovernanceAuditBundleV3: {
             /** @constant */
-            schemaVersion: 2;
+            schemaVersion: 3;
             /** Format: date-time */
             generatedAt: string;
             userId: string;
             workflowId: string;
-            window?: {
+            window: {
                 /** Format: date-time */
                 from: string;
                 /** Format: date-time */
                 to: string;
             };
-            lifecycle?: {
+            lifecycle: {
                 [key: string]: unknown;
             } | null;
-            fsmTransitions?: {
+            fsmTransitions: {
                 [key: string]: unknown;
             }[];
-            verificationDecisions?: {
+            verificationDecisions: {
                 [key: string]: unknown;
             }[];
             baseline: {
@@ -421,9 +413,10 @@ export interface components {
             events: {
                 [key: string]: unknown;
             }[];
-            decisionEvidenceExport?: components["schemas"]["DecisionEvidenceExport"];
-        } & {
-            [key: string]: unknown;
+            evidenceSlices: {
+                [key: string]: components["schemas"]["HostedEvidenceSliceV1"];
+            };
+            baselineAcceptedEvidence: (components["schemas"]["GovernanceBaselineAcceptedEvidenceV3"] | null) | null;
         };
         ProblemDetails: {
             /** Format: uri */
@@ -912,13 +905,13 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description Governance timeline export including decisionEvidenceExport */
+            /** @description GovernanceAuditBundleV3 governance timeline + slice-keyed evidence */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["GovernanceAuditBundleV2"];
+                    "application/json": components["schemas"]["GovernanceAuditBundleV3"];
                 };
             };
             /** @description Invalid request */
@@ -937,6 +930,15 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Referenced governance_evidence row failed validation or fingerprint invariant */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GovernanceExportCorruptedEvidenceRow"];
                 };
             };
         };

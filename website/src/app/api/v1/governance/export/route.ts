@@ -1,8 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { and, asc, desc, eq, gte, lte } from "drizzle-orm";
-import type { OutcomeCertificateV1 } from "agentskeptic";
-import { computeCompletenessFromParts } from "agentskeptic/decisionEvidenceBundle";
-import { loadSchemaValidator } from "agentskeptic/schemaLoad";
+import { and, asc, eq, gte, inArray, lte } from "drizzle-orm";
 import { auth } from "@/auth";
 import { db } from "@/db/client";
 import {
@@ -13,7 +10,13 @@ import {
   enforcementLifecycle,
   governanceEvidence,
 } from "@/db/schema";
-import pkg from "../../../../../../package.json";
+import { buildEvidenceSlicesMap } from "@/lib/governanceEvidenceSlices";
+
+const CORRUPTED_EVIDENCE_BODY = {
+  code: "CORRUPTED_EVIDENCE_ROW",
+  message:
+    "Stored evidence row failed certificate schema validation or fingerprints do not match stored columns.",
+} as const;
 
 export async function GET(req: NextRequest) {
   const session = await auth();
@@ -31,6 +34,10 @@ export async function GET(req: NextRequest) {
   const to = toRaw ? new Date(toRaw) : new Date();
   if (!Number.isFinite(from.valueOf()) || !Number.isFinite(to.valueOf()) || from > to) {
     return NextResponse.json({ code: "BAD_REQUEST", message: "Invalid from/to range." }, { status: 400 });
+  }
+
+  function corruptedResponse(evidence_id: string) {
+    return NextResponse.json({ ...CORRUPTED_EVIDENCE_BODY, evidence_id }, { status: 500 });
   }
 
   const lifecycleRows = await db
@@ -87,88 +94,76 @@ export async function GET(req: NextRequest) {
       ),
     );
 
-  const evidenceIds = [...new Set(eventRows.map((e) => e.evidenceId).filter((id): id is string => !!id))];
-  const evidenceRows = evidenceIds.length
-    ? await db
-        .select()
-        .from(governanceEvidence)
-        .where(and(eq(governanceEvidence.userId, session.user.id), eq(governanceEvidence.workflowId, workflowId)))
-    : [];
-  const evidenceById = new Map(evidenceRows.map((e) => [e.id, e] as const));
-
-  const latestEvidenceRows = await db
-    .select({ certificateJson: governanceEvidence.certificateJson })
-    .from(governanceEvidence)
-    .where(and(eq(governanceEvidence.userId, session.user.id), eq(governanceEvidence.workflowId, workflowId)))
-    .orderBy(desc(governanceEvidence.createdAt))
-    .limit(1);
-
-  let certificate: OutcomeCertificateV1 | null = null;
-  let certificateValid = false;
-  const rawCert = latestEvidenceRows[0]?.certificateJson;
-  if (rawCert !== null && rawCert !== undefined && typeof rawCert === "object") {
-    const v3 = loadSchemaValidator("outcome-certificate-v3");
-    const v2 = loadSchemaValidator("outcome-certificate-v2");
-    if (v3(rawCert) || v2(rawCert)) {
-      certificateValid = true;
-      certificate = rawCert as OutcomeCertificateV1;
-    }
+  const baselineRow = baselineRows[0] ?? null;
+  const evidenceIdSet = new Set<string>();
+  for (const e of eventRows) {
+    if (e.evidenceId) evidenceIdSet.add(e.evidenceId);
+  }
+  for (const t of fsmTransitions) {
+    if (t.evidenceId) evidenceIdSet.add(t.evidenceId);
+  }
+  for (const d of verificationDecisions) {
+    if (d.evidenceId) evidenceIdSet.add(d.evidenceId);
+  }
+  if (baselineRow?.baselineEvidenceId) {
+    evidenceIdSet.add(baselineRow.baselineEvidenceId);
   }
 
-  const computed = computeCompletenessFromParts({
-    certificateValid,
-    coreFilesPresent: certificate !== null && certificateValid,
-    certificate,
-    a4Present: false,
-    a5Present: false,
-  });
+  const orderedEvidenceIds = [...evidenceIdSet].sort();
 
-  const manifestPayload = {
-    schemaVersion: 1 as const,
-    bundleKind: "decision_evidence" as const,
-    producer: { name: "agentskeptic-web", version: pkg.version },
-    createdAt: new Date().toISOString(),
-    workflowId,
-    completeness: {
-      status: computed.status,
-      artifacts: computed.artifacts,
-    },
-  };
-
-  const validateManifest = loadSchemaValidator("decision-evidence-bundle-manifest-v1");
-  if (!validateManifest(manifestPayload)) {
-    return NextResponse.json(
-      {
-        code: "INTERNAL_ERROR",
-        message: `decision evidence manifest invalid: ${JSON.stringify(validateManifest.errors ?? [])}`,
-      },
-      { status: 500 },
-    );
+  let governanceRows: (typeof governanceEvidence.$inferSelect)[] = [];
+  if (orderedEvidenceIds.length > 0) {
+    governanceRows = await db
+      .select()
+      .from(governanceEvidence)
+      .where(
+        and(
+          eq(governanceEvidence.userId, session.user.id),
+          eq(governanceEvidence.workflowId, workflowId),
+          inArray(governanceEvidence.id, orderedEvidenceIds),
+        ),
+      );
   }
 
-  const decisionEvidenceExport = {
-    manifest: manifestPayload,
-    embedded: {
-      outcomeCertificate: certificate,
-      exit: {
-        kind: "hosted_not_recorded" as const,
-        reason: "Exit codes are client-local for CLI verify; not persisted in governance_evidence.",
-      },
-      humanLayer: certificate
-        ? ({ kind: "from_certificate" as const, text: certificate.humanReport })
-        : ({
-            kind: "missing" as const,
-            reason: "No governance_evidence row available for embedding.",
-          }),
-      attestation: null,
-      nextAction: null,
-    },
-  };
+  const governanceById = new Map(governanceRows.map((r) => [r.id, r] as const));
 
-  const baseline = baselineRows[0] ?? null;
+  const slicesBuilt = buildEvidenceSlicesMap(governanceRows);
+  if (!slicesBuilt.ok) {
+    return corruptedResponse(slicesBuilt.evidenceId);
+  }
+  const evidenceSlices = slicesBuilt.evidenceSlices;
+
+  const baselineBaselineEvidenceSliceKey = baselineRow?.baselineEvidenceId ?? null;
+  const baselinePayload = baselineRow
+    ? {
+        ...baselineRow,
+        baselineEvidenceSliceKey: baselineBaselineEvidenceSliceKey,
+      }
+    : null;
+
+  const baselineAcceptedEvidence =
+    baselineRow?.baselineEvidenceId !== null &&
+    baselineRow?.baselineEvidenceId !== undefined &&
+    evidenceSlices[baselineRow.baselineEvidenceId]
+      ? ({
+          evidenceSliceKey: baselineRow.baselineEvidenceId,
+          runId: evidenceSlices[baselineRow.baselineEvidenceId].runId,
+          fingerprints: evidenceSlices[baselineRow.baselineEvidenceId].fingerprints,
+          runKind: String(
+            evidenceSlices[baselineRow.baselineEvidenceId].outcomeCertificate["runKind"] ?? "contract_sql",
+          ),
+        } satisfies {
+          evidenceSliceKey: string;
+          runId: string;
+          fingerprints: { certificateSha256: string; materialTruthSha256: string };
+          runKind: string;
+        })
+      : null;
+
   const lifecycle = lifecycleRows[0] ?? null;
+
   const payload = {
-    schemaVersion: 2,
+    schemaVersion: 3 as const,
     generatedAt: new Date().toISOString(),
     userId: session.user.id,
     workflowId,
@@ -184,12 +179,15 @@ export async function GET(req: NextRequest) {
       : null,
     fsmTransitions,
     verificationDecisions,
-    baseline,
+    baseline: baselinePayload,
     events: eventRows.map((e) => ({
       ...e,
-      evidence: e.evidenceId ? evidenceById.get(e.evidenceId) ?? null : null,
+      evidenceSliceKey: e.evidenceId,
+      evidence: e.evidenceId ? governanceById.get(e.evidenceId) ?? null : null,
     })),
-    decisionEvidenceExport,
+    evidenceSlices,
+    baselineAcceptedEvidence,
   };
+
   return NextResponse.json(payload, { status: 200 });
 }

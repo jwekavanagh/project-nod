@@ -7,6 +7,7 @@ src/agentskeptic/_init_cli.py
 src/agentskeptic/_models.py
 src/agentskeptic/_session.py
 src/agentskeptic/errors.py
+src/agentskeptic/events.py
 src/agentskeptic/exceptions.py
 src/agentskeptic/sdk.py
 src/agentskeptic/verify.py
@@ -40,6 +41,7 @@ src/agentskeptic/tools/__init__.py
 src/agentskeptic/tools/emit_registry.py
 src/agentskeptic_conformance/__init__.py
 src/agentskeptic_conformance/run.py
+tests/test_crewai_minimal_example.py
 tests/test_emit_registry.py
 tests/test_framework_lock_imports.py
 tests/test_public_api.py

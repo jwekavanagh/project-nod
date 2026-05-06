@@ -280,7 +280,7 @@ function renderLlmsTextFromPayload(payload) {
     "- Default truth check: `agentskeptic check` — Outcome Certificate on stdout; no bundle files written unless you opt in.",
     "- Decision evidence on disk: add `--proof <dir>` or `--write-decision-bundle <dir>`.",
     "- Full local proof (technical + decision bundles): add `--write-run-bundle <dir>` alongside `--write-decision-bundle` (two output directories).",
-    "- Hosted commercial `GET /api/v1/governance/export` returns governance timeline JSON and certificate-oriented `decisionEvidenceExport` — not the same as a CLI-written bundle directory.",
+    "- Hosted commercial `GET /api/v1/governance/export` returns `GovernanceAuditBundleV3` (`schemaVersion: 3`) with slice-keyed `evidenceSlices` — not a CLI `decision bundle` / `write-run-bundle` directory.",
     "",
     `- Operational SSOT (artifact names, completeness, handoff zip recipe): ${links.decisionEvidenceBundleDocRaw}`,
     "",

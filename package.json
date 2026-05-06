@@ -20,7 +20,8 @@
     "./schemaLoad": "./dist/schemaLoad.js",
     "./bootstrapPackSynthesis": "./dist/bootstrap/bootstrapPackSynthesis.js",
     "./verificationHypothesisContract": "./dist/telemetry/verificationHypothesisContract.js",
-    "./decisionEvidenceBundle": "./dist/decisionEvidenceBundle/index.js"
+    "./decisionEvidenceBundle": "./dist/decisionEvidenceBundle/index.js",
+    "./governanceEvidence": "./dist/governanceEvidence.js"
   },
   "scripts": {
     "prepublishOnly": "node scripts/build-commercial.mjs",

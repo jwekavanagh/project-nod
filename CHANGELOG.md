@@ -1,8 +1,17 @@
 ## [Unreleased]
 
+### ⚠ BREAKING CHANGES
+
+* **web / commercial API:** **`GET /api/v1/governance/export`** emits **`GovernanceAuditBundleV3` only (`schemaVersion: 3`)** with **`evidenceSlices`** keyed by **`governance_evidence` ids**. **`GovernanceAuditBundleV2`**, **`decisionEvidenceExport`**, and **`hosted_not_recorded`** are removed from contract output. Persisted **`governance_evidence.certificate_json`** must be Outcome Certificate **v3**: invalid rows or mismatched stored fingerprints (**`certificate_sha256` / `material_truth_sha256`**) yield **HTTP 500** (**`CORRUPTED_EVIDENCE_ROW`**).
+
+### Migration
+
+Hosted consumers parsing **`schemaVersion: 2`** or **`decisionEvidenceExport`** JSON must migrate to **`GovernanceAuditBundleV3`** (**OpenAPI **`#/components/schemas/GovernanceAuditBundleV3`**). Enforcement ingestion (**`/baselines`**, **`/check`**, **`/accept`**) already required **`schema_version: 3`** with inner Outcome Certificate v3; inner **`schemaVersion: 2`** certificates are rejected.
+
 ### Documentation
 
-* progressive evidence ladder (CLI decision/run bundles vs hosted governance export), packaging handoff recipe, and explicit OpenAPI schemas for `decisionEvidenceExport` on `GET /api/v1/governance/export`; Python `_models.py` updated for OpenAPI component parity.
+* Buyer-truth hosted-export strings: **unchanged (scan clean)**.
+* Docs + discovery anchors document **`GovernanceAuditBundleV3`**; Python **`_models.py`** aligned to V3 export + corrupted-row response.
 
 ## [7.2.0](https://github.com/jwekavanagh/agentskeptic/compare/v7.1.4...v7.2.0) (2026-05-06)
 

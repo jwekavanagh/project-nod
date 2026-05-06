@@ -3,7 +3,7 @@ import { unauthorized } from "next/navigation";
 import { auth } from "@/auth";
 import { desc, eq } from "drizzle-orm";
 import { db } from "@/db/client";
-import { enforcementBaselines, enforcementEvents, enforcementLifecycle } from "@/db/schema";
+import { enforcementBaselines, enforcementEvents, enforcementLifecycle, governanceEvidence } from "@/db/schema";
 
 export const dynamic = "force-dynamic";
 
@@ -29,8 +29,20 @@ export default async function GovernancePage() {
   const lifecycleByWorkflow = new Map(lifecycles.map((row) => [row.workflowId, row]));
 
   const baselines = await db
-    .select()
+    .select({
+      id: enforcementBaselines.id,
+      workflowId: enforcementBaselines.workflowId,
+      projectionHash: enforcementBaselines.projectionHash,
+      needsRebaseline: enforcementBaselines.needsRebaseline,
+      updatedAt: enforcementBaselines.updatedAt,
+      baselineEvidenceId: enforcementBaselines.baselineEvidenceId,
+      evidenceRunId: governanceEvidence.runId,
+      evidenceCertificateSha256: governanceEvidence.certificateSha256,
+      evidenceMaterialTruthSha256: governanceEvidence.materialTruthSha256,
+      evidenceCertificateJson: governanceEvidence.certificateJson,
+    })
     .from(enforcementBaselines)
+    .leftJoin(governanceEvidence, eq(enforcementBaselines.baselineEvidenceId, governanceEvidence.id))
     .where(eq(enforcementBaselines.userId, session.user.id))
     .orderBy(desc(enforcementBaselines.updatedAt))
     .limit(25);
@@ -45,15 +57,21 @@ export default async function GovernancePage() {
     <main>
       <h1>Governance</h1>
       <p className="u-mb-1">
-        Read-only baseline and event timeline. Export returns JSON schemaVersion 2 (governance timeline plus certificate-oriented decisionEvidenceExport). That is not the same as a CLI-written decision bundle on disk; for full on-disk audit files use the CLI (
-        <Link href="https://github.com/jwekavanagh/agentskeptic/blob/main/docs/decision-evidence-bundle.md">docs</Link>
-        ).
+        Read-only baseline and event timeline. Export returns{" "}
+        <code>GovernanceAuditBundleV3</code> JSON (<code>schemaVersion: 3</code>): governance window, lifecycle rows,
+        baseline, events, and slice-keyed <code>evidenceSlices</code> (decision exit, completeness, fingerprints) tied to
+        each stored evidence row. Semantic parity with CLI enforcement uses the same certificate JSON and core hash
+        helpers; the forensic <code>--write-run-bundle</code> NDJSON layout remains CLI-only — see{" "}
+        <Link href="https://github.com/jwekavanagh/agentskeptic/blob/main/docs/decision-evidence-bundle.md">decision evidence bundle</Link>
+        .
       </p>
       <div className="card u-mb-1">
         <h2>Baselines</h2>
         {baselines.length === 0 ? <p>No baselines yet.</p> : null}
         {baselines.map((b) => {
           const lc = lifecycleByWorkflow.get(b.workflowId);
+          const certJson = b.evidenceCertificateJson as Record<string, unknown> | null | undefined;
+          const runKind = typeof certJson?.runKind === "string" ? certJson.runKind : "—";
           return (
           <div key={b.id} className="u-mb-1">
             <div><strong>workflow_id:</strong> {b.workflowId}</div>
@@ -72,9 +90,11 @@ export default async function GovernancePage() {
               </div>
             : null}
             <div><strong>baseline_set_at:</strong> {b.updatedAt.toISOString()}</div>
-            <div><strong>baseline_run_id:</strong> n/a</div>
+            <div><strong>baseline_evidence_run_id:</strong> {b.evidenceRunId ?? "—"}</div>
+            <div><strong>baseline_evidence_certificate_sha256:</strong> {b.evidenceCertificateSha256 ?? "—"}</div>
+            <div><strong>baseline_evidence_material_truth_sha256:</strong> {b.evidenceMaterialTruthSha256 ?? "—"}</div>
             <div><strong>baseline_material_truth_sha256:</strong> {b.projectionHash}</div>
-            <div><strong>baseline_run_kind:</strong> n/a</div>
+            <div><strong>baseline_run_kind:</strong> {runKind}</div>
             <div><strong>reliance_class:</strong> {b.needsRebaseline ? "provisional" : "eligible"}</div>
             <div className="u-mt-half">
               <Link href={`/api/v1/governance/export?workflow_id=${encodeURIComponent(b.workflowId)}`}>

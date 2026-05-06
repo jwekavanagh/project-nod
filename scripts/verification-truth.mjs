@@ -125,6 +125,8 @@ function runStructuralAfterDiff() {
   runShell("node scripts/check-legacy-schema-imports.mjs", "verification-truth:gating");
   runShell("node scripts/contract-manifest.mjs --check", "verification-truth:gating");
   runShell("npm run check:epistemic-contract-structure", "verification-truth:gating");
+  runShell("node scripts/assert-hosted-export-doc-sync.mjs", "verification-truth:gating");
+  runShell("node scripts/assert-hosted-evidence-contract-cutover.mjs", "verification-truth:gating");
   console.error("[verification-truth:guards] repo policy + API surface");
   runRepoPolicyAndApiGuards();
 }

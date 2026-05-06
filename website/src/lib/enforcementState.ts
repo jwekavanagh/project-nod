@@ -1,30 +1,19 @@
-import { createHash } from "node:crypto";
 import { and, desc, eq } from "drizzle-orm";
+import type { OutcomeCertificateV1 } from "agentskeptic";
+import {
+  canonicalCertificateSha256,
+  materialTruthProjectionFromCertificate,
+  materialTruthSha256,
+} from "agentskeptic/governanceEvidence";
+import { loadSchemaValidator } from "agentskeptic/schemaLoad";
 import { db } from "@/db/client";
 import { enforcementBaselines, enforcementEvents, governanceEvidence } from "@/db/schema";
-
-type OutcomeCertificate = {
-  schemaVersion: 2;
-  workflowId: string;
-  runKind: "contract_sql" | "contract_sql_langgraph_checkpoint_trust" | "quick_preview";
-  stateRelation: "matches_expectations" | "does_not_match" | "not_established";
-  evidenceCompleteness: { schemaVersion: 1; blockerCategory: string };
-  explanation: { details: Array<{ code: string; message: string }> };
-  steps: Array<{
-    seq: number;
-    toolId?: string;
-    declaredAction: string;
-    expectedOutcome: string;
-    observedOutcome: string;
-  }>;
-  checkpointVerdicts?: Array<{ checkpointKey: string; verdict: "verified" | "inconsistent" | "incomplete"; seqs: number[] }>;
-};
 
 export type EnforcementEvidenceInput = {
   schema_version: 3;
   run_id: string;
   workflow_id: string;
-  outcome_certificate: OutcomeCertificate;
+  outcome_certificate: OutcomeCertificateV1;
   material_truth_sha256: string;
   certificate_sha256: string;
 };
@@ -35,50 +24,14 @@ export type EnforcementAcceptEvidenceInput = EnforcementEvidenceInput & {
   lifecycle_state_version: number;
 };
 
-function stableStringify(value: unknown): string {
-  if (value === null || typeof value !== "object") return JSON.stringify(value);
-  if (Array.isArray(value)) return `[${value.map((v) => stableStringify(v)).join(",")}]`;
-  const record = value as Record<string, unknown>;
-  const keys = Object.keys(record).sort((a, b) => a.localeCompare(b));
-  return `{${keys.map((k) => `${JSON.stringify(k)}:${stableStringify(record[k])}`).join(",")}}`;
-}
+export type ParseGovernanceEvidenceResult =
+  | { ok: true; input: EnforcementEvidenceInput }
+  | { ok: false; message: string };
 
-function sha256Hex(input: string): string {
-  return createHash("sha256").update(input, "utf8").digest("hex");
-}
-
-function materialTruthProjectionFromCertificate(c: OutcomeCertificate): Record<string, unknown> {
-  const reasonCodes = [...new Set(c.explanation.details.map((d) => d.code))].sort((a, b) => a.localeCompare(b));
-  const steps = [...c.steps]
-    .map((s) => ({
-      seq: s.seq,
-      toolId: s.toolId ?? "",
-      declaredAction: s.declaredAction,
-      expectedOutcome: s.expectedOutcome,
-      observedOutcome: s.observedOutcome,
-    }))
-    .sort((a, b) => a.seq - b.seq || a.toolId.localeCompare(b.toolId));
-  const checkpointVerdicts = [...(c.checkpointVerdicts ?? [])]
-    .map((v) => ({
-      checkpointKey: v.checkpointKey,
-      verdict: v.verdict,
-      seqs: [...new Set(v.seqs)].sort((a, b) => a - b),
-    }))
-    .sort((a, b) => a.checkpointKey.localeCompare(b.checkpointKey));
-  return {
-    schemaVersion: 2,
-    workflowId: c.workflowId,
-    runKind: c.runKind,
-    stateRelation: c.stateRelation,
-    reasonCodes,
-    evidenceGapPrimary: c.evidenceCompleteness.blockerCategory,
-    steps,
-    checkpointVerdicts,
-  };
-}
-
-export function parseGovernanceEvidenceInput(body: unknown): EnforcementEvidenceInput | null {
-  if (!body || typeof body !== "object") return null;
+export function parseGovernanceEvidenceInput(body: unknown): ParseGovernanceEvidenceResult {
+  if (!body || typeof body !== "object") {
+    return { ok: false, message: "Missing governance evidence fields." };
+  }
   const b = body as Record<string, unknown>;
   const schema_version = b.schema_version;
   const run_id = typeof b.run_id === "string" ? b.run_id.trim() : "";
@@ -95,29 +48,47 @@ export function parseGovernanceEvidenceInput(body: unknown): EnforcementEvidence
     !oc ||
     typeof oc !== "object"
   ) {
-    return null;
+    return { ok: false, message: "Missing governance evidence fields." };
   }
-  const cert = oc as OutcomeCertificate;
-  const ec = cert.evidenceCompleteness as { schemaVersion?: unknown; blockerCategory?: unknown } | undefined;
-  if (
-    cert.schemaVersion !== 2 ||
-    typeof cert.workflowId !== "string" ||
-    typeof cert.runKind !== "string" ||
-    typeof cert.stateRelation !== "string" ||
-    !Array.isArray(cert.steps) ||
-    !cert.explanation ||
-    !Array.isArray(cert.explanation.details) ||
-    ec?.schemaVersion !== 1 ||
-    typeof ec?.blockerCategory !== "string"
-  ) {
-    return null;
+  const certRecord = oc as Record<string, unknown>;
+  // Hosted ingest rejects inner v2 before AJV. Audit grep: cert.schemaVersion !== 2
+  if (certRecord.schemaVersion === 2) {
+    return {
+      ok: false,
+      message:
+        "Unsupported outcome certificate: outcome_certificate_v2_unsupported. Inner Outcome Certificate must be schemaVersion 3.",
+    };
   }
-  return { schema_version: 3, run_id, workflow_id, outcome_certificate: cert, material_truth_sha256, certificate_sha256 };
+
+  const validate = loadSchemaValidator("outcome-certificate-v3");
+  if (!validate(oc)) {
+    return {
+      ok: false,
+      message: `outcome_certificate invalid: ${JSON.stringify(validate.errors ?? [])}`,
+    };
+  }
+  const certificate = oc as OutcomeCertificateV1;
+
+  if (certificate.workflowId.trim() !== workflow_id) {
+    return { ok: false, message: "outcome_certificate.workflowId must match workflow_id." };
+  }
+
+  return {
+    ok: true,
+    input: {
+      schema_version: 3,
+      run_id,
+      workflow_id,
+      outcome_certificate: certificate,
+      material_truth_sha256,
+      certificate_sha256,
+    },
+  };
 }
 
-export function parseAcceptEvidenceInput(body: unknown): EnforcementAcceptEvidenceInput | null {
+export function parseAcceptEvidenceInput(body: unknown): ParseGovernanceEvidenceResult {
   const base = parseGovernanceEvidenceInput(body);
-  if (!base) return null;
+  if (!base.ok) return base;
   const b = body as Record<string, unknown>;
   const expected = typeof b.expected_projection_hash === "string" ? b.expected_projection_hash.trim() : "";
   const verRaw = b.lifecycle_state_version;
@@ -127,8 +98,21 @@ export function parseAcceptEvidenceInput(body: unknown): EnforcementAcceptEviden
       : typeof verRaw === "string" && /^\d+$/.test(verRaw.trim())
         ? Number.parseInt(verRaw.trim(), 10)
         : NaN;
-  if (!expected || !Number.isInteger(lifecycle_state_version)) return null;
-  return { ...base, expected_projection_hash: expected, lifecycle_state_version };
+  if (!expected || !Number.isInteger(lifecycle_state_version)) {
+    return {
+      ok: false,
+      message:
+        "Missing governance evidence fields or accept requirements: expected_projection_hash and lifecycle_state_version.",
+    };
+  }
+  return {
+    ok: true,
+    input: {
+      ...base.input,
+      expected_projection_hash: expected,
+      lifecycle_state_version,
+    },
+  };
 }
 
 export function verifyEvidenceHashes(input: EnforcementEvidenceInput): {
@@ -136,23 +120,21 @@ export function verifyEvidenceHashes(input: EnforcementEvidenceInput): {
   materialTruthSha256: string;
   materialTruth: Record<string, unknown>;
 } | null {
-  const certificateSha256 = sha256Hex(stableStringify(input.outcome_certificate));
-  const materialTruth = materialTruthProjectionFromCertificate(input.outcome_certificate);
-  const materialTruthSha256 = sha256Hex(stableStringify(materialTruth));
-  if (
-    certificateSha256 !== input.certificate_sha256 ||
-    materialTruthSha256 !== input.material_truth_sha256
-  ) {
+  const cert = input.outcome_certificate;
+  const certificateSha256 = canonicalCertificateSha256(cert);
+  const materialTruthSha256Computed = materialTruthSha256(cert);
+  const materialTruth = materialTruthProjectionFromCertificate(cert) as unknown as Record<string, unknown>;
+  if (certificateSha256 !== input.certificate_sha256 || materialTruthSha256Computed !== input.material_truth_sha256) {
     return null;
   }
-  return { certificateSha256, materialTruthSha256, materialTruth };
+  return { certificateSha256, materialTruthSha256: materialTruthSha256Computed, materialTruth };
 }
 
 export async function createGovernanceEvidence(input: {
   userId: string;
   workflowId: string;
   runId: string;
-  certificate: OutcomeCertificate;
+  certificate: OutcomeCertificateV1;
   certificateSha256: string;
   materialTruth: Record<string, unknown>;
   materialTruthSha256: string;
@@ -263,4 +245,3 @@ export async function listEnforcementHistory(input: {
     .orderBy(desc(enforcementEvents.createdAt))
     .limit(n);
 }
-

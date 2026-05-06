@@ -35,15 +35,11 @@ export async function POST(req: NextRequest) {
   } catch {
     return activationReserveDeny(req, { status: 400, code: "BAD_REQUEST", message: "Invalid JSON body." });
   }
-  const body = parseAcceptEvidenceInput(bodyUnknown);
-  if (!body) {
-    return activationReserveDeny(req, {
-      status: 400,
-      code: "BAD_REQUEST",
-      message:
-        "Missing governance evidence fields or accept requirements: expected_projection_hash and lifecycle_state_version.",
-    });
+  const parsed = parseAcceptEvidenceInput(bodyUnknown);
+  if (!parsed.ok) {
+    return activationReserveDeny(req, { status: 400, code: "BAD_REQUEST", message: parsed.message });
   }
+  const body = parsed.input;
   const verified = verifyEvidenceHashes(body);
   if (!verified) {
     return activationReserveDeny(req, {

@@ -25,20 +25,15 @@ test("openapi-commercial-v1.yaml info.x-agentskeptic-contract matches manifest h
   assert.equal(String(block.manifestSha256), head.manifestSha256);
 });
 
-test("GovernanceAuditBundleV2 decisionEvidenceExport references explicit DecisionEvidenceExport schema", () => {
+test("GovernanceAuditBundleV3 present in OpenAPI; GovernanceAuditBundleV2 absent", () => {
   const yaml = parseYaml(readFileSync(join(root, "schemas", "openapi-commercial-v1.yaml"), "utf8"));
-  const v2 = yaml?.components?.schemas?.GovernanceAuditBundleV2;
-  const prop = v2?.properties?.decisionEvidenceExport;
-  assert.ok(prop && typeof prop === "object");
-  assert.equal(prop.$ref, "#/components/schemas/DecisionEvidenceExport");
-  const decisionExport = yaml?.components?.schemas?.DecisionEvidenceExport;
-  assert.equal(
-    decisionExport?.properties?.manifest?.$ref,
-    "#/components/schemas/DecisionEvidenceBundleManifestHosted",
+  const v3 = yaml?.components?.schemas?.GovernanceAuditBundleV3;
+  assert.ok(v3 && typeof v3 === "object", "GovernanceAuditBundleV3 schema must exist");
+  assert.equal(v3.properties?.schemaVersion?.const, 3);
+  assert.ok(
+    v3.properties?.evidenceSlices && typeof v3.properties.evidenceSlices === "object",
+    "GovernanceAuditBundleV3 must define evidenceSlices",
   );
-  assert.equal(
-    decisionExport?.properties?.embedded?.$ref,
-    "#/components/schemas/DecisionEvidenceExportEmbedded",
-  );
-  assert.equal(decisionExport?.additionalProperties, false);
+  assert.equal(yaml?.components?.schemas?.GovernanceAuditBundleV2, undefined);
+  assert.equal(yaml?.components?.schemas?.DecisionEvidenceExport, undefined);
 });

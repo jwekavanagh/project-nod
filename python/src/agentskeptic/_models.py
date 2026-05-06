@@ -104,14 +104,32 @@ class EnforcementHistoryResponse(BaseModel):
     events: list[dict[str, Any]]
 
 
-class HostedEvidenceProducer(BaseModel):
+class GovernanceExportCorruptedEvidenceRow(BaseModel):
+    """GET /api/v1/governance/export 500 JSON (OpenAPI `GovernanceExportCorruptedEvidenceRow`)."""
+
     model_config = ConfigDict(extra="forbid")
 
-    name: str
-    version: str
+    code: Literal["CORRUPTED_EVIDENCE_ROW"]
+    evidence_id: str
+    message: str
 
 
-class DecisionEvidenceArtifactsFlags(BaseModel):
+class GovernanceEvidenceFingerprints(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    certificateSha256: str
+    materialTruthSha256: str
+
+
+class HostedEvidenceExitDecisionV1(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    schemaVersion: Literal[1] = 1
+    exitCode: int
+    cliConvention: Literal["outcome_certificate_v2"]
+
+
+class HostedDecisionEvidenceCompletenessArtifacts(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     a4Present: bool
@@ -119,66 +137,33 @@ class DecisionEvidenceArtifactsFlags(BaseModel):
     a5Required: bool
 
 
-class DecisionEvidenceCompletenessHosted(BaseModel):
+class HostedDecisionEvidenceCompleteness(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     status: Literal["complete", "partial", "invalid"]
-    artifacts: DecisionEvidenceArtifactsFlags
+    artifacts: HostedDecisionEvidenceCompletenessArtifacts
 
 
-class DecisionEvidenceBundleManifestHosted(BaseModel):
-    """Hosted governance export manifest slice (OpenAPI `DecisionEvidenceBundleManifestHosted`)."""
-
-    model_config = ConfigDict(extra="forbid")
-
-    schemaVersion: Literal[1] = 1
-    bundleKind: Literal["decision_evidence"] = "decision_evidence"
-    producer: HostedEvidenceProducer
-    createdAt: str
-    workflowId: str
-    completeness: DecisionEvidenceCompletenessHosted
-
-
-class DecisionEvidenceExportEmbeddedExitHosted(BaseModel):
-    model_config = ConfigDict(extra="forbid")
-
-    kind: Literal["hosted_not_recorded"]
-    reason: str
-
-
-class DecisionEvidenceExportEmbeddedHumanLayerFromCertificate(BaseModel):
-    model_config = ConfigDict(extra="forbid")
-
-    kind: Literal["from_certificate"]
-    text: str
-
-
-class DecisionEvidenceExportEmbeddedHumanLayerMissing(BaseModel):
-    model_config = ConfigDict(extra="forbid")
-
-    kind: Literal["missing"]
-    reason: str
-
-
-class DecisionEvidenceExportEmbedded(BaseModel):
-    model_config = ConfigDict(extra="forbid")
-
-    outcomeCertificate: dict[str, Any] | None
-    exit: DecisionEvidenceExportEmbeddedExitHosted
-    humanLayer: (
-        DecisionEvidenceExportEmbeddedHumanLayerFromCertificate | DecisionEvidenceExportEmbeddedHumanLayerMissing
-    )
-    attestation: dict[str, Any] | None = None
-    nextAction: dict[str, Any] | None = None
-
-
-class DecisionEvidenceExport(BaseModel):
-    """`decisionEvidenceExport` on governance timeline JSON (OpenAPI `DecisionEvidenceExport`)."""
+class HostedEvidenceSliceV1(BaseModel):
+    """Keyed value in GovernanceAuditBundleV3.evidenceSlices (OpenAPI `HostedEvidenceSliceV1`)."""
 
     model_config = ConfigDict(extra="forbid")
 
-    manifest: DecisionEvidenceBundleManifestHosted
-    embedded: DecisionEvidenceExportEmbedded
+    runId: str
+    outcomeCertificate: dict[str, Any]
+    fingerprints: GovernanceEvidenceFingerprints
+    hostedExit: HostedEvidenceExitDecisionV1
+    decisionCompleteness: HostedDecisionEvidenceCompleteness
+    truthCheckVerdict: str
+
+
+class GovernanceBaselineAcceptedEvidenceV3(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    evidenceSliceKey: str
+    runId: str
+    fingerprints: GovernanceEvidenceFingerprints
+    runKind: str
 
 
 class GovernanceAuditBundleV1(BaseModel):
@@ -191,20 +176,23 @@ class GovernanceAuditBundleV1(BaseModel):
     window: dict[str, str] | None = None
 
 
-class GovernanceAuditBundleV2(BaseModel):
-    model_config = ConfigDict(extra="allow")
+class GovernanceAuditBundleV3(BaseModel):
+    """GET /api/v1/governance/export body (OpenAPI `GovernanceAuditBundleV3`)."""
 
-    schemaVersion: Literal[2] = 2
+    model_config = ConfigDict(extra="forbid")
+
+    schemaVersion: Literal[3] = 3
     generatedAt: str
     userId: str
     workflowId: str
+    window: dict[str, Any]
+    lifecycle: dict[str, Any] | None
+    fsmTransitions: list[dict[str, Any]]
+    verificationDecisions: list[dict[str, Any]]
     baseline: dict[str, Any] | None
     events: list[dict[str, Any]]
-    window: dict[str, str] | None = None
-    lifecycle: dict[str, Any] | None = None
-    fsmTransitions: list[dict[str, Any]] | None = None
-    verificationDecisions: list[dict[str, Any]] | None = None
-    decisionEvidenceExport: DecisionEvidenceExport | None = None
+    evidenceSlices: dict[str, HostedEvidenceSliceV1]
+    baselineAcceptedEvidence: GovernanceBaselineAcceptedEvidenceV3 | None
 
 
 class VerifyOutcomeRequestV3(BaseModel):

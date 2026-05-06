@@ -58,18 +58,18 @@ agentskeptic decision-bundle validate <dir>
 - **Stdout:** exactly **one** JSON line (`kind: decision_bundle_validation`, `schemaVersion: 1`), sorted keys.
 - **Exit:** `0` complete, `1` partial, `2` invalid, `3` operational failure.
 
-## Hosted governance export (partial)
+## Hosted governance export (**GovernanceAuditBundleV3**)
 
-`GET /api/v1/governance/export` returns JSON **`schemaVersion: 2`** with governance timeline fields and a **`decisionEvidenceExport`** object that **aligns in naming** with this document’s concepts but is **not** a drop-in replacement for a CLI-written bundle directory.
+`GET /api/v1/governance/export` returns JSON **`GovernanceAuditBundleV3`** (**breaking:** **`schemaVersion: 3` only**) with governance timeline rows plus **`evidenceSlices`** — one slice per **`governance_evidence`** row keyed by immutable evidence id (**not** CLI technical bundle semantics). Each slice includes **`outcomeCertificate`**, **`fingerprints`** (must match **`agentskeptic/governanceEvidence`** recomputation), **`hostedExit`** (strict **`decision-evidence-exit-v1`**, **`cliConvention: outcome_certificate_v2`** retained for compatibility with the standalone exit schema label), **`decisionCompleteness`**, and **`truthCheckVerdict`**.
 
-| Aspect | Hosted export | CLI decision bundle |
+| Aspect | Hosted export (**GovernanceAuditBundleV3**) | CLI decision bundle |
 |--------|----------------|----------------------|
 | On-disk layout (`outcome-certificate.json`, `exit.json`, …) | **Not produced** | **Yes** when `--write-decision-bundle` is set |
-| Embedded certificate / human text | Latest stored certificate and derived fields where available | Full files per table above |
-| A4 / A5 files | Not embedded as standalone artifacts in current product | Optional files on disk |
-| Exit semantics | **`embedded.exit`** may use **`hosted_not_recorded`** (CLI exit codes are not persisted server-side) | **`exit.json`** on disk reflects the run |
+| Certificate + exit linkage | Stored per evidence row (`evidenceSlices[id]`) | Files on disk |
+| A4 / A5 files | **Not** embedded as standalone artifacts | Optional files per table above (`attestation.json`, `next-action.json`) |
+| Technical run NDJSON (**`--write-run-bundle`**) | **Hosted never emits** — CLI-only forensic depth | **Yes** alongside decision bundle when both flags |
 
-For governance domain model and export semantics, see [`governance.md`](governance.md).
+For ingestion invariants (**Outcome Certificate v3** only, fingerprints SSOT) and export corruption semantics (**500 CORRUPTED_EVIDENCE_ROW**), see [`governance.md`](governance.md) and **`schemas/outcome-certificate-v3.schema.json`**.
 
 ## Audit handoff (packaging recipe)
 

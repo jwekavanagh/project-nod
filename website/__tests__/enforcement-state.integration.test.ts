@@ -1,5 +1,9 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { randomUUID } from "node:crypto";
+import type { OutcomeCertificateV1 } from "agentskeptic";
+import { canonicalCertificateSha256, materialTruthSha256 } from "agentskeptic/governanceEvidence";
+import hostedFixture from "./fixtures/hosted-governance-evidence-v3.min.json";
 import { NextRequest } from "next/server";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { LifecycleState } from "@/lib/verificationLifecycle";
 import {
   evaluateAccept,
@@ -36,34 +40,41 @@ const state = vi.hoisted(() => ({
     status: "active" as const,
     user: { plan: "team", subscriptionStatus: "active", stripePriceId: null },
   } satisfies Principal,
-  evidence: new Map<string, { certHash: string; truthHash: string }>(),
 }));
 
 const fsmRows = vi.hoisted(() => ({ map: new Map<string, MockFsmRow>() }));
 
-function testOutcomeCertificateV2(workflowId: string) {
+/** Stable v3 certificate + recomputed fingerprints (hosted ingestion SSOT parity). */
+function governanceEnvelopeFor(workflowId: string, driftVariant: number): {
+  outcome_certificate: OutcomeCertificateV1;
+  certificate_sha256: string;
+  material_truth_sha256: string;
+} {
+  const cert = structuredClone(
+    hostedFixture.outcome_certificate,
+  ) as unknown as OutcomeCertificateV1 & { steps: Array<{ observedOutcome: string }> };
+  cert.workflowId = workflowId;
+  cert.steps[0]!.observedOutcome = driftVariant === 0 ? "o" : `o-v${driftVariant}`;
   return {
-    schemaVersion: 2,
-    workflowId,
-    runKind: "contract_sql",
-    stateRelation: "matches_expectations",
-    highStakesReliance: "permitted",
-    relianceRationale: "r",
-    intentSummary: "s",
-    explanation: { headline: "h", details: [{ code: "X", message: "x" }] },
-    steps: [],
-    humanReport:
-      "minimal\n\n=== evidence_completeness ===\nBlocker: none\nQuick signal: na\nNext:\n- No further action required.\nTrust boundary: runKind=contract_sql highStakesReliance=permitted (see certificate fields for normative meaning).\n=== end evidence_completeness ===",
-    evidenceCompleteness: {
-      schemaVersion: 1,
-      blockerCategory: "none",
-      quickSignal: "na",
-      verifiedClaims: [],
-      unverifiedClaims: [],
-      missingInputs: [],
-      nextActions: [{ id: "none", text: "No further action required." }],
-    },
+    outcome_certificate: cert,
+    certificate_sha256: canonicalCertificateSha256(cert),
+    material_truth_sha256: materialTruthSha256(cert),
   };
+}
+
+function envelopePostJson(
+  envelope: ReturnType<typeof governanceEnvelopeFor>,
+  workflow_id: string,
+  run_id: string,
+): string {
+  return JSON.stringify({
+    schema_version: 3,
+    run_id,
+    workflow_id,
+    material_truth_sha256: envelope.material_truth_sha256,
+    certificate_sha256: envelope.certificate_sha256,
+    outcome_certificate: envelope.outcome_certificate,
+  });
 }
 
 function getFsmRow(wf: string): MockFsmRow {
@@ -90,7 +101,9 @@ vi.mock("@/lib/apiKeyCrypto", () => ({
 vi.mock("@/db/client", () => ({
   db: {
     insert: () => ({
-      values: () => Promise.resolve(undefined),
+      values: () => ({
+        returning: async () => [{ id: randomUUID() }],
+      }),
     }),
     update: () => ({
       set: () => ({
@@ -127,29 +140,6 @@ vi.mock("@/db/client", () => ({
     }),
   },
 }));
-
-function parseGovernanceBody(body: unknown) {
-  if (!body || typeof body !== "object") return null;
-  const b = body as Record<string, unknown>;
-  if (
-    b.schema_version !== 3 ||
-    typeof b.run_id !== "string" ||
-    typeof b.workflow_id !== "string" ||
-    typeof b.material_truth_sha256 !== "string" ||
-    typeof b.certificate_sha256 !== "string" ||
-    !Object.prototype.hasOwnProperty.call(b, "outcome_certificate")
-  ) {
-    return null;
-  }
-  return {
-    schema_version: 3 as const,
-    run_id: b.run_id as string,
-    workflow_id: b.workflow_id as string,
-    material_truth_sha256: b.material_truth_sha256 as string,
-    certificate_sha256: b.certificate_sha256 as string,
-    outcome_certificate: b.outcome_certificate,
-  };
-}
 
 vi.mock("@/lib/enforcementFsmPersistence", () => ({
   executeFsmCheck: vi.fn(async (params: {
@@ -335,41 +325,11 @@ vi.mock("@/lib/enforcementFsmPersistence", () => ({
   }),
 }));
 
-vi.mock("@/lib/enforcementState", () => ({
-  parseGovernanceEvidenceInput: (body: unknown) => parseGovernanceBody(body),
-  parseAcceptEvidenceInput: (body: unknown) => {
-    const base = parseGovernanceBody(body);
-    if (!base) return null;
-    const b = body as Record<string, unknown>;
-    const expected = typeof b.expected_projection_hash === "string" ? b.expected_projection_hash.trim() : "";
-    const verRaw = b.lifecycle_state_version;
-    const lifecycle_state_version =
-      typeof verRaw === "number" && Number.isFinite(verRaw) && Number.isInteger(verRaw)
-        ? verRaw
-        : typeof verRaw === "string" && /^\d+$/.test(verRaw.trim())
-          ? Number.parseInt(verRaw.trim(), 10)
-          : NaN;
-    if (!expected || !Number.isInteger(lifecycle_state_version)) return null;
-    return { ...base, expected_projection_hash: expected, lifecycle_state_version };
-  },
-  verifyEvidenceHashes: vi.fn((input: { material_truth_sha256: string; certificate_sha256: string }) => ({
-    certificateSha256: input.certificate_sha256,
-    materialTruthSha256: input.material_truth_sha256,
-    materialTruth: { mocked: true },
-  })),
-  createGovernanceEvidence: vi.fn(async (input: { certificateSha256: string; materialTruthSha256: string }) => {
-    const id = crypto.randomUUID();
-    state.evidence.set(id, { certHash: input.certificateSha256, truthHash: input.materialTruthSha256 });
-    return id;
-  }),
-}));
-
 describe("enforcement state lifecycle", () => {
   beforeEach(() => {
     state.principal.user.plan = "team";
     state.principal.user.subscriptionStatus = "active";
     fsmRows.map.clear();
-    state.evidence.clear();
   });
 
   it("baseline create -> enforce pass -> drift fail -> accept -> enforce pass", async () => {
@@ -377,32 +337,28 @@ describe("enforcement state lifecycle", () => {
     const { POST: check } = await import("@/app/api/v1/enforcement/check/route");
     const { POST: accept } = await import("@/app/api/v1/enforcement/accept/route");
 
-    const mkReq = (url: string, run: string, hash: string, projection: Record<string, unknown>) =>
+    const v0 = governanceEnvelopeFor("wf-a", 0);
+    const v1 = governanceEnvelopeFor("wf-a", 1);
+
+    const mkReq = (url: string, run: string, envelope: ReturnType<typeof governanceEnvelopeFor>) =>
       new NextRequest(url, {
         method: "POST",
         headers: { authorization: "Bearer wf_sk_test", "content-type": "application/json" },
-        body: JSON.stringify({
-          schema_version: 3,
-          run_id: run,
-          workflow_id: "wf-a",
-          material_truth_sha256: hash,
-          certificate_sha256: `c_${hash}`,
-          outcome_certificate: testOutcomeCertificateV2("wf-a"),
-        }),
+        body: envelopePostJson(envelope, "wf-a", run),
       });
 
-    const b = await createBaseline(mkReq("http://localhost/api/v1/enforcement/baselines", "r1", "h1", { a: 1 }));
+    const b = await createBaseline(mkReq("http://localhost/api/v1/enforcement/baselines", "r1", v0));
     expect(b.status).toBe(200);
     const bj = (await b.json()) as { schema_version?: number; code?: string };
     expect(bj.schema_version).toBe(2);
     expect(bj.code).toBe("COMPLETED");
 
-    const pass = await check(mkReq("http://localhost/api/v1/enforcement/check", "r2", "h1", { a: 1 }));
+    const pass = await check(mkReq("http://localhost/api/v1/enforcement/check", "r2", v0));
     expect(pass.status).toBe(200);
     const pj = (await pass.json()) as { result_status?: string };
     expect(pj.result_status).toBe("match");
 
-    const drift = await check(mkReq("http://localhost/api/v1/enforcement/check", "r3", "h2", { a: 2 }));
+    const drift = await check(mkReq("http://localhost/api/v1/enforcement/check", "r3", v1));
     expect(drift.status).toBe(200);
     const dj = (await drift.json()) as {
       result_status?: string;
@@ -410,7 +366,7 @@ describe("enforcement state lifecycle", () => {
       lifecycle_state_version?: number;
     };
     expect(dj.result_status).toBe("drift");
-    expect(dj.expected_projection_hash_for_accept).toBe("h1");
+    expect(dj.expected_projection_hash_for_accept).toBe(v0.material_truth_sha256);
 
     const ac = await accept(
       new NextRequest("http://localhost/api/v1/enforcement/accept", {
@@ -420,11 +376,11 @@ describe("enforcement state lifecycle", () => {
           schema_version: 3,
           run_id: "r4",
           workflow_id: "wf-a",
-          material_truth_sha256: "h2",
-          certificate_sha256: "c_h2",
+          material_truth_sha256: v1.material_truth_sha256,
+          certificate_sha256: v1.certificate_sha256,
           expected_projection_hash: dj.expected_projection_hash_for_accept,
           lifecycle_state_version: dj.lifecycle_state_version,
-          outcome_certificate: testOutcomeCertificateV2("wf-a"),
+          outcome_certificate: v1.outcome_certificate,
         }),
       }),
     );
@@ -432,17 +388,18 @@ describe("enforcement state lifecycle", () => {
     const aj = (await ac.json()) as { lifecycle_state?: string };
     expect(aj.lifecycle_state).toBe("rerun_required");
 
-    const pass2 = await check(mkReq("http://localhost/api/v1/enforcement/check", "r5", "h2", { a: 2 }));
+    const pass2 = await check(mkReq("http://localhost/api/v1/enforcement/check", "r5", v1));
     expect(pass2.status).toBe(200);
     const p2 = (await pass2.json()) as { result_status?: string };
     expect(p2.result_status).toBe("rerun_pass");
   });
 
   it("returns rebase-required when legacy baseline flag is set", async () => {
+    const legacyEnv = governanceEnvelopeFor("wf-legacy", 0);
     fsmRows.map.set("wf-legacy", {
       lifecycle: "baseline_active",
       version: 1,
-      baselineHash: "h-old",
+      baselineHash: legacyEnv.material_truth_sha256,
       pendingAccept: null,
       needsRebaseline: true,
     });
@@ -451,14 +408,7 @@ describe("enforcement state lifecycle", () => {
       new NextRequest("http://localhost/api/v1/enforcement/check", {
         method: "POST",
         headers: { authorization: "Bearer wf_sk_test", "content-type": "application/json" },
-        body: JSON.stringify({
-          schema_version: 3,
-          run_id: "r-legacy",
-          workflow_id: "wf-legacy",
-          material_truth_sha256: "h-old",
-          certificate_sha256: "c-old",
-          outcome_certificate: testOutcomeCertificateV2("wf-legacy"),
-        }),
+        body: envelopePostJson(legacyEnv, "wf-legacy", "r-legacy"),
       }),
     );
     expect(res.status).toBe(409);
@@ -471,6 +421,7 @@ describe("enforcement API entitlement and quota semantics", () => {
   it("starter cannot baseline/check/accept", async () => {
     state.principal.user.plan = "starter";
     state.principal.user.subscriptionStatus = "none";
+    const ent = governanceEnvelopeFor("wf-ent", 0);
     const { POST: createBaseline } = await import("@/app/api/v1/enforcement/baselines/route");
     const { POST: check } = await import("@/app/api/v1/enforcement/check/route");
     const { POST: accept } = await import("@/app/api/v1/enforcement/accept/route");
@@ -478,14 +429,7 @@ describe("enforcement API entitlement and quota semantics", () => {
       new NextRequest(url, {
         method: "POST",
         headers: { authorization: "Bearer wf_sk_test", "content-type": "application/json" },
-        body: JSON.stringify({
-          schema_version: 3,
-          run_id: "r1",
-          workflow_id: "wf-ent",
-          material_truth_sha256: "h-ent",
-          certificate_sha256: "c-ent",
-          outcome_certificate: testOutcomeCertificateV2("wf-ent"),
-        }),
+        body: envelopePostJson(ent, "wf-ent", "r1"),
       });
     const acceptReq = new NextRequest("http://localhost/api/v1/enforcement/accept", {
       method: "POST",
@@ -494,11 +438,11 @@ describe("enforcement API entitlement and quota semantics", () => {
         schema_version: 3,
         run_id: "r1a",
         workflow_id: "wf-ent",
-        material_truth_sha256: "h-ent",
-        certificate_sha256: "c-ent",
+        material_truth_sha256: ent.material_truth_sha256,
+        certificate_sha256: ent.certificate_sha256,
         expected_projection_hash: "x",
         lifecycle_state_version: 1,
-        outcome_certificate: testOutcomeCertificateV2("wf-ent"),
+        outcome_certificate: ent.outcome_certificate,
       }),
     });
     for (const fn of [createBaseline, check]) {
@@ -516,19 +460,13 @@ describe("enforcement API entitlement and quota semantics", () => {
   it("inactive paid user cannot baseline/check/accept", async () => {
     state.principal.user.plan = "team";
     state.principal.user.subscriptionStatus = "inactive";
+    const ent = governanceEnvelopeFor("wf-ent", 0);
     const { POST: createBaseline } = await import("@/app/api/v1/enforcement/baselines/route");
     const res = await createBaseline(
       new NextRequest("http://localhost/api/v1/enforcement/baselines", {
         method: "POST",
         headers: { authorization: "Bearer wf_sk_test", "content-type": "application/json" },
-        body: JSON.stringify({
-          schema_version: 3,
-          run_id: "r2",
-          workflow_id: "wf-ent",
-          material_truth_sha256: "h-ent2",
-          certificate_sha256: "c-ent2",
-          outcome_certificate: testOutcomeCertificateV2("wf-ent"),
-        }),
+        body: envelopePostJson(ent, "wf-ent", "r2"),
       }),
     );
     expect(res.status).toBe(403);
@@ -539,19 +477,13 @@ describe("enforcement API entitlement and quota semantics", () => {
   it("active paid user can baseline/check/accept and response marks quota path explicit", async () => {
     state.principal.user.plan = "team";
     state.principal.user.subscriptionStatus = "active";
+    const ent = governanceEnvelopeFor("wf-ent", 0);
     const { POST: createBaseline } = await import("@/app/api/v1/enforcement/baselines/route");
     const res = await createBaseline(
       new NextRequest("http://localhost/api/v1/enforcement/baselines", {
         method: "POST",
         headers: { authorization: "Bearer wf_sk_test", "content-type": "application/json" },
-        body: JSON.stringify({
-          schema_version: 3,
-          run_id: "r3",
-          workflow_id: "wf-ent",
-          material_truth_sha256: "h-ent3",
-          certificate_sha256: "c-ent3",
-          outcome_certificate: testOutcomeCertificateV2("wf-ent"),
-        }),
+        body: envelopePostJson(ent, "wf-ent", "r3"),
       }),
     );
     expect(res.status).toBe(200);
