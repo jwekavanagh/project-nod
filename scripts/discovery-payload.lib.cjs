@@ -262,7 +262,7 @@ function renderLlmsTextFromPayload(payload) {
     "",
     "## Primary links",
     `- Canonical site: ${links.site}`,
-    `- Integrator guide (v2 SSOT): ${links.integratorGuideSsotRaw}`,
+    `- Canonical integrator guide: ${links.integratorGuideSsotRaw}`,
     `- Cursor integration (consumer rule): ${links.cursorIntegrationDocRaw}`,
     `- First-run integration: ${integrateUrl}`,
     `- Runtime truth-check (agentskeptic check / AgentSkeptic.check): ${links.runtimeTruthCheckGuide}`,

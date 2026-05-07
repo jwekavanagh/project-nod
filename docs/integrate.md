@@ -62,6 +62,260 @@ On verdict exits, stderr begins with:
 
 Then the human-readable certificate report (unless `--no-human-report`; the verdict line is still emitted).
 
+<a id="framework-verification-recipes"></a>
+
+## Framework verification recipes
+
+Compact map of supported **narrow** adoption paths; each downstream link owns the runnable detail. AgentSkeptic verifies **structured tool activity against downstream witnesses** (`agentskeptic check`), not exhaustive framework ownership.
+
+Boundaries:
+
+- No AgentSkeptic MCP verification product surface (**Phase 10 decision:** [`docs/rfcs/mcp-verification-tool.md`](rfcs/mcp-verification-tool.md)).
+- Optional Python extras (LangGraph checkpoints, CrewAI hooks) defer to **`python/FRAMEWORK_LOCK.md`**; everything else emits NDJSON/registry and uses the OSS CLI/SDK.
+- For certificate field truth, **`docs/outcome-certificate-normative.md`** remains authoritative.
+
+Each recipe repeats the scaffold below so you know inputs, outputs, and limits before cloning sample repos.
+
+Recipe scaffold (exact heading names): **`#### Problem`**, **`#### Captured activity`**, **`#### Minimum registry`**, **`#### Command`**, **`#### Expected verdict`**, **`#### Evidence source`**, **`#### CI pointer`**, **`#### Boundary`**.
+
+### Recipe: LangGraph checkpoint trust
+
+#### Problem
+
+Orchestration traces align while persisted checkpoints/SQL drift.
+
+#### Captured activity
+
+v3 **`tool_observed`** NDJSON carrying **`langgraphCheckpoint`** payloads for one **`workflowId`**.
+
+#### Minimum registry
+
+Validated **`agentskeptic/tools.json`** mapping tool effects to verification kinds (SQLite/Postgres per run).
+
+#### Command
+
+CLI: add **`--langgraph-checkpoint-trust`** alongside standard **`agentskeptic check`** args—copy/paste snippets in **`docs/partner-quickstart-commands.md`**.
+
+#### Expected verdict
+
+**`runKind: contract_sql_langgraph_checkpoint_trust`** Outcome Certificate on stdout plus stderr **`truth_check_verdict`** (see **`docs/outcome-certificate-integrator.md`**).
+
+#### Evidence source
+
+Statute:** [`docs/integrator-verification.md#langgraph-checkpoint-trust`](integrator-verification.md#langgraph-checkpoint-trust).
+
+#### CI pointer
+
+**`examples/github-actions/agentskeptic-check.yml`** with **`extra-args`** for **`--langgraph-checkpoint-trust`** when exercising partner fixtures.
+
+#### Boundary
+
+Checkpoint trust rejects mixed schema versions; **`agentskeptic quick`** does not replace this contract path.
+
+### Recipe: Python-first LangGraph/kernel demo
+
+#### Problem
+
+Need in-process parity with OSS certificates before wiring Node tooling.
+
+#### Captured activity
+
+Same partner fixtures mirrored into Python **`VerificationSession`**.
+
+#### Minimum registry
+
+**`examples/partner-quickstart/partner.tools.json`**.
+
+#### Command
+
+Follow **`examples/python-verification/README.md`** (`pip install -e "python/[dev]"`, **`run_partner_kernel_demo.py`**).
+
+#### Expected verdict
+
+Python-emitted certificates remain schema-compatible with CLI stdout JSON.
+
+#### Evidence source
+
+**`examples/python-verification/README.md`**.
+
+#### CI pointer
+
+**`npm run test:python`** (includes LangGraph primacy guard) surfaces regressions locally.
+
+#### Boundary
+
+Demonstration kernel only—production wiring still requires your emitter + registry ownership.
+
+### Recipe: Generic NDJSON / CLI / TypeScript SDK
+
+#### Problem
+
+Any stack can emit **`tool_observed`** shaped rows regardless of orchestration SDK.
+
+#### Captured activity
+
+NDJSON (**`agentskeptic/events.ndjson`**) JSON lines matching event schema validations.
+
+#### Minimum registry
+
+Versioned **`agentskeptic/tools.json`**.
+
+#### Command
+
+Documented in **`docs/first-truth-check.md`** (**`agentskeptic check`** / **`AgentSkeptic.check`** examples).
+
+#### Expected verdict
+
+Trusted vs not-trusted vs unknown per stderr line + **`stateRelation`** in stdout JSON (**`Outcome Certificate v3`**).
+
+#### Evidence source
+
+**`docs/first-truth-check.md`** and `stdout`/`stderr` contract above.
+
+#### CI pointer
+
+**`examples/github-actions/agentskeptic-check.yml`** (composite action).
+
+#### Boundary
+
+Structured ingest only—raw log scraping remains out of scope (see ingest guidance in **`docs/quick-verify-normative.md`** for previews).
+
+### Recipe: Cursor agent-assisted verification
+
+#### Problem
+
+Local coding agents must replay the contract inside editor loops.
+
+#### Captured activity
+
+Same NDJSON/registry layout as Generic recipe.
+
+#### Minimum registry
+
+Per-project **`tools.json`** with stable **`toolId` → verification** mappings.
+
+#### Command
+
+Adopt **`examples/cursor/agentskeptic-check.mdc`** guidance + **`docs/cursor-integration.md`**.
+
+#### Expected verdict
+
+Identical **`truth_check_verdict`** semantics as CLI (rules drive **`npx agentskeptic check`**, not MCP).
+
+#### Evidence source
+
+**`docs/cursor-integration.md`** + **`examples/cursor/agentskeptic-check.mdc`**.
+
+#### CI pointer
+
+Mirror the YAML composite in **`examples/github-actions/agentskeptic-check.yml`** for merge gates outside Cursor.
+
+#### Boundary
+
+Hosted MCP verification surface remains deferred (**[`docs/rfcs/mcp-verification-tool.md`](rfcs/mcp-verification-tool.md)**).
+
+### Recipe: CrewAI minimal hook
+
+#### Problem
+
+Demonstrate bridging CrewAI tool hooks into the verifier without maintaining a heavyweight integration layer.
+
+#### Captured activity
+
+Hook-buffered **`tool_observed`** payloads via **`crewai.hooks.before_tool_call`** (see **`python/FRAMEWORK_LOCK.md`**).
+
+#### Minimum registry
+
+Partner SQLite fixtures mirrored in **`examples/partner-quickstart`**.
+
+#### Command
+
+**`examples/python-verification/README.md#crewai-minimal-example`** (pip extra **`crewai`**, **`crewai_minimal.py`**).
+
+#### Expected verdict
+
+**`trustDecision` / certificate JSON** aligning with OSS CLI semantics (**`agentskeptic check`** equivalents).
+
+#### Evidence source
+
+**`python/FRAMEWORK_LOCK.md`**, **`examples/python-verification/README.md`**.
+
+#### CI pointer
+
+Optional: wrap **`crewai_minimal.py`** invocation in nightly automation when extras installed.
+
+#### Boundary
+
+Pins only **`crewai` hook surface enumerated in FRAMEWORK_LOCK**—not full Crew lifecycle ownership.
+
+### Recipe: OpenAI-style tool loop (SQL-only contract truth)
+
+#### Problem
+
+Assistant transcript shows tool success strings while relational state disagrees.
+
+#### Captured activity
+
+Structured **`tool_calls` → tool_observed** ingestion (manual or SDK), not unstructured chat logs.
+
+#### Minimum registry
+
+Row-level relational expectations authored per tool.
+
+#### Command
+
+Operational narrative + symptoms:** **[https://agentskeptic.com/guides/tool-loop-success-crm-state-wrong](https://agentskeptic.com/guides/tool-loop-success-crm-state-wrong)**; raw Markdown: **[https://raw.githubusercontent.com/jwekavanagh/agentskeptic/refs/heads/main/website/content/surfaces/guides/tool-loop-success-crm-state-wrong.md](https://raw.githubusercontent.com/jwekavanagh/agentskeptic/refs/heads/main/website/content/surfaces/guides/tool-loop-success-crm-state-wrong.md)**.
+
+#### Expected verdict
+
+**`ROW_ABSENT`** / mismatch codes surface once SQL truth diverges—even if conversational UI looked successful.
+
+#### Evidence source
+
+Site guide linked above plus generic contract docs (**`docs/integrate.md`**, **`docs/first-truth-check.md`**).
+
+#### CI pointer
+
+Reuse **`examples/github-actions/agentskeptic-check.yml`** replaying emitted NDJSON snapshots.
+
+#### Boundary
+
+Hybrid HTTP/object/vector witnessing requires remote DB URL + registry kinds—stay on SQL-first until infra matches **`docs/verification-state-stores.md`**.
+
+### Recipe: Postgres HTTP hybrid witness
+
+#### Problem
+
+Demonstrate simultaneous SQL + **`http_witness`** checks from one contract run beyond pure LangGraph checkpoints.
+
+#### Captured activity
+
+Temporarily generated NDJSON/registry pairing produced by scripted demo (**`examples/hybrid-contract-demo.mjs`**).
+
+#### Minimum registry
+
+Registry rows composing SQL + **`http_witness`** kinds as described in **`docs/verification-state-stores.md`**.
+
+#### Command
+
+`npm run build` then **`POSTGRES_VERIFICATION_URL=… node examples/hybrid-contract-demo.mjs`** (details in **`docs/verification-state-stores.md#hybrid-contract-demo`**).
+
+#### Expected verdict
+
+Trusted multi-step **`Outcome Certificate`** verifying both Postgres rows and ephemeral HTTP fixtures.
+
+#### Evidence source
+
+**`docs/verification-state-stores.md#hybrid-contract-demo`**.
+
+#### CI pointer
+
+Optional workflow step mirroring Postgres URL secret + scripted demo for staging environments.
+
+#### Boundary
+
+Demonstration script—not a packaged integration; remote DB + witness prerequisites apply (SQLite file cannot host HTTP witnesses).
+
 ### Receipt side effect
 
 `agentskeptic check` and `agentskeptic quick` write one verification receipt JSON per run under `artifacts/agentskeptic-receipts/` (fail-closed on receipt write/schema errors with exit 3).

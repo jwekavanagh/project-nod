@@ -183,6 +183,7 @@ Local **`agentskeptic check`** runs offline. Anonymous product-activation teleme
 
 ## Next steps
 
+- **Framework verification recipes:** [`integrate.md#framework-verification-recipes`](integrate.md#framework-verification-recipes)
 - **Full integration guide:** [`integrate.md`](integrate.md)
 - **GitHub Actions ambient contract:** [`ambient-ci-distribution.md`](ambient-ci-distribution.md)
 - **Cursor integration:** [`cursor-integration.md`](cursor-integration.md)

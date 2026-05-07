@@ -12,9 +12,9 @@ embedKey: langgraph_checkpoint_trust
 
 # LangGraph checkpoint trust (all terminal stories)
 
-**Normative law:** [`docs/integrator-verification.md#langgraph-checkpoint-trust`](https://github.com/jwekavanagh/agentskeptic/blob/main/docs/integrator-verification.md#langgraph-checkpoint-trust) — v3 wire, A1–D, production gate.
+**Normative law:** [`docs/integrator-verification.md#langgraph-checkpoint-trust`](https://github.com/jwekavanagh/agentskeptic/blob/main/docs/integrator-verification.md#langgraph-checkpoint-trust) — v3 wire, A1–D, production gate. Legacy pointer filename **`docs/langgraph-checkpoint-trust.md`** redirects readers to this anchor.
 
-**Python (SQLite or Postgres) and the kernel API:** [`examples/python-verification/README.md`](https://github.com/jwekavanagh/agentskeptic/blob/main/examples/python-verification/README.md) and the LangGraph section in the integrator doc.
+**Python / kernel runnable path:** [`examples/python-verification/README.md`](https://github.com/jwekavanagh/agentskeptic/blob/main/examples/python-verification/README.md). **`docs/integrate.md#framework-verification-recipes`** lists how this stacks next to hybrid witness and Cursor recipes.
 
 Use the **tabs** to compare A2 (ineligible), B (verified), C (DB mismatch), and D (incomplete/unknown tool) before reading GitHub source.
 

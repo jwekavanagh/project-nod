@@ -83,7 +83,7 @@ const certificate = await skeptic.check({
 
 The default verification contract is unchanged: **`agentskeptic check` semantics**, Outcome Certificate on stdout, and **`truth_check_verdict`** on stderr—whether you invoke the published **npm CLI** alongside your stack or use the **Python SDK / extras** documented in **[`docs/integrate.md`](docs/integrate.md)**. Start here: **`pip install`** and framework notes there, plus **[`examples/python-verification/README.md`](examples/python-verification/README.md)**.
 
-See **[`docs/integrate.md`](docs/integrate.md)** (v2 integrator SSOT) and [`docs/migrate-2.md`](docs/migrate-2.md) for 1.x → 2.0 renames.
+See **[`docs/integrate.md`](docs/integrate.md)** (canonical integrator guide — see title in integrate.md) and [`docs/migrate-2.md`](docs/migrate-2.md) for 1.x → 2.0 renames.
 
 ### CI (GitHub Actions)
 
@@ -95,7 +95,7 @@ Read-only checks at verify time—not color.
 
 ## Primary links
 - Canonical site: https://agentskeptic.com/
-- Integrator guide (v2 SSOT): https://raw.githubusercontent.com/jwekavanagh/agentskeptic/refs/heads/main/docs/integrate.md
+- Canonical integrator guide: https://raw.githubusercontent.com/jwekavanagh/agentskeptic/refs/heads/main/docs/integrate.md
 - Cursor integration (consumer rule): https://raw.githubusercontent.com/jwekavanagh/agentskeptic/refs/heads/main/docs/cursor-integration.md
 - First-run integration: https://agentskeptic.com/integrate
 - Runtime truth-check (agentskeptic check / AgentSkeptic.check): https://github.com/jwekavanagh/agentskeptic/blob/main/docs/first-truth-check.md

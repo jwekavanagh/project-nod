@@ -12,7 +12,7 @@ evaluatorLens: false
 
 # Debug Postgres after LangGraph runs
 
-For LangGraph **checkpoint trust** mode (approval-grade stdout, `--langgraph-checkpoint-trust`), see [`docs/langgraph-checkpoint-trust.md`](https://github.com/jwekavanagh/agentskeptic/blob/main/docs/langgraph-checkpoint-trust.md).
+For LangGraph **checkpoint trust** mode (approval-grade stdout, `--langgraph-checkpoint-trust`), start at **[`docs/integrator-verification.md#langgraph-checkpoint-trust`](https://github.com/jwekavanagh/agentskeptic/blob/main/docs/integrator-verification.md#langgraph-checkpoint-trust)**. Legacy inbound links may hit **[`docs/langgraph-checkpoint-trust.md`](https://github.com/jwekavanagh/agentskeptic/blob/main/docs/langgraph-checkpoint-trust.md)** — a short pointer to the same statute anchor.
 
 Debugging Postgres after a LangGraph run requires row-level truth at verification time beyond trace completion flags alone for customer-facing data.
 

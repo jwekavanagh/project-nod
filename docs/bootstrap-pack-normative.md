@@ -36,7 +36,7 @@ No other flags in v1 beyond the shared **`BootstrapPackCli`** grammar (`--help` 
 | Quick thresholds, `--export-registry` byte identity | [quick-verify-normative.md](quick-verify-normative.md) |
 | `verify` stdout/stderr for `WorkflowResult` | [agentskeptic.md](agentskeptic.md) + shared `runStandardVerifyWorkflowCliFlow` behavior |
 | Integrator onboarding checklist, integrate spine anchors, **`IntegrateSpineComplete`** prose | [first-run-integration.md](first-run-integration.md) |
-| v2 integrator entry / Activation overview (hosted + npm framing) | [integrate.md](integrate.md) |
+| Integrator onboarding / Activation overview (hosted + npm framing) | [integrate.md](integrate.md) |
 | Generated copy-paste shell commands (partner quickstart, Postgres, LangGraph oracle, **`verify-integrator-owned`**) | [partner-quickstart-commands.md](partner-quickstart-commands.md) — run **`node scripts/generate-partner-quickstart-commands.mjs`** |
 
 ### Integrator spine

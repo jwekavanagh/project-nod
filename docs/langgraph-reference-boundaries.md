@@ -1,6 +1,6 @@
 # Langgraph reference documentation boundaries
 
-Canonical **Python integrator primacy** for LangGraph-shaped orchestration is **[`examples/python-verification/README.md`](../examples/python-verification/README.md)** plus **[`docs/integrator-verification.md`](integrator-verification.md)**.
+**Python-first runnable kernel:** **[`examples/python-verification/README.md`](../examples/python-verification/README.md)** (demo + pinning story). **Product integrator onboarding + framework recipe index:** **[`docs/integrate.md`](integrate.md)** (anchor **`#framework-verification-recipes`**). **LangGraph checkpoint-trust statutes + emitted capability matrix:** **[`docs/integrator-verification.md`](integrator-verification.md)** with anchor **[`#langgraph-checkpoint-trust`](integrator-verification.md#langgraph-checkpoint-trust)**.
 
 A **Node oracle emitter** (minimal graph, not a product quickstart) lives under **[`test/fixtures/langgraph-node-oracle/README.md`](../test/fixtures/langgraph-node-oracle/README.md)**. Full-machine validation (emitter contract, happy path, negative `ROW_ABSENT`) runs from [`scripts/langgraph-reference-verify.mjs`](../scripts/langgraph-reference-verify.mjs) during root **`npm test`**, followed by [`scripts/assert-no-langgraph-v1-product-path.mjs`](../scripts/assert-no-langgraph-v1-product-path.mjs).
 

@@ -2,7 +2,7 @@
 
 First-party Python verification kernel and `agentskeptic.verify()` integration surface.
 
-Authoritative integrator narrative: [../docs/integrator-verification.md](../docs/integrator-verification.md).
+**Canonical integrator guide:** [../docs/integrate.md](../docs/integrate.md). **LangGraph checkpoint trust statute + capability matrix:** [../docs/integrator-verification.md#langgraph-checkpoint-trust](../docs/integrator-verification.md#langgraph-checkpoint-trust).
 
 LM-assisted **`tools.json` drafting** from OpenAI/bootstrap inputs ships as **`POST /api/integrator/registry-draft`** on the canonical website (**DraftEngine** in **`website/src/lib/registry-draft/`**) — see [../docs/registry-draft.md](../docs/registry-draft.md). The small `emit_tools_json` helper in this package is template-only, not a second draft stack.
 

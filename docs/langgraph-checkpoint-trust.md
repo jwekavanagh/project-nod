@@ -1,5 +1,5 @@
-# LangGraph checkpoint trust (redirect)
+# LangGraph checkpoint trust (pointer)
 
-Normative LangGraph checkpoint trust material (v3 wire, eligibility, terminal rows **A1–D**, production gate) now lives under **LangGraph checkpoint trust** in **[integrator-verification.md](integrator-verification.md#langgraph-checkpoint-trust)**.
+Legacy filename for bookmarks and inbound links.
 
-TypeScript source pointers (`verifyRunStateFromBufferedRunEvents`, gate modules) are linked from that section.
+**Authoritative law:** [`docs/integrator-verification.md#langgraph-checkpoint-trust`](integrator-verification.md#langgraph-checkpoint-trust) — eligibility, **`--langgraph-checkpoint-trust`**, stdout/stderr contract, preview vs enforcement pointers, capability matrix sibling section.

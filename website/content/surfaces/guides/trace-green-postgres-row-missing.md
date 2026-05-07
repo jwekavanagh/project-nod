@@ -12,7 +12,7 @@ evaluatorLens: false
 
 # Green trace, missing Postgres row
 
-LangGraph **checkpoint trust** contracts (v3 wire, CLI flag, terminal table) are defined in [`docs/langgraph-checkpoint-trust.md`](https://github.com/jwekavanagh/agentskeptic/blob/main/docs/langgraph-checkpoint-trust.md); this guide stays symptom-first.
+LangGraph **checkpoint trust** contracts (v3 wire, CLI flag, terminal table) are defined in [`docs/integrator-verification.md#langgraph-checkpoint-trust`](https://github.com/jwekavanagh/agentskeptic/blob/main/docs/integrator-verification.md#langgraph-checkpoint-trust); [`docs/langgraph-checkpoint-trust.md`](https://github.com/jwekavanagh/agentskeptic/blob/main/docs/langgraph-checkpoint-trust.md) remains a short pointer to that anchor. This guide stays symptom-first.
 
 Green LangGraph or agent trace but wrong or missing Postgres row
 

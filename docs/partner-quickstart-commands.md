@@ -56,7 +56,7 @@ node dist/cli.js check --workflow-id wf_partner --events examples/partner-quicks
 
 ## LangGraph reference (emit events, then verify)
 
-**Python default path:** `pip install -e "python/[dev]"` then `python examples/python-verification/run_partner_kernel_demo.py` (in-process kernel; no `node dist/cli.js` on the hot path). Authority: [integrator-verification.md](integrator-verification.md).
+**Python default path:** `pip install -e "python/[dev]"` then `python examples/python-verification/run_partner_kernel_demo.py` (in-process kernel; no `node dist/cli.js` on the hot path). Canonical integrator guide: [integrate.md](integrate.md). LangGraph checkpoint trust statute: [integrator-verification.md#langgraph-checkpoint-trust](integrator-verification.md#langgraph-checkpoint-trust).
 
 **Node oracle (CI / regression only):** minimal emitter in `test/fixtures/langgraph-node-oracle/`. From **repository root** after `npm run build`:
 
