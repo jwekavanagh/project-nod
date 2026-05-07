@@ -1,3 +1,9 @@
+## [7.5.0](https://github.com/jwekavanagh/agentskeptic/compare/v7.4.0...v7.5.0) (2026-05-07)
+
+### Features
+
+* opt-in registry readiness preflight ([#69](https://github.com/jwekavanagh/agentskeptic/issues/69)) ([0a1b308](https://github.com/jwekavanagh/agentskeptic/commit/0a1b3087bf574863197a37c43eefa82055721723))
+
 ## [7.4.0](https://github.com/jwekavanagh/agentskeptic/compare/v7.3.1...v7.4.0) (2026-05-07)
 
 ### Features
