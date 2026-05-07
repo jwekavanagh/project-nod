@@ -89,38 +89,59 @@ export default async function HomePage() {
             <p className="muted home-hero-trace-bridge">
               Agent traces show what the agent attempted.
               <br />
-              AgentSkeptic checks whether the promised state actually exists.
+              AgentSkeptic checks what actually changed.
             </p>
+            <p className="home-hero-receipt-title">{productCopy.homeHeroReceipt.title}</p>
             <p className="home-hero-terminal-label muted">{productCopy.homeHeroExampleLabel}</p>
-            <p className="home-hero-failure-caption muted">
-              {productCopy.homeHeroFailureCaptionLead}{" "}
-              {productCopy.homeHeroFailureCaptionMid}{" "}
-              {productCopy.homeHeroFailureCaptionOutro}
-            </p>
-            <p className="home-hero-verdict" aria-hidden="true">
-              VERDICT: <span className="home-hero-verdict-failed">FAILED</span>
-            </p>
-            <div className="home-hero-flow" aria-label="Simplified missing-write flow">
-              <div className="home-hero-flow-row">
-                <span>Agent claimed</span>
-                <span className="home-hero-flow-sep" aria-hidden="true">
-                  →
-                </span>
-                <span>Store checked</span>
-                <span className="home-hero-flow-sep" aria-hidden="true">
-                  →
-                </span>
-                <span className="home-hero-flow-miss">Row missing</span>
+            <dl className="home-hero-receipt">
+              <div className="home-hero-receipt-row">
+                <dt className="home-hero-receipt-label">
+                  {productCopy.homeHeroReceipt.rows.agentClaimLabel}
+                </dt>
+                <dd className="home-hero-receipt-value">
+                  {productCopy.homeHeroReceipt.rows.agentClaim}
+                </dd>
               </div>
-            </div>
-            <div className="home-hero-example-json">
-              <pre
-                className="home-hero-terminal-pre"
-                aria-label="Example verification failure JSON; verdict failed"
-              >
-                <HeroTerminalHighlighted text={heroFailureJson} />
-              </pre>
-            </div>
+              <div className="home-hero-receipt-row">
+                <dt className="home-hero-receipt-label">
+                  {productCopy.homeHeroReceipt.rows.realityLabel}
+                </dt>
+                <dd className="home-hero-receipt-value home-hero-receipt-value-fail">
+                  {productCopy.homeHeroReceipt.rows.reality}
+                </dd>
+              </div>
+              <div className="home-hero-receipt-row home-hero-verdict">
+                <dt className="home-hero-receipt-label">
+                  {productCopy.homeHeroReceipt.rows.verdictLabel}
+                </dt>
+                <dd className="home-hero-receipt-value">
+                  <span className="home-hero-verdict-failed">
+                    {productCopy.homeHeroReceipt.rows.verdictValue}
+                  </span>
+                </dd>
+              </div>
+              <div className="home-hero-receipt-row">
+                <dt className="home-hero-receipt-label">
+                  {productCopy.homeHeroReceipt.rows.ciResultLabel}
+                </dt>
+                <dd className="home-hero-receipt-value">
+                  {productCopy.homeHeroReceipt.rows.ciResult}
+                </dd>
+              </div>
+            </dl>
+            <details className="home-hero-receipt-json">
+              <summary className="home-hero-receipt-json-summary">
+                {productCopy.homeHeroReceipt.jsonCaption}
+              </summary>
+              <div className="home-hero-example-json">
+                <pre
+                  className="home-hero-terminal-pre"
+                  aria-label="Example verification failure JSON; verdict failed"
+                >
+                  <HeroTerminalHighlighted text={heroFailureJson} />
+                </pre>
+              </div>
+            </details>
           </div>
         </div>
       </section>

@@ -6,9 +6,9 @@ import { productCopy } from "@/content/productCopy";
 
 describe("homepage copy optimization (key strings)", () => {
   it("exports required hero, trust, example, closing, and demo CTA strings", () => {
-    expect(marketing.heroOutcome).toBe("Agents can report success while the database is still wrong.");
+    expect(marketing.heroOutcome).toBe("Agents can report success while your database is still wrong.");
     expect(marketing.heroMechanism).toBe(
-      "AgentSkeptic re-checks your real stores and fails CI before missing writes reach production.",
+      "AgentSkeptic re-checks your real stores and blocks CI before missing writes reach production.",
     );
     expect(productCopy.homePageMissingWriteDemoCta).toBe("Run the missing-write demo");
     expect(productCopy.trustStripPills[1]?.supporting).toContain("Deterministic Outcome Certificate");
@@ -34,7 +34,7 @@ describe("homepage copy optimization (key strings)", () => {
   it("homepage source includes trace bridge and missing-write CTA wiring", () => {
     const pageSrc = readFileSync(path.join(__dirname, "..", "src", "app", "page.tsx"), "utf8");
     expect(pageSrc).toContain("Agent traces show what the agent attempted.");
-    expect(pageSrc).toContain("AgentSkeptic checks whether the promised state actually exists.");
+    expect(pageSrc).toContain("AgentSkeptic checks what actually changed.");
     expect(pageSrc).toContain("home-closing-primary-cta");
     expect(pageSrc).not.toContain("Example verification details");
     expect(pageSrc).toContain("shareableTerminalFailureJsonOnly");

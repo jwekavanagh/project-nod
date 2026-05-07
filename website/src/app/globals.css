@@ -1225,36 +1225,74 @@ main {
 .home-hero-trace-bridge {
   font-size: 0.88rem;
   line-height: 1.45;
-  margin: 0 0 0.85rem;
+  margin: 0 0 0.7rem;
   max-width: 44ch;
 }
 .home-hero-terminal-label {
   font-size: 0.85rem;
-  margin: 0 0 0.5rem;
+  margin: 0 0 0.35rem;
 }
-.home-hero-failure-caption {
-  font-size: 0.9rem;
-  line-height: 1.4;
-  margin: 0 0 0.75rem;
-  max-width: 44ch;
+.home-hero-receipt-title {
+  margin: 0 0 0.1rem;
+  font-size: 1.05rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  color: var(--fg);
 }
-.home-hero-flow {
-  margin: 0.35rem 0 0.85rem;
-  font-size: 0.88rem;
+.home-hero-receipt {
+  margin: 0.25rem 0 0;
+  padding: 0;
+  display: block;
 }
-.home-hero-flow-row {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 0.35rem 0.5rem;
-  line-height: 1.4;
+.home-hero-receipt-row {
+  display: grid;
+  grid-template-columns: minmax(6rem, 7.5rem) 1fr;
+  gap: 0.35rem 1rem;
+  padding: 0.5rem 0;
+  border-top: 1px dashed color-mix(in srgb, var(--accent) 28%, var(--border));
+  align-items: baseline;
 }
-.home-hero-flow-sep {
-  color: var(--muted-fg, color-mix(in srgb, var(--fg) 45%, var(--card)));
+.home-hero-receipt-row:first-child {
+  border-top: 0;
+  padding-top: 0.25rem;
 }
-.home-hero-flow-miss {
+.home-hero-receipt-row:last-child {
+  padding-bottom: 0.25rem;
+}
+.home-hero-receipt-label {
+  margin: 0;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+  color: color-mix(in srgb, var(--fg) 55%, var(--card));
   font-weight: 600;
+  white-space: nowrap;
+}
+.home-hero-receipt-value {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--fg);
+  line-height: 1.35;
+}
+.home-hero-receipt-value-fail {
   color: var(--danger);
+}
+.home-hero-receipt-json {
+  margin: 0.6rem 0 0;
+  font-size: 0.8rem;
+}
+.home-hero-receipt-json > .home-hero-receipt-json-summary {
+  cursor: pointer;
+  color: color-mix(in srgb, var(--fg) 55%, var(--card));
+  padding: 0.25rem 0;
+  line-height: 1.4;
+}
+.home-hero-receipt-json > .home-hero-receipt-json-summary:hover {
+  color: var(--link);
+}
+.home-hero-receipt-json[open] > .home-hero-receipt-json-summary {
+  margin-bottom: 0.35rem;
 }
 .home-guarantee-h2 {
   margin: 1.75rem 0 0.75rem;
@@ -1522,14 +1560,22 @@ main {
   max-width: 52ch;
 }
 .home-hero-verdict {
-  margin: 0 0 0.65rem;
-  font-size: 0.95rem;
+  margin: 0;
+  padding: 0.6rem 0 0.55rem;
   font-weight: 700;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.02em;
   color: var(--fg);
 }
+.home-hero-verdict .home-hero-receipt-label {
+  color: color-mix(in srgb, var(--danger) 70%, var(--fg));
+  font-weight: 700;
+}
 .home-hero-verdict-failed {
+  display: inline-block;
   color: var(--danger);
+  font-weight: 800;
+  font-size: 1.05rem;
+  letter-spacing: 0.06em;
 }
 .home-stakes-tagline {
   font-weight: 600;
@@ -1550,19 +1596,19 @@ main {
 }
 .home-hero-example-json {
   margin: 0.35rem 0 0;
-  padding: 0.75rem 1rem;
-  background: var(--marketing-code-bg);
-  border: var(--marketing-code-border);
-  border-radius: var(--marketing-code-radius);
+  padding: 0;
+  background: transparent;
+  border: 0;
+  border-radius: 0;
   box-sizing: border-box;
 }
 .home-hero-terminal-pre {
-  max-height: min(24rem, 56vh);
   margin: 0;
   font-size: 0.8125rem;
   line-height: 1.45;
-  overflow-x: auto;
   white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  word-break: break-word;
   background: transparent;
   border: none;
   border-radius: 0;
@@ -1615,6 +1661,19 @@ main {
   gap: 0.2rem;
   border-radius: 12px;
   max-width: min(100%, 22rem);
+}
+.home-hero-copy .trust-pills {
+  margin-top: 1rem;
+}
+.home-hero-copy .trust-pills li {
+  background: transparent;
+  border-color: color-mix(in srgb, var(--border) 55%, transparent);
+}
+.home-hero-copy .trust-pills li.trust-pill-stack {
+  padding: 0.4rem 0.7rem;
+}
+.home-hero-copy .trust-pill-headline {
+  font-weight: 500;
 }
 .trust-pill-headline {
   font-weight: 600;
@@ -1754,6 +1813,7 @@ main {
   margin: 0.35rem 0;
 }
 .home-hero-terminal {
+  align-self: start;
   border-radius: 12px;
   border: 1px dashed color-mix(in srgb, var(--accent) 55%, var(--border));
   background: color-mix(in srgb, var(--card) 88%, transparent);

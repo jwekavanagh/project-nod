@@ -70,8 +70,15 @@ describe("rebrand requirements R1–R5", () => {
 
   it("R4 homepage hero shows verdict labels", () => {
     const pageSrc = readFileSync(path.join(__dirname, "..", "src", "app", "page.tsx"), "utf8");
-    expect(pageSrc).toContain("VERDICT:");
-    expect(pageSrc).toContain("FAILED");
+    expect(pageSrc).toContain("home-hero-verdict");
+    expect(pageSrc).toContain("home-hero-verdict-failed");
+    expect(pageSrc).toContain("homeHeroReceipt.rows.verdictLabel");
+    expect(pageSrc).toContain("homeHeroReceipt.rows.verdictValue");
+    const copySrc = readFileSync(
+      path.join(__dirname, "..", "src", "content", "productCopy.ts"),
+      "utf8",
+    );
+    expect(copySrc).toContain('verdictValue: "NOT TRUSTED"');
   });
 
   it("R5 package description parity + OG alt + /og.png path", () => {

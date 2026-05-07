@@ -612,6 +612,21 @@ export const productCopy = {
   homeHeroFailureCaptionOutro:
     "AgentSkeptic returned a failed verdict before the bug could ship.",
 
+  homeHeroReceipt: {
+    title: "Verification receipt",
+    rows: {
+      agentClaimLabel: "Agent said",
+      agentClaim: "CRM contact was updated",
+      realityLabel: "Reality check",
+      reality: "Promised update missing",
+      verdictLabel: "Verdict",
+      verdictValue: "NOT TRUSTED",
+      ciResultLabel: "CI result",
+      ciResult: "Blocked before release",
+    },
+    jsonCaption: "View Outcome Certificate JSON",
+  } as const,
+
   fitAndLimits: {
     sectionTitle: "Who it's for",
     forYouHeading: "A strong fit when",

@@ -18,8 +18,9 @@ function homeMainBannedScanText(html: string): string {
   const $ = cheerio.load(html);
   const $main = $("main").first();
   $main.find("script, style, noscript").remove();
-  /** Trust pills name the artifact explicitly (`Outcome Certificate`). Scan the rest for internal codenames. */
-  $main.find(".trust-pills").remove();
+  /** Trust pills and the hero receipt's JSON disclosure name the artifact explicitly
+   * (`Outcome Certificate`). Scan the rest for internal codenames. */
+  $main.find(".trust-pills, .home-hero-receipt-json").remove();
   return $main.text().replace(/\s+/g, " ").trim();
 }
 
