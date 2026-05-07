@@ -1,3 +1,9 @@
+## [7.3.1](https://github.com/jwekavanagh/agentskeptic/compare/v7.3.0...v7.3.1) (2026-05-07)
+
+### Bug Fixes
+
+* bump basic-ftp override to patched 5.3.1 ([#70](https://github.com/jwekavanagh/agentskeptic/issues/70)) ([6f218ef](https://github.com/jwekavanagh/agentskeptic/commit/6f218ef413429ffe7cbd2adde6626d3175c865ad))
+
 ## [7.3.0](https://github.com/jwekavanagh/agentskeptic/compare/v7.2.0...v7.3.0) (2026-05-07)
 
 ### Features
