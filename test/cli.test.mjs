@@ -445,6 +445,7 @@ describe("CLI agentskeptic", () => {
 
   describe("validate-registry subcommand", () => {
     const validateRv = loadSchemaValidator("registry-validation-result");
+    const validateReadiness = loadSchemaValidator("registry-readiness-result");
 
     it("valid registry, no events → exit 0; stdout valid; stderr empty", () => {
       const r = spawnSync(
@@ -460,6 +461,230 @@ describe("CLI agentskeptic", () => {
       assert.deepEqual(out.structuralIssues, []);
       assert.deepEqual(out.resolutionIssues, []);
       assert.equal(out.eventLoad, undefined);
+    });
+
+    it("readiness happy path (no witness tools): exit 0 ready_to_attempt", () => {
+      const reg = join(dir, "readiness-no-witness.json");
+      writeFileSync(
+        reg,
+        JSON.stringify([
+          {
+            toolId: "crm.upsert_contact",
+            effectDescriptionTemplate: "Upsert contact {/recordId} with fields {/fields}",
+            verification: {
+              kind: "sql_row",
+              table: { const: "contacts" },
+              identityEq: [{ column: { const: "id" }, value: { pointer: "/recordId" } }],
+              requiredFields: { pointer: "/fields" },
+            },
+          },
+        ]),
+      );
+      const r = spawnSync(
+        process.execPath,
+        ["--no-warnings", cliJs, "validate-registry", "--registry", reg, "--readiness", "--db", dbPath],
+        { encoding: "utf8", cwd: root },
+      );
+      assert.equal(r.status, 0, r.stderr);
+      const out = JSON.parse(r.stdout.trim());
+      assert.equal(validateReadiness(out), true, JSON.stringify(validateReadiness.errors ?? []));
+      assert.equal(out.overallStatus, "ready_to_attempt");
+      assert.equal(out.summary.blockers, 0);
+      assert.ok(r.stderr.includes("Registry readiness: ready_to_attempt"));
+    });
+
+    it("readiness missing env fixture: exit 2 with MISSING_ENV_VAR", () => {
+      const reg = join(dir, "readiness-vector-env.json");
+      writeFileSync(
+        reg,
+        JSON.stringify([
+          {
+            toolId: "kb.upsert_vector",
+            effectDescriptionTemplate: "Upsert vector {/docId}",
+            verification: {
+              kind: "vector_document",
+              provider: "pinecone",
+              documentId: { pointer: "/docId" },
+              indexName: { const: "idx" },
+              host: { const: "example.pinecone.io" },
+            },
+          },
+        ]),
+      );
+      const env = {
+        ...process.env,
+        PINECONE_API_KEY: "",
+        PINECONE_INDEX_HOST: "",
+      };
+      const r = spawnSync(
+        process.execPath,
+        [
+          "--no-warnings",
+          cliJs,
+          "validate-registry",
+          "--registry",
+          reg,
+          "--readiness",
+          "--postgres-url",
+          "postgres://example.invalid/db",
+        ],
+        { encoding: "utf8", cwd: root, env },
+      );
+      assert.equal(r.status, 2, r.stderr);
+      const out = JSON.parse(r.stdout.trim());
+      assert.equal(out.overallStatus, "blocked");
+      assert.ok(out.issues.some((i) => i.code === "MISSING_ENV_VAR"));
+      assert.ok(r.stderr.includes("MISSING_ENV_VAR"));
+    });
+
+    it("readiness unsupported mode fixture: exit 2 with UNSUPPORTED_WITNESS_DATABASE_MODE", () => {
+      const reg = join(root, "test", "fixtures", "state-stores-sqlite", "registry.json");
+      const r = spawnSync(
+        process.execPath,
+        [
+          "--no-warnings",
+          cliJs,
+          "validate-registry",
+          "--registry",
+          reg,
+          "--readiness",
+          "--db",
+          dbPath,
+        ],
+        { encoding: "utf8", cwd: root },
+      );
+      assert.equal(r.status, 2, r.stderr);
+      const out = JSON.parse(r.stdout.trim());
+      assert.equal(out.overallStatus, "blocked");
+      assert.ok(out.issues.some((i) => i.code === "UNSUPPORTED_WITNESS_DATABASE_MODE"));
+    });
+
+    it("readiness unresolved reference fixture: exit 2 with UNRESOLVED_REGISTRY_REFERENCE", () => {
+      const reg = join(dir, "readiness-unresolved.json");
+      const ev = join(dir, "readiness-unresolved.ndjson");
+      writeFileSync(
+        reg,
+        JSON.stringify([
+          {
+            toolId: "crm.upsert_contact",
+            effectDescriptionTemplate: "Upsert contact {/recordId} with fields {/fields}",
+            verification: {
+              kind: "sql_row",
+              table: { const: "contacts" },
+              identityEq: [{ column: { const: "id" }, value: { pointer: "/recordId" } }],
+              requiredFields: { pointer: "/missing_fields" },
+            },
+          },
+        ]),
+      );
+      writeFileSync(
+        ev,
+        `${JSON.stringify({
+          schemaVersion: 1,
+          workflowId: "wf_readiness",
+          seq: 0,
+          type: "tool_observed",
+          toolId: "crm.upsert_contact",
+          params: { recordId: "c_ok", fields: { name: "Alice" } },
+        })}\n`,
+      );
+      const r = spawnSync(
+        process.execPath,
+        [
+          "--no-warnings",
+          cliJs,
+          "validate-registry",
+          "--registry",
+          reg,
+          "--events",
+          ev,
+          "--workflow-id",
+          "wf_readiness",
+          "--readiness",
+          "--db",
+          dbPath,
+        ],
+        { encoding: "utf8", cwd: root },
+      );
+      assert.equal(r.status, 2, r.stderr);
+      const out = JSON.parse(r.stdout.trim());
+      assert.ok(out.issues.some((i) => i.code === "UNRESOLVED_REGISTRY_REFERENCE"));
+    });
+
+    it("readiness missing witness configuration fixture: exit 2 with MISSING_WITNESS_CONFIGURATION", () => {
+      const reg = join(dir, "readiness-vector-host-missing.json");
+      writeFileSync(
+        reg,
+        JSON.stringify([
+          {
+            toolId: "kb.upsert_vector",
+            effectDescriptionTemplate: "Upsert vector {/docId}",
+            verification: {
+              kind: "vector_document",
+              provider: "pinecone",
+              documentId: { pointer: "/docId" },
+              indexName: { const: "idx" },
+            },
+          },
+        ]),
+      );
+      const env = { ...process.env, PINECONE_INDEX_HOST: "", PINECONE_API_KEY: "test" };
+      const r = spawnSync(
+        process.execPath,
+        [
+          "--no-warnings",
+          cliJs,
+          "validate-registry",
+          "--registry",
+          reg,
+          "--readiness",
+          "--postgres-url",
+          "postgres://example.invalid/db",
+        ],
+        { encoding: "utf8", cwd: root, env },
+      );
+      assert.equal(r.status, 2, r.stderr);
+      const out = JSON.parse(r.stdout.trim());
+      assert.ok(out.issues.some((i) => i.code === "MISSING_WITNESS_CONFIGURATION"));
+    });
+
+    it("readiness unknown fixture: exit 1 with READINESS_UNKNOWN", () => {
+      const reg = join(dir, "readiness-unknown.json");
+      writeFileSync(
+        reg,
+        JSON.stringify([
+          {
+            toolId: "kb.upsert_vector",
+            effectDescriptionTemplate: "Upsert vector {/docId}",
+            verification: {
+              kind: "vector_document",
+              provider: "pinecone",
+              documentId: { pointer: "/docId" },
+              indexName: { const: "idx" },
+              host: { pointer: "/host" },
+            },
+          },
+        ]),
+      );
+      const env = { ...process.env, PINECONE_API_KEY: "test", PINECONE_INDEX_HOST: "pc-host.example" };
+      const r = spawnSync(
+        process.execPath,
+        [
+          "--no-warnings",
+          cliJs,
+          "validate-registry",
+          "--registry",
+          reg,
+          "--readiness",
+          "--postgres-url",
+          "postgres://example.invalid/db",
+        ],
+        { encoding: "utf8", cwd: root, env },
+      );
+      assert.equal(r.status, 1, r.stderr);
+      const out = JSON.parse(r.stdout.trim());
+      assert.equal(out.overallStatus, "unknown");
+      assert.ok(out.issues.some((i) => i.code === "READINESS_UNKNOWN"));
     });
 
     it("valid registry + events wf_complete → exit 0; eventLoad present", () => {

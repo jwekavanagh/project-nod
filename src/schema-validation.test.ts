@@ -492,6 +492,40 @@ describe("JSON Schemas (SSOT)", () => {
     ).toBe(true);
   });
 
+  it("validates registry-readiness-result (golden objects)", () => {
+    const v = loadSchemaValidator("registry-readiness-result");
+    const ok = {
+      schemaVersion: 1,
+      kind: "registry_readiness",
+      overallStatus: "ready_to_attempt",
+      summary: { blockers: 0, warnings: 0, unknowns: 0 },
+      structuralValidation: { valid: true, structuralIssueCount: 0, resolutionIssueCount: 0 },
+      issues: [],
+      checkedWitnesses: [],
+    };
+    expect(v(ok)).toBe(true);
+    expect(
+      v({
+        schemaVersion: 1,
+        kind: "registry_readiness",
+        overallStatus: "blocked",
+        summary: { blockers: 1, warnings: 0, unknowns: 0 },
+        structuralValidation: { valid: false, structuralIssueCount: 1, resolutionIssueCount: 0 },
+        issues: [
+          {
+            code: "MISSING_ENV_VAR",
+            severity: "blocker",
+            scope: "witness",
+            target: "t:vector_document",
+            message: "m",
+            remediation: "r",
+          },
+        ],
+        checkedWitnesses: [{ witnessKind: "vector_document", target: "t:vector_document", status: "blocked" }],
+      }),
+    ).toBe(true);
+  });
+
   it("validates agent-run-record-v1 minimal manifest", () => {
     const v = loadSchemaValidator("agent-run-record-v1");
     const sha =

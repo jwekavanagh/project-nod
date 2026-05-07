@@ -1,0 +1,98 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://agentskeptic.com/schemas/registry-readiness-result.schema.json",
+  "title": "RegistryReadinessResult",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "kind",
+    "overallStatus",
+    "summary",
+    "structuralValidation",
+    "issues",
+    "checkedWitnesses"
+  ],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "kind": { "const": "registry_readiness" },
+    "overallStatus": {
+      "type": "string",
+      "enum": ["ready_to_attempt", "blocked", "unknown"]
+    },
+    "summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["blockers", "warnings", "unknowns"],
+      "properties": {
+        "blockers": { "type": "integer", "minimum": 0 },
+        "warnings": { "type": "integer", "minimum": 0 },
+        "unknowns": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "structuralValidation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["valid", "structuralIssueCount", "resolutionIssueCount"],
+      "properties": {
+        "valid": { "type": "boolean" },
+        "structuralIssueCount": { "type": "integer", "minimum": 0 },
+        "resolutionIssueCount": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "issues": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/issue" }
+    },
+    "checkedWitnesses": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/witnessStatus" }
+    }
+  },
+  "$defs": {
+    "issue": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["code", "severity", "scope", "target", "message", "remediation"],
+      "properties": {
+        "code": {
+          "type": "string",
+          "enum": [
+            "UNRESOLVED_REGISTRY_REFERENCE",
+            "MISSING_ENV_VAR",
+            "MISSING_WITNESS_CONFIGURATION",
+            "UNSUPPORTED_WITNESS_DATABASE_MODE",
+            "READINESS_UNKNOWN"
+          ]
+        },
+        "severity": {
+          "type": "string",
+          "enum": ["blocker", "warning", "unknown"]
+        },
+        "scope": {
+          "type": "string",
+          "enum": ["registry", "witness"]
+        },
+        "target": { "type": "string", "minLength": 1 },
+        "message": { "type": "string", "minLength": 1 },
+        "remediation": { "type": "string", "minLength": 1 }
+      }
+    },
+    "witnessStatus": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["witnessKind", "target", "status"],
+      "properties": {
+        "witnessKind": {
+          "type": "string",
+          "enum": ["vector_document", "object_storage_object", "http_witness", "mongo_document"]
+        },
+        "target": { "type": "string", "minLength": 1 },
+        "status": {
+          "type": "string",
+          "enum": ["ready", "blocked", "unknown"]
+        }
+      }
+    }
+  }
+}
