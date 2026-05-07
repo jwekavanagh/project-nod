@@ -1,6 +1,6 @@
 {
   "name": "agentskeptic",
-  "version": "7.2.0",
+  "version": "7.3.0",
   "description": "Tool activity vs downstream state at verify: SQL, HTTP, vectors, documents, S3 objects—deterministic verdict artifacts (verification-state-stores.md).",
   "license": "MIT",
   "type": "module",

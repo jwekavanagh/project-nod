@@ -1,3 +1,9 @@
+## [7.3.0](https://github.com/jwekavanagh/agentskeptic/compare/v7.2.0...v7.3.0) (2026-05-07)
+
+### Features
+
+* sync truth-check surfaces with governance export and commercial contracts ([#68](https://github.com/jwekavanagh/agentskeptic/issues/68)) ([a7006b2](https://github.com/jwekavanagh/agentskeptic/commit/a7006b2bf14c6d72b7f3dc688f660e23a1dc724f))
+
 ## [Unreleased]
 
 ### ⚠ BREAKING CHANGES
