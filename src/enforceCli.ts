@@ -21,6 +21,13 @@ function usageEnforce(): string {
   agentskeptic enforce --workflow-id <id> --events <path> --registry <path> (--db <sqlitePath> | --postgres-url <url>)
     [--create-baseline | --accept-drift] [other batch verify flags]
 
+  agentskeptic enforce --workflow-id <id> --project <root> (--db <sqlitePath> | --postgres-url <url>)
+    [--create-baseline | --accept-drift] [other batch verify flags]
+
+    With --project and batch enforce only (not quick --input flows), defaults:
+      --registry  <root>/agentskeptic/tools.json
+      --events    <root>/agentskeptic/events.ndjson
+
 Stateful model:
   default: compare current run to accepted baseline (paid, over-time).
   --create-baseline: initialize or replace accepted baseline.

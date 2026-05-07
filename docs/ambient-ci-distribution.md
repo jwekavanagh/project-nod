@@ -6,6 +6,22 @@ Normative contract for **active discovery**: branded AgentSkeptic output appears
 
 **Licensing** for the published CLI is unchanged — see [`commercial.md`](commercial.md).
 
+## Composite package input contract (normative)
+
+1. **`package` default** in [`.github/actions/agentskeptic-check/action.yml`](../.github/actions/agentskeptic-check/action.yml) is **`agentskeptic@latest`**. That exists only for backward compatibility and **one-line demos**; **do not** rely on it for branch-protection or reproducible release gates.
+2. **Release-gate posture:** set composite input **`package`** to **`agentskeptic@<semver>`** that you intentionally adopt (match the install spec in the same workflow). The pinned copy-paste example **[`examples/github-actions/agentskeptic-check.yml`](../examples/github-actions/agentskeptic-check.yml)** binds **`AGENTSKEPTIC_CI_PACKAGE`** to the repo’s released version and reuses it for **`npm install --no-save`** and the composite **`package`** input. Drift against root **`package.json` `version`** is rejected by **`scripts/assert-ci-release-gate-example.mjs`** inside **`npm run verification:truth`**.
+
+**Inputs:** exactly one of:
+
+- **`project`** (recommended for the same layout as **`agentskeptic check --project`**): conventional **`<root>/agentskeptic/tools.json`** and **`events.ndjson`**; **do not** pass **`events`** or **`registry`** when **`project`** is set; or
+- **Both `events` and `registry`** (explicit paths) with **`project`** empty.
+
+Composite runs **`npx --yes <package> check|enforce …`**. Set job env **`AGENTSKEPTIC_TELEMETRY=0`** for minimal stderr noise on CI triage (recommended in the canonical OSS example).
+
+### Branch protection (GitHub)
+
+Pick a **stable workflow `name`** and a **stable job id** (the canonical OSS example uses **`AgentSkeptic Truth Check`** and job key **`truth-check`**). Required status checks key off those strings. Do **not** add a **matrix** around the gate job if it would multiply check names unless you intend to require every variant.
+
 ## Engineer
 
 - **Discovery payload SSOT:** [`scripts/discovery-payload.lib.cjs`](../scripts/discovery-payload.lib.cjs) builds `DiscoveryPayload` v1 and renders `llms.txt`, CI summary Markdown, and PR bodies from the **same** structured object.
@@ -16,14 +32,14 @@ Normative contract for **active discovery**: branded AgentSkeptic output appears
 
 ### Default: stateless truth check (OSS)
 
-**Canonical low-friction CI** is a **truth check** — **`agentskeptic check`** (default **`mode`** on the composite action) — with **no** `AGENTSKEPTIC_API_KEY` and **no** license server. Copy [`examples/github-actions/agentskeptic-check.yml`](../examples/github-actions/agentskeptic-check.yml) into `.github/workflows/`.
+**Canonical OSS CI** is a pinned **truth check** — **`agentskeptic check`** (default **`mode`** on the composite action) — with **no** `AGENTSKEPTIC_API_KEY` and **no** license server. Copy [`examples/github-actions/agentskeptic-check.yml`](../examples/github-actions/agentskeptic-check.yml) into `.github/workflows/`: it establishes **Node 22** before **`node:sqlite`** demo usage, lays out **`agentskeptic/`** paths for **`project`**, runs **one** **`npm install --no-save`** for the verifier + **`render-discovery-ci.mjs`**, and wires composite **`project:` `.`** plus **`package:`** **`${{ env.AGENTSKEPTIC_CI_PACKAGE }}`**.
 
 - **stdout:** one **Outcome Certificate** (machine JSON).
 - **stderr:** includes **`truth_check_verdict: trusted|not_trusted|unknown`** (see [`integrate.md`](integrate.md)).
-- **Recommended wiring:** `.github/workflows/…` uses the first-party composite [`.github/actions/agentskeptic-check`](../.github/actions/agentskeptic-check) (in another repo: `uses: OWNER/agentskeptic/.github/actions/agentskeptic-check@REF`). The action shells out to **`npx agentskeptic@latest check`** (thin wrapper — no parallel verifier): it captures stdout/stderr, echoes them to the step log (preserving the contract), writes a **`### Verdict meanings`** subsection to the **job summary** immediately before fenced stderr excerpts (trusted / **not_trusted** / unknown — aligned with README adoption wording), truncates long captures, exposes paths and verdict outputs, and enforces **`fail-on`** thresholds. Advanced flags flow through **`extra-args`** without documenting every knob.
+- **Recommended wiring:** `.github/workflows/…` uses the first-party composite [`.github/actions/agentskeptic-check`](../.github/actions/agentskeptic-check) (in another repo: `uses: OWNER/agentskeptic/.github/actions/agentskeptic-check@REF`). The action shells out to **`npx --yes`** + **`package`** + **`check|enforce`** (default **`package`** is **`agentskeptic@latest`** — see **[Composite package input contract (normative)](#composite-package-input-contract-normative)**; release gates override with a semver pin). Capture, job summary (**`### Verdict meanings`** before stderr excerpts), outputs, **`fail-on`**, and **`extra-args`** behave as before.
 - After the composite step, **`render-discovery-ci.mjs summary`** on **`if: always()`** still appends branded discovery Markdown (ambient contract). Transparent alternative: omit the composite and run **`npx agentskeptic check …`** manually with equivalent capture.
 
-Install the published package (`npm install agentskeptic@latest`) **before** the renderer step so `${AS_REPO_ROOT}/scripts/render-discovery-ci.mjs` and `dist/discovery-payload-v1.json` exist; set `AS_REPO_ROOT` to `node_modules/agentskeptic` as in the example.
+Install the **same** pinned package **`AGENTSKEPTIC_CI_PACKAGE`** once so **`node_modules/agentskeptic`** supplies both the **`npx`** target and **`${AS_REPO_ROOT}/scripts/render-discovery-ci.mjs`** (see canonical example **`AS_REPO_ROOT`**).
 
 **Optional hosted report sharing:** you may add **`--share-report-origin <https://host>`** as a composite **`with:` input** **`share-report-origin`** on **`agentskeptic check`** (or `--share-report-origin` on CLI) only when you want a persisted public report on your AgentSkeptic deployment — see [`shareable-verification-reports.md`](shareable-verification-reports.md). [`examples/github-actions/agentskeptic-check.yml`](../examples/github-actions/agentskeptic-check.yml) carries **comment-only** hints beside the composite step so teams discover this path without enabling it by default — **do not flip on** hosted publish until you have read that policy doc. That flag is **not** supported with **`agentskeptic enforce`** (same doc).
 

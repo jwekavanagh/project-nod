@@ -4,6 +4,10 @@
 #   uses: jwekavanagh/agentskeptic/.github/actions/agentskeptic-check@main
 # (substitute fork/org and ref as needed — not GitHub Marketplace).
 #
+# This file is the canonical release-gate posture: Node 22 before node:sqlite, `--project` (conventional layout),
+# one pinned `npm install --no-save`, and composite `package` matching that pin. Drift vs root package.json
+# version is rejected by `scripts/assert-ci-release-gate-example.mjs` in `npm run verification:truth`.
+#
 # Transparent manual alternative: invoke `npx agentskeptic check …` inline (same CLI contract — Outcome Certificate on stdout,
 # truth_check_verdict on stderr). For opt-in commercial/stateful enforcement see agentskeptic-commercial.yml.
 #
@@ -27,14 +31,33 @@ permissions:
 
 jobs:
   truth-check:
+    name: AgentSkeptic Truth Check
     runs-on: ubuntu-latest
     env:
+      AGENTSKEPTIC_TELEMETRY: "0"
+      AGENTSKEPTIC_CI_PACKAGE: agentskeptic@7.4.0
       AS_REPO_ROOT: ${{ github.workspace }}/node_modules/agentskeptic
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        env:
+          NODE_OPTIONS: "--disable-warning=DEP0040"
+        with:
+          node-version: "22"
+
+      - name: Prepare conventional agentskeptic/ paths for project mode
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p agentskeptic
+          cp examples/tools.json agentskeptic/tools.json
+          cp examples/events.ndjson agentskeptic/events.ndjson
 
       - name: Create examples/demo.db from seed.sql
+        shell: bash
         run: |
+          set -euo pipefail
           node --input-type=module -e "
           import { readFileSync } from 'node:fs';
           import { DatabaseSync } from 'node:sqlite';
@@ -43,6 +66,10 @@ jobs:
           d.close();
           "
 
+      - name: Install pinned AgentSkeptic once (verify + discovery renderer)
+        shell: bash
+        run: npm install --no-save "${AGENTSKEPTIC_CI_PACKAGE}"
+
       # Optional persisted report (stay OFF for default OSS CI): uncomment under `with:` only after reading
       # docs/shareable-verification-reports.md (HTTPS origin-only, POST body caps, privacy, feature flags — not supported with enforce).
       # Example only (do not commit enabled unless you intend hosted publish):
@@ -50,12 +77,11 @@ jobs:
       - uses: ./.github/actions/agentskeptic-check
         with:
           workflow-id: wf_complete
-          events: examples/events.ndjson
-          registry: examples/tools.json
+          project: .
+          package: ${{ env.AGENTSKEPTIC_CI_PACKAGE }}
           db: examples/demo.db
 
       - name: Append AgentSkeptic discovery summary
         if: always()
-        run: |
-          npm install agentskeptic@latest
-          node "${AS_REPO_ROOT}/scripts/render-discovery-ci.mjs" summary >> "$GITHUB_STEP_SUMMARY"
+        shell: bash
+        run: node "${AS_REPO_ROOT}/scripts/render-discovery-ci.mjs" summary >> "$GITHUB_STEP_SUMMARY"

@@ -6,12 +6,20 @@ inputs:
   workflow-id:
     description: Workflow identifier to verify.
     required: true
+  project:
+    description: >-
+      Project root for conventional layout; uses <root>/agentskeptic/tools.json and events.ndjson when set.
+      When set, omit events and registry. When empty, pass both events and registry explicitly.
+    required: false
+    default: ""
   events:
-    description: Path to NDJSON event observations.
-    required: true
+    description: Path to NDJSON event observations (required when project is empty).
+    required: false
+    default: ""
   registry:
-    description: Path to tools registry JSON.
-    required: true
+    description: Path to tools registry JSON (required when project is empty).
+    required: false
+    default: ""
   db:
     description: Path to database or verification state store used by the CLI.
     required: false
@@ -25,7 +33,9 @@ inputs:
     required: false
     default: "not_trusted_or_unknown"
   package:
-    description: 'npm package spec to execute, for example "agentskeptic@latest" or ".".'
+    description: >-
+      npm package spec for npx (e.g. agentskeptic@latest for demos, agentskeptic@1.2.3 for release gates).
+      Default floats latest; pinned versions are required for branch-protection gates (see docs/ambient-ci-distribution.md).
     required: false
     default: "agentskeptic@latest"
   share-report-origin:
@@ -64,6 +74,7 @@ runs:
       shell: bash
       env:
         INPUT_WORKFLOW_ID: ${{ inputs.workflow-id }}
+        INPUT_PROJECT: ${{ inputs.project }}
         INPUT_EVENTS: ${{ inputs.events }}
         INPUT_REGISTRY: ${{ inputs.registry }}
         INPUT_DB: ${{ inputs.db }}

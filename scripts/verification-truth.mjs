@@ -124,6 +124,8 @@ function runStructuralAfterDiff() {
   runShell("npm run check:buyer-truth", "verification-truth:gating");
   runShell("node scripts/check-legacy-schema-imports.mjs", "verification-truth:gating");
   runShell("node scripts/contract-manifest.mjs --check", "verification-truth:gating");
+  runShell("node scripts/assert-ci-release-gate-example.mjs", "verification-truth:gating");
+  runShell("node scripts/assert-enforce-batch-project-wiring.mjs", "verification-truth:gating");
   runShell("npm run check:epistemic-contract-structure", "verification-truth:gating");
   runShell("node scripts/assert-hosted-export-doc-sync.mjs", "verification-truth:gating");
   runShell("node scripts/assert-hosted-evidence-contract-cutover.mjs", "verification-truth:gating");

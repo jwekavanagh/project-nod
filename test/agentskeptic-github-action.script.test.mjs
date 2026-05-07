@@ -45,6 +45,10 @@ function makeStubDir() {
   writeFileSync(
     nxp,
     `#!/usr/bin/env bash
+if [[ -n "\${AS_STUB_ARGV_OUT:-}" ]]; then
+  : >"$AS_STUB_ARGV_OUT"
+  for __a in "$@"; do printf '%s\\n' "$__a" >>"$AS_STUB_ARGV_OUT"; done
+fi
 printf '%s' "\${AS_STUB_STDOUT-}"
 printf '%s' "\${AS_STUB_STDERR-}" >&2
 exit "\${AS_STUB_EXIT:-0}"
@@ -61,6 +65,9 @@ test("action.yml parses as composite with check default", () => {
   assert.equal(doc.inputs.mode.default, "check");
   assert.equal(doc.inputs["fail-on"].default, "not_trusted_or_unknown");
   assert.equal(doc.inputs.package.default, "agentskeptic@latest");
+  assert.equal(doc.inputs.project.default, "");
+  assert.equal(doc.inputs.events.default, "");
+  assert.equal(doc.inputs.registry.default, "");
 });
 
 test("examples workflow + action YAML files parse", () => {
@@ -297,5 +304,73 @@ test(
     assert.ok(sum.includes("- Verdict: `trusted`"), sum);
     assert.ok(sum.includes("### Human report / stderr"), sum);
     assert.ok(sum.includes("### Outcome Certificate / stdout"), sum);
+  },
+);
+
+test(
+  "run-action.sh: project-only omits --events and passes --project",
+  { skip: !hasBash },
+  () => {
+    const stubDir = makeStubDir();
+    const argvFile = join(mkdtempSync(join(tmpdir(), "as-argv-")), "argv.txt");
+    const r = runAction(
+      {
+        AS_STUB_ARGV_OUT: argvFile,
+        AS_STUB_STDOUT: '{"ok":true}\n',
+        AS_STUB_STDERR: "truth_check_verdict: trusted\n",
+        AS_STUB_EXIT: "0",
+        INPUT_WORKFLOW_ID: "wf_complete",
+        INPUT_PROJECT: ".",
+        INPUT_EVENTS: "",
+        INPUT_REGISTRY: "",
+        INPUT_DB: "demo.db",
+      },
+      stubDir,
+    );
+    assert.equal(r.status, 0, r.stderr);
+    const lines = readFileSync(argvFile, "utf8").trimEnd().split("\n");
+    assert.ok(lines.includes("--project"), lines.join("|"));
+    assert.ok(lines.includes("."), lines.join("|"));
+    assert.ok(!lines.includes("--events"), lines.join("|"));
+    assert.ok(lines.includes("--db"), lines.join("|"));
+    assert.ok(lines.includes("demo.db"), lines.join("|"));
+  },
+);
+
+test(
+  "run-action.sh: XOR fails when project set with events",
+  { skip: !hasBash },
+  () => {
+    const stubDir = makeStubDir();
+    const r = runAction(
+      {
+        INPUT_WORKFLOW_ID: "wf_complete",
+        INPUT_PROJECT: ".",
+        INPUT_EVENTS: "e.ndjson",
+        INPUT_REGISTRY: "",
+      },
+      stubDir,
+    );
+    assert.equal(r.status, 2, r.stderr + r.stdout);
+    assert.ok(`${r.stdout}${r.stderr}`.includes("::error:"), r.stderr + r.stdout);
+  },
+);
+
+test(
+  "run-action.sh: XOR fails when missing project and missing registry",
+  { skip: !hasBash },
+  () => {
+    const stubDir = makeStubDir();
+    const r = runAction(
+      {
+        INPUT_WORKFLOW_ID: "wf_complete",
+        INPUT_PROJECT: "",
+        INPUT_EVENTS: "e.ndjson",
+        INPUT_REGISTRY: "",
+      },
+      stubDir,
+    );
+    assert.equal(r.status, 2, r.stderr + r.stdout);
+    assert.ok(`${r.stdout}${r.stderr}`.includes("::error:"), r.stderr + r.stdout);
   },
 );

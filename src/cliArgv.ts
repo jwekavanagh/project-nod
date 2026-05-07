@@ -181,6 +181,32 @@ export function parseBatchVerifyCliArgs(args: string[]): ParsedBatchVerifyCli {
 }
 
 /**
+ * Injects `--registry` / `--events` defaults beside `--project` (same semantics as primary `agentskeptic check` help).
+ * Used by batch `enforce`, `agentskeptic check`, and any adapter that parses via `parseBatchVerifyCliArgs` after injection.
+ * @throws TruthLayerError CLI_USAGE when `--project` is present without `--workflow-id`
+ */
+export function prepareBatchVerifyArgvForProjectDefaults(argv: string[]): string[] {
+  const out = [...argv];
+  const projectRaw = argValue(out, "--project");
+  if (projectRaw === undefined) return out;
+  const wf = argValue(out, "--workflow-id");
+  if (!wf) {
+    throw new TruthLayerError(
+      CLI_OPERATIONAL_CODES.CLI_USAGE,
+      "--workflow-id is required with --project (workflow id is never inferred).",
+    );
+  }
+  const projectAbs = path.resolve(projectRaw);
+  if (!argValue(out, "--registry")) {
+    out.push("--registry", path.join(projectAbs, "agentskeptic", "tools.json"));
+  }
+  if (!argValue(out, "--events")) {
+    out.push("--events", path.join(projectAbs, "agentskeptic", "events.ndjson"));
+  }
+  return out;
+}
+
+/**
  * Expand `agentskeptic check` argv into batch-verify argv (no `check` token).
  * Maps `--proof <dir>` → `--write-decision-bundle`; applies `--project` conventional paths.
  * @throws TruthLayerError CLI_USAGE
@@ -202,26 +228,9 @@ export function expandTruthCheckCliArgs(rest: string[]): string[] {
     out.push(a);
   }
 
-  const projectRaw = argValue(out, "--project");
-  if (projectRaw !== undefined) {
-    const wf = argValue(out, "--workflow-id");
-    if (!wf) {
-      throw new TruthLayerError(
-        CLI_OPERATIONAL_CODES.CLI_USAGE,
-        "--workflow-id is required with --project (workflow id is never inferred).",
-      );
-    }
-    const projectAbs = path.resolve(projectRaw);
-    if (!argValue(out, "--registry")) {
-      out.push("--registry", path.join(projectAbs, "agentskeptic", "tools.json"));
-    }
-    if (!argValue(out, "--events")) {
-      out.push("--events", path.join(projectAbs, "agentskeptic", "events.ndjson"));
-    }
-  }
-
-  out.push("--internal-invoked-via-check");
-  return out;
+  const projected = prepareBatchVerifyArgvForProjectDefaults(out);
+  projected.push("--internal-invoked-via-check");
+  return projected;
 }
 
 export type ParsedQuickCli = {

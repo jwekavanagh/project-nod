@@ -259,7 +259,9 @@ test("examples/github-actions/agentskeptic-commercial.yml references PR marker",
 });
 
 test("examples/github-actions/agentskeptic-check.yml parses as OSS truth-check workflow", () => {
-  const yml = readFileSync(join(root, "examples", "github-actions", "agentskeptic-check.yml"), "utf8");
+  const ymlPath = join(root, "examples", "github-actions", "agentskeptic-check.yml");
+  const yml = readFileSync(ymlPath, "utf8");
+  const pkgVer = JSON.parse(readFileSync(join(root, "package.json"), "utf8")).version;
   assert.ok(
     !/\n\s+share-report-origin\s*:/m.test(yml),
     "OSS workflow must not include an uncommented share-report-origin input line (hosted publish stays opt-in)",
@@ -272,11 +274,54 @@ test("examples/github-actions/agentskeptic-check.yml parses as OSS truth-check w
   assert.ok(!yml.includes("agentskeptic enforce"));
   assert.ok(yml.includes("render-discovery-ci.mjs"));
   assert.ok(yml.includes("${AS_REPO_ROOT}"));
+  assert.ok(yml.includes("npm install --no-save"));
+  assert.ok(
+    yml.includes(`AGENTSKEPTIC_CI_PACKAGE: agentskeptic@${pkgVer}`),
+    `OSS workflow AGENTSKEPTIC_CI_PACKAGE must match root package.json version agentskeptic@${pkgVer}`,
+  );
+  assert.ok(
+    !yml.includes("AGENTSKEPTIC_CI_PACKAGE: agentskeptic@latest"),
+    "canonical OSS workflow must pin AGENTSKEPTIC_CI_PACKAGE to package.json semver, not latest",
+  );
+  assert.match(yml.trim(), /\bpackage:\s*\$\{\{\s*env\.AGENTSKEPTIC_CI_PACKAGE\s*\}\}/);
 
   const job = doc.jobs["truth-check"];
   assert.ok(Array.isArray(job?.steps));
+  assert.strictEqual(job.name, "AgentSkeptic Truth Check");
+  assert.strictEqual(job.env?.AGENTSKEPTIC_TELEMETRY, "0");
+  assert.strictEqual(job.env?.AGENTSKEPTIC_CI_PACKAGE, `agentskeptic@${pkgVer}`);
+
   /** @type {any[]} */
   const steps = job.steps;
+  let npmInstallCt = 0;
+  let setupCt = 0;
+  let sqliteCt = 0;
+  let setupBeforeSqlite = false;
+  for (const s of steps) {
+    const run = typeof s?.run === "string" ? s.run : "";
+    const uses = typeof s?.uses === "string" ? s.uses : "";
+    const name = typeof s?.name === "string" ? s.name : "";
+    if (run.includes("npm install --no-save")) npmInstallCt++;
+    if (uses.includes("actions/setup-node")) setupCt++;
+    if (run.includes("DatabaseSync") && name.includes("demo.db")) sqliteCt++;
+  }
+  assert.equal(npmInstallCt, 1, "OSS example uses exactly one npm install --no-save step");
+  assert.equal(setupCt, 1, "OSS example uses exactly one actions/setup-node");
+  assert.equal(sqliteCt, 1);
+  /** @type {number[]} */
+  const idxSetup = [];
+  /** @type {number[]} */
+  const idxSql = [];
+  steps.forEach((s, i) => {
+    const run = typeof s?.run === "string" ? s.run : "";
+    const uses = typeof s?.uses === "string" ? s.uses : "";
+    const name = typeof s?.name === "string" ? s.name : "";
+    if (uses.includes("actions/setup-node")) idxSetup.push(i);
+    if (run.includes("DatabaseSync") && name.includes("demo.db")) idxSql.push(i);
+  });
+  if (idxSetup.length === 1 && idxSql.length === 1 && idxSetup[0] < idxSql[0]) setupBeforeSqlite = true;
+  assert.ok(setupBeforeSqlite, "setup-node step must precede demo.db SQLite creation");
+
   const compositeSteps = steps.filter((s) => s?.uses === "./.github/actions/agentskeptic-check");
   assert.equal(compositeSteps.length, 1, "OSS example must declare exactly one agentskeptic-check composite step");
   const withInputs = compositeSteps[0].with ?? {};
@@ -284,6 +329,10 @@ test("examples/github-actions/agentskeptic-check.yml parses as OSS truth-check w
     !Object.hasOwn(withInputs, "share-report-origin"),
     "composite with: must omit share-report-origin on the default OSS path",
   );
+  assert.strictEqual(withInputs.project, ".");
+  assert.strictEqual(withInputs.package, "${{ env.AGENTSKEPTIC_CI_PACKAGE }}");
+  assert.ok(!Object.hasOwn(withInputs, "events"));
+  assert.ok(!Object.hasOwn(withInputs, "registry"));
 
   let shareEnv = false;
   for (const s of steps) {
