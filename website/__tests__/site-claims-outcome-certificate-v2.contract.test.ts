@@ -11,7 +11,7 @@ const WEBSITE = join(ROOT, "website");
 const GUIDES: Array<{ path: string; needles: string[] }> = [
   {
     path: "website/content/surfaces/guides/buyer-trust-production-implications.md",
-    needles: ["evidenceCompleteness", "schemaVersion 2"],
+    needles: ["evidenceCompleteness", "schemaVersion: 3"],
   },
   {
     path: "website/content/surfaces/guides/first-run-verification.md",
@@ -19,7 +19,7 @@ const GUIDES: Array<{ path: string; needles: string[] }> = [
   },
   {
     path: "website/content/surfaces/guides/pre-production-read-only-sql-gate.md",
-    needles: ["Outcome Certificate JSON (contract stdout, schemaVersion 2)"],
+    needles: ["Outcome Certificate v3", "schemaVersion: 3"],
   },
   {
     path: "website/content/surfaces/guides/ai-agent-wrong-crm-data.md",
@@ -27,11 +27,11 @@ const GUIDES: Array<{ path: string; needles: string[] }> = [
   },
   {
     path: "website/content/surfaces/guides/trace-green-postgres-row-missing.md",
-    needles: ["evidenceCompleteness so operators"],
+    needles: ["Outcome Certificate v3", "evidenceCompleteness**) so operators"],
   },
   {
     path: "website/content/surfaces/guides/verify-langgraph-workflows.md",
-    needles: ["schemaVersion 2 with evidenceCompleteness"],
+    needles: ["schemaVersion: 3"],
   },
 ];
 

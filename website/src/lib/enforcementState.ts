@@ -28,6 +28,10 @@ export type ParseGovernanceEvidenceResult =
   | { ok: true; input: EnforcementEvidenceInput }
   | { ok: false; message: string };
 
+export type ParseAcceptEvidenceResult =
+  | { ok: true; input: EnforcementAcceptEvidenceInput }
+  | { ok: false; message: string };
+
 export function parseGovernanceEvidenceInput(body: unknown): ParseGovernanceEvidenceResult {
   if (!body || typeof body !== "object") {
     return { ok: false, message: "Missing governance evidence fields." };
@@ -86,7 +90,7 @@ export function parseGovernanceEvidenceInput(body: unknown): ParseGovernanceEvid
   };
 }
 
-export function parseAcceptEvidenceInput(body: unknown): ParseGovernanceEvidenceResult {
+export function parseAcceptEvidenceInput(body: unknown): ParseAcceptEvidenceResult {
   const base = parseGovernanceEvidenceInput(body);
   if (!base.ok) return base;
   const b = body as Record<string, unknown>;
