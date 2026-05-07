@@ -15,7 +15,7 @@
 # - Collect `artifacts/agentskeptic-receipts/*.json` after verify/enforce for audit (one receipt per run).
 # See docs/verification-execution-ssot.md.
 #
-# Ambient discovery (job summary + failure PR comment): normative contract in docs/ambient-ci-distribution.md
+# Ambient discovery (job summary + failure PR comment): docs/ambient-ci-distribution.md (includes composite `package` / `project` XOR contract).
 name: AgentSkeptic (commercial CLI)
 
 on:

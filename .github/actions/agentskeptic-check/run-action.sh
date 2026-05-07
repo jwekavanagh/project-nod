@@ -6,8 +6,9 @@ set -euo pipefail
 MAX_SUMMARY_LINES="${MAX_SUMMARY_LINES:-200}"
 
 workflow_id="${INPUT_WORKFLOW_ID:?INPUT_WORKFLOW_ID is required}"
-events="${INPUT_EVENTS:?INPUT_EVENTS is required}"
-registry="${INPUT_REGISTRY:?INPUT_REGISTRY is required}"
+project="${INPUT_PROJECT:-}"
+events="${INPUT_EVENTS:-}"
+registry="${INPUT_REGISTRY:-}"
 
 mode="${INPUT_MODE:-check}"
 fail_on="${INPUT_FAIL_ON:-not_trusted_or_unknown}"
@@ -33,13 +34,30 @@ not_trusted_or_unknown | not_trusted | never) ;;
   ;;
 esac
 
+if [[ -n "$project" ]]; then
+  if [[ -n "$events" || -n "$registry" ]]; then
+    fatal "agentskeptic-check: set input project alone, or omit project and set both events and registry."
+    exit 2
+  fi
+else
+  if [[ -z "$events" || -z "$registry" ]]; then
+    fatal "agentskeptic-check: when project is empty, both events and registry inputs are required."
+    exit 2
+  fi
+fi
+
 tmp="${RUNNER_TEMP:-${TMPDIR:-/tmp}}"
 mkdir -p "$tmp"
 stdout_path="$tmp/agentskeptic.stdout"
 stderr_path="$tmp/agentskeptic.stderr"
 
 # Build CLI argv (arrays avoid eval).
-cmd=(npx --yes "$package" "$mode" --workflow-id "$workflow_id" --events "$events" --registry "$registry")
+cmd=(npx --yes "$package" "$mode" --workflow-id "$workflow_id")
+if [[ -n "$project" ]]; then
+  cmd+=(--project "$project")
+else
+  cmd+=(--events "$events" --registry "$registry")
+fi
 if [[ -n "$db" ]]; then cmd+=(--db "$db"); fi
 if [[ "$mode" == "check" && -n "$share_origin" ]]; then
   cmd+=(--share-report-origin "$share_origin")

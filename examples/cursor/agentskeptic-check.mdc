@@ -34,6 +34,8 @@ Interpretation:
 - `not_trusted`: do not claim the workflow is verified; fix mismatch or missing state
 - `unknown`: do not claim the workflow is verified; collect missing evidence or narrow checked scope
 
+CI mirror for GitHub-hosted repos: copy **[examples/github-actions/agentskeptic-check.yml](../github-actions/agentskeptic-check.yml)** (`project` + pinned `AGENTSKEPTIC_CI_PACKAGE`, `AGENTSKEPTIC_TELEMETRY=0`). Normative **`package`** / pinning rules: **[docs/ambient-ci-distribution.md](../../docs/ambient-ci-distribution.md#composite-package-input-contract-normative)**.
+
 Do not rely on logs, traces, or test pass/fail status if the Outcome Certificate disagrees.
 
 When the check fails, report:

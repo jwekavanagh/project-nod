@@ -117,24 +117,28 @@ The composite action’s GitHub **job summary** includes a **Verdict meanings** 
 
 After the local command works, wire the same CLI contract in CI.
 
+Copy **[`examples/github-actions/agentskeptic-check.yml`](../examples/github-actions/agentskeptic-check.yml)** verbatim as the default posture: **Node 22 before `node:sqlite`**, **`agentskeptic/`** layout for **`project: .`**, **`AGENTSKEPTIC_TELEMETRY=0`**, **one** **`npm install --no-save`** keyed by **`AGENTSKEPTIC_CI_PACKAGE`**, and composite **`package:`** **`${{ env.AGENTSKEPTIC_CI_PACKAGE }}`** (floating **`agentskeptic@latest`** is for quick demos only — see **[Composite package input contract (normative)](ambient-ci-distribution.md#composite-package-input-contract-normative)**).
+
 - Default OSS path: composite action **[`../.github/actions/agentskeptic-check/action.yml`](../.github/actions/agentskeptic-check/action.yml)** — default **`mode`** is **`check`**; **no** **`AGENTSKEPTIC_API_KEY`** on that path.
-- Example workflow: **[`examples/github-actions/agentskeptic-check.yml`](../examples/github-actions/agentskeptic-check.yml)**.
-- In **this** repository you can use a relative path:
+- In **this** repository you can use a relative path (same inputs as the example; pin bumps **`AGENTSKEPTIC_CI_PACKAGE`** with releases):
 
 ```yaml
-- uses: actions/checkout@v4
-
+- uses: actions/checkout@v5
+- uses: actions/setup-node@v5
+  with:
+    node-version: "22"
+# … prepare agentskeptic/ + demo DB + npm install --no-save (see full example file)
 - uses: ./.github/actions/agentskeptic-check
   with:
     workflow-id: wf_complete
-    events: examples/events.ndjson
-    registry: examples/tools.json
+    project: .
+    package: ${{ env.AGENTSKEPTIC_CI_PACKAGE }}
     db: examples/demo.db
 ```
 
 In another repository, pin the upstream action (not Marketplace):  
 `uses: OWNER/agentskeptic/.github/actions/agentskeptic-check@<ref>`  
-and pass the same inputs / **`extra-args`** as needed.
+and align **`project`** / **`events`+`registry`**, **`package`**, and **`extra-args`** with your layout (XOR rules in **[`ambient-ci-distribution.md`](ambient-ci-distribution.md)**).
 
 The Action is a **thin CI wrapper** around **`agentskeptic check`** — same stdout/stderr contract as local CLI.
 

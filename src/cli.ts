@@ -219,6 +219,8 @@ function usageVerifyAdvanced(): string {
 
   Stateful CI enforcement uses:
   agentskeptic enforce --workflow-id <id> --events <path> --registry <path> (--db <sqlitePath> | --postgres-url <url>)
+    or  agentskeptic enforce --workflow-id <id> --project <root> (--db <sqlitePath> | --postgres-url <url>)
+      (same --registry / --events defaults as agentskeptic check under --project; batch enforce only — not enforce quick)
   with optional --create-baseline or --accept-drift.
 
 Optional consistency (default strong):
@@ -257,6 +259,7 @@ Exit codes:
 
   agentskeptic enforce --workflow-id <id> --events <path> --registry <path> (--db <sqlitePath> | --postgres-url <url>)
     [--create-baseline | --accept-drift]
+    or  enforce --workflow-id <id> --project <root> (--db … | --postgres-url …)
   CI enforcement over time (stateful baseline/drift workflow).
 
   agentskeptic assurance run --manifest <path> [--write-report <path>]

@@ -1,6 +1,10 @@
 import { randomUUID } from "node:crypto";
 import type { ParsedBatchVerifyCli, ParsedQuickCli } from "./cliArgv.js";
-import { parseBatchVerifyCliArgs, parseQuickCliArgs } from "./cliArgv.js";
+import {
+  parseBatchVerifyCliArgs,
+  parseQuickCliArgs,
+  prepareBatchVerifyArgvForProjectDefaults,
+} from "./cliArgv.js";
 import { CLI_OPERATIONAL_CODES } from "./cliOperationalCodes.js";
 import { exitAfterEnforceCliReceipt } from "./cliExecutionFinalize.js";
 import { cliErrorEnvelope, formatOperationalMessage } from "./failureCatalog.js";
@@ -119,7 +123,7 @@ export async function runStatefulEnforce(args: string[]): Promise<void> {
         : out.report.verdict === "fail" ? "inconsistent"
         : "incomplete";
     } else {
-      const parsed = parseBatchVerifyCliArgs(stripped);
+      const parsed = parseBatchVerifyCliArgs(prepareBatchVerifyArgvForProjectDefaults(stripped));
       parsedBatch = parsed;
       const wf = await runBatchVerifyToValidatedResult(() =>
         verifyWorkflow({
