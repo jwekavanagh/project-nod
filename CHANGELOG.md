@@ -1,3 +1,9 @@
+## [7.6.0](https://github.com/jwekavanagh/agentskeptic/compare/v7.5.0...v7.6.0) (2026-05-07)
+
+### Features
+
+* **ci:** composite project wiring and OSS release gate example ([#73](https://github.com/jwekavanagh/agentskeptic/issues/73)) ([85fd54f](https://github.com/jwekavanagh/agentskeptic/commit/85fd54f58c55b548aa03147800da1262f596971a))
+
 ## [7.5.0](https://github.com/jwekavanagh/agentskeptic/compare/v7.4.0...v7.5.0) (2026-05-07)
 
 ### Features

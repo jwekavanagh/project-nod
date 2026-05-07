@@ -1,6 +1,6 @@
 {
   "name": "agentskeptic-web",
-  "version": "7.5.0",
+  "version": "7.6.0",
   "private": true,
   "engines": {
     "node": "22.x || 24.x"
