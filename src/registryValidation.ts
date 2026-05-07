@@ -8,7 +8,7 @@ import { buildRegistryMap, resolveVerificationRequest } from "./resolveExpectati
 import { loadSchemaValidator } from "./schemaLoad.js";
 import { TruthLayerError } from "./truthLayerError.js";
 import type { ToolRegistryEntry, ToolRegistryVerification } from "./types.js";
-import { REGISTRY_VALIDATION_CODE } from "./wireReasonCodes.js";
+import { REGISTRY_READINESS_CODE, REGISTRY_VALIDATION_CODE } from "./wireReasonCodes.js";
 
 const validateToolsRegistrySchema = loadSchemaValidator("tools-registry");
 
@@ -59,11 +59,7 @@ export type RegistryValidationResult = {
 };
 
 export type RegistryReadinessIssueCode =
-  | "UNRESOLVED_REGISTRY_REFERENCE"
-  | "MISSING_ENV_VAR"
-  | "MISSING_WITNESS_CONFIGURATION"
-  | "UNSUPPORTED_WITNESS_DATABASE_MODE"
-  | "READINESS_UNKNOWN";
+  (typeof REGISTRY_READINESS_CODE)[keyof typeof REGISTRY_READINESS_CODE];
 
 export type RegistryReadinessIssueSeverity = "blocker" | "warning" | "unknown";
 
@@ -454,7 +450,7 @@ export function validateRegistryReadiness(input: {
   if (resolutionIssueCount > 0) {
     for (const r of validation.resolutionIssues) {
       pushIssue(issues, dedupe, {
-        code: "UNRESOLVED_REGISTRY_REFERENCE",
+        code: REGISTRY_READINESS_CODE.UNRESOLVED_REGISTRY_REFERENCE,
         severity: "blocker",
         scope: "registry",
         target: r.toolId ? `tool:${r.toolId}` : `workflow:${r.workflowId}`,
@@ -466,7 +462,7 @@ export function validateRegistryReadiness(input: {
   if (structuralIssueCount > 0) {
     for (const s of validation.structuralIssues) {
       pushIssue(issues, dedupe, {
-        code: "UNRESOLVED_REGISTRY_REFERENCE",
+        code: REGISTRY_READINESS_CODE.UNRESOLVED_REGISTRY_REFERENCE,
         severity: "blocker",
         scope: "registry",
         target: s.toolId ? `tool:${s.toolId}` : "registry",
@@ -488,7 +484,7 @@ export function validateRegistryReadiness(input: {
     if (input.databaseMode === "sqlite") {
       status = "blocked";
       pushIssue(issues, dedupe, {
-        code: "UNSUPPORTED_WITNESS_DATABASE_MODE",
+        code: REGISTRY_READINESS_CODE.UNSUPPORTED_WITNESS_DATABASE_MODE,
         severity: "blocker",
         scope: "witness",
         target,
@@ -515,7 +511,7 @@ export function validateRegistryReadiness(input: {
       if (!hasHostConst && !hasHostEnv) {
         status = "blocked";
         pushIssue(issues, dedupe, {
-          code: "MISSING_WITNESS_CONFIGURATION",
+          code: REGISTRY_READINESS_CODE.MISSING_WITNESS_CONFIGURATION,
           severity: "blocker",
           scope: "witness",
           target,
@@ -530,7 +526,7 @@ export function validateRegistryReadiness(input: {
       if (!hasApiKey) {
         status = "blocked";
         pushIssue(issues, dedupe, {
-          code: "MISSING_ENV_VAR",
+          code: REGISTRY_READINESS_CODE.MISSING_ENV_VAR,
           severity: "blocker",
           scope: "witness",
           target,
@@ -545,7 +541,7 @@ export function validateRegistryReadiness(input: {
       if (!hasMongoUri) {
         status = "blocked";
         pushIssue(issues, dedupe, {
-          code: "MISSING_ENV_VAR",
+          code: REGISTRY_READINESS_CODE.MISSING_ENV_VAR,
           severity: "blocker",
           scope: "witness",
           target,
@@ -558,7 +554,7 @@ export function validateRegistryReadiness(input: {
     if (!hasEventContext && verificationContainsPointer(verification) && status === "ready") {
       status = "unknown";
       pushIssue(issues, dedupe, {
-        code: "READINESS_UNKNOWN",
+        code: REGISTRY_READINESS_CODE.READINESS_UNKNOWN,
         severity: "unknown",
         scope: "witness",
         target,
