@@ -75,6 +75,7 @@ export type SchemaValidatorName =
   | "workflow-result-compare-input"
   | "run-comparison-report"
   | "registry-validation-result"
+  | "registry-readiness-result"
   | "cli-error-envelope"
   | "plan-validation-core"
   | "quick-verify-report"
@@ -185,6 +186,8 @@ export function loadSchemaValidator(name: SchemaValidatorName): ValidateFunction
       return compileSchemaFile(name, "run-comparison-report.schema.json");
     case "registry-validation-result":
       return compileSchemaFile(name, "registry-validation-result.schema.json");
+    case "registry-readiness-result":
+      return compileSchemaFile(name, "registry-readiness-result.schema.json");
     case "plan-validation-core":
       return compileSchemaFile(name, "plan-validation-core.schema.json");
     case "evidence-completeness-v1":

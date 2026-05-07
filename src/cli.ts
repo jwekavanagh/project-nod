@@ -28,7 +28,9 @@ import {
   runStandardVerifyWorkflowCliFlow,
 } from "./standardVerifyWorkflowCli.js";
 import {
+  formatRegistryReadinessHumanReport,
   formatRegistryValidationHumanReport,
+  validateRegistryReadiness,
   validateToolsRegistry,
 } from "./registryValidation.js";
 import { loadSchemaValidator } from "./schemaLoad.js";
@@ -1036,22 +1038,34 @@ function usageValidateRegistry(): string {
   return `Usage:
   agentskeptic validate-registry --registry <path>
   agentskeptic validate-registry --registry <path> --events <path> --workflow-id <id>
+  agentskeptic validate-registry --registry <path> --readiness [--events <path> --workflow-id <id>] (--db <sqlitePath> | --postgres-url <url>)
 
 Exit codes:
   0  registry valid (stdout: RegistryValidationResult JSON; stderr empty)
   1  validation failed (stdout: RegistryValidationResult JSON; stderr human report)
+  2  readiness blocked (stdout: RegistryReadinessResult JSON; stderr human report)
   3  operational failure (stderr JSON envelope only; stdout empty)
 
-Options: --registry (required), --events and --workflow-id (both or neither).
+Options: --registry (required), --events and --workflow-id (both or neither), --readiness, and for readiness exactly one of --db or --postgres-url.
 
   --help, -h  print this message and exit 0`;
 }
 
 function assertValidateRegistryArgsWellFormed(args: string[]): void {
-  const allowed = new Set(["--registry", "--events", "--workflow-id", "--help", "-h"]);
+  const allowed = new Set([
+    "--registry",
+    "--events",
+    "--workflow-id",
+    "--readiness",
+    "--db",
+    "--postgres-url",
+    "--help",
+    "-h",
+  ]);
   for (let i = 0; i < args.length; i++) {
     const a = args[i]!;
     if (a === "-h" || a === "--help") continue;
+    if (a === "--readiness") continue;
     if (!a.startsWith("--")) {
       throw new TruthLayerError(
         CLI_OPERATIONAL_CODES.VALIDATE_REGISTRY_USAGE,
@@ -1064,7 +1078,7 @@ function assertValidateRegistryArgsWellFormed(args: string[]): void {
         `Unknown option: ${a}`,
       );
     }
-    if (a === "--registry" || a === "--events" || a === "--workflow-id") {
+    if (a === "--registry" || a === "--events" || a === "--workflow-id" || a === "--db" || a === "--postgres-url") {
       const v = args[i + 1];
       if (v === undefined || v.startsWith("--")) {
         throw new TruthLayerError(
@@ -1096,6 +1110,9 @@ function runValidateRegistrySubcommand(args: string[]): void {
   const registryPath = argValue(args, "--registry");
   const eventsPath = argValue(args, "--events");
   const workflowId = argValue(args, "--workflow-id");
+  const readiness = args.includes("--readiness");
+  const dbPath = argValue(args, "--db");
+  const postgresUrl = argValue(args, "--postgres-url");
 
   if (!registryPath) {
     writeCliError(
@@ -1103,6 +1120,61 @@ function runValidateRegistrySubcommand(args: string[]): void {
       "Missing required --registry path.",
     );
     process.exit(3);
+  }
+
+  if (!readiness && (dbPath !== undefined || postgresUrl !== undefined)) {
+    writeCliError(
+      CLI_OPERATIONAL_CODES.VALIDATE_REGISTRY_USAGE,
+      "--db and --postgres-url are only valid with --readiness.",
+    );
+    process.exit(3);
+  }
+
+  if (readiness) {
+    if ((dbPath === undefined) === (postgresUrl === undefined)) {
+      writeCliError(
+        CLI_OPERATIONAL_CODES.VALIDATE_REGISTRY_USAGE,
+        "With --readiness, provide exactly one of --db or --postgres-url.",
+      );
+      process.exit(3);
+    }
+    if (postgresUrl !== undefined && !/^postgres(ql)?:\/\//i.test(postgresUrl)) {
+      writeCliError(
+        CLI_OPERATIONAL_CODES.VALIDATE_REGISTRY_USAGE,
+        "--postgres-url must start with postgres:// or postgresql://",
+      );
+      process.exit(3);
+    }
+    let readinessResult;
+    try {
+      readinessResult = validateRegistryReadiness({
+        registryPath,
+        eventsPath,
+        workflowId,
+        databaseMode: postgresUrl !== undefined ? "postgres" : "sqlite",
+      });
+    } catch (e) {
+      if (e instanceof TruthLayerError) {
+        writeCliError(e.code, e.message);
+        process.exit(3);
+      }
+      const msg = e instanceof Error ? e.message : String(e);
+      writeCliError(CLI_OPERATIONAL_CODES.INTERNAL_ERROR, formatOperationalMessage(msg));
+      process.exit(3);
+    }
+    const validateReadiness = loadSchemaValidator("registry-readiness-result");
+    if (!validateReadiness(readinessResult)) {
+      writeCliError(
+        CLI_OPERATIONAL_CODES.INTERNAL_ERROR,
+        JSON.stringify(validateReadiness.errors ?? []),
+      );
+      process.exit(3);
+    }
+    console.log(JSON.stringify(readinessResult));
+    process.stderr.write(`${formatRegistryReadinessHumanReport(readinessResult)}\n`);
+    if (readinessResult.overallStatus === "ready_to_attempt") process.exit(0);
+    if (readinessResult.overallStatus === "unknown") process.exit(1);
+    process.exit(2);
   }
 
   let result;

@@ -872,7 +872,7 @@ agentskeptic funnel-anon --help
 
 ## Registry validation (`validate-registry`) — normative
 
-This section is the **single normative contract** for registry validation. The machine shape is [`schemas/registry-validation-result.schema.json`](../schemas/registry-validation-result.schema.json). [README.md](../README.md) may repeat one example command only and must link here.
+This section is the **single normative contract** for registry validation and opt-in readiness preflight. Machine shapes are [`schemas/registry-validation-result.schema.json`](../schemas/registry-validation-result.schema.json) and [`schemas/registry-readiness-result.schema.json`](../schemas/registry-readiness-result.schema.json). [README.md](../README.md) may repeat one example command only and must link here.
 
 ### Purpose
 
@@ -883,10 +883,13 @@ Validate a **`tools.json`** registry **without** opening SQLite or Postgres: JSO
 ```text
 agentskeptic validate-registry --registry <path>
 agentskeptic validate-registry --registry <path> --events <path> --workflow-id <id>
+agentskeptic validate-registry --registry <path> --readiness [--events <path> --workflow-id <id>] (--db <sqlitePath> | --postgres-url <url>)
 ```
 
 - **`--registry`**: required.
 - **`--events`** and **`--workflow-id`**: **both** or **neither**. Mismatch → exit **3**, code **`VALIDATE_REGISTRY_USAGE`**.
+- **`--readiness`**: optional explicit preflight mode for operational witness readiness. Without this flag, behavior is unchanged.
+- With **`--readiness`**: provide exactly one of **`--db`** or **`--postgres-url`**.
 - Unknown options or stray positional arguments → exit **3**, **`VALIDATE_REGISTRY_USAGE`**.
 - **`--help` / `-h`**: usage on **stdout**, exit **0** (handled only when `validate-registry` is the first argument; see `cli.ts`).
 
@@ -894,13 +897,41 @@ agentskeptic validate-registry --registry <path> --events <path> --workflow-id <
 
 | Exit | stdout | stderr |
 |------|--------|--------|
-| **0** | Exactly one UTF-8 JSON object: `RegistryValidationResult` matching `registry-validation-result.schema.json`, with **`valid`: `true`** | **Empty** (zero bytes) |
-| **1** | Same schema; **`valid`: `false`** | Multi-line UTF-8 human report (grammar below) |
+| **0** | Validation mode: `RegistryValidationResult` with **`valid: true`**. Readiness mode: `RegistryReadinessResult` with **`overallStatus: "ready_to_attempt"`**. | Validation mode: empty. Readiness mode: multi-line readiness report. |
+| **1** | Validation mode: `RegistryValidationResult` with **`valid: false`**. Readiness mode: `RegistryReadinessResult` with **`overallStatus: "unknown"`**. | Validation mode: validation failure report. Readiness mode: multi-line readiness report. |
+| **2** | Readiness mode only: `RegistryReadinessResult` with **`overallStatus: "blocked"`**. | Multi-line readiness report. |
 | **3** | **Empty** (zero bytes) | Exactly **one** line: `execution_truth_layer_error` JSON envelope (same shape as [CLI operational errors](#cli-operational-errors)) |
 
 Codes for exit **3** on this subcommand include **`REGISTRY_READ_FAILED`**, **`REGISTRY_JSON_SYNTAX`**, **`EVENTS_READ_FAILED`**, **`VALIDATE_REGISTRY_USAGE`**, **`INTERNAL_ERROR`** (e.g. result failed output schema validation—should not occur in production).
 
 **Note:** Duplicate `toolId` and JSON Schema failures are **exit 1**, not **3**: they produce structured issues on stdout so automation can parse fixes.
+
+### Readiness contract (`--readiness` only)
+
+`--readiness` answers **“ready to attempt verification?”** It does **not** assert that verification passed or that trust is established.
+
+`RegistryReadinessResult` top-level fields:
+
+- **`schemaVersion`**: `1`
+- **`kind`**: `"registry_readiness"`
+- **`overallStatus`**: `"ready_to_attempt"` \| `"blocked"` \| `"unknown"`
+- **`summary`**: `{ blockers, warnings, unknowns }` counts
+- **`structuralValidation`**: `{ valid, structuralIssueCount, resolutionIssueCount }`
+- **`issues[]`**: `{ code, severity, scope, target, message, remediation }`
+- **`checkedWitnesses[]`**: `{ witnessKind, target, status }`
+
+Issue codes for this slice:
+
+- `UNRESOLVED_REGISTRY_REFERENCE`
+- `MISSING_ENV_VAR`
+- `MISSING_WITNESS_CONFIGURATION`
+- `UNSUPPORTED_WITNESS_DATABASE_MODE`
+- `READINESS_UNKNOWN`
+
+Human stderr grammar (`--readiness`):
+
+1. First line exactly: `Registry readiness: <ready_to_attempt|blocked|unknown>`
+2. Zero or more issue lines: `- <CODE> (<target>): <message> Next: <remediation>`
 
 ### Human stderr grammar (exit **1** only)
 
