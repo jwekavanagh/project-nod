@@ -23,7 +23,6 @@ let child: ChildProcess | undefined;
 /** Last lines of `next start` stderr when stdio is piped — for failed readiness diagnostics. */
 let lastStartStderr = "";
 let startPromise: Promise<void> | null = null;
-let teardownRegistered = false;
 
 /**
  * `next build` is memory-heavy; cap V8 heap so the process can grow without asking the OS for
@@ -175,15 +174,24 @@ export async function ensureMarketingSiteRunning(): Promise<void> {
     startPromise = startInternal();
   }
   await startPromise;
+  if (child && (child.exitCode !== null || child.signalCode !== null)) {
+    startPromise = startInternal();
+    await startPromise;
+  }
 }
 
-/** Call once at module top level in each test file that uses `getSiteHtml` / `ensureMarketingSiteRunning`. */
+/**
+ * Call once at module top level in each test file that uses `getSiteHtml` / `ensureMarketingSiteRunning`.
+ * Registers an `afterAll` for that file so the marketing server is torn down before the next file runs
+ * (needed when Vitest shares one process across files).
+ */
 export function registerMarketingSiteTeardown(): void {
-  if (teardownRegistered) return;
-  teardownRegistered = true;
   afterAll(async () => {
     if (!child) return;
     const proc = child;
+    child = undefined;
+    startPromise = null;
+    lastStartStderr = "";
     async function waitClose(ms: number): Promise<void> {
       if (proc.exitCode !== null || proc.signalCode !== null) return;
       await new Promise<void>((resolve, reject) => {
@@ -201,7 +209,6 @@ export function registerMarketingSiteTeardown(): void {
     proc.kill("SIGTERM");
     try {
       await waitClose(20_000);
-      return;
     } catch {
       /* escalate */
     }
