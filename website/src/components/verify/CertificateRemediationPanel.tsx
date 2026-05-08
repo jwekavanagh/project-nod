@@ -63,7 +63,7 @@ function VerifyDemoCertificateView(props: { certificate: BundledOutcomeCertifica
   const { certificate } = props;
   const af = certificate.failureSpine.actionableFailure;
   const ec = certificate.evidenceCompleteness;
-  const comprehension = deriveVerdictComprehension(certificate as VerdictComprehensionInput);
+  const comprehension = deriveVerdictComprehension(certificate as unknown as VerdictComprehensionInput);
   const failedStep = failedStepToolId(certificate);
   const evidenceGap = ec.blockerCategory;
   const severity = af.severity;
@@ -145,7 +145,7 @@ export function CertificateRemediationPanel(props: CertificateRemediationPanelPr
 
   const af = certificate.failureSpine.actionableFailure;
   const ec = certificate.evidenceCompleteness;
-  const primaryLine = deriveVerdictComprehension(certificate as VerdictComprehensionInput).nextAction;
+  const primaryLine = deriveVerdictComprehension(certificate as unknown as VerdictComprehensionInput).nextAction;
   const remediationItems = [...(ec.remediationItems ?? [])].sort((a, b) => {
     if (a.primary !== b.primary) return a.primary ? -1 : 1;
     return a.id.localeCompare(b.id);

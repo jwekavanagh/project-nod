@@ -73,7 +73,7 @@ describe("VerifyPageClient a11y", () => {
       expect(screen.getByTestId("remediation-verdict-label")).toHaveTextContent("Reality contradicts the claim");
       expect(screen.getByText(/could not verify the expected contact state in the mocked store/i)).toBeTruthy();
       expect(screen.getByTestId("verify-paste-demo-next-action")).toHaveTextContent(
-        "Review the expected state, fix the workflow or data, then rerun verification.",
+        "Review the evidence completeness block and workflow truth report, then decide on a manual fix path.",
       );
       expect(screen.getByTestId("remediation-primary-action")).toHaveTextContent(
         certificate.evidenceCompleteness.nextActions[0]?.text ?? "",
