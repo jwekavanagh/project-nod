@@ -1,0 +1,158 @@
+# Deterministic E2E smoke for the agentskeptic-check composite action.
+#
+# Job A `produce` runs the composite against the canonical OSS example inputs
+# and uploads a SHA-256 of the certificate alongside the artifact the composite
+# itself uploads.
+#
+# Job B `verify-artifact` downloads both, runs `sha256sum -c` (proves byte
+# identical retention) and a `node -e` schemaVersion+failureSpine check (proves
+# the artifact is the canonical Outcome Certificate v3).
+#
+# Permissions: contents: read only. actions/upload-artifact@v4 and
+# actions/download-artifact@v4 authenticate via ACTIONS_RUNTIME_TOKEN, not
+# GITHUB_TOKEN, so no `actions: read|write` scope is required. Successful
+# `download-artifact@v4` of the named artifact is itself proof the artifact
+# existed under that name.
+name: Composite action smoke
+
+on:
+  pull_request:
+    paths:
+      - ".github/actions/agentskeptic-check/**"
+      - ".github/workflows/composite-action-smoke.yml"
+      - "examples/github-actions/agentskeptic-check.yml"
+      - "examples/tools.json"
+      - "examples/events.ndjson"
+      - "examples/seed.sql"
+      - "package.json"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+
+jobs:
+  produce:
+    name: Produce certificate via composite
+    runs-on: ubuntu-latest
+    env:
+      AGENTSKEPTIC_TELEMETRY: "0"
+      AGENTSKEPTIC_CI_PACKAGE: agentskeptic@7.6.0
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        env:
+          NODE_OPTIONS: "--disable-warning=DEP0040"
+        with:
+          node-version: "22"
+
+      - name: Prepare conventional agentskeptic/ paths for project mode
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p agentskeptic
+          cp examples/tools.json agentskeptic/tools.json
+          cp examples/events.ndjson agentskeptic/events.ndjson
+
+      - name: Create examples/demo.db from seed.sql
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --input-type=module -e "
+          import { readFileSync } from 'node:fs';
+          import { DatabaseSync } from 'node:sqlite';
+          const d = new DatabaseSync('examples/demo.db');
+          d.exec(readFileSync('examples/seed.sql', 'utf8'));
+          d.close();
+          "
+
+      - name: Install pinned AgentSkeptic
+        shell: bash
+        run: npm install --no-save "${AGENTSKEPTIC_CI_PACKAGE}"
+
+      - id: ask
+        uses: ./.github/actions/agentskeptic-check
+        with:
+          workflow-id: wf_complete
+          project: .
+          package: ${{ env.AGENTSKEPTIC_CI_PACKAGE }}
+          db: examples/demo.db
+
+      - name: Echo decision-grade outputs
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo "verdict=${{ steps.ask.outputs.verdict }}"
+          echo "state-relation=${{ steps.ask.outputs.state-relation }}"
+          echo "trust-decision=${{ steps.ask.outputs.trust-decision }}"
+          echo "primary-reason-codes=${{ steps.ask.outputs.primary-reason-codes }}"
+          echo "failing-tool-ids=${{ steps.ask.outputs.failing-tool-ids }}"
+          echo "failing-witness-kinds=${{ steps.ask.outputs.failing-witness-kinds }}"
+          echo "recommended-action=${{ steps.ask.outputs.recommended-action }}"
+          echo "automation-safe=${{ steps.ask.outputs.automation-safe }}"
+          echo "certificate-path=${{ steps.ask.outputs.certificate-path }}"
+
+      - name: Compute SHA-256 of outcome-certificate.json
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          cert="${RUNNER_TEMP}/agentskeptic-ci/outcome-certificate.json"
+          if [[ ! -s "$cert" ]]; then
+            echo "::error::expected outcome-certificate.json at $cert"
+            exit 1
+          fi
+          sha256sum "$cert" | awk '{print $1"  outcome-certificate.json"}' > "${RUNNER_TEMP}/cert.sha256"
+          cat "${RUNNER_TEMP}/cert.sha256"
+
+      - name: Upload certificate SHA-256
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: agentskeptic-outcome-certificate-sha256
+          path: ${{ runner.temp }}/cert.sha256
+          retention-days: 14
+
+  verify-artifact:
+    name: Verify uploaded certificate
+    needs: [produce]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download certificate
+        uses: actions/download-artifact@v4
+        with:
+          name: agentskeptic-outcome-certificate
+          path: cert
+      - name: Download SHA-256
+        uses: actions/download-artifact@v4
+        with:
+          name: agentskeptic-outcome-certificate-sha256
+          path: sha
+      - name: Verify byte-identical retention
+        shell: bash
+        working-directory: cert
+        run: |
+          set -euo pipefail
+          ls -la
+          ls -la ../sha
+          sha256sum -c "../sha/cert.sha256"
+      - name: Verify schemaVersion + failureSpine
+        shell: bash
+        run: |
+          set -euo pipefail
+          node -e "
+          const cert = require('./cert/outcome-certificate.json');
+          if (cert.schemaVersion !== 3) { console.error('schemaVersion !== 3'); process.exit(1); }
+          if (!cert.failureSpine || typeof cert.failureSpine !== 'object') {
+            console.error('failureSpine missing'); process.exit(1);
+          }
+          if (typeof cert.workflowId !== 'string' || cert.workflowId.length === 0) {
+            console.error('workflowId missing'); process.exit(1);
+          }
+          console.log('ok schemaVersion=3 workflowId=' + cert.workflowId + ' trustDecision=' + cert.failureSpine.trustDecision);
+          "

@@ -11,15 +11,15 @@
 # Transparent manual alternative: invoke `npx agentskeptic check …` inline (same CLI contract — Outcome Certificate on stdout,
 # truth_check_verdict on stderr). For opt-in commercial/stateful enforcement see agentskeptic-commercial.yml.
 #
-# Ambient discovery job summary contract: docs/ambient-ci-distribution.md
+# Ambient CI distribution (job summary, structured outputs, downloadable
+# `agentskeptic-outcome-certificate` artifact, and OSS-friendly permissions
+# requirements) is documented in docs/ambient-ci-distribution.md.
 #
-# Optional: retain decision evidence (NOT the default first-run path). After reading
-# docs/decision-evidence-bundle.md (evidence maturity ladder), you can add a second job or
-# extra-args on the step below, e.g.:
-#   extra-args: --write-decision-bundle ${{ runner.temp }}/proof/decision
-# then upload-artifact on ${{ runner.temp }}/proof. For full local proof (decision + technical
-# run bundle), also pass --write-run-bundle ${{ runner.temp }}/proof/run with a second directory.
-# Do not enable artifact retention until you intend to store verification outputs.
+# The composite action below uploads `outcome-certificate.json` automatically as
+# a workflow artifact named `agentskeptic-outcome-certificate` (using
+# actions/upload-artifact@v4 over ACTIONS_RUNTIME_TOKEN — no `actions: write`
+# scope is required on GITHUB_TOKEN). For opt-in PR comments and additional
+# stateful enforcement see examples/github-actions/agentskeptic-commercial.yml.
 name: AgentSkeptic Truth Check
 
 on:

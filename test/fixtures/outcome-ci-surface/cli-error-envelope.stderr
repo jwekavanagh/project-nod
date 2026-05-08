@@ -1,0 +1,2 @@
+truth_check_verdict: unknown
+{"schemaVersion":2,"kind":"execution_truth_layer_error","code":"REGISTRY_NOT_FOUND","message":"Tools registry path does not exist.","failureDiagnosis":{"summary":"Tools registry path does not exist.","primaryOrigin":"VERIFIER_INPUT_FAILURE","confidence":"high","evidence":[{"referenceCode":"REGISTRY_NOT_FOUND"}],"actionableFailure":{"category":"VERIFIER_INPUT_FAILURE","severity":"high","recommendedAction":"fix_cli_usage","automationSafe":false}}}

@@ -1,0 +1,83 @@
+{
+  "schemaVersion": 3,
+  "workflowId": "wf_langgraph_demo",
+  "runKind": "contract_sql_langgraph_checkpoint_trust",
+  "stateRelation": "not_established",
+  "highStakesReliance": "prohibited",
+  "relianceRationale": "Verifier could not establish state because no schema-valid tool_observed lines were ingested.",
+  "intentSummary": "LangGraph checkpoint trust without a runnable verification trace.",
+  "explanation": {
+    "headline": "No runnable verification trace was produced for this workflow.",
+    "details": [
+      { "code": "INGEST_NO_STRUCTURED_TOOL_ACTIVITY", "message": "No tool_observed events for this workflow id." }
+    ]
+  },
+  "steps": [],
+  "humanReport": "Verification incomplete: no events ingested.",
+  "evidenceCompleteness": {
+    "schemaVersion": 1,
+    "blockerCategory": "verification_incomplete",
+    "quickSignal": "no_structured_activity",
+    "verifiedClaims": [],
+    "unverifiedClaims": [
+      "LangGraph checkpoint trust ineligible: no runnable verification trace."
+    ],
+    "missingInputs": [
+      { "code": "INGEST_NO_STRUCTURED_TOOL_ACTIVITY", "hint": "No tool_observed events for this workflow id." }
+    ],
+    "nextActions": [
+      { "id": "fix_langgraph_eligibility", "text": "Repair NDJSON capture so checkpoint trust receives schema-valid schemaVersion 3 tool_observed lines for this workflow, then rerun verify." }
+    ],
+    "rerunReadiness": "fix_inputs_before_rerun",
+    "rerunPath": {
+      "type": "after_input_fix_verify",
+      "sameInputs": false,
+      "prerequisite": "Registry, events, tool parameters, or verification inputs are corrected.",
+      "meaningfulWhen": "The corrected inputs express the expected state the verifier should check.",
+      "readinessLabel": "Rerun verify after registry, events, tool parameters, or verification inputs are corrected."
+    },
+    "remediationItems": [
+      {
+        "id": "quick_ingest",
+        "scope": "quick_ingest",
+        "primary": true,
+        "failedCheck": "LangGraph checkpoint trust eligibility",
+        "reasonCodes": ["INGEST_NO_STRUCTURED_TOOL_ACTIVITY"],
+        "reason": "No tool_observed events for this workflow id.",
+        "recommendedAction": "fix_event_ingest_and_steps",
+        "actionText": "Repair NDJSON capture so checkpoint trust receives schema-valid schemaVersion 3 tool_observed lines for this workflow, then rerun verify.",
+        "expectedState": {
+          "summary": "Expected schema-valid schemaVersion 3 tool_observed lines for this workflow."
+        },
+        "automation": {
+          "class": "input_regeneration_candidate",
+          "label": "Automation candidate: repair inputs outside the verifier; AgentSkeptic will not mutate external systems.",
+          "boundary": "AgentSkeptic is a read-only verifier. It does not mutate databases, rewrite inputs, or execute remediation."
+        },
+        "humanReview": { "required": false },
+        "rerunPath": {
+          "type": "after_input_fix_verify",
+          "sameInputs": false,
+          "prerequisite": "Registry, events, tool parameters, or verification inputs are corrected.",
+          "meaningfulWhen": "The corrected inputs express the expected state the verifier should check.",
+          "readinessLabel": "Rerun verify after registry, events, tool parameters, or verification inputs are corrected."
+        }
+      }
+    ]
+  },
+  "failureSpine": {
+    "schemaVersion": 1,
+    "trustDecision": "unknown",
+    "summary": "LangGraph checkpoint trust ineligible: no runnable verification trace.",
+    "actionableFailure": {
+      "category": "INELIGIBLE",
+      "severity": "low",
+      "recommendedAction": "fix_event_ingest_and_steps",
+      "automationSafe": false
+    },
+    "primaryCodes": ["INGEST_NO_STRUCTURED_TOOL_ACTIVITY"],
+    "rerunGuidance": "Repair NDJSON capture so checkpoint trust receives schema-valid schemaVersion 3 tool_observed lines for this workflow, then rerun verify.",
+    "source": "ineligible_langgraph"
+  },
+  "correctnessDefinition": null
+}
