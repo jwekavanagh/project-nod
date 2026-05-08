@@ -1,3 +1,9 @@
+## [7.9.1](https://github.com/jwekavanagh/agentskeptic/compare/v7.9.0...v7.9.1) (2026-05-08)
+
+### Bug Fixes
+
+* patch fast-xml-builder lockfile and stabilize website Vitest harness ([2aa36e1](https://github.com/jwekavanagh/agentskeptic/commit/2aa36e142bfac6b469d447b040f24fef4621912b))
+
 ## [7.9.0](https://github.com/jwekavanagh/agentskeptic/compare/v7.8.1...v7.9.0) (2026-05-08)
 
 ### Features
