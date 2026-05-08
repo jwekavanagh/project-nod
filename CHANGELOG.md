@@ -1,3 +1,15 @@
+## [7.9.0](https://github.com/jwekavanagh/agentskeptic/compare/v7.8.1...v7.9.0) (2026-05-08)
+
+### Features
+
+* improve verdict comprehension surfaces ([895bd98](https://github.com/jwekavanagh/agentskeptic/commit/895bd9849549897bd054b5f58c895d23c0410077))
+
+## [7.8.1](https://github.com/jwekavanagh/agentskeptic/compare/v7.8.0...v7.8.1) (2026-05-08)
+
+### Bug Fixes
+
+* **deps:** force patched fast-xml-builder resolution ([#77](https://github.com/jwekavanagh/agentskeptic/issues/77)) ([24b9713](https://github.com/jwekavanagh/agentskeptic/commit/24b97133cb07dea92533d35598907d662ac3e3fc))
+
 ## [7.8.0](https://github.com/jwekavanagh/agentskeptic/compare/v7.7.0...v7.8.0) (2026-05-08)
 
 ### Features

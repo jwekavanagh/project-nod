@@ -30,6 +30,39 @@ export function SharedReportExecutiveSummary({ model }: Props) {
       <p data-testid="shared-report-next-action">
         <strong>Next action:</strong> {model.nextAction}
       </p>
+      <p data-testid="shared-report-determinacy">
+        <strong>Determinacy:</strong> {model.determinacyLine}
+      </p>
+      {model.checkedItems.length > 0 ? (
+        <div data-testid="shared-report-checked">
+          <strong>Checked:</strong>
+          <ul>
+            {model.checkedItems.map((item) => (
+              <li key={item}>{item}</li>
+            ))}
+          </ul>
+        </div>
+      ) : null}
+      {model.notCheckedItems.length > 0 ? (
+        <div data-testid="shared-report-not-checked">
+          <strong>Not checked:</strong>
+          <ul>
+            {model.notCheckedItems.map((item) => (
+              <li key={item}>{item}</li>
+            ))}
+          </ul>
+        </div>
+      ) : null}
+      {model.missingInputItems.length > 0 ? (
+        <div data-testid="shared-report-missing-inputs">
+          <strong>Missing inputs:</strong>
+          <ul>
+            {model.missingInputItems.map((item) => (
+              <li key={item}>{item}</li>
+            ))}
+          </ul>
+        </div>
+      ) : null}
     </section>
   );
 }
