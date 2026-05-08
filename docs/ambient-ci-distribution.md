@@ -52,10 +52,14 @@ After every composite run, the action writes a single block to **`$GITHUB_STEP_S
 1. Header: `mode`, `cli_exit`, `truth_check_verdict`, `release_critical_truth_check_verdict` (from certificate when parsed), `state_relation`, `high_stakes_reliance`, plus **`### Release-critical gate`** with the same critical verdict for skimmers.
 2. **Failure spine** block from `failureSpine`: `trustDecision`, `summary`, `actionableFailure` (`category`, `severity`, `recommendedAction`, `automationSafe`), `primaryCodes`, `rerunGuidance`, `source`.
 3. **Failing steps** Markdown table built from `evidenceCompleteness.remediationItems` rows with `scope = "step"` or `scope = "effect"` (falls back to `evidenceCompleteness.unverifiedClaims` if remediation enrichment is absent).
-4. `failing_witness_kinds` line: comma-list derived from reason-code prefixes (`HTTP_WITNESS_*`, `OBJECT_*`, `VECTOR_*`, `MONGO_*`, `STATE_WITNESS_*` → `http_witness`, `object_storage`, `vector_document`, `mongo_document`, `state_witness`; else `sql`).
-5. (LangGraph runs only) `### LangGraph checkpoint verdicts` table from `checkpointVerdicts`.
-6. **Outcome Certificate artifact** pointer (artifact name and file name).
-7. Collapsed `<details>` containing the **last 80 lines** of CLI stderr.
+4. **Coverage snapshot** section with certificate-derived counts:
+   - `checked_claims_count` = `evidenceCompleteness.verifiedClaims.length`
+   - `not_checked_claims_count` = `evidenceCompleteness.unverifiedClaims.length`
+   - `missing_inputs_count` = `evidenceCompleteness.missingInputs.length`
+5. `failing_witness_kinds` line: comma-list derived from reason-code prefixes (`HTTP_WITNESS_*`, `OBJECT_*`, `VECTOR_*`, `MONGO_*`, `STATE_WITNESS_*` → `http_witness`, `object_storage`, `vector_document`, `mongo_document`, `state_witness`; else `sql`).
+6. (LangGraph runs only) `### LangGraph checkpoint verdicts` table from `checkpointVerdicts`.
+7. **Outcome Certificate artifact** pointer (artifact name and file name).
+8. Collapsed `<details>` containing the **last 80 lines** of CLI stderr.
 
 If the CLI stdout did not parse as a valid `schemaVersion: 3` Outcome Certificate (malformed, oversized > 256 KiB, or a CLI error envelope), the summary is replaced by a single **operational** block that points at stderr and (when present) decodes the [CLI error envelope](../schemas/cli-error-envelope.schema.json) into a human-readable spine.
 

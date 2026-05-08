@@ -42,6 +42,15 @@ describe("VerificationReportView matrix (v3 envelopes)", () => {
     expect(screen.getByTestId("shared-report-verdict")).toHaveTextContent("Not trusted");
     expect(screen.getByTestId("shared-report-headline")).toHaveTextContent("Fixture headline for share POST v2");
     expect(screen.getByTestId("shared-report-reason")).toHaveTextContent("ROW_ABSENT: Expected row is missing.");
+    expect(screen.getByTestId("shared-report-determinacy")).toHaveTextContent(
+      "Determinate mismatch: observed state did not match expected state.",
+    );
+    expect(screen.getByTestId("shared-report-not-checked")).toHaveTextContent(
+      "crm.upsert_contact:seq=0: ROW_ABSENT",
+    );
+    expect(screen.getByTestId("shared-report-missing-inputs")).toHaveTextContent(
+      "ROW_ABSENT: Expected row is missing.",
+    );
     expect(normWs(screen.getByTestId("verification-report-human").textContent ?? "")).toBe(
       normWs(humanText),
     );
@@ -56,6 +65,10 @@ describe("VerificationReportView matrix (v3 envelopes)", () => {
     render(<VerificationReportView humanText={humanText} payload={payload} variant="standalone" />);
     expect(screen.getByTestId("shared-report-verdict")).toHaveTextContent("Trusted");
     expect(screen.getByTestId("shared-report-next-action")).toHaveTextContent(SHARED_REPORT_NEXT_TRUSTED);
+    expect(screen.getByTestId("shared-report-determinacy")).toHaveTextContent(
+      "Determinate match: expected state was verified.",
+    );
+    expect(screen.getByTestId("shared-report-checked")).toHaveTextContent("crm.upsert_contact:seq=0: verified");
   });
 
   it("matrix C unknown shows Unknown and fallback next", () => {
@@ -64,6 +77,9 @@ describe("VerificationReportView matrix (v3 envelopes)", () => {
     render(<VerificationReportView humanText={humanText} payload={payload} variant="standalone" />);
     expect(screen.getByTestId("shared-report-verdict")).toHaveTextContent("Unknown");
     expect(screen.getByTestId("shared-report-next-action")).toHaveTextContent(SHARED_REPORT_NEXT_FALLBACK_NON_TRUSTED);
+    expect(screen.getByTestId("shared-report-determinacy")).toHaveTextContent(
+      "Unknown due to evidence blocker: verification_incomplete.",
+    );
   });
 
   it("legacy v1 workflow shows legacy notice only (no executive ids)", () => {

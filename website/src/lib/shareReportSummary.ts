@@ -1,12 +1,10 @@
 import {
   SHARED_REPORT_HEADLINE_FALLBACK,
-  SHARED_REPORT_NEXT_FALLBACK_NON_TRUSTED,
-  SHARED_REPORT_NEXT_TRUSTED,
-  SHARED_REPORT_REASON_FALLBACK,
   SHARED_REPORT_VERDICT_NOT_TRUSTED,
   SHARED_REPORT_VERDICT_TRUSTED,
   SHARED_REPORT_VERDICT_UNKNOWN,
 } from "./shareReportFallbacks";
+import { deriveVerdictComprehension, type VerdictComprehensionInput } from "./verdictComprehension";
 
 /** Mirrors `truthCheckVerdictFromCertificate` in core (`src/outcomeCertificate.ts`) — duplicated here so the website bundle does not import the `agentskeptic` barrel (pulls Node-only deps under Vitest). */
 export type TruthCheckVerdictLabel = "trusted" | "not_trusted" | "unknown";
@@ -25,19 +23,9 @@ function truthCheckVerdictFromStructured(cert: {
 }
 
 /** Minimal certificate surface for summary derivation (structured fields only). */
-export type CertificateForExecutiveSummary = {
-  stateRelation: "matches_expectations" | "does_not_match" | "not_established";
+export type CertificateForExecutiveSummary = VerdictComprehensionInput & {
   highStakesReliance: "permitted" | "prohibited";
-  intentSummary: string;
   explanation: { headline: string; details: { code: string; message: string }[] };
-  failureSpine: {
-    summary: string;
-    rerunGuidance: string;
-  };
-  evidenceCompleteness: {
-    nextActions: { text?: string }[];
-    remediationItems?: { actionText: string }[];
-  };
 };
 
 export type SharedReportExecutiveModel = {
@@ -45,44 +33,16 @@ export type SharedReportExecutiveModel = {
   headline: string;
   reason: string;
   nextAction: string;
+  determinacyLine: string;
+  checkedItems: string[];
+  notCheckedItems: string[];
+  missingInputItems: string[];
 };
-
-function firstDetailLine(cert: CertificateForExecutiveSummary): string | null {
-  const d = cert.explanation.details[0];
-  if (d === undefined) return null;
-  const m = d.message.trim();
-  const c = d.code.trim();
-  if (m.length === 0 && c.length === 0) return null;
-  return `${c}: ${m}`.trim();
-}
 
 function pickHeadline(cert: CertificateForExecutiveSummary): string {
   const h = cert.explanation.headline.trim();
   if (h.length > 0) return h;
   return SHARED_REPORT_HEADLINE_FALLBACK;
-}
-
-function pickReason(cert: CertificateForExecutiveSummary): string {
-  const line = firstDetailLine(cert);
-  if (line !== null) return line;
-  const spineSum = cert.failureSpine.summary.trim();
-  if (spineSum.length > 0) return spineSum;
-  const intent = cert.intentSummary.trim();
-  if (intent.length > 0) return intent;
-  return SHARED_REPORT_REASON_FALLBACK;
-}
-
-function pickNextAction(cert: CertificateForExecutiveSummary, verdict: TruthCheckVerdictLabel): string {
-  if (verdict === "trusted") {
-    return SHARED_REPORT_NEXT_TRUSTED;
-  }
-  const rg = cert.failureSpine.rerunGuidance.trim();
-  if (rg.length > 0) return rg;
-  const na = cert.evidenceCompleteness.nextActions[0]?.text?.trim();
-  if (na !== undefined && na.length > 0) return na;
-  const ri = cert.evidenceCompleteness.remediationItems?.[0]?.actionText?.trim();
-  if (ri !== undefined && ri.length > 0) return ri;
-  return SHARED_REPORT_NEXT_FALLBACK_NON_TRUSTED;
 }
 
 function verdictLabelFor(v: TruthCheckVerdictLabel): string {
@@ -94,11 +54,16 @@ function verdictLabelFor(v: TruthCheckVerdictLabel): string {
 /** Pure selectors over structured Outcome Certificate fields (no stderr / audit prose parsing). */
 export function executiveSummaryFromCertificate(cert: CertificateForExecutiveSummary): SharedReportExecutiveModel {
   const verdict = truthCheckVerdictFromStructured(cert);
+  const comprehension = deriveVerdictComprehension(cert);
   return {
     verdictLabel: verdictLabelFor(verdict),
     headline: pickHeadline(cert),
-    reason: pickReason(cert),
-    nextAction: pickNextAction(cert, verdict),
+    reason: comprehension.primaryReason,
+    nextAction: comprehension.nextAction,
+    determinacyLine: comprehension.determinacyLine,
+    checkedItems: comprehension.coverage.checkedItems,
+    notCheckedItems: comprehension.coverage.notCheckedItems,
+    missingInputItems: comprehension.coverage.missingInputItems,
   };
 }
 

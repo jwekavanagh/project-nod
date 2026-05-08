@@ -1,10 +1,8 @@
 "use client";
 
 import { AUTOMATION_BOUNDARY_CONNECTOR } from "@/lib/automationBoundaryConnector";
+import { deriveVerdictComprehension, type VerdictComprehensionInput } from "@/lib/verdictComprehension";
 import type { BundledOutcomeCertificate } from "@/lib/verifyBundled.contract";
-
-const VERIFY_DEMO_RECOMMENDED_NEXT =
-  "Review the expected state, fix the workflow or data, then rerun verification.";
 
 function verdictLabelForStateRelation(stateRelation: BundledOutcomeCertificate["stateRelation"]): string {
   if (stateRelation === "matches_expectations") return "Reality matches the expectation";
@@ -65,6 +63,7 @@ function VerifyDemoCertificateView(props: { certificate: BundledOutcomeCertifica
   const { certificate } = props;
   const af = certificate.failureSpine.actionableFailure;
   const ec = certificate.evidenceCompleteness;
+  const comprehension = deriveVerdictComprehension(certificate as unknown as VerdictComprehensionInput);
   const failedStep = failedStepToolId(certificate);
   const evidenceGap = ec.blockerCategory;
   const severity = af.severity;
@@ -114,7 +113,7 @@ function VerifyDemoCertificateView(props: { certificate: BundledOutcomeCertifica
           </div>
           <div className="verify-paste-decision-cell verify-paste-decision-cell--wide">
             <dt>Recommended next action</dt>
-            <dd data-testid="verify-paste-demo-next-action">{VERIFY_DEMO_RECOMMENDED_NEXT}</dd>
+            <dd data-testid="verify-paste-demo-next-action">{comprehension.nextAction}</dd>
           </div>
         </dl>
 
@@ -146,7 +145,7 @@ export function CertificateRemediationPanel(props: CertificateRemediationPanelPr
 
   const af = certificate.failureSpine.actionableFailure;
   const ec = certificate.evidenceCompleteness;
-  const primaryLine = ec.nextActions[0]?.text ?? "";
+  const primaryLine = deriveVerdictComprehension(certificate as unknown as VerdictComprehensionInput).nextAction;
   const remediationItems = [...(ec.remediationItems ?? [])].sort((a, b) => {
     if (a.primary !== b.primary) return a.primary ? -1 : 1;
     return a.id.localeCompare(b.id);

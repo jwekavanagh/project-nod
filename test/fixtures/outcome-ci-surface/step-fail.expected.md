@@ -27,6 +27,12 @@
 | --- | --- | --- | --- | --- |
 | 1 | step | orders.insert | `STATE_MISMATCH`, `OBJECT_MISSING` | Fix downstream database or service state to match declared expectations, then rerun verify. |
 
+### Coverage snapshot
+
+- checked_claims_count: `1`
+- not_checked_claims_count: `1`
+- missing_inputs_count: `1`
+
 - failing_witness_kinds: `object_storage`, `sql`
 
 ### Outcome Certificate artifact
