@@ -26,6 +26,12 @@
 _(no failing steps)_
 
 
+### Coverage snapshot
+
+- checked_claims_count: `0`
+- not_checked_claims_count: `1`
+- missing_inputs_count: `1`
+
 - failing_witness_kinds: `sql`
 
 ### Outcome Certificate artifact

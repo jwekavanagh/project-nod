@@ -32,7 +32,7 @@ describe("CertificateRemediationPanel", () => {
     expect(screen.getByText("state_mismatch")).toBeTruthy();
     expect(screen.getByText("high")).toBeTruthy();
     expect(screen.getByTestId("verify-paste-demo-next-action")).toHaveTextContent(
-      "Review the expected state, fix the workflow or data, then rerun verification.",
+      "Review the evidence completeness block and workflow truth report, then decide on a manual fix path.",
     );
     expect(screen.queryByTestId("remediation-primary-action")).toBeNull();
   });

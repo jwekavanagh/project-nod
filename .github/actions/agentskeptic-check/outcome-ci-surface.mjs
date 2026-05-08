@@ -356,6 +356,20 @@ function fmtWitnessKinds(witnessKinds) {
   return `- failing_witness_kinds: ${witnessKinds.map((k) => `\`${k}\``).join(", ")}`;
 }
 
+function fmtCoverageSnapshot(cert) {
+  const ec = cert.evidenceCompleteness ?? {};
+  const checked = Array.isArray(ec.verifiedClaims) ? ec.verifiedClaims.length : 0;
+  const notChecked = Array.isArray(ec.unverifiedClaims) ? ec.unverifiedClaims.length : 0;
+  const missing = Array.isArray(ec.missingInputs) ? ec.missingInputs.length : 0;
+  return [
+    "### Coverage snapshot",
+    "",
+    `- checked_claims_count: \`${checked}\``,
+    `- not_checked_claims_count: \`${notChecked}\``,
+    `- missing_inputs_count: \`${missing}\``,
+  ].join("\n");
+}
+
 function fmtArtifactBlock(artifactWritten, artifactPath) {
   if (!artifactWritten) {
     return [
@@ -529,6 +543,7 @@ function main() {
     }
     sections.push("", fmtSpineBlock(spine));
     sections.push("", fmtFailingStepsTable(rows));
+    sections.push("", fmtCoverageSnapshot(cert));
     sections.push("", fmtWitnessKinds(witnessKinds));
     const cps = fmtCheckpointVerdicts(cert);
     if (cps) sections.push("", cps);

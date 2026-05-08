@@ -24,6 +24,10 @@ describe("executiveSummaryFromCertificate", () => {
     expect(m.nextAction).toBe(
       "Review the evidence completeness block and workflow truth report, then decide on a manual fix path.",
     );
+    expect(m.determinacyLine).toBe("Determinate mismatch: observed state did not match expected state.");
+    expect(m.checkedItems).toEqual([]);
+    expect(m.notCheckedItems).toEqual(["crm.upsert_contact:seq=0: ROW_ABSENT"]);
+    expect(m.missingInputItems).toEqual(["ROW_ABSENT: Expected row is missing."]);
   });
 
   it("matrix B: trusted + NEXT_TRUSTED constant", () => {
@@ -33,6 +37,10 @@ describe("executiveSummaryFromCertificate", () => {
     expect(m.headline).toBe("Fixture trusted headline");
     expect(m.reason).toBe("TRUSTED: Fixture trusted summary.");
     expect(m.nextAction).toBe(SHARED_REPORT_NEXT_TRUSTED);
+    expect(m.determinacyLine).toBe("Determinate match: expected state was verified.");
+    expect(m.checkedItems).toEqual(["crm.upsert_contact:seq=0: verified"]);
+    expect(m.notCheckedItems).toEqual([]);
+    expect(m.missingInputItems).toEqual([]);
   });
 
   it("matrix C: unknown + fallback next", () => {
@@ -42,6 +50,7 @@ describe("executiveSummaryFromCertificate", () => {
     expect(m.headline).toBe("Fixture unknown headline");
     expect(m.reason).toBe("INCOMPLETE_FIXTURE: Registry or capture incomplete.");
     expect(m.nextAction).toBe(SHARED_REPORT_NEXT_FALLBACK_NON_TRUSTED);
+    expect(m.determinacyLine).toBe("Unknown due to evidence blocker: verification_incomplete.");
   });
 
   it("fallbacks when explanation empty and spine empty", () => {
@@ -57,5 +66,16 @@ describe("executiveSummaryFromCertificate", () => {
     const m = executiveSummaryFromCertificate(cert as CertificateForExecutiveSummary);
     expect(m.headline).toBe(SHARED_REPORT_HEADLINE_FALLBACK);
     expect(m.reason).toBe(SHARED_REPORT_REASON_FALLBACK);
+  });
+
+  it("uses failureSpine.primaryCodes over first explanation detail", () => {
+    const cert = structuredClone(minimalEnvelope.certificate) as CertificateForExecutiveSummary;
+    cert.explanation.details = [
+      { code: "NON_PRIMARY", message: "Noise first row." },
+      { code: "ROW_ABSENT", message: "Expected row is missing." },
+    ];
+    cert.failureSpine.primaryCodes = ["ROW_ABSENT"];
+    const m = executiveSummaryFromCertificate(cert);
+    expect(m.reason).toBe("ROW_ABSENT: Expected row is missing.");
   });
 });
