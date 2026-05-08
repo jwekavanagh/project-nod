@@ -34,18 +34,63 @@ Pick a **stable workflow `name`** and a **stable job id** (the canonical OSS exa
 
 **Canonical OSS CI** is a pinned **truth check** — **`agentskeptic check`** (default **`mode`** on the composite action) — with **no** `AGENTSKEPTIC_API_KEY` and **no** license server. Copy [`examples/github-actions/agentskeptic-check.yml`](../examples/github-actions/agentskeptic-check.yml) into `.github/workflows/`: it establishes **Node 22** before **`node:sqlite`** demo usage, lays out **`agentskeptic/`** paths for **`project`**, runs **one** **`npm install --no-save`** for the verifier + **`render-discovery-ci.mjs`**, and wires composite **`project:` `.`** plus **`package:`** **`${{ env.AGENTSKEPTIC_CI_PACKAGE }}`**.
 
-- **stdout:** one **Outcome Certificate** (machine JSON).
+- **stdout:** one **Outcome Certificate** v3 (machine JSON; [`schemas/outcome-certificate-v3.schema.json`](../schemas/outcome-certificate-v3.schema.json)).
 - **stderr:** includes **`truth_check_verdict: trusted|not_trusted|unknown`** (see [`integrate.md`](integrate.md)).
-- **Recommended wiring:** `.github/workflows/…` uses the first-party composite [`.github/actions/agentskeptic-check`](../.github/actions/agentskeptic-check) (in another repo: `uses: OWNER/agentskeptic/.github/actions/agentskeptic-check@REF`). The action shells out to **`npx --yes`** + **`package`** + **`check|enforce`** (default **`package`** is **`agentskeptic@latest`** — see **[Composite package input contract (normative)](#composite-package-input-contract-normative)**; release gates override with a semver pin). Capture, job summary (**`### Verdict meanings`** before stderr excerpts), outputs, **`fail-on`**, and **`extra-args`** behave as before.
+- **Recommended wiring:** `.github/workflows/…` uses the first-party composite [`.github/actions/agentskeptic-check`](../.github/actions/agentskeptic-check) (in another repo: `uses: OWNER/agentskeptic/.github/actions/agentskeptic-check@REF`). The action shells out to **`npx --yes`** + **`package`** + **`check|enforce`** (default **`package`** is **`agentskeptic@latest`** — see **[Composite package input contract (normative)](#composite-package-input-contract-normative)**; release gates override with a semver pin).
 - After the composite step, **`render-discovery-ci.mjs summary`** on **`if: always()`** still appends branded discovery Markdown (ambient contract). Transparent alternative: omit the composite and run **`npx agentskeptic check …`** manually with equivalent capture.
 
 Install the **same** pinned package **`AGENTSKEPTIC_CI_PACKAGE`** once so **`node_modules/agentskeptic`** supplies both the **`npx`** target and **`${AS_REPO_ROOT}/scripts/render-discovery-ci.mjs`** (see canonical example **`AS_REPO_ROOT`**).
 
-**Optional hosted report sharing:** you may add **`--share-report-origin <https://host>`** as a composite **`with:` input** **`share-report-origin`** on **`agentskeptic check`** (or `--share-report-origin` on CLI) only when you want a persisted public report on your AgentSkeptic deployment — see [`shareable-verification-reports.md`](shareable-verification-reports.md). [`examples/github-actions/agentskeptic-check.yml`](../examples/github-actions/agentskeptic-check.yml) carries **comment-only** hints beside the composite step so teams discover this path without enabling it by default — **do not flip on** hosted publish until you have read that policy doc. That flag is **not** supported with **`agentskeptic enforce`** (same doc).
+**Optional hosted report sharing:** you may add **`--share-report-origin <https://host>`** as a composite **`with:` input** **`share-report-origin`** on **`agentskeptic check`** (or `--share-report-origin` on CLI) only when you want a persisted public report on your AgentSkeptic deployment — see [`shareable-verification-reports.md`](shareable-verification-reports.md). That flag is **not** supported with **`agentskeptic enforce`** on the **opt-in commercial / stateful enforcement** path (same doc).
 
-### Opt-in: commercial / stateful enforcement
+### Composite job summary (decision-grade, certificate-derived)
 
-For **baseline enforcement**, drift detection, acceptance workflows, and other **stateful** gates that require **`AGENTSKEPTIC_API_KEY`** and a reachable license API, copy [`examples/github-actions/agentskeptic-commercial.yml`](../examples/github-actions/agentskeptic-commercial.yml) instead. This path runs **`agentskeptic enforce`** (the **same** published **`agentskeptic`** CLI binary as OSS **`check`** — not a parallel verifier stack) using the identical **Outcome Certificate** + **`truth_check_verdict`** stderr contract as the OSS truth-check flow, plus paid/stateful baseline policy. It uses the **full** ambient contract below when you wire discovery rendering (job summary + failure PR comment upsert).
+After every composite run, the action writes a single block to **`$GITHUB_STEP_SUMMARY`** that is **derived from the parsed Outcome Certificate v3**, not from raw stdout:
+
+1. Header: `mode`, `cli_exit`, `truth_check_verdict`, `state_relation`, `high_stakes_reliance`.
+2. **Failure spine** block from `failureSpine`: `trustDecision`, `summary`, `actionableFailure` (`category`, `severity`, `recommendedAction`, `automationSafe`), `primaryCodes`, `rerunGuidance`, `source`.
+3. **Failing steps** Markdown table built from `evidenceCompleteness.remediationItems` rows with `scope = "step"` or `scope = "effect"` (falls back to `evidenceCompleteness.unverifiedClaims` if remediation enrichment is absent).
+4. `failing_witness_kinds` line: comma-list derived from reason-code prefixes (`HTTP_WITNESS_*`, `OBJECT_*`, `VECTOR_*`, `MONGO_*`, `STATE_WITNESS_*` → `http_witness`, `object_storage`, `vector_document`, `mongo_document`, `state_witness`; else `sql`).
+5. (LangGraph runs only) `### LangGraph checkpoint verdicts` table from `checkpointVerdicts`.
+6. **Outcome Certificate artifact** pointer (artifact name and file name).
+7. Collapsed `<details>` containing the **last 80 lines** of CLI stderr.
+
+If the CLI stdout did not parse as a valid `schemaVersion: 3` Outcome Certificate (malformed, oversized > 256 KiB, or a CLI error envelope), the summary is replaced by a single **operational** block that points at stderr and (when present) decodes the [CLI error envelope](../schemas/cli-error-envelope.schema.json) into a human-readable spine.
+
+If the renderer itself fails for any reason, **the verification verdict is unaffected**: the bash entry decides the final exit code from CLI exit + `fail-on` **before** invoking the renderer, then writes a minimal fallback summary and emits `::warning::agentskeptic-check: presentation renderer failed (rc=N); see captured stderr/stdout paths`. The artifact upload step still runs (because of `if: always()`).
+
+### Composite step outputs (stable, machine-parseable)
+
+Downstream jobs branch on these without `grep`/`jq`:
+
+| Output | Source | Empty when |
+|---|---|---|
+| `verdict` | `truth_check_verdict` parsed from stderr (`trusted` / `not_trusted` / `unknown`) | CLI did not emit the verdict line |
+| `state-relation` | `outcomeCertificate.stateRelation` (`matches_expectations` / `does_not_match` / `not_established`) | non-certificate run |
+| `trust-decision` | `outcomeCertificate.failureSpine.trustDecision` (`safe` / `unsafe` / `unknown`) | non-certificate run |
+| `failing-tool-ids` | comma-separated, sorted, unique tool IDs of failing remediation rows | trusted or non-certificate run |
+| `primary-reason-codes` | comma-separated `failureSpine.primaryCodes` (cap 24, sorted) | non-certificate run |
+| `failing-witness-kinds` | comma-separated witness kinds derived from reason-code prefixes | trusted or non-certificate run |
+| `recommended-action` | `failureSpine.actionableFailure.recommendedAction` | non-certificate run |
+| `automation-safe` | `"true"` / `"false"` from `failureSpine.actionableFailure.automationSafe` | non-certificate run |
+| `certificate-path` | absolute path to `outcome-certificate.json` on the runner | non-certificate run (no artifact written) |
+| `stdout-path` / `stderr-path` / `exit-code` | always populated (CLI capture paths + raw CLI exit) | — |
+
+### Outcome Certificate artifact (always available)
+
+The composite uploads the canonical certificate as a workflow artifact named **`agentskeptic-outcome-certificate`** containing **`outcome-certificate.json`**. This is the byte-identical JSON parsed from CLI stdout, written to `${{ runner.temp }}/agentskeptic-ci/outcome-certificate.json`. Any reviewer can download it from the run's **Artifacts** list.
+
+If stdout did not parse as Outcome Certificate v3 (malformed / oversized / CLI error envelope) the artifact is silently skipped (`if-no-files-found: ignore`), and `certificate-path` is empty. Retention: **14 days**.
+
+`actions/upload-artifact@v4` authenticates via the runner-injected **`ACTIONS_RUNTIME_TOKEN`**, not `GITHUB_TOKEN`. **No `actions: write` (or any other elevated) `GITHUB_TOKEN` scope is required** to enable this artifact. The default OSS example (`permissions: contents: read`) is sufficient.
+
+**GHES limitation:** `actions/upload-artifact@v4+` is unsupported on GitHub Enterprise Server. Non-GHES runners get the full artifact behavior; on GHES the upload step fails per upstream while the verification verdict and structured outputs are unaffected.
+
+### Opt-in: commercial / stateful enforcement (PR comments, stateful baseline)
+
+For **baseline enforcement**, drift detection, acceptance workflows, and other **stateful** gates that require **`AGENTSKEPTIC_API_KEY`** and a reachable license API, copy [`examples/github-actions/agentskeptic-commercial.yml`](../examples/github-actions/agentskeptic-commercial.yml) instead. This path runs **`agentskeptic enforce`** (the **same** published **`agentskeptic`** CLI binary as OSS **`check`** — not a parallel verifier stack) using the identical **Outcome Certificate** + **`truth_check_verdict`** stderr contract as the OSS truth-check flow, plus paid/stateful baseline policy.
+
+**Opt-in PR comments** are layered on top of the same composite contract via `scripts/render-discovery-ci.mjs pr_body` (see the commercial example for the wiring). The OSS truth-check default does **not** post PR comments and does **not** require `pull-requests: write`; only the commercial example adds that scope.
 
 ### Environment
 
@@ -118,9 +163,12 @@ Run the **commercial enforcement** example workflow on a disposable repo:
 2. Force a verify failure on a **pull_request** → exactly **one** PR comment appears with the marker.
 3. Push a second failing commit → the **same** comment is **updated** (same comment id in GitHub UI), not a second thread comment.
 
-Validate the **truth check** example separately: confirm the job fails/succeeds with the CLI exit code, logs show stderr/stdout, and the summary includes stderr and the renderer block.
+Validate the **truth check** example separately: confirm the job fails/succeeds with the CLI exit code, the job summary includes the **Failure spine** + **Failing steps** sections (or the **Operational presentation** block on non-certificate runs), and the run's **Artifacts** list contains **`agentskeptic-outcome-certificate`** with `outcome-certificate.json`.
 
-Record completion in your release checklist (binary: done / not done).
+Record completion in your release checklist (binary: done / not done):
+
+- The composite action folder `.github/actions/agentskeptic-check/` ships the runner-time SSOT — `action.yml`, `run-action.sh`, `outcome-ci-surface.mjs`, and `witnessKindFromCode.mjs` — at the tagged ref. Consumers using `uses: OWNER/agentskeptic/.github/actions/agentskeptic-check@<ref>` resolve directly against that folder; nothing in the npm tarball (`dist/`) is required for the action surface (verified by `test/ci-visibility-claims.contract.test.mjs::composite action folder ships the renderer next to action.yml`).
+- The deterministic E2E smoke workflow `.github/workflows/composite-action-smoke.yml` runs on PRs that touch the action folder and uploads + downloads + SHA-256-verifies the certificate artifact. A green run is the binary release-checklist signal that the artifact contract is intact.
 
 ## Text contract (UTF-8 / newlines)
 

@@ -1,5 +1,15 @@
 # Thin composite wrapper over `npx agentskeptic check|enforce` — no second verifier.
-# Ships with run-action.sh; safe for `uses: org/repo/.github/actions/agentskeptic-check@ref`.
+# Ships with run-action.sh and outcome-ci-surface.mjs; safe for
+# `uses: org/repo/.github/actions/agentskeptic-check@ref`.
+#
+# Permissions: requires only `permissions: contents: read`. The artifact upload
+# step uses actions/upload-artifact@v4 which authenticates via ACTIONS_RUNTIME_TOKEN
+# (provided automatically to all actions) and does NOT require GITHUB_TOKEN scopes
+# such as `actions: write`. See docs/ambient-ci-distribution.md.
+#
+# GHES note: actions/upload-artifact@v4+ is unsupported on GitHub Enterprise Server.
+# Non-GHES runners get the full artifact behavior; GHES runners gracefully skip
+# the upload step (verification verdict and outputs are unaffected).
 name: "AgentSkeptic verification"
 description: "Run AgentSkeptic CLI check or enforce — capture stdout/stderr, optionally fail on verdict thresholds"
 inputs:
@@ -51,6 +61,30 @@ outputs:
   verdict:
     description: Parsed truth_check_verdict value (trusted|not_trusted|unknown) if present; otherwise empty.
     value: ${{ steps.agentskeptic.outputs.verdict }}
+  state-relation:
+    description: 'Outcome Certificate stateRelation: matches_expectations | does_not_match | not_established. Empty when stdout did not parse as Outcome Certificate v3.'
+    value: ${{ steps.agentskeptic.outputs.state-relation }}
+  trust-decision:
+    description: 'failureSpine.trustDecision: safe | unsafe | unknown. Empty for non-certificate runs.'
+    value: ${{ steps.agentskeptic.outputs.trust-decision }}
+  failing-tool-ids:
+    description: Comma-separated, sorted, unique tool IDs of failing steps. Empty for trusted or non-certificate runs.
+    value: ${{ steps.agentskeptic.outputs.failing-tool-ids }}
+  primary-reason-codes:
+    description: Comma-separated failureSpine.primaryCodes (cap 24, sorted unique). Empty for non-certificate runs.
+    value: ${{ steps.agentskeptic.outputs.primary-reason-codes }}
+  failing-witness-kinds:
+    description: 'Comma-separated witness kinds derived from reason-code prefixes (sql, http_witness, object_storage, vector_document, mongo_document, state_witness). Empty for trusted or non-certificate runs.'
+    value: ${{ steps.agentskeptic.outputs.failing-witness-kinds }}
+  recommended-action:
+    description: failureSpine.actionableFailure.recommendedAction (e.g. manual_review, reconcile_downstream_state). Empty for non-certificate runs.
+    value: ${{ steps.agentskeptic.outputs.recommended-action }}
+  automation-safe:
+    description: '"true" or "false" — failureSpine.actionableFailure.automationSafe. Empty for non-certificate runs.'
+    value: ${{ steps.agentskeptic.outputs.automation-safe }}
+  certificate-path:
+    description: Absolute path to outcome-certificate.json on the runner. Empty when stdout did not parse as Outcome Certificate v3.
+    value: ${{ steps.agentskeptic.outputs.certificate-path }}
   stdout-path:
     description: Path to the captured Outcome Certificate stdout file.
     value: ${{ steps.agentskeptic.outputs.stdout-path }}
@@ -84,3 +118,17 @@ runs:
         INPUT_SHARE_REPORT_ORIGIN: ${{ inputs.share-report-origin }}
         INPUT_EXTRA_ARGS: ${{ inputs.extra-args }}
       run: bash "$GITHUB_ACTION_PATH/run-action.sh"
+
+    # Upload the canonical Outcome Certificate as a downloadable artifact so any
+    # reviewer can pull `outcome-certificate.json` from the run's Artifacts list
+    # without parsing logs. `if-no-files-found: ignore` makes this a graceful
+    # no-op when stdout did not parse as Outcome Certificate v3 (the renderer
+    # only writes the file on a successful parse).
+    - name: Upload Outcome Certificate
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: agentskeptic-outcome-certificate
+        path: ${{ runner.temp }}/agentskeptic-ci/outcome-certificate.json
+        if-no-files-found: ignore
+        retention-days: 14

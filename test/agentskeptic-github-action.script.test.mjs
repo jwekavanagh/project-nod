@@ -2,7 +2,7 @@
  * Composite action shell: policy, capture, stubbed npx (no real CLI).
  */
 import assert from "node:assert/strict";
-import { readFileSync, writeFileSync, mkdtempSync, chmodSync } from "node:fs";
+import { readFileSync, writeFileSync, mkdtempSync, chmodSync, existsSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { tmpdir } from "node:os";
 import { fileURLToPath } from "node:url";
@@ -35,6 +35,12 @@ function runAction(env, stubDir) {
   e.GITHUB_ACTION_PATH = actionDir;
   if (!e.RUNNER_TEMP) {
     e.RUNNER_TEMP = mkdtempSync(join(tmpdir(), "as-ga-"));
+  }
+  // Ensure run-action.sh's renderer hand-off can locate Node when bash inherits a
+  // pruned PATH (e.g. Git Bash on Windows). The composite action's GitHub-Actions
+  // runtime always has Node on PATH via actions/setup-node; this is a test-only safety net.
+  if (!e.AGENTSKEPTIC_RENDERER_NODE) {
+    e.AGENTSKEPTIC_RENDERER_NODE = process.execPath;
   }
   return spawnSync(/** @type {string} */ (bashExe), [scriptPath], { encoding: "utf8", env: e });
 }
@@ -257,7 +263,7 @@ test(
 );
 
 test(
-  "run-action.sh: writes GITHUB_OUTPUT and GITHUB_STEP_SUMMARY",
+  "run-action.sh: writes baseline GITHUB_OUTPUT keys and a fallback summary when stdout is not a certificate",
   { skip: !hasBash },
   () => {
     const stubDir = makeStubDir();
@@ -285,25 +291,146 @@ test(
     assert.ok(out.includes("verdict=trusted"), out);
     assert.ok(out.includes("exit-code=0"), out);
     assert.ok(out.includes("stdout-path="), out);
+    assert.ok(out.includes("stderr-path="), out);
+    // Renderer ran but stdout was not parseable as Outcome Certificate v3, so the
+    // certificate-derived outputs are present-but-empty (semantics documented in
+    // docs/ambient-ci-distribution.md and action.yml output descriptions).
+    const outLines = new Set(out.replace(/\r/g, "").split("\n"));
+    assert.ok(outLines.has("state-relation="), `expected empty state-relation= in out:\n${out}`);
+    assert.ok(outLines.has("certificate-path="), `expected empty certificate-path= in out:\n${out}`);
     const sum = readFileSync(sumP, "utf8");
     assert.ok(sum.includes("## AgentSkeptic truth check"), sum);
-    assert.ok(sum.includes("### Verdict meanings"), sum);
-    assert.ok(sum.includes("`trusted`"), sum);
-    assert.ok(
-      sum.includes("only this verdict means the workflow can be relied on"),
-      sum,
+    assert.ok(sum.includes("Operational presentation"), sum);
+    assert.ok(sum.includes("CLI stderr (last 80 lines)"), sum);
+  },
+);
+
+test(
+  "run-action.sh: certificate stdout populates structured outputs and writes artifact file",
+  { skip: !hasBash },
+  () => {
+    const stubDir = makeStubDir();
+    const tmp = mkdtempSync(join(tmpdir(), "as-cert-"));
+    const outP = join(tmp, "out");
+    const sumP = join(tmp, "sum");
+    writeFileSync(outP, "", "utf8");
+    writeFileSync(sumP, "", "utf8");
+    const cert = JSON.parse(
+      readFileSync(
+        join(root, "test", "fixtures", "outcome-ci-surface", "trusted.cert.json"),
+        "utf8",
+      ),
     );
-    assert.ok(sum.includes("`not_trusted`"), sum);
-    assert.ok(sum.includes("Do not claim verified; fix the mismatch"), sum);
-    assert.ok(sum.includes("`unknown`"), sum);
-    assert.ok(
-      sum.includes("collect missing evidence or narrow checked scope"),
-      sum,
+    const r = runAction(
+      {
+        AS_STUB_STDOUT: JSON.stringify(cert),
+        AS_STUB_STDERR: "truth_check_verdict: trusted\n",
+        AS_STUB_EXIT: "0",
+        INPUT_WORKFLOW_ID: "wf_complete",
+        INPUT_EVENTS: "e.ndjson",
+        INPUT_REGISTRY: "r.json",
+        GITHUB_OUTPUT: outP,
+        GITHUB_STEP_SUMMARY: sumP,
+        RUNNER_TEMP: tmp,
+      },
+      stubDir,
     );
-    assert.ok(sum.includes("**Human report / stderr**"), sum);
-    assert.ok(sum.includes("- Verdict: `trusted`"), sum);
-    assert.ok(sum.includes("### Human report / stderr"), sum);
-    assert.ok(sum.includes("### Outcome Certificate / stdout"), sum);
+    assert.equal(r.status, 0, r.stderr);
+    const out = readFileSync(outP, "utf8");
+    for (const key of [
+      "state-relation=matches_expectations",
+      "trust-decision=safe",
+      "primary-reason-codes=VERIFIED",
+      "recommended-action=none",
+      "automation-safe=true",
+    ]) {
+      assert.ok(out.includes(key), `expected ${key} in $GITHUB_OUTPUT:\n${out}`);
+    }
+    const certPathLine = out.split(/\r?\n/).find((l) => l.startsWith("certificate-path="));
+    assert.ok(certPathLine, `expected certificate-path key in:\n${out}`);
+    const certPath = certPathLine.slice("certificate-path=".length);
+    assert.ok(certPath.endsWith("outcome-certificate.json"), certPath);
+    assert.ok(existsSync(certPath), `artifact file expected at ${certPath}`);
+    const sum = readFileSync(sumP, "utf8");
+    assert.ok(sum.includes("### Failure spine"), sum);
+    assert.ok(sum.includes("### Outcome Certificate artifact"), sum);
+    assert.ok(sum.includes("agentskeptic-outcome-certificate"), sum);
+  },
+);
+
+test(
+  "run-action.sh: renderer non-zero is non-fatal — exit code and ::warning:: + fallback summary preserved",
+  { skip: !hasBash },
+  () => {
+    const stubDir = makeStubDir();
+    const tmp = mkdtempSync(join(tmpdir(), "as-rfail-"));
+    const outP = join(tmp, "out");
+    const sumP = join(tmp, "sum");
+    writeFileSync(outP, "", "utf8");
+    writeFileSync(sumP, "", "utf8");
+    const failNode = join(tmp, "fail-node.sh");
+    writeFileSync(
+      failNode,
+      `#!/usr/bin/env bash\necho "stub renderer node refusing to run" >&2\nexit 7\n`,
+    );
+    chmodSync(failNode, 0o755);
+    const r = runAction(
+      {
+        AS_STUB_STDOUT: "{}\n",
+        AS_STUB_STDERR: "truth_check_verdict: not_trusted\n",
+        AS_STUB_EXIT: "0",
+        INPUT_WORKFLOW_ID: "wf_complete",
+        INPUT_EVENTS: "e.ndjson",
+        INPUT_REGISTRY: "r.json",
+        GITHUB_OUTPUT: outP,
+        GITHUB_STEP_SUMMARY: sumP,
+        RUNNER_TEMP: tmp,
+        AGENTSKEPTIC_RENDERER_NODE: failNode,
+      },
+      stubDir,
+    );
+    // CLI exit 0 + verdict not_trusted under default fail-on => policy exit 1.
+    // The failing renderer must NOT change that.
+    assert.equal(r.status, 1, r.stderr);
+    assert.ok(
+      /::warning::agentskeptic-check: presentation renderer failed/.test(r.stderr),
+      r.stderr,
+    );
+    const sum = readFileSync(sumP, "utf8");
+    assert.ok(sum.includes("AgentSkeptic truth check (fallback)"), sum);
+    assert.ok(sum.includes("verdict: `not_trusted`"), sum);
+  },
+);
+
+test(
+  "run-action.sh: renderer non-zero with trusted verdict still exits 0 (policy intact)",
+  { skip: !hasBash },
+  () => {
+    const stubDir = makeStubDir();
+    const tmp = mkdtempSync(join(tmpdir(), "as-rfail2-"));
+    const outP = join(tmp, "out");
+    const sumP = join(tmp, "sum");
+    writeFileSync(outP, "", "utf8");
+    writeFileSync(sumP, "", "utf8");
+    const failNode = join(tmp, "fail-node.sh");
+    writeFileSync(failNode, `#!/usr/bin/env bash\nexit 9\n`);
+    chmodSync(failNode, 0o755);
+    const r = runAction(
+      {
+        AS_STUB_STDOUT: "{}\n",
+        AS_STUB_STDERR: "truth_check_verdict: trusted\n",
+        AS_STUB_EXIT: "0",
+        INPUT_WORKFLOW_ID: "wf_complete",
+        INPUT_EVENTS: "e.ndjson",
+        INPUT_REGISTRY: "r.json",
+        GITHUB_OUTPUT: outP,
+        GITHUB_STEP_SUMMARY: sumP,
+        RUNNER_TEMP: tmp,
+        AGENTSKEPTIC_RENDERER_NODE: failNode,
+      },
+      stubDir,
+    );
+    assert.equal(r.status, 0, r.stderr);
   },
 );
 

@@ -1,0 +1,51 @@
+{
+  "schemaVersion": 3,
+  "workflowId": "wf_complete",
+  "runKind": "contract_sql",
+  "stateRelation": "matches_expectations",
+  "highStakesReliance": "permitted",
+  "relianceRationale": "Verifier read-only checks all matched expectations. High-stakes downstream use is permitted under contract.",
+  "intentSummary": "Verify the orders table reflects the expected row inserted by step 1.",
+  "explanation": {
+    "headline": "Workflow declared one tool call; observed and verified database matched expectations.",
+    "details": []
+  },
+  "steps": [
+    {
+      "seq": 0,
+      "toolId": "orders.insert",
+      "declaredAction": "Insert order #42 into orders table.",
+      "expectedOutcome": "Row with id=42 present in orders.",
+      "observedOutcome": "Row with id=42 present (verified by SQL check)."
+    }
+  ],
+  "humanReport": "All declared steps verified.",
+  "evidenceCompleteness": {
+    "schemaVersion": 1,
+    "blockerCategory": "none",
+    "quickSignal": "na",
+    "verifiedClaims": ["unit=u_0 tool=orders.insert"],
+    "unverifiedClaims": [],
+    "missingInputs": [
+      { "code": "none_reported", "hint": "No structured missing-field entries." }
+    ],
+    "nextActions": [
+      { "id": "none", "text": "No further action required." }
+    ]
+  },
+  "failureSpine": {
+    "schemaVersion": 1,
+    "trustDecision": "safe",
+    "summary": "All checks matched expectations; trust decision is safe.",
+    "actionableFailure": {
+      "category": "VERIFIED",
+      "severity": "none",
+      "recommendedAction": "none",
+      "automationSafe": true
+    },
+    "primaryCodes": ["VERIFIED"],
+    "rerunGuidance": "No further verification action is required for this outcome under the configured rules.",
+    "source": "workflow"
+  },
+  "correctnessDefinition": null
+}

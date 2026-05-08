@@ -1,0 +1,115 @@
+{
+  "schemaVersion": 3,
+  "workflowId": "wf_multi_effect",
+  "runKind": "contract_sql",
+  "stateRelation": "does_not_match",
+  "highStakesReliance": "prohibited",
+  "relianceRationale": "One effect of step 2 did not verify; high-stakes use prohibited.",
+  "intentSummary": "Verify multi-effect step uploads order doc and stores receipt vector.",
+  "explanation": {
+    "headline": "Effect receipt_doc on step 2 failed.",
+    "details": [
+      { "code": "VECTOR_NOT_FOUND", "message": "Receipt vector missing for order 99." }
+    ]
+  },
+  "steps": [
+    {
+      "seq": 2,
+      "toolId": "orders.finalize",
+      "declaredAction": "Finalize order 99 (insert + receipt).",
+      "expectedOutcome": "Row id=99 present and receipt_doc exists.",
+      "observedOutcome": "Row id=99 present; receipt_doc missing."
+    }
+  ],
+  "humanReport": "Effect receipt_doc on step 2 failed.",
+  "evidenceCompleteness": {
+    "schemaVersion": 1,
+    "blockerCategory": "missing_witness",
+    "quickSignal": "sql_ran_uncertain",
+    "verifiedClaims": [],
+    "unverifiedClaims": [],
+    "missingInputs": [
+      { "code": "missing_witness", "hint": "vector receipt_doc not found for order 99" }
+    ],
+    "nextActions": [
+      { "id": "rerun_after_storage_fix", "text": "Reupload receipt and rerun verify." }
+    ],
+    "rerunReadiness": "ready_after_state_fix",
+    "rerunPath": {
+      "type": "after_state_fix_verify",
+      "sameInputs": true,
+      "prerequisite": "Receipt document persisted.",
+      "meaningfulWhen": "Vector store contains receipt_doc.",
+      "readinessLabel": "Rerun verify after vector store fix."
+    },
+    "remediationItems": [
+      {
+        "id": "effect:2:receipt_doc",
+        "scope": "effect",
+        "primary": true,
+        "failedCheck": "Failed check: effect receipt_doc on step 2",
+        "reasonCodes": ["VECTOR_NOT_FOUND"],
+        "reason": "Receipt vector missing for order 99.",
+        "recommendedAction": "resolve_multi_effect_failures",
+        "actionText": "Align multi-effect registry coverage or split steps so each effect is verifiable, then rerun verify.",
+        "expectedState": {
+          "summary": "Vector store contains receipt_doc for order 99."
+        },
+        "automation": {
+          "class": "downstream_state_fix_required",
+          "label": "Manual: persist receipt.",
+          "boundary": "AgentSkeptic is a read-only verifier."
+        },
+        "humanReview": { "required": true },
+        "rerunPath": {
+          "type": "after_state_fix_verify",
+          "sameInputs": true,
+          "prerequisite": "Receipt document persisted.",
+          "meaningfulWhen": "Vector store contains receipt_doc.",
+          "readinessLabel": "Rerun verify after vector store fix."
+        }
+      },
+      {
+        "id": "effect:2:http_receipt",
+        "scope": "effect",
+        "primary": false,
+        "failedCheck": "Failed check: effect http_receipt on step 2",
+        "reasonCodes": ["HTTP_WITNESS_STATUS_MISMATCH"],
+        "reason": "Receipt webhook returned 500 instead of 200.",
+        "recommendedAction": "improve_read_connectivity",
+        "actionText": "Restore read-only HTTP witness connectivity then rerun verify.",
+        "expectedState": {
+          "summary": "Receipt webhook returns 200."
+        },
+        "automation": {
+          "class": "transient_retry_candidate",
+          "label": "Automation candidate: retry the same read-only verification.",
+          "boundary": "AgentSkeptic is a read-only verifier."
+        },
+        "humanReview": { "required": false },
+        "rerunPath": {
+          "type": "rerun_same_inputs",
+          "sameInputs": true,
+          "prerequisite": "HTTP witness reachable.",
+          "meaningfulWhen": "Connectivity restored.",
+          "readinessLabel": "Rerun same inputs after connectivity restored."
+        }
+      }
+    ]
+  },
+  "failureSpine": {
+    "schemaVersion": 1,
+    "trustDecision": "unsafe",
+    "summary": "Multi-effect step 2 failed: receipt_doc missing and http_receipt status mismatch.",
+    "actionableFailure": {
+      "category": "MULTI_EFFECT",
+      "severity": "high",
+      "recommendedAction": "resolve_multi_effect_failures",
+      "automationSafe": false
+    },
+    "primaryCodes": ["HTTP_WITNESS_STATUS_MISMATCH", "VECTOR_NOT_FOUND"],
+    "rerunGuidance": "Align multi-effect registry coverage or split steps so each effect is verifiable, then rerun verify.",
+    "source": "workflow"
+  },
+  "correctnessDefinition": null
+}

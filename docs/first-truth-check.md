@@ -113,7 +113,7 @@ If anything else says “verified” but the Outcome Certificate or **`truth_che
 ## Add it to GitHub Actions
 
 <!-- agentskeptic-ci-summary-legend:v1 -->
-The composite action’s GitHub **job summary** includes a **Verdict meanings** block (trusted / **not_trusted** / unknown) before the streamed stderr excerpts — operators should read **[`ambient-ci-distribution.md`](ambient-ci-distribution.md)** alongside this page.
+The composite action’s GitHub **job summary** is derived from the **Outcome Certificate v3** parsed off CLI stdout: a `failureSpine` block (trust decision + recommended action), a per-step / per-effect failures table, witness kinds, and a pointer to the run’s **`agentskeptic-outcome-certificate`** artifact (`outcome-certificate.json`). Structured composite outputs (`state-relation`, `trust-decision`, `failing-tool-ids`, `primary-reason-codes`, `failing-witness-kinds`, `recommended-action`, `automation-safe`, `certificate-path`) let downstream jobs branch without `grep` / `jq`. Full surface and OSS-friendly permissions story (`contents: read` only — no `actions: write`): **[`ambient-ci-distribution.md`](ambient-ci-distribution.md)**.
 
 After the local command works, wire the same CLI contract in CI.
 

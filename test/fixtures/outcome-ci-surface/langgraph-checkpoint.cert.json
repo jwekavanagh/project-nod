@@ -1,0 +1,72 @@
+{
+  "schemaVersion": 3,
+  "workflowId": "wf_lg_checkpoints",
+  "runKind": "contract_sql_langgraph_checkpoint_trust",
+  "stateRelation": "matches_expectations",
+  "highStakesReliance": "permitted",
+  "relianceRationale": "Each LangGraph checkpoint set verified end-to-end against database state.",
+  "intentSummary": "LangGraph checkpoint trust on a 3-step graph with two checkpoints.",
+  "explanation": {
+    "headline": "Two checkpoint sets verified.",
+    "details": []
+  },
+  "steps": [
+    {
+      "seq": 0,
+      "toolId": "graph.start",
+      "declaredAction": "Begin run.",
+      "expectedOutcome": "Initial state recorded.",
+      "observedOutcome": "Initial state recorded."
+    },
+    {
+      "seq": 1,
+      "toolId": "tool.search",
+      "declaredAction": "Search for invoice 42.",
+      "expectedOutcome": "Invoice fetched.",
+      "observedOutcome": "Invoice fetched."
+    }
+  ],
+  "humanReport": "Checkpoints verified.",
+  "checkpointVerdicts": [
+    {
+      "checkpointKey": "thread:42:checkpoint:1",
+      "verdict": "verified",
+      "seqs": [0, 1],
+      "productionMeaning": "Invoice search step was reached and produced the expected fetch."
+    },
+    {
+      "checkpointKey": "thread:42:checkpoint:2",
+      "verdict": "verified",
+      "seqs": [2],
+      "productionMeaning": "Final answer was produced from verified context."
+    }
+  ],
+  "evidenceCompleteness": {
+    "schemaVersion": 1,
+    "blockerCategory": "none",
+    "quickSignal": "na",
+    "verifiedClaims": ["unit=u_0 tool=graph.start", "unit=u_1 tool=tool.search"],
+    "unverifiedClaims": [],
+    "missingInputs": [
+      { "code": "none_reported", "hint": "No structured missing-field entries." }
+    ],
+    "nextActions": [
+      { "id": "none", "text": "No further action required." }
+    ]
+  },
+  "failureSpine": {
+    "schemaVersion": 1,
+    "trustDecision": "safe",
+    "summary": "All LangGraph checkpoints verified against database state.",
+    "actionableFailure": {
+      "category": "VERIFIED",
+      "severity": "none",
+      "recommendedAction": "none",
+      "automationSafe": true
+    },
+    "primaryCodes": ["VERIFIED"],
+    "rerunGuidance": "No further verification action is required for this outcome under the configured rules.",
+    "source": "workflow"
+  },
+  "correctnessDefinition": null
+}

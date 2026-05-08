@@ -1,0 +1,96 @@
+{
+  "schemaVersion": 3,
+  "workflowId": "wf_complete",
+  "runKind": "contract_sql",
+  "stateRelation": "does_not_match",
+  "highStakesReliance": "prohibited",
+  "relianceRationale": "Observed database did not satisfy declared expectations. High-stakes downstream use is prohibited.",
+  "intentSummary": "Verify the orders table reflects two declared inserts.",
+  "explanation": {
+    "headline": "One declared step failed downstream verification.",
+    "details": [
+      { "code": "STATE_MISMATCH", "message": "Row with id=42 absent from orders." }
+    ]
+  },
+  "steps": [
+    {
+      "seq": 0,
+      "toolId": "orders.insert",
+      "declaredAction": "Insert order #41.",
+      "expectedOutcome": "Row id=41 present.",
+      "observedOutcome": "Row id=41 present."
+    },
+    {
+      "seq": 1,
+      "toolId": "orders.insert",
+      "declaredAction": "Insert order #42.",
+      "expectedOutcome": "Row id=42 present.",
+      "observedOutcome": "Row id=42 absent."
+    }
+  ],
+  "humanReport": "Step 1 failed downstream SQL check.",
+  "evidenceCompleteness": {
+    "schemaVersion": 1,
+    "blockerCategory": "downstream_state",
+    "quickSignal": "sql_ran_failed",
+    "verifiedClaims": ["unit=u_0 tool=orders.insert"],
+    "unverifiedClaims": ["unit=u_1 tool=orders.insert: STATE_MISMATCH"],
+    "missingInputs": [
+      { "code": "downstream_state", "hint": "u_1:orders.insert" }
+    ],
+    "nextActions": [
+      { "id": "fix_state", "text": "Reconcile orders table to include id=42, then rerun verify." }
+    ],
+    "rerunReadiness": "ready_after_state_fix",
+    "rerunPath": {
+      "type": "after_state_fix_verify",
+      "sameInputs": true,
+      "prerequisite": "Downstream database reconciled.",
+      "meaningfulWhen": "Database state matches declared expectations.",
+      "readinessLabel": "Rerun verify after downstream state fix."
+    },
+    "remediationItems": [
+      {
+        "id": "step:1",
+        "scope": "step",
+        "primary": true,
+        "failedCheck": "Failed check: step 1 (orders.insert)",
+        "reasonCodes": ["STATE_MISMATCH", "OBJECT_MISSING"],
+        "reason": "Row id=42 absent from orders.",
+        "recommendedAction": "reconcile_downstream_state",
+        "actionText": "Fix downstream database or service state to match declared expectations, then rerun verify.",
+        "expectedState": {
+          "summary": "orders contains id=42 inserted by step 1."
+        },
+        "automation": {
+          "class": "downstream_state_fix_required",
+          "label": "Manual: reconcile downstream state.",
+          "boundary": "AgentSkeptic is a read-only verifier."
+        },
+        "humanReview": { "required": true },
+        "rerunPath": {
+          "type": "after_state_fix_verify",
+          "sameInputs": true,
+          "prerequisite": "orders table contains id=42.",
+          "meaningfulWhen": "State matches declared expectations.",
+          "readinessLabel": "Rerun verify after downstream state fix."
+        }
+      }
+    ]
+  },
+  "failureSpine": {
+    "schemaVersion": 1,
+    "trustDecision": "unsafe",
+    "summary": "Declared step 1 (orders.insert) did not verify against observed database state.",
+    "actionableFailure": {
+      "category": "DOWNSTREAM_STATE",
+      "severity": "high",
+      "recommendedAction": "reconcile_downstream_state",
+      "automationSafe": false
+    },
+    "primaryCodes": ["OBJECT_MISSING", "STATE_MISMATCH"],
+    "rerunGuidance": "Fix downstream database or service state to match declared expectations, then rerun verify.",
+    "source": "workflow"
+  },
+  "correctnessDefinition": null
+}

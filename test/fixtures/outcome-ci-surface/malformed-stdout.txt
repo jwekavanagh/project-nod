@@ -1,0 +1,2 @@
+this stdout is not json at all
+{partial-not-valid-json
