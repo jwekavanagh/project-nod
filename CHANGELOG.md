@@ -1,3 +1,9 @@
+## [7.8.0](https://github.com/jwekavanagh/agentskeptic/compare/v7.7.0...v7.8.0) (2026-05-08)
+
+### Features
+
+* add release-critical verification gate outputs ([#75](https://github.com/jwekavanagh/agentskeptic/issues/75)) ([523eed3](https://github.com/jwekavanagh/agentskeptic/commit/523eed3045438326a86b4dbfe0b1efab20e24bf6))
+
 ## [7.7.0](https://github.com/jwekavanagh/agentskeptic/compare/v7.6.1...v7.7.0) (2026-05-08)
 
 ### Features
