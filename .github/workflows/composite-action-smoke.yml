@@ -40,7 +40,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       AGENTSKEPTIC_TELEMETRY: "0"
-      AGENTSKEPTIC_CI_PACKAGE: agentskeptic@7.6.0
+      AGENTSKEPTIC_CI_PACKAGE: agentskeptic@7.6.1
     steps:
       - uses: actions/checkout@v5
 
