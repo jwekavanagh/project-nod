@@ -35,7 +35,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       AGENTSKEPTIC_TELEMETRY: "0"
-      AGENTSKEPTIC_CI_PACKAGE: agentskeptic@7.6.0
+      AGENTSKEPTIC_CI_PACKAGE: agentskeptic@7.6.1
       AS_REPO_ROOT: ${{ github.workspace }}/node_modules/agentskeptic
     steps:
       - uses: actions/checkout@v5
