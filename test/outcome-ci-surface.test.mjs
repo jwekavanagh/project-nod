@@ -143,7 +143,7 @@ test("trusted certificate: writes artifact, populates structured outputs, summar
   assert.equal(r.outputs["failing-witness-kinds"], "");
   assert.equal(r.outputs["recommended-action"], "none");
   assert.equal(r.outputs["automation-safe"], "true");
-  assert.equal(r.outputs["certificate-path"], r.artifactPath);
+  assert.equal(r.outputs["certificate-path"], r.artifactPath.replace(/\\/g, "/"));
 
   const golden = caseGoldens("trusted");
   compareGolden(normalizePaths(r.summary, r.artifactDir), golden.summary);

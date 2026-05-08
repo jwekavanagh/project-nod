@@ -21,6 +21,11 @@ const MAX_TOOL_IDS = 24;
 const MAX_TABLE_ROWS = 32;
 const RERUN_GUIDANCE_HARD_CAP = 512; // mirrors failure-spine schema rerunGuidance maxLength
 
+/** Normalize path separators for markdown + GITHUB_OUTPUT (POSIX) — goldens stable on Windows vs Linux runners. */
+function displayPathForCi(p) {
+  return String(p).replace(/\\/g, "/");
+}
+
 // ---------- args ----------
 
 function parseArgs(argv) {
@@ -472,6 +477,7 @@ function main() {
     artifactPath = join(dir, "outcome-certificate.json");
     writeFileSync(artifactPath, JSON.stringify(cert, null, 2));
     artifactWritten = true;
+    const artifactPathDisplay = displayPathForCi(artifactPath);
 
     // Rows + derived fields
     const tableRes = extractFailingStepRowsFromCertificate(cert);
@@ -492,7 +498,7 @@ function main() {
     outputs["failing-witness-kinds"] = witnessKinds.join(",");
     outputs["recommended-action"] = String(spine.actionableFailure?.recommendedAction || "");
     outputs["automation-safe"] = spine.actionableFailure?.automationSafe === true ? "true" : "false";
-    outputs["certificate-path"] = artifactPath;
+    outputs["certificate-path"] = artifactPathDisplay;
 
     const sections = [
       summaryHeader,
@@ -508,7 +514,7 @@ function main() {
     sections.push("", fmtWitnessKinds(witnessKinds));
     const cps = fmtCheckpointVerdicts(cert);
     if (cps) sections.push("", cps);
-    sections.push("", fmtArtifactBlock(true, artifactPath));
+    sections.push("", fmtArtifactBlock(true, artifactPathDisplay));
     sections.push("", fmtStderrDetails(stderrText || ""));
     sections.push("");
     summary = sections.join("\n");

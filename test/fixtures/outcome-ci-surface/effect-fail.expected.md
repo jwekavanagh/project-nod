@@ -31,7 +31,7 @@ Download the canonical certificate from this run's **Artifacts** list:
 
 - name: `agentskeptic-outcome-certificate`
 - file: `outcome-certificate.json`
-- written-to: `<ARTIFACT_DIR>\outcome-certificate.json`
+- written-to: `<ARTIFACT_DIR>/outcome-certificate.json`
 
 <details><summary>CLI stderr (last 80 lines)</summary>
 
