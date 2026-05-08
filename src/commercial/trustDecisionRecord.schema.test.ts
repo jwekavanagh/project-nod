@@ -30,6 +30,7 @@ const minimalCertNoSafe: OutcomeCertificateV1 = {
   workflowId: "wf_x",
   runKind: "contract_sql",
   stateRelation: "does_not_match",
+  releaseCriticalVerdict: "trusted",
   highStakesReliance: "prohibited",
   relianceRationale: "x",
   intentSummary: "x",
@@ -39,6 +40,7 @@ const minimalCertNoSafe: OutcomeCertificateV1 = {
     {
       seq: 0,
       toolId: "t",
+      releaseCritical: false,
       declaredAction: "a",
       expectedOutcome: "e",
       observedOutcome: "o",

@@ -1,6 +1,6 @@
 # Ambient CI distribution (GitHub Actions)
 
-**Canonical first-run steps:** [`first-truth-check.md`](first-truth-check.md) — the GitHub Action below is the **CI wrapper** around the same **`agentskeptic check`** stdout (**Outcome Certificate**) / stderr (**`truth_check_verdict`**) contract as local CLI.
+**Canonical first-run steps:** [`first-truth-check.md`](first-truth-check.md) — the GitHub Action below is the **CI wrapper** around the same **`agentskeptic check`** stdout (**Outcome Certificate**) / stderr (**`truth_check_verdict`** and **`release_critical_truth_check_verdict`**) contract as local CLI.
 
 Normative contract for **active discovery**: branded AgentSkeptic output appears inside **another repository’s** GitHub Actions run (job summary on every run; optional pull-request comment on verification failure for the **commercial / stateful enforcement** path).
 
@@ -35,9 +35,11 @@ Pick a **stable workflow `name`** and a **stable job id** (the canonical OSS exa
 **Canonical OSS CI** is a pinned **truth check** — **`agentskeptic check`** (default **`mode`** on the composite action) — with **no** `AGENTSKEPTIC_API_KEY` and **no** license server. Copy [`examples/github-actions/agentskeptic-check.yml`](../examples/github-actions/agentskeptic-check.yml) into `.github/workflows/`: it establishes **Node 22** before **`node:sqlite`** demo usage, lays out **`agentskeptic/`** paths for **`project`**, runs **one** **`npm install --no-save`** for the verifier + **`render-discovery-ci.mjs`**, and wires composite **`project:` `.`** plus **`package:`** **`${{ env.AGENTSKEPTIC_CI_PACKAGE }}`**.
 
 - **stdout:** one **Outcome Certificate** v3 (machine JSON; [`schemas/outcome-certificate-v3.schema.json`](../schemas/outcome-certificate-v3.schema.json)).
-- **stderr:** includes **`truth_check_verdict: trusted|not_trusted|unknown`** (see [`integrate.md`](integrate.md)).
+- **stderr:** includes **`truth_check_verdict:`** then **`release_critical_truth_check_verdict:`**, each followed by **`trusted`**, **`not_trusted`**, or **`unknown`** (see [`integrate.md`](integrate.md)). The second line mirrors certificate **`releaseCriticalVerdict`** (registry **release-critical** rollup only).
 - **Recommended wiring:** `.github/workflows/…` uses the first-party composite [`.github/actions/agentskeptic-check`](../.github/actions/agentskeptic-check) (in another repo: `uses: OWNER/agentskeptic/.github/actions/agentskeptic-check@REF`). The action shells out to **`npx --yes`** + **`package`** + **`check|enforce`** (default **`package`** is **`agentskeptic@latest`** — see **[Composite package input contract (normative)](#composite-package-input-contract-normative)**; release gates override with a semver pin).
 - After the composite step, **`render-discovery-ci.mjs summary`** on **`if: always()`** still appends branded discovery Markdown (ambient contract). Transparent alternative: omit the composite and run **`npx agentskeptic check …`** manually with equivalent capture.
+
+**Composite `fail-on` (exit code after CLI succeeds):** `not_trusted_or_unknown` (default), `not_trusted`, `never`, or **`critical_not_trusted_or_unknown`**. The last mode gates the job on the **`release_critical_truth_check_verdict:`** stderr line only when the CLI exits **0**: missing/invalid critical line, **`not_trusted`**, or **`unknown`** → job exit **1**; **`trusted`** → **0**. A non-zero CLI exit **always** propagates before any `fail-on` rule (including `never`).
 
 Install the **same** pinned package **`AGENTSKEPTIC_CI_PACKAGE`** once so **`node_modules/agentskeptic`** supplies both the **`npx`** target and **`${AS_REPO_ROOT}/scripts/render-discovery-ci.mjs`** (see canonical example **`AS_REPO_ROOT`**).
 
@@ -47,7 +49,7 @@ Install the **same** pinned package **`AGENTSKEPTIC_CI_PACKAGE`** once so **`nod
 
 After every composite run, the action writes a single block to **`$GITHUB_STEP_SUMMARY`** that is **derived from the parsed Outcome Certificate v3**, not from raw stdout:
 
-1. Header: `mode`, `cli_exit`, `truth_check_verdict`, `state_relation`, `high_stakes_reliance`.
+1. Header: `mode`, `cli_exit`, `truth_check_verdict`, `release_critical_truth_check_verdict` (from certificate when parsed), `state_relation`, `high_stakes_reliance`, plus **`### Release-critical gate`** with the same critical verdict for skimmers.
 2. **Failure spine** block from `failureSpine`: `trustDecision`, `summary`, `actionableFailure` (`category`, `severity`, `recommendedAction`, `automationSafe`), `primaryCodes`, `rerunGuidance`, `source`.
 3. **Failing steps** Markdown table built from `evidenceCompleteness.remediationItems` rows with `scope = "step"` or `scope = "effect"` (falls back to `evidenceCompleteness.unverifiedClaims` if remediation enrichment is absent).
 4. `failing_witness_kinds` line: comma-list derived from reason-code prefixes (`HTTP_WITNESS_*`, `OBJECT_*`, `VECTOR_*`, `MONGO_*`, `STATE_WITNESS_*` → `http_witness`, `object_storage`, `vector_document`, `mongo_document`, `state_witness`; else `sql`).
@@ -57,7 +59,7 @@ After every composite run, the action writes a single block to **`$GITHUB_STEP_S
 
 If the CLI stdout did not parse as a valid `schemaVersion: 3` Outcome Certificate (malformed, oversized > 256 KiB, or a CLI error envelope), the summary is replaced by a single **operational** block that points at stderr and (when present) decodes the [CLI error envelope](../schemas/cli-error-envelope.schema.json) into a human-readable spine.
 
-If the renderer itself fails for any reason, **the verification verdict is unaffected**: the bash entry decides the final exit code from CLI exit + `fail-on` **before** invoking the renderer, then writes a minimal fallback summary and emits `::warning::agentskeptic-check: presentation renderer failed (rc=N); see captured stderr/stdout paths`. The artifact upload step still runs (because of `if: always()`).
+If the renderer itself fails for any reason, **the verification verdict is unaffected**: the bash entry decides the final exit code from CLI exit + `fail-on` (including **`critical_not_trusted_or_unknown`**, which reads stderr only) **before** invoking the renderer, then writes a minimal fallback summary and emits `::warning::agentskeptic-check: presentation renderer failed (rc=N); see captured stderr/stdout paths`. The artifact upload step still runs (because of `if: always()`).
 
 ### Composite step outputs (stable, machine-parseable)
 
@@ -68,6 +70,7 @@ Downstream jobs branch on these without `grep`/`jq`:
 | `verdict` | `truth_check_verdict` parsed from stderr (`trusted` / `not_trusted` / `unknown`) | CLI did not emit the verdict line |
 | `state-relation` | `outcomeCertificate.stateRelation` (`matches_expectations` / `does_not_match` / `not_established`) | non-certificate run |
 | `trust-decision` | `outcomeCertificate.failureSpine.trustDecision` (`safe` / `unsafe` / `unknown`) | non-certificate run |
+| `release-critical-verdict` | `outcomeCertificate.releaseCriticalVerdict` (`trusted` / `not_trusted` / `unknown`) | non-certificate run |
 | `failing-tool-ids` | comma-separated, sorted, unique tool IDs of failing remediation rows | trusted or non-certificate run |
 | `primary-reason-codes` | comma-separated `failureSpine.primaryCodes` (cap 24, sorted) | non-certificate run |
 | `failing-witness-kinds` | comma-separated witness kinds derived from reason-code prefixes | trusted or non-certificate run |

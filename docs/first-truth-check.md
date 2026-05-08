@@ -13,7 +13,7 @@ For TypeScript, the same contract is **`await skeptic.check({ … })`** / **`Age
 ## What you get
 
 - **stdout:** one **Outcome Certificate v3** (machine JSON, top-level **`schemaVersion: 3`**, required **`failureSpine`** + **`evidenceCompleteness`**). Artifact naming vs receipts and decision-bundle exits: **[Trust artifact naming glossary](outcome-certificate-normative.md#trust-artifact-naming-glossary)**.
-- **stderr:** **`truth_check_verdict: trusted`**, **`not_trusted`**, or **`unknown`** on its **own line** before the human certificate report (anonymous activation telemetry may print unrelated status lines earlier — CI often sets **`AGENTSKEPTIC_TELEMETRY=0`** to keep stderr minimal).
+- **stderr:** **`truth_check_verdict:`** then **`release_critical_truth_check_verdict:`** (each **`trusted`**, **`not_trusted`**, or **`unknown`**) on their **own lines** before the human certificate report (anonymous activation telemetry may print unrelated status lines earlier — CI often sets **`AGENTSKEPTIC_TELEMETRY=0`** to keep stderr minimal).
 
 Logs, traces, CI green, wrapper summaries, or agent claims are **not** the source of truth when they disagree with the Outcome Certificate or the verdict line.
 
@@ -94,12 +94,15 @@ Full flag reference: [`agentskeptic.md`](agentskeptic.md). Deeper integration SS
 
 **stdout:** **Outcome Certificate** (machine JSON).
 
-**stderr:** human report preceded by **`truth_check_verdict`** on its **own line** (ignore leading telemetry banners if present). Typical verdict prefixes:
+**stderr:** human report preceded by **`truth_check_verdict:`** then **`release_critical_truth_check_verdict:`** on **separate lines** (ignore leading telemetry banners if present). Typical prefixes:
 
 ```text
 truth_check_verdict: trusted
+release_critical_truth_check_verdict: trusted
 truth_check_verdict: not_trusted
+release_critical_truth_check_verdict: trusted
 truth_check_verdict: unknown
+release_critical_truth_check_verdict: unknown
 ```
 
 | Verdict | Meaning |
@@ -108,12 +111,12 @@ truth_check_verdict: unknown
 | **`not_trusted`** | Determinate mismatch or missing required state — do **not** claim verified; fix the mismatch. |
 | **`unknown`** | Evidence incomplete or not established — do **not** claim verified; collect evidence or narrow scope. |
 
-If anything else says “verified” but the Outcome Certificate or **`truth_check_verdict`** disagrees, trust the certificate and verdict.
+If anything else says “verified” but the Outcome Certificate or **`truth_check_verdict`** disagrees, trust the certificate and verdict. For **release-critical-only** CI gating, use composite **`fail-on: critical_not_trusted_or_unknown`** (see **`ambient-ci-distribution.md`**).
 
 ## Add it to GitHub Actions
 
 <!-- agentskeptic-ci-summary-legend:v1 -->
-The composite action’s GitHub **job summary** is derived from the **Outcome Certificate v3** parsed off CLI stdout: a `failureSpine` block (trust decision + recommended action), a per-step / per-effect failures table, witness kinds, and a pointer to the run’s **`agentskeptic-outcome-certificate`** artifact (`outcome-certificate.json`). Structured composite outputs (`state-relation`, `trust-decision`, `failing-tool-ids`, `primary-reason-codes`, `failing-witness-kinds`, `recommended-action`, `automation-safe`, `certificate-path`) let downstream jobs branch without `grep` / `jq`. Full surface and OSS-friendly permissions story (`contents: read` only — no `actions: write`): **[`ambient-ci-distribution.md`](ambient-ci-distribution.md)**.
+The composite action’s GitHub **job summary** is derived from the **Outcome Certificate v3** parsed off CLI stdout: a `failureSpine` block (trust decision + recommended action), a per-step / per-effect failures table, witness kinds, and a pointer to the run’s **`agentskeptic-outcome-certificate`** artifact (`outcome-certificate.json`). Structured composite outputs (`state-relation`, `trust-decision`, `release-critical-verdict`, `failing-tool-ids`, `primary-reason-codes`, `failing-witness-kinds`, `recommended-action`, `automation-safe`, `certificate-path`) let downstream jobs branch without `grep` / `jq`. Full surface and OSS-friendly permissions story (`contents: read` only — no `actions: write`): **[`ambient-ci-distribution.md`](ambient-ci-distribution.md)**.
 
 After the local command works, wire the same CLI contract in CI.
 

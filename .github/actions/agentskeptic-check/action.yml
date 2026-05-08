@@ -39,7 +39,7 @@ inputs:
     required: false
     default: "check"
   fail-on:
-    description: 'Verdict threshold for failing the job. Supported initially: not_trusted_or_unknown, not_trusted, never.'
+    description: 'Verdict threshold for failing the job: not_trusted_or_unknown, not_trusted, never, or critical_not_trusted_or_unknown (uses release_critical_truth_check_verdict on stderr when CLI exits 0).'
     required: false
     default: "not_trusted_or_unknown"
   package:
@@ -67,6 +67,9 @@ outputs:
   trust-decision:
     description: 'failureSpine.trustDecision: safe | unsafe | unknown. Empty for non-certificate runs.'
     value: ${{ steps.agentskeptic.outputs.trust-decision }}
+  release-critical-verdict:
+    description: 'Outcome Certificate releaseCriticalVerdict (trusted|not_trusted|unknown) when stdout parsed as v3; otherwise empty.'
+    value: ${{ steps.agentskeptic.outputs.release-critical-verdict }}
   failing-tool-ids:
     description: Comma-separated, sorted, unique tool IDs of failing steps. Empty for trusted or non-certificate runs.
     value: ${{ steps.agentskeptic.outputs.failing-tool-ids }}

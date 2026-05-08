@@ -112,6 +112,7 @@ describe("JSON Schemas (SSOT)", () => {
       verificationRunContext: emptyCtx,
       steps: [
         {
+          releaseCritical: false,
           seq: 0,
           toolId: "crm.upsert_contact",
           intendedEffect: { narrative: "x" },
@@ -149,6 +150,7 @@ describe("JSON Schemas (SSOT)", () => {
       verificationRunContext: emptyCtx,
       steps: [
         {
+          releaseCritical: false,
           seq: 0,
           toolId: "demo.multi",
           intendedEffect: { narrative: "x" },
@@ -226,6 +228,7 @@ describe("JSON Schemas (SSOT)", () => {
       verificationRunContext: emptyCtx,
       steps: [
         {
+          releaseCritical: false,
           seq: 0,
           toolId: "t",
           intendedEffect: { narrative: "" },
@@ -250,6 +253,7 @@ describe("JSON Schemas (SSOT)", () => {
   it("validates RunComparisonReport from buildRunComparisonReport", () => {
     const v = loadSchemaValidator("run-comparison-report");
     const step = (seq: number, kv: string, ok: boolean): StepOutcome => ({
+      releaseCritical: false,
       seq,
       toolId: "t",
       intendedEffect: { narrative: "" },
@@ -307,6 +311,7 @@ describe("JSON Schemas (SSOT)", () => {
       verificationRunContext: emptyCtx,
       steps: [
         {
+          releaseCritical: false,
           seq: 0,
           toolId: "t",
           intendedEffect: { narrative: "x" },
@@ -364,6 +369,7 @@ describe("JSON Schemas (SSOT)", () => {
       verificationRunContext: emptyCtx,
       steps: [
         {
+          releaseCritical: false,
           seq: 0,
           toolId: "t",
           intendedEffect: { narrative: "" },
@@ -409,6 +415,7 @@ describe("JSON Schemas (SSOT)", () => {
       verificationRunContext: emptyCtx,
       steps: [
         {
+          releaseCritical: false,
           seq: 0,
           toolId: "t",
           intendedEffect: { narrative: "" },

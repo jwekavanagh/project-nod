@@ -530,6 +530,7 @@ function evaluateRule(rows: PlanDiffRow[], rule: PlanRule, seq: number): StepOut
   const emptyParams = "{}";
 
   const ok = (extra?: Record<string, unknown>): StepOutcome => ({
+    releaseCritical: false,
     seq,
     toolId: `plan_transition.rule.${rule.id}`,
     intendedEffect: { narrative: baseNarrative },
@@ -543,6 +544,7 @@ function evaluateRule(rows: PlanDiffRow[], rule: PlanRule, seq: number): StepOut
   });
 
   const bad = (code: string, message: string, extra?: Record<string, unknown>): StepOutcome => ({
+    releaseCritical: false,
     seq,
     toolId: `plan_transition.rule.${rule.id}`,
     intendedEffect: { narrative: baseNarrative },

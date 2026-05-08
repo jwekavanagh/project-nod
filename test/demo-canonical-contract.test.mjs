@@ -28,6 +28,9 @@ describe("bundled demo canonical contract", () => {
     assert.equal(r.status, 0, r.stderr || "");
     const e0 = String(r.stderr).replace(/\r\n/g, "\n");
     assert.ok(/^truth_check_verdict: trusted$/m.test(e0), `wf_complete stderr missing verdict: ${e0.slice(0, 240)}`);
+    const t0 = e0.indexOf("truth_check_verdict: trusted");
+    const c0 = e0.indexOf("release_critical_truth_check_verdict: trusted");
+    assert.ok(t0 >= 0 && c0 > t0, `wf_complete stderr must emit release_critical line after truth line: ${e0.slice(0, 400)}`);
 
     r = runBundledTruthCheck("wf_missing", pipe);
     assert.equal(r.status, 1, r.stderr || "");
@@ -36,6 +39,9 @@ describe("bundled demo canonical contract", () => {
       /^truth_check_verdict: not_trusted$/m.test(e1),
       `wf_missing stderr missing verdict: ${e1.slice(0, 240)}`,
     );
+    const t1 = e1.indexOf("truth_check_verdict: not_trusted");
+    const c1 = e1.indexOf("release_critical_truth_check_verdict: trusted");
+    assert.ok(t1 >= 0 && c1 > t1, `wf_missing stderr must emit ordered verdict lines: ${e1.slice(0, 400)}`);
   });
 
   it("bundled_demo_db_path_is_stable", () => {

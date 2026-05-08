@@ -22,6 +22,7 @@ export function quickVerifyReportToSyntheticEngine(report: QuickVerifyReport, wo
           ? [{ code: SQL_VERIFICATION_OUTCOME_CODE.ROW_ABSENT, message: "quick synthetic absent" }]
           : [];
     const step: StepOutcome = {
+      releaseCritical: false,
       seq: i,
       toolId: u.sourceAction.toolName,
       intendedEffect: { narrative: u.explanation },

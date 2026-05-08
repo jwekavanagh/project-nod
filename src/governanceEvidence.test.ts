@@ -34,6 +34,7 @@ function fixture(overrides?: Partial<OutcomeCertificateV1>): OutcomeCertificateV
     workflowId: "wf_test",
     runKind: "contract_sql",
     stateRelation: "matches_expectations",
+    releaseCriticalVerdict: "trusted",
     highStakesReliance: "permitted",
     relianceRationale: "rationale",
     intentSummary: "summary",
@@ -49,12 +50,14 @@ function fixture(overrides?: Partial<OutcomeCertificateV1>): OutcomeCertificateV
       {
         seq: 2,
         toolId: "tool_b",
+        releaseCritical: false,
         declaredAction: "action 2",
         expectedOutcome: "expected 2",
         observedOutcome: "observed 2",
       },
       {
         seq: 1,
+        releaseCritical: false,
         declaredAction: "action 1",
         expectedOutcome: "expected 1",
         observedOutcome: "observed 1",

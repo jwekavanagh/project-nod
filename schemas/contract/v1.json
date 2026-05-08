@@ -36,9 +36,23 @@
         "toolsRegistry": "ae48ae9b7fea13e2c7e5dcdb55c43ffd84c61fe7404633c557b2936b2ca2204f",
         "toolsRegistryExport": "953d1ce3c91425852c7674afc66955bac07e77d3bfbcdd3e461fe9b41dcb1455"
       }
+    },
+    {
+      "exampleSha256": {
+        "events": "17b40fd3fefd37654b569a4b8888114a23d2199fb945cb41125b5a0bb5b53567",
+        "registry": "4fa2d1a29e6d71e3c72269300a00709b29a102a8f1f717fdabd4a31091522ab2"
+      },
+      "introducedAt": "2026-05-08",
+      "manifestSha256": "5a4513967abe3a20ff0f5c875fb6481a704c79c54a1f7c7acb5aa364a3527fca",
+      "manifestVersion": "1.0.2",
+      "memberSha256": {
+        "event": "2a29c7f902a142e91a2d3a1ab58c8355c31509146a5177528cfea2dbc4087543",
+        "toolsRegistry": "436a03b830082f5a56399bb5386ee3e11000fa073336935e4ffc180eb6866e24",
+        "toolsRegistryExport": "953d1ce3c91425852c7674afc66955bac07e77d3bfbcdd3e461fe9b41dcb1455"
+      }
     }
   ],
-  "manifestVersion": "1.0.1",
+  "manifestVersion": "1.0.2",
   "members": {
     "event": {
       "role": "event-line",

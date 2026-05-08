@@ -4,8 +4,13 @@
 - cli_exit: `0`
 
 - truth_check_verdict: `trusted`
+- release_critical_truth_check_verdict: `trusted`
 - state_relation: `matches_expectations`
 - high_stakes_reliance: `permitted`
+
+### Release-critical gate
+
+- release_critical_truth_check_verdict: `trusted`
 
 ### Failure spine
 
@@ -35,6 +40,8 @@ Download the canonical certificate from this run's **Artifacts** list:
 
 ```text
 truth_check_verdict: trusted
+release_critical_truth_check_verdict: trusted
+human line
 ```
 
 </details>

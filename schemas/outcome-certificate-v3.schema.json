@@ -9,6 +9,7 @@
     "runKind",
     "stateRelation",
     "highStakesReliance",
+    "releaseCriticalVerdict",
     "relianceRationale",
     "intentSummary",
     "explanation",
@@ -29,6 +30,11 @@
       "enum": ["matches_expectations", "does_not_match", "not_established"]
     },
     "highStakesReliance": { "type": "string", "enum": ["permitted", "prohibited"] },
+    "releaseCriticalVerdict": {
+      "type": "string",
+      "enum": ["trusted", "not_trusted", "unknown"],
+      "description": "Trust verdict for registry releaseCritical steps only (see tools-registry releaseCritical)."
+    },
     "relianceRationale": { "type": "string", "minLength": 1, "maxLength": 8192 },
     "intentSummary": { "type": "string", "minLength": 1, "maxLength": 8192 },
     "explanation": {
@@ -56,10 +62,11 @@
       "items": {
         "type": "object",
         "additionalProperties": false,
-        "required": ["seq", "declaredAction", "expectedOutcome", "observedOutcome"],
+        "required": ["seq", "releaseCritical", "declaredAction", "expectedOutcome", "observedOutcome"],
         "properties": {
           "seq": { "type": "integer", "minimum": 0 },
           "toolId": { "type": "string", "maxLength": 512 },
+          "releaseCritical": { "type": "boolean" },
           "declaredAction": { "type": "string", "minLength": 1, "maxLength": 4096 },
           "expectedOutcome": { "type": "string", "minLength": 1, "maxLength": 4096 },
           "observedOutcome": { "type": "string", "minLength": 1, "maxLength": 8192 }

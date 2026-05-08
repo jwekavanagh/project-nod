@@ -24,6 +24,7 @@ const strongPolicy = {
 
 function verifiedStep(seq: number, toolId: string): StepOutcome {
   return {
+    releaseCritical: false,
     seq,
     toolId,
     intendedEffect: { narrative: "ok" },
@@ -82,6 +83,7 @@ describe("buildWorkflowTruthReport (formatter-independent semantics)", () => {
       requiredFields: {},
     };
     const step: StepOutcome = {
+      releaseCritical: false,
       seq: 0,
       toolId: "t",
       intendedEffect: { narrative: "" },
@@ -160,6 +162,7 @@ describe("buildWorkflowTruthReport (formatter-independent semantics)", () => {
 
   it("uncertain-only incomplete: dedicated trust summary", () => {
     const step: StepOutcome = {
+      releaseCritical: false,
       seq: 0,
       toolId: "t",
       intendedEffect: { narrative: "" },

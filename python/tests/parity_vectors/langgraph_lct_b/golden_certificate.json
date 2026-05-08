@@ -4,6 +4,7 @@
   "runKind": "contract_sql_langgraph_checkpoint_trust",
   "stateRelation": "matches_expectations",
   "highStakesReliance": "permitted",
+  "releaseCriticalVerdict": "trusted",
   "relianceRationale": "Contract verification used your registry and read-only SQL; every captured step matched declared expectations under the configured rules, and every LangGraph checkpoint rollup verdict is verified. You may treat this artifact as decision-grade for those steps, subject to your own scope and retention policy.",
   "intentSummary": "TRUSTED: Every step matched registry-backed expected state under the configured verification rules.",
   "explanation": {
@@ -14,6 +15,7 @@
     {
       "seq": 0,
       "toolId": "crm.upsert_contact",
+      "releaseCritical": false,
       "declaredAction": "Upsert contact \"partner_1\" with fields {\"name\":\"You\",\"status\":\"active\"}",
       "expectedOutcome": "table=contacts identity=[id=partner_1] required_fields=[name, status]",
       "observedOutcome": "rowCount=1"

@@ -4,6 +4,7 @@
   "runKind": "contract_sql_langgraph_checkpoint_trust",
   "stateRelation": "not_established",
   "highStakesReliance": "prohibited",
+  "releaseCriticalVerdict": "trusted",
   "relianceRationale": "LangGraph checkpoint trust mode did not establish a single approved production snapshot (ineligible wire, incomplete verification, incomplete checkpoint rollup, or sequence integrity). Do not treat absence of a mismatch as proof of success.",
   "intentSummary": "NOT TRUSTED: Verification is incomplete; the workflow cannot be fully confirmed.",
   "explanation": {
@@ -19,6 +20,7 @@
     {
       "seq": 0,
       "toolId": "no.such.tool",
+      "releaseCritical": false,
       "declaredAction": "Unknown tool: no.such.tool",
       "expectedOutcome": "Unknown tool: no.such.tool",
       "observedOutcome": "No SQL verification request (registry resolution or unknown tool)."

@@ -10,6 +10,10 @@
     "properties": {
       "toolId": { "type": "string", "minLength": 1 },
       "effectDescriptionTemplate": { "type": "string" },
+      "releaseCritical": {
+        "type": "boolean",
+        "description": "When true, failures on this tool's steps block release-critical CI gate (see release_critical_truth_check_verdict)."
+      },
       "verification": {
         "oneOf": [
           {

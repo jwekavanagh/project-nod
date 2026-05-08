@@ -25,6 +25,9 @@ import {
 import type { CorrectnessDefinitionV1, Reason, StepOutcome, WorkflowResult, WorkflowTruthStep } from "./types.js";
 import { formatWorkflowTruthReportStruct } from "./workflowTruthReport.js";
 
+/** User-facing truth-check verdict for CLI stderr and `releaseCriticalVerdict` on the certificate. */
+export type TruthCheckVerdictLabel = "trusted" | "not_trusted" | "unknown";
+
 export type OutcomeCertificateRunKind =
   | "contract_sql"
   | "contract_sql_langgraph_checkpoint_trust"
@@ -45,6 +48,8 @@ export type OutcomeCertificateExplanationDetail = {
 export type OutcomeCertificateStep = {
   seq: number;
   toolId?: string;
+  /** Mirrors tools registry `releaseCritical` for contract runs; always false for quick_preview. */
+  releaseCritical: boolean;
   declaredAction: string;
   expectedOutcome: string;
   observedOutcome: string;
@@ -66,6 +71,8 @@ export type OutcomeCertificateV3 = {
   runKind: OutcomeCertificateRunKind;
   stateRelation: OutcomeCertificateStateRelation;
   highStakesReliance: OutcomeCertificateHighStakesReliance;
+  /** Trust verdict considering only steps whose registry tool had `releaseCritical: true`. */
+  releaseCriticalVerdict: TruthCheckVerdictLabel;
   relianceRationale: string;
   intentSummary: string;
   explanation: {
@@ -101,10 +108,32 @@ export function workflowResultToStateRelation(result: WorkflowResult): OutcomeCe
   return "not_established";
 }
 
+/**
+ * Rollup for registry `releaseCritical` tools only (plan semantics).
+ * Quick preview has no registry-marked critical steps; use `"trusted"` on the certificate for that path.
+ */
+export function releaseCriticalVerdictFromWorkflowResult(result: WorkflowResult): TruthCheckVerdictLabel {
+  const critical = result.steps.filter((s) => s.releaseCritical === true);
+  if (critical.length === 0) return "trusted";
+  if (critical.some((s) => s.status === "missing" || s.status === "inconsistent")) return "not_trusted";
+  if (
+    critical.some(
+      (s) =>
+        s.status === "incomplete_verification" ||
+        s.status === "uncertain" ||
+        s.status === "partially_verified",
+    )
+  ) {
+    return "unknown";
+  }
+  return "trusted";
+}
+
 function truthStepToCertificateStep(step: WorkflowTruthStep): OutcomeCertificateStep {
   return {
     seq: step.seq,
     toolId: step.toolId,
+    releaseCritical: step.releaseCritical ?? false,
     declaredAction: step.intendedEffect.narrative,
     expectedOutcome: step.verifyTarget ?? step.intendedEffect.narrative,
     observedOutcome: step.observedStateSummary,
@@ -268,6 +297,7 @@ export function buildIneligibleLangGraphCheckpointTrustCertificate(
     runKind,
     stateRelation,
     highStakesReliance,
+    releaseCriticalVerdict: "trusted",
     relianceRationale: buildRelianceRationale(runKind, stateRelation, highStakesReliance),
     intentSummary: ineligibleHeadline,
     explanation: { headline: ineligibleHeadline, details },
@@ -316,6 +346,7 @@ export function buildOutcomeCertificateLangGraphCheckpointTrustFromWorkflowResul
     runKind,
     stateRelation,
     highStakesReliance,
+    releaseCriticalVerdict: releaseCriticalVerdictFromWorkflowResult(result),
     relianceRationale: buildRelianceRationale(runKind, stateRelation, highStakesReliance),
     intentSummary: truth.trustSummary,
     explanation: buildExplanationFromWorkflowResult(result),
@@ -363,6 +394,7 @@ export function buildOutcomeCertificateFromWorkflowResult(
     runKind,
     stateRelation,
     highStakesReliance,
+    releaseCriticalVerdict: releaseCriticalVerdictFromWorkflowResult(result),
     relianceRationale: buildRelianceRationale(runKind, stateRelation, highStakesReliance),
     intentSummary: truth.trustSummary,
     explanation: buildExplanationFromWorkflowResult(result),
@@ -440,6 +472,7 @@ export function buildOutcomeCertificateFromQuickReport(options: BuildQuickOutcom
     runKind,
     stateRelation,
     highStakesReliance,
+    releaseCriticalVerdict: "trusted",
     relianceRationale: buildRelianceRationale(runKind, stateRelation, highStakesReliance),
     intentSummary: report.summary,
     explanation: {
@@ -448,6 +481,7 @@ export function buildOutcomeCertificateFromQuickReport(options: BuildQuickOutcom
     },
     steps: report.units.map((u, i) => ({
       seq: i,
+      releaseCritical: false,
       declaredAction: `${u.sourceAction.toolName} (unit ${u.unitId})`,
       expectedOutcome: u.reconciliation.expected,
       observedOutcome: u.reconciliation.observed_database,
@@ -464,9 +498,6 @@ export function buildOutcomeCertificateFromQuickReport(options: BuildQuickOutcom
 export function formatOutcomeCertificateHuman(certificate: OutcomeCertificateV3): string {
   return certificate.humanReport;
 }
-
-/** User-facing truth-check verdict for CLI `agentskeptic check` stderr prefix. */
-export type TruthCheckVerdictLabel = "trusted" | "not_trusted" | "unknown";
 
 export function truthCheckVerdictFromCertificate(certificate: OutcomeCertificateV3): TruthCheckVerdictLabel {
   if (certificate.stateRelation === "matches_expectations" && certificate.highStakesReliance === "permitted") {

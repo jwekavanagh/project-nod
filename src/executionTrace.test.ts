@@ -207,6 +207,7 @@ describe("buildExecutionTraceView", () => {
       },
       steps: [
         {
+          releaseCritical: false,
           seq: 0,
           toolId: "crm.upsert_contact",
           intendedEffect: { narrative: "x" },

@@ -271,11 +271,24 @@ function failingReasonCodeSetFromCertificate(cert, rows) {
 function fmtVerdictLine({ verdict, cert }) {
   const stateRelation = cert?.stateRelation ?? "";
   const reliance = cert?.highStakesReliance ?? "";
+  const releaseCritical = cert?.releaseCriticalVerdict ?? "";
   const parts = [];
   parts.push(`- truth_check_verdict: \`${verdict || "unavailable"}\``);
+  if (releaseCritical) {
+    parts.push(`- release_critical_truth_check_verdict: \`${releaseCritical}\``);
+  }
   if (stateRelation) parts.push(`- state_relation: \`${stateRelation}\``);
   if (reliance) parts.push(`- high_stakes_reliance: \`${reliance}\``);
   return parts.join("\n");
+}
+
+function fmtReleaseCriticalGate(cert) {
+  const v = cert?.releaseCriticalVerdict ?? "";
+  return [
+    "### Release-critical gate",
+    "",
+    `- release_critical_truth_check_verdict: \`${v || "unavailable"}\``,
+  ].join("\n");
 }
 
 function fmtSpineBlock(spine) {
@@ -434,6 +447,7 @@ function main() {
   const outputs = {
     "state-relation": "",
     "trust-decision": "",
+    "release-critical-verdict": "",
     "failing-tool-ids": "",
     "primary-reason-codes": "",
     "failing-witness-kinds": "",
@@ -492,6 +506,7 @@ function main() {
 
     outputs["state-relation"] = String(cert.stateRelation || "");
     outputs["trust-decision"] = String(spine.trustDecision || "");
+    outputs["release-critical-verdict"] = String(cert.releaseCriticalVerdict || "");
     outputs["failing-tool-ids"] = failingToolIds.join(",");
     outputs["primary-reason-codes"] = (
       Array.isArray(spine.primaryCodes) ? spine.primaryCodes.slice(0, MAX_PRIMARY_CODES) : []
@@ -505,6 +520,8 @@ function main() {
       summaryHeader,
       "",
       fmtVerdictLine({ verdict, cert }),
+      "",
+      fmtReleaseCriticalGate(cert),
     ];
     if (warningLine) {
       sections.push("");
@@ -525,6 +542,7 @@ function main() {
       summaryHeader,
       "",
       `- truth_check_verdict: \`${args.verdict || "unavailable"}\``,
+      "- release_critical_truth_check_verdict: `unavailable`",
       "",
       fmtOperationalBlock(parseRes.reason, envelopes),
       "",

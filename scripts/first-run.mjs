@@ -173,8 +173,15 @@ for (const { wfId, expectExit } of [
   const lines = String(r.stderr ?? "").replace(/\r\n/g, "\n").split("\n").map((x) => x.trim());
   const verdictLine =
     lines.find((l) => /^truth_check_verdict: (trusted|not_trusted|unknown)$/.test(l)) ?? "";
+  const critLine =
+    lines.find((l) => /^release_critical_truth_check_verdict: (trusted|not_trusted|unknown)$/.test(l)) ?? "";
+  if (!critLine) {
+    fail(
+      `first-run wf=${wfId}: missing release_critical_truth_check_verdict stderr line\nstderr: ${String(r.stderr ?? "").slice(0, 900)}`,
+    );
+  }
   verdictFirstLines.push(verdictLine);
-  println(`workflow ${wfId}: exit=${r.status}; truth_verdict_line=${verdictLine}`);
+  println(`workflow ${wfId}: exit=${r.status}; truth_verdict_line=${verdictLine}; release_critical_line=${critLine}`);
   const lastOut = String(r.stdout ?? "").trim().split(/\r?\n/).filter(Boolean).pop() ?? "";
   println(`workflow ${wfId}: stdout_certificate_last_nonempty_line (${lastOut.length} chars)`);
 }
@@ -195,6 +202,9 @@ for (const token of ["complete", "inconsistent", "ROW_ABSENT"]) {
 }
 if (!combined.includes("truth_check_verdict: trusted") || !combined.includes("truth_check_verdict: not_trusted")) {
   fail(`Self-check failed: canonical CLI verdict lines missing from narration output`);
+}
+if (!combined.includes("release_critical_truth_check_verdict:")) {
+  fail(`Self-check failed: release_critical_truth_check_verdict line missing from narration output`);
 }
 
 process.exit(0);

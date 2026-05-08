@@ -27,6 +27,7 @@ const strongPolicy = {
 
 function verifiedStep(seq: number, toolId: string): StepOutcome {
   return {
+    releaseCritical: false,
     seq,
     toolId,
     intendedEffect: { narrative: "ok" },
@@ -47,6 +48,7 @@ function verifiedStep(seq: number, toolId: string): StepOutcome {
 
 function missingStep(seq: number, toolId: string): StepOutcome {
   return {
+    releaseCritical: false,
     seq,
     toolId,
     intendedEffect: { narrative: "n" },
@@ -286,6 +288,7 @@ describe("failureExplanation goldens (real buildFailureAnalysis)", () => {
       verificationRunContext: createEmptyVerificationRunContext(),
       steps: [
         {
+          releaseCritical: false,
           seq: 0,
           toolId: "demo.multi",
           intendedEffect: { narrative: "x" },

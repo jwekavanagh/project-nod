@@ -66,6 +66,7 @@ function minimalCertificate(stateRelation: OutcomeCertificateV1["stateRelation"]
     runKind: "contract_sql",
     stateRelation,
     highStakesReliance: rl,
+    releaseCriticalVerdict: "trusted",
     relianceRationale: "r",
     intentSummary: "s",
     explanation: { headline: "h", details: [] },

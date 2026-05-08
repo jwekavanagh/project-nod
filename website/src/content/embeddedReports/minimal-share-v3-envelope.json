@@ -6,6 +6,7 @@
     "runKind": "contract_sql",
     "stateRelation": "does_not_match",
     "highStakesReliance": "prohibited",
+    "releaseCriticalVerdict": "trusted",
     "relianceRationale": "At least one step failed verification against expected downstream state (missing row, wrong values, or partial multi-effect failure). Do not treat this run as meeting its intended persisted outcome.",
     "intentSummary": "NOT TRUSTED: At least one step failed verification against expected downstream state (determinate failure).",
     "explanation": {
@@ -15,6 +16,7 @@
     "steps": [
       {
         "seq": 0,
+        "releaseCritical": false,
         "toolId": "crm.upsert_contact",
         "declaredAction": "Upsert contact",
         "expectedOutcome": "contacts.id = x",

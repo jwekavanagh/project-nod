@@ -36,6 +36,7 @@ function baseEngine(
 
 function verifiedStep(seq: number, toolId: string): StepOutcome {
   return {
+    releaseCritical: false,
     seq,
     toolId,
     intendedEffect: { narrative: "x" },
@@ -57,6 +58,7 @@ function verifiedStep(seq: number, toolId: string): StepOutcome {
 describe("buildExecutionPathFindings (product requirements)", () => {
   it("ACTION_INPUT_RESOLUTION_FAILED for STRING_SPEC_POINTER_MISSING", () => {
     const step: StepOutcome = {
+      releaseCritical: false,
       seq: 0,
       toolId: "bad.tool",
       intendedEffect: { narrative: "" },
@@ -86,6 +88,7 @@ describe("buildExecutionPathFindings (product requirements)", () => {
 
   it("ACTION_INPUT_RESOLUTION_FAILED for UNKNOWN_TOOL", () => {
     const step: StepOutcome = {
+      releaseCritical: false,
       seq: 0,
       toolId: "nope",
       intendedEffect: { narrative: "Unknown tool: nope" },
@@ -220,6 +223,7 @@ describe("buildExecutionPathFindings (product requirements)", () => {
       lastRunEvent: { ingestIndex: 0, type: "tool_observed" },
     });
     const step: StepOutcome = {
+      releaseCritical: false,
       seq: 0,
       toolId: "t",
       intendedEffect: { narrative: "" },
@@ -316,6 +320,7 @@ describe("buildExecutionPathFindings (product requirements)", () => {
           status: "incomplete",
           steps: [
             {
+              releaseCritical: false,
               seq: 0,
               toolId: "t",
               intendedEffect: { narrative: "" },

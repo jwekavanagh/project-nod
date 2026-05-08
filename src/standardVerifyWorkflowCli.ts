@@ -211,6 +211,7 @@ export async function runStandardVerifyWorkflowCliToTerminalResult(options: {
     }
     if (options.truthCheckInvoked === true) {
       io.stderrLine(`truth_check_verdict: ${truthCheckVerdictFromCertificate(certificate)}`);
+      io.stderrLine(`release_critical_truth_check_verdict: ${certificate.releaseCriticalVerdict}`);
     }
     io.stderrLine(formatContractVerifyStderrForStderrLine(certificate));
   }

@@ -404,6 +404,7 @@
           "required": [
             "seq",
             "toolId",
+            "releaseCritical",
             "outcomeLabel",
             "observations",
             "reasons",
@@ -415,6 +416,10 @@
           "properties": {
             "seq": { "type": "integer", "minimum": 0 },
             "toolId": { "type": "string" },
+            "releaseCritical": {
+              "type": "boolean",
+              "description": "Mirrors registry releaseCritical for this tool at verify time."
+            },
             "outcomeLabel": {
               "type": "string",
               "enum": [

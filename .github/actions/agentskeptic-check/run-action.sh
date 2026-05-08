@@ -35,9 +35,9 @@ if [[ "$mode" != "check" && "$mode" != "enforce" ]]; then
 fi
 
 case "$fail_on" in
-not_trusted_or_unknown | not_trusted | never) ;;
+not_trusted_or_unknown | not_trusted | never | critical_not_trusted_or_unknown) ;;
 *)
-  fatal "fail-on must be not_trusted_or_unknown, not_trusted, or never; got '$fail_on'"
+  fatal "fail-on must be not_trusted_or_unknown, not_trusted, never, or critical_not_trusted_or_unknown; got '$fail_on'"
   exit 2
   ;;
 esac
@@ -93,12 +93,25 @@ if [[ "$_line" =~ ^truth_check_verdict:[[:space:]]*(trusted|not_trusted|unknown)
   verdict="${BASH_REMATCH[1]}"
 fi
 
+# Parse release_critical_truth_check_verdict from stderr (first matching line wins).
+crit=""
+_line_crit=""
+if [[ -s "$stderr_path" ]]; then
+  _line_crit=$(grep -m1 -E '^release_critical_truth_check_verdict:' "$stderr_path" 2>/dev/null || true)
+  _line_crit="${_line_crit//$'\r'/}"
+fi
+if [[ "$_line_crit" =~ ^release_critical_truth_check_verdict:[[:space:]]*(trusted|not_trusted|unknown) ]]; then
+  crit="${BASH_REMATCH[1]}"
+fi
+
 # --- Decide the final exit code BEFORE invoking presentation renderer.
+# Precedence: operational CLI failure always wins; then fail-on never; then global
+# verdict thresholds; then release-critical-only threshold (stderr crit line).
 final_exit=0
-if [[ "$fail_on" == "never" ]]; then
-  final_exit=0
-elif (( cli_exit != 0 )); then
+if (( cli_exit != 0 )); then
   final_exit="$cli_exit"
+elif [[ "$fail_on" == "never" ]]; then
+  final_exit=0
 else
   case "$fail_on" in
   not_trusted_or_unknown)
@@ -108,6 +121,13 @@ else
     ;;
   not_trusted)
     if [[ "$verdict" == "not_trusted" ]]; then
+      final_exit=1
+    fi
+    ;;
+  critical_not_trusted_or_unknown)
+    if [[ "$crit" != "trusted" && "$crit" != "not_trusted" && "$crit" != "unknown" ]]; then
+      final_exit=1
+    elif [[ "$crit" == "not_trusted" || "$crit" == "unknown" ]]; then
       final_exit=1
     fi
     ;;

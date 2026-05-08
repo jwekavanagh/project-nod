@@ -3,15 +3,15 @@
   "workflowId": "wf_complete",
   "producer": {
     "name": "agentskeptic",
-    "version": "7.0.0"
+    "version": "7.7.0"
   },
   "verifiedAt": "2026-04-07T12:00:00.000Z",
   "schemaVersion": 2,
   "artifacts": {
     "workflowResult": {
       "relativePath": "workflow-result.json",
-      "sha256": "d7ecc0233be5264e08f10183cda99d3677a2a470ca77cb839a9f42e34aeccc43",
-      "byteLength": 2122
+      "sha256": "df46e199830326060c3ad9ccfe8f16c7e692c4b31b2c712c6f037288b7d54433",
+      "byteLength": 2170
     },
     "events": {
       "relativePath": "events.ndjson",
@@ -20,7 +20,7 @@
     },
     "workflowResultSignature": {
       "relativePath": "workflow-result.sig.json",
-      "sha256": "f0030f3060d92c83a2d6c7ce8dab1b1861570568172a3de607c4aba77360918e",
+      "sha256": "16d3d398acb4881224832461b27e270b549039e690163e8a00434f4cf0a7da84",
       "byteLength": 388
     }
   }

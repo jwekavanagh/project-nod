@@ -9,7 +9,9 @@
 # version is rejected by `scripts/assert-ci-release-gate-example.mjs` in `npm run verification:truth`.
 #
 # Transparent manual alternative: invoke `npx agentskeptic check …` inline (same CLI contract — Outcome Certificate on stdout,
-# truth_check_verdict on stderr). For opt-in commercial/stateful enforcement see agentskeptic-commercial.yml.
+# truth_check_verdict + release_critical_truth_check_verdict on stderr). Optional composite input:
+# fail-on: critical_not_trusted_or_unknown — gates the job on the release-critical stderr line only when the CLI exits 0
+# (see docs/ambient-ci-distribution.md). For opt-in commercial/stateful enforcement see agentskeptic-commercial.yml.
 #
 # Ambient CI distribution (job summary, structured outputs, downloadable
 # `agentskeptic-outcome-certificate` artifact, and OSS-friendly permissions
@@ -35,7 +37,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       AGENTSKEPTIC_TELEMETRY: "0"
-      AGENTSKEPTIC_CI_PACKAGE: agentskeptic@7.6.1
+      AGENTSKEPTIC_CI_PACKAGE: agentskeptic@7.7.0
       AS_REPO_ROOT: ${{ github.workspace }}/node_modules/agentskeptic
     steps:
       - uses: actions/checkout@v5

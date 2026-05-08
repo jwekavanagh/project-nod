@@ -238,6 +238,8 @@ export type ToolRegistryVerification =
 export type ToolRegistryEntry = {
   toolId: string;
   effectDescriptionTemplate: string;
+  /** When true, step failures count toward release-critical rollup (default false when omitted). */
+  releaseCritical?: boolean;
   verification: ToolRegistryVerification;
 };
 
@@ -433,6 +435,8 @@ export type ObservedExecution = {
 export type StepOutcome = {
   seq: number;
   toolId: string;
+  /** Mirrors tools registry `releaseCritical` for this toolId (false when omitted in registry or unknown tool). */
+  releaseCritical: boolean;
   intendedEffect: IntendedEffect;
   observedExecution: ObservedExecution;
   verificationRequest: StepVerificationRequest;
@@ -890,6 +894,7 @@ export type CorrectnessDefinitionV1 = {
 export type WorkflowTruthStep = {
   seq: number;
   toolId: string;
+  releaseCritical: boolean;
   outcomeLabel:
     | "VERIFIED"
     | "FAILED_ROW_MISSING"

@@ -93,6 +93,7 @@ function sqlRowStep(
   verified: boolean,
 ): StepOutcome {
   return {
+    releaseCritical: false,
     seq,
     toolId,
     intendedEffect: { narrative: "" },
@@ -150,6 +151,7 @@ function engDuplicateRows(): WorkflowEngineResult {
     verificationRunContext: createEmptyVerificationRunContext(),
     steps: [
       {
+        releaseCritical: false,
         seq: 0,
         toolId: "t",
         intendedEffect: { narrative: "" },

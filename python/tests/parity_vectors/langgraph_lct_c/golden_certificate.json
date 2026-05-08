@@ -4,6 +4,7 @@
   "runKind": "contract_sql_langgraph_checkpoint_trust",
   "stateRelation": "does_not_match",
   "highStakesReliance": "prohibited",
+  "releaseCriticalVerdict": "trusted",
   "relianceRationale": "At least one step failed verification against expected downstream state (missing row, wrong values, or partial multi-effect failure), or a LangGraph checkpoint rollup verdict is inconsistent. Do not treat this run as meeting its intended persisted outcome.",
   "intentSummary": "NOT TRUSTED: At least one step failed verification against expected downstream state (determinate failure).",
   "explanation": {
@@ -19,6 +20,7 @@
     {
       "seq": 0,
       "toolId": "crm.upsert_contact",
+      "releaseCritical": false,
       "declaredAction": "Upsert contact \"wrong_id\" with fields {\"name\":\"You\",\"status\":\"active\"}",
       "expectedOutcome": "table=contacts identity=[id=wrong_id] required_fields=[name, status]",
       "observedOutcome": "rowCount=0"

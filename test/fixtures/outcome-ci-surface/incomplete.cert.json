@@ -3,6 +3,7 @@
   "workflowId": "wf_langgraph_demo",
   "runKind": "contract_sql_langgraph_checkpoint_trust",
   "stateRelation": "not_established",
+  "releaseCriticalVerdict": "trusted",
   "highStakesReliance": "prohibited",
   "relianceRationale": "Verifier could not establish state because no schema-valid tool_observed lines were ingested.",
   "intentSummary": "LangGraph checkpoint trust without a runnable verification trace.",

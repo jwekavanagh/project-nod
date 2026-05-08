@@ -4,6 +4,7 @@
   "runKind": "contract_sql_langgraph_checkpoint_trust",
   "stateRelation": "not_established",
   "highStakesReliance": "prohibited",
+  "releaseCriticalVerdict": "trusted",
   "relianceRationale": "LangGraph checkpoint trust mode did not establish a single approved production snapshot (ineligible wire, incomplete verification, incomplete checkpoint rollup, or sequence integrity). Do not treat absence of a mismatch as proof of success.",
   "intentSummary": "LangGraph checkpoint trust: ineligible",
   "explanation": {

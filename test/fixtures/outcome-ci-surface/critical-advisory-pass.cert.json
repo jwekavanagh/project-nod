@@ -1,6 +1,6 @@
 {
   "schemaVersion": 3,
-  "workflowId": "wf_complete",
+  "workflowId": "wf_critical_advisory",
   "runKind": "contract_sql",
   "stateRelation": "does_not_match",
   "releaseCriticalVerdict": "trusted",

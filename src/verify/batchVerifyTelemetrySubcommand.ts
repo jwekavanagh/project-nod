@@ -255,6 +255,7 @@ export async function runBatchVerifyWithTelemetrySubcommand(
   function writeTruthCheckVerdictPrefixIfNeeded(certificate: OutcomeCertificateV1): void {
     if (!parsedBatch.invokedViaCheck) return;
     process.stderr.write(`truth_check_verdict: ${truthCheckVerdictFromCertificate(certificate)}\n`);
+    process.stderr.write(`release_critical_truth_check_verdict: ${certificate.releaseCriticalVerdict}\n`);
   }
 
   async function finishCertificateTelemetryAndExit(

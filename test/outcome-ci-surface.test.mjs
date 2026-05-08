@@ -124,8 +124,7 @@ function caseGoldens(name) {
 
 test("trusted certificate: writes artifact, populates structured outputs, summary shows trust spine", () => {
   const stdoutFile = join(fixturesDir, "trusted.cert.json");
-  const stderrFile = join(fixturesDir, "_empty.stderr");
-  if (!existsSync(stderrFile)) writeFileSync(stderrFile, "truth_check_verdict: trusted\nhuman line\n");
+  const stderrFile = join(fixturesDir, "trusted.stderr");
 
   const r = runRenderer({ stdoutFile, stderrFile, verdict: "trusted" });
   assert.equal(r.rc, 0, r.stderr);
@@ -138,6 +137,7 @@ test("trusted certificate: writes artifact, populates structured outputs, summar
 
   assert.equal(r.outputs["state-relation"], "matches_expectations");
   assert.equal(r.outputs["trust-decision"], "safe");
+  assert.equal(r.outputs["release-critical-verdict"], "trusted");
   assert.equal(r.outputs["failing-tool-ids"], "");
   assert.equal(r.outputs["primary-reason-codes"], "VERIFIED");
   assert.equal(r.outputs["failing-witness-kinds"], "");
@@ -150,12 +150,23 @@ test("trusted certificate: writes artifact, populates structured outputs, summar
   compareGolden(normalizePaths(r.outputsRaw, r.artifactDir), golden.outputs);
 });
 
+test("critical-advisory-pass certificate: global mismatch but release-critical rollup trusted", () => {
+  const stdoutFile = join(fixturesDir, "critical-advisory-pass.cert.json");
+  const stderrFile = join(fixturesDir, "critical-advisory-pass.stderr");
+
+  const r = runRenderer({ stdoutFile, stderrFile, verdict: "not_trusted" });
+  assert.equal(r.rc, 0, r.stderr);
+  assert.equal(r.outputs["release-critical-verdict"], "trusted");
+  assert.equal(r.outputs["state-relation"], "does_not_match");
+  assert.match(r.summary, /### Release-critical gate/);
+  assert.match(r.summary, /release_critical_truth_check_verdict: `trusted`/);
+});
+
 // ---------- cert: step failure ----------
 
 test("step failure: per-step table from remediationItems with reason codes and tool id", () => {
   const stdoutFile = join(fixturesDir, "step-fail.cert.json");
-  const stderrFile = join(fixturesDir, "_empty.stderr");
-  if (!existsSync(stderrFile)) writeFileSync(stderrFile, "truth_check_verdict: not_trusted\n");
+  const stderrFile = join(fixturesDir, "step-fail.stderr");
 
   const r = runRenderer({ stdoutFile, stderrFile, verdict: "not_trusted" });
   assert.equal(r.rc, 0, r.stderr);
@@ -183,8 +194,7 @@ test("step failure: per-step table from remediationItems with reason codes and t
 
 test("effect failure: rows show effect <id> on step <seq> and witness kinds derive from prefixes", () => {
   const stdoutFile = join(fixturesDir, "effect-fail.cert.json");
-  const stderrFile = join(fixturesDir, "_empty.stderr");
-  if (!existsSync(stderrFile)) writeFileSync(stderrFile, "truth_check_verdict: not_trusted\n");
+  const stderrFile = join(fixturesDir, "effect-fail.stderr");
 
   const r = runRenderer({ stdoutFile, stderrFile, verdict: "not_trusted" });
   assert.equal(r.rc, 0, r.stderr);
@@ -207,8 +217,7 @@ test("effect failure: rows show effect <id> on step <seq> and witness kinds deri
 
 test("incomplete: trust decision unknown; recommended action surfaced", () => {
   const stdoutFile = join(fixturesDir, "incomplete.cert.json");
-  const stderrFile = join(fixturesDir, "_empty.stderr");
-  if (!existsSync(stderrFile)) writeFileSync(stderrFile, "truth_check_verdict: unknown\n");
+  const stderrFile = join(fixturesDir, "incomplete.stderr");
 
   const r = runRenderer({ stdoutFile, stderrFile, verdict: "unknown" });
   assert.equal(r.rc, 0, r.stderr);
@@ -229,8 +238,7 @@ test("incomplete: trust decision unknown; recommended action surfaced", () => {
 
 test("langgraph-checkpoint trusted: checkpoint verdicts table appears", () => {
   const stdoutFile = join(fixturesDir, "langgraph-checkpoint.cert.json");
-  const stderrFile = join(fixturesDir, "_empty.stderr");
-  if (!existsSync(stderrFile)) writeFileSync(stderrFile, "truth_check_verdict: trusted\n");
+  const stderrFile = join(fixturesDir, "langgraph-checkpoint.stderr");
 
   const r = runRenderer({ stdoutFile, stderrFile, verdict: "trusted" });
   assert.equal(r.rc, 0, r.stderr);
@@ -256,6 +264,7 @@ test("malformed stdout: no artifact written; outputs empty; operational summary 
   for (const key of [
     "state-relation",
     "trust-decision",
+    "release-critical-verdict",
     "failing-tool-ids",
     "primary-reason-codes",
     "failing-witness-kinds",
@@ -293,8 +302,8 @@ test("oversized stdout (>256 KiB): treated as non-certificate; outputs empty; no
 
 test("verdict ↔ stateRelation disagreement: warning is emitted; outputs derive from cert", () => {
   const stdoutFile = join(fixturesDir, "trusted.cert.json");
-  const stderrFile = join(fixturesDir, "_empty.stderr");
-  if (!existsSync(stderrFile)) writeFileSync(stderrFile, "");
+  const stderrFile = join(tmpdir(), `as-empty-stderr-${Date.now()}.txt`);
+  writeFileSync(stderrFile, "");
 
   // Lie: claim verdict=not_trusted while certificate says matches_expectations.
   const r = runRenderer({ stdoutFile, stderrFile, verdict: "not_trusted" });

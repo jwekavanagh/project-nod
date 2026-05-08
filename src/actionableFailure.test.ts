@@ -47,6 +47,7 @@ describe("deriveSeverityWorkflow", () => {
           status: "incomplete",
           steps: [
             {
+              releaseCritical: false,
               seq: 0,
               toolId: "t",
               intendedEffect: { narrative: "" },
@@ -71,6 +72,7 @@ describe("deriveSeverityWorkflow", () => {
           status: "incomplete",
           steps: [
             {
+              releaseCritical: false,
               seq: 0,
               toolId: "t",
               intendedEffect: { narrative: "" },
@@ -220,6 +222,7 @@ describe("ambiguous category with high severity (workflow)", () => {
       status: "inconsistent",
       steps: [
         {
+          releaseCritical: false,
           seq: 0,
           toolId: "t",
           intendedEffect: { narrative: "" },

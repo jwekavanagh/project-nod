@@ -21,6 +21,7 @@ function sqlRowStep(
   verified: boolean,
 ): StepOutcome {
   return {
+    releaseCritical: false,
     seq,
     toolId,
     intendedEffect: { narrative: "" },

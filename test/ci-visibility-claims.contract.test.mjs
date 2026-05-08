@@ -125,6 +125,9 @@ test("docs: SSOT (ambient-ci-distribution.md) covers outputs + artifact + permis
     "ACTIONS_RUNTIME_TOKEN", // verified permissions story
     "Composite step outputs", // structured outputs section
     "failureSpine", // certificate-derived summary
+    "release-critical-verdict",
+    "release_critical_truth_check_verdict",
+    "critical_not_trusted_or_unknown",
   ]) {
     assert.ok(
       ssotBody.includes(needle),
@@ -151,6 +154,7 @@ test("README: CI section enumerates structured outputs and artifact name", () =>
     "agentskeptic-outcome-certificate", // artifact name
     "state-relation",
     "trust-decision",
+    "release-critical-verdict",
     "failing-tool-ids",
     "primary-reason-codes",
     "failing-witness-kinds",
@@ -294,6 +298,7 @@ test("action.yml declares all structured outputs and the upload-artifact post st
   for (const needle of [
     "state-relation:",
     "trust-decision:",
+    "release-critical-verdict:",
     "failing-tool-ids:",
     "primary-reason-codes:",
     "failing-witness-kinds:",

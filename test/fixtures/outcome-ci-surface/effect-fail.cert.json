@@ -3,6 +3,7 @@
   "workflowId": "wf_multi_effect",
   "runKind": "contract_sql",
   "stateRelation": "does_not_match",
+  "releaseCriticalVerdict": "trusted",
   "highStakesReliance": "prohibited",
   "relianceRationale": "One effect of step 2 did not verify; high-stakes use prohibited.",
   "intentSummary": "Verify multi-effect step uploads order doc and stores receipt vector.",
@@ -16,6 +17,7 @@
     {
       "seq": 2,
       "toolId": "orders.finalize",
+      "releaseCritical": false,
       "declaredAction": "Finalize order 99 (insert + receipt).",
       "expectedOutcome": "Row id=99 present and receipt_doc exists.",
       "observedOutcome": "Row id=99 present; receipt_doc missing."

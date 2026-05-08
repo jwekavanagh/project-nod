@@ -20,6 +20,7 @@ const root = join(__dirname, "..");
 
 function sqlRowStep(seq: number, keyValue: string, verified: boolean): StepOutcome {
   return {
+    releaseCritical: false,
     seq,
     toolId: "t",
     intendedEffect: { narrative: "" },
@@ -80,6 +81,7 @@ function wfPlanTransition(steps: StepOutcome[]): WorkflowResult {
 describe("debugPanels", () => {
   it("formatSqlEvidenceDetailForTrustPanel null request", () => {
     const step: StepOutcome = {
+      releaseCritical: false,
       seq: 0,
       toolId: "x",
       intendedEffect: { narrative: "" },
@@ -99,6 +101,7 @@ describe("debugPanels", () => {
 
   it("formatSqlEvidenceDetailForTrustPanel sql_relational multi uses effect_rows", () => {
     const step: StepOutcome = {
+      releaseCritical: false,
       seq: 0,
       toolId: "t",
       intendedEffect: { narrative: "" },
@@ -131,6 +134,7 @@ describe("debugPanels", () => {
 
   it("formatSqlEvidenceDetailForTrustPanel sql_relational single check", () => {
     const step: StepOutcome = {
+      releaseCritical: false,
       seq: 0,
       toolId: "t",
       intendedEffect: { narrative: "" },
@@ -199,6 +203,7 @@ describe("debugPanels", () => {
 
   it("renderRunTrustPanelHtml uses plan-transition verification basis", () => {
     const step: StepOutcome = {
+      releaseCritical: false,
       seq: 1,
       toolId: "plan_transition.rule.r1",
       intendedEffect: { narrative: "test rule" },
@@ -217,6 +222,7 @@ describe("debugPanels", () => {
 
   it("formatSqlEvidenceDetailForTrustPanel serializes plan-transition evidenceSummary", () => {
     const step: StepOutcome = {
+      releaseCritical: false,
       seq: 1,
       toolId: "plan_transition.rule.r1",
       intendedEffect: { narrative: "" },

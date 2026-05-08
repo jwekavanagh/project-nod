@@ -208,6 +208,7 @@ function buildTruthStep(s: StepOutcome): WorkflowTruthStep {
   const base: WorkflowTruthStep = {
     seq: s.seq,
     toolId: s.toolId,
+    releaseCritical: s.releaseCritical,
     outcomeLabel: label,
     observations: {
       evaluatedOrdinal: s.evaluatedObservationOrdinal,

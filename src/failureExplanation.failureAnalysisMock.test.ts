@@ -22,6 +22,7 @@ const strongPolicy = {
 
 function missingStep(): WorkflowEngineResult["steps"][number] {
   return {
+    releaseCritical: false,
     seq: 0,
     toolId: "t",
     intendedEffect: { narrative: "n" },

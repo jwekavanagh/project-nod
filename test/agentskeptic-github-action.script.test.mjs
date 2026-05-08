@@ -148,7 +148,7 @@ test(
     const r = runAction(
       {
         AS_STUB_STDOUT: '{"ok":true}\n',
-        AS_STUB_STDERR: "truth_check_verdict: trusted\nhuman\n",
+        AS_STUB_STDERR: "truth_check_verdict: trusted\nrelease_critical_truth_check_verdict: trusted\nhuman\n",
         AS_STUB_EXIT: "0",
         INPUT_WORKFLOW_ID: "wf_complete",
         INPUT_EVENTS: "e.ndjson",
@@ -168,7 +168,7 @@ test(
     const r = runAction(
       {
         AS_STUB_STDOUT: "{}\n",
-        AS_STUB_STDERR: "truth_check_verdict: not_trusted\n",
+        AS_STUB_STDERR: "truth_check_verdict: not_trusted\nrelease_critical_truth_check_verdict: trusted\n",
         AS_STUB_EXIT: "0",
         INPUT_WORKFLOW_ID: "wf_complete",
         INPUT_EVENTS: "e.ndjson",
@@ -188,7 +188,7 @@ test(
     const r = runAction(
       {
         AS_STUB_STDOUT: "{}\n",
-        AS_STUB_STDERR: "truth_check_verdict: unknown\n",
+        AS_STUB_STDERR: "truth_check_verdict: unknown\nrelease_critical_truth_check_verdict: unknown\n",
         AS_STUB_EXIT: "0",
         INPUT_WORKFLOW_ID: "wf_complete",
         INPUT_EVENTS: "e.ndjson",
@@ -208,7 +208,7 @@ test(
     const r = runAction(
       {
         AS_STUB_STDOUT: "{}\n",
-        AS_STUB_STDERR: "truth_check_verdict: unknown\n",
+        AS_STUB_STDERR: "truth_check_verdict: unknown\nrelease_critical_truth_check_verdict: unknown\n",
         AS_STUB_EXIT: "0",
         INPUT_WORKFLOW_ID: "wf_complete",
         INPUT_EVENTS: "e.ndjson",
@@ -229,7 +229,7 @@ test(
     const r = runAction(
       {
         AS_STUB_STDOUT: "",
-        AS_STUB_STDERR: "truth_check_verdict: trusted\n",
+        AS_STUB_STDERR: "truth_check_verdict: trusted\nrelease_critical_truth_check_verdict: trusted\n",
         AS_STUB_EXIT: "9",
         INPUT_WORKFLOW_ID: "wf_complete",
         INPUT_EVENTS: "e.ndjson",
@@ -242,14 +242,98 @@ test(
 );
 
 test(
-  "run-action.sh: fail-on never clears non-zero CLI exit",
+  "run-action.sh: critical_not_trusted_or_unknown passes when global not_trusted but critical stderr is trusted",
+  { skip: !hasBash },
+  () => {
+    const stubDir = makeStubDir();
+    const r = runAction(
+      {
+        AS_STUB_STDOUT: "{}\n",
+        AS_STUB_STDERR: "truth_check_verdict: not_trusted\nrelease_critical_truth_check_verdict: trusted\n",
+        AS_STUB_EXIT: "0",
+        INPUT_WORKFLOW_ID: "wf_complete",
+        INPUT_EVENTS: "e.ndjson",
+        INPUT_REGISTRY: "r.json",
+        INPUT_FAIL_ON: "critical_not_trusted_or_unknown",
+      },
+      stubDir,
+    );
+    assert.equal(r.status, 0, r.stderr);
+  },
+);
+
+test(
+  "run-action.sh: critical_not_trusted_or_unknown fails when critical stderr is not_trusted",
+  { skip: !hasBash },
+  () => {
+    const stubDir = makeStubDir();
+    const r = runAction(
+      {
+        AS_STUB_STDOUT: "{}\n",
+        AS_STUB_STDERR: "truth_check_verdict: trusted\nrelease_critical_truth_check_verdict: not_trusted\n",
+        AS_STUB_EXIT: "0",
+        INPUT_WORKFLOW_ID: "wf_complete",
+        INPUT_EVENTS: "e.ndjson",
+        INPUT_REGISTRY: "r.json",
+        INPUT_FAIL_ON: "critical_not_trusted_or_unknown",
+      },
+      stubDir,
+    );
+    assert.equal(r.status, 1, r.stderr);
+  },
+);
+
+test(
+  "run-action.sh: critical_not_trusted_or_unknown fails when release_critical line missing (cli exit 0)",
+  { skip: !hasBash },
+  () => {
+    const stubDir = makeStubDir();
+    const r = runAction(
+      {
+        AS_STUB_STDOUT: "{}\n",
+        AS_STUB_STDERR: "truth_check_verdict: trusted\n",
+        AS_STUB_EXIT: "0",
+        INPUT_WORKFLOW_ID: "wf_complete",
+        INPUT_EVENTS: "e.ndjson",
+        INPUT_REGISTRY: "r.json",
+        INPUT_FAIL_ON: "critical_not_trusted_or_unknown",
+      },
+      stubDir,
+    );
+    assert.equal(r.status, 1, r.stderr);
+  },
+);
+
+test(
+  "run-action.sh: critical_not_trusted_or_unknown propagates non-zero CLI exit before crit line",
   { skip: !hasBash },
   () => {
     const stubDir = makeStubDir();
     const r = runAction(
       {
         AS_STUB_STDOUT: "",
-        AS_STUB_STDERR: "truth_check_verdict: not_trusted\n",
+        AS_STUB_STDERR: "truth_check_verdict: trusted\nrelease_critical_truth_check_verdict: trusted\n",
+        AS_STUB_EXIT: "3",
+        INPUT_WORKFLOW_ID: "wf_complete",
+        INPUT_EVENTS: "e.ndjson",
+        INPUT_REGISTRY: "r.json",
+        INPUT_FAIL_ON: "critical_not_trusted_or_unknown",
+      },
+      stubDir,
+    );
+    assert.equal(r.status, 3, r.stderr);
+  },
+);
+
+test(
+  "run-action.sh: fail-on never does not mask non-zero CLI exit",
+  { skip: !hasBash },
+  () => {
+    const stubDir = makeStubDir();
+    const r = runAction(
+      {
+        AS_STUB_STDOUT: "",
+        AS_STUB_STDERR: "truth_check_verdict: not_trusted\nrelease_critical_truth_check_verdict: trusted\n",
         AS_STUB_EXIT: "7",
         INPUT_WORKFLOW_ID: "wf_complete",
         INPUT_EVENTS: "e.ndjson",
@@ -258,7 +342,7 @@ test(
       },
       stubDir,
     );
-    assert.equal(r.status, 0, r.stderr);
+    assert.equal(r.status, 7, r.stderr);
   },
 );
 
@@ -275,7 +359,7 @@ test(
     const r = runAction(
       {
         AS_STUB_STDOUT: "cert-line\n",
-        AS_STUB_STDERR: "truth_check_verdict: trusted\n",
+        AS_STUB_STDERR: "truth_check_verdict: trusted\nrelease_critical_truth_check_verdict: trusted\n",
         AS_STUB_EXIT: "0",
         INPUT_WORKFLOW_ID: "wf_complete",
         INPUT_EVENTS: "e.ndjson",
@@ -324,7 +408,7 @@ test(
     const r = runAction(
       {
         AS_STUB_STDOUT: JSON.stringify(cert),
-        AS_STUB_STDERR: "truth_check_verdict: trusted\n",
+        AS_STUB_STDERR: "truth_check_verdict: trusted\nrelease_critical_truth_check_verdict: trusted\n",
         AS_STUB_EXIT: "0",
         INPUT_WORKFLOW_ID: "wf_complete",
         INPUT_EVENTS: "e.ndjson",
@@ -340,6 +424,7 @@ test(
     for (const key of [
       "state-relation=matches_expectations",
       "trust-decision=safe",
+      "release-critical-verdict=trusted",
       "primary-reason-codes=VERIFIED",
       "recommended-action=none",
       "automation-safe=true",
@@ -377,7 +462,7 @@ test(
     const r = runAction(
       {
         AS_STUB_STDOUT: "{}\n",
-        AS_STUB_STDERR: "truth_check_verdict: not_trusted\n",
+        AS_STUB_STDERR: "truth_check_verdict: not_trusted\nrelease_critical_truth_check_verdict: trusted\n",
         AS_STUB_EXIT: "0",
         INPUT_WORKFLOW_ID: "wf_complete",
         INPUT_EVENTS: "e.ndjson",
@@ -418,7 +503,7 @@ test(
     const r = runAction(
       {
         AS_STUB_STDOUT: "{}\n",
-        AS_STUB_STDERR: "truth_check_verdict: trusted\n",
+        AS_STUB_STDERR: "truth_check_verdict: trusted\nrelease_critical_truth_check_verdict: trusted\n",
         AS_STUB_EXIT: "0",
         INPUT_WORKFLOW_ID: "wf_complete",
         INPUT_EVENTS: "e.ndjson",
@@ -444,7 +529,7 @@ test(
       {
         AS_STUB_ARGV_OUT: argvFile,
         AS_STUB_STDOUT: '{"ok":true}\n',
-        AS_STUB_STDERR: "truth_check_verdict: trusted\n",
+        AS_STUB_STDERR: "truth_check_verdict: trusted\nrelease_critical_truth_check_verdict: trusted\n",
         AS_STUB_EXIT: "0",
         INPUT_WORKFLOW_ID: "wf_complete",
         INPUT_PROJECT: ".",

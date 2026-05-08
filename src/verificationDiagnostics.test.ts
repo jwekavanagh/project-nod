@@ -20,6 +20,7 @@ function step(
   partial: Partial<StepOutcome> & Pick<StepOutcome, "seq" | "toolId" | "status">,
 ): StepOutcome {
   return {
+    releaseCritical: false,
     intendedEffect: { narrative: "" },
     observedExecution: { paramsCanonical: "{}" },
     verificationRequest: null,

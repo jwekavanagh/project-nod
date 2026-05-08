@@ -11,6 +11,7 @@ import {
   buildOutcomeCertificateFromWorkflowResult,
   deriveHighStakesReliance,
   formatOutcomeCertificateHuman,
+  releaseCriticalVerdictFromWorkflowResult,
 } from "./outcomeCertificate.js";
 import type { StepOutcome, WorkflowEngineResult, WorkflowResult } from "./types.js";
 import { createEmptyVerificationRunContext } from "./verificationRunContext.js";
@@ -53,6 +54,7 @@ function baseEngine(step: StepOutcome, status: WorkflowEngineResult["status"] = 
 
 function sqlStep(code: string, message: string, status: StepOutcome["status"] = "inconsistent"): StepOutcome {
   return {
+    releaseCritical: false,
     seq: 0,
     toolId: "crm.upsert_contact",
     intendedEffect: { narrative: "Upsert contact c_missing" },
@@ -235,5 +237,39 @@ describe("outcomeCertificate", () => {
     expect(certificate.humanReport).toContain(
       "Rerun: Rerun verify after downstream state matches the expected state.",
     );
+  });
+});
+
+describe("releaseCriticalVerdictFromWorkflowResult", () => {
+  it("returns trusted when no step is release-critical", () => {
+    const wf = finalizeEmittedWorkflowResult(
+      baseEngine(sqlStep("ROW_ABSENT", "m", "missing"), "inconsistent"),
+    );
+    expect(releaseCriticalVerdictFromWorkflowResult(wf)).toBe("trusted");
+  });
+
+  it("returns not_trusted when a release-critical step is inconsistent", () => {
+    const step = { ...sqlStep("DUPLICATE_ROWS", "d"), releaseCritical: true };
+    const wf = finalizeEmittedWorkflowResult(baseEngine(step, "inconsistent"));
+    expect(releaseCriticalVerdictFromWorkflowResult(wf)).toBe("not_trusted");
+  });
+
+  it("returns unknown when a release-critical step is incomplete_verification", () => {
+    const step: StepOutcome = {
+      releaseCritical: true,
+      seq: 0,
+      toolId: "t",
+      intendedEffect: { narrative: "" },
+      observedExecution: { paramsCanonical: "{}" },
+      verificationRequest: null,
+      status: "incomplete_verification",
+      reasons: [{ code: "UNKNOWN_TOOL", message: "u" }],
+      evidenceSummary: {},
+      repeatObservationCount: 1,
+      evaluatedObservationOrdinal: 1,
+      failureDiagnostic: "verification_setup",
+    };
+    const wf = finalizeEmittedWorkflowResult(baseEngine(step, "incomplete"));
+    expect(releaseCriticalVerdictFromWorkflowResult(wf)).toBe("unknown");
   });
 });

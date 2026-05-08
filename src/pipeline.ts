@@ -57,6 +57,11 @@ export function loadToolsRegistry(registryPath: string): Map<string, ToolRegistr
   return buildRegistryMap(loadRegistryEntriesAfterSchema(registryPath));
 }
 
+/** Registry `releaseCritical` (default false when omitted or unknown tool). */
+export function registryReleaseCritical(entry: ToolRegistryEntry | undefined): boolean {
+  return entry?.releaseCritical === true;
+}
+
 function observedExecutionFromParams(params: Record<string, unknown>): ObservedExecution {
   return { paramsCanonical: canonicalJsonForParams(params) };
 }
@@ -96,6 +101,7 @@ function buildDivergentStepOutcome(
     {
       seq: plan.seq,
       toolId: last.toolId,
+      releaseCritical: registryReleaseCritical(entry),
       intendedEffect: intendedEffectNarrative(entry, last.toolId, last.params),
       observedExecution: observedExecutionFromParams(last.params),
       verificationRequest: null,
@@ -153,6 +159,7 @@ export function verifyToolObservedStep(options: {
     const outcome: StepOutcome = {
       seq: ev.seq,
       toolId: ev.toolId,
+      releaseCritical: false,
       intendedEffect: intendedEffectNarrative(undefined, ev.toolId, ev.params),
       observedExecution: observedExecutionFromParams(ev.params),
       verificationRequest: null,
@@ -174,6 +181,7 @@ export function verifyToolObservedStep(options: {
     const outcome: StepOutcome = {
       seq: ev.seq,
       toolId: ev.toolId,
+      releaseCritical: registryReleaseCritical(entry),
       intendedEffect,
       observedExecution,
       verificationRequest: null,
@@ -192,6 +200,7 @@ export function verifyToolObservedStep(options: {
   const outcome: StepOutcome = {
     seq: ev.seq,
     toolId: ev.toolId,
+    releaseCritical: registryReleaseCritical(entry),
     intendedEffect,
     observedExecution,
     verificationRequest: exec.verificationRequest,
@@ -224,6 +233,7 @@ async function verifyToolObservedStepAsync(options: {
     const outcome: StepOutcome = {
       seq: ev.seq,
       toolId: ev.toolId,
+      releaseCritical: false,
       intendedEffect: intendedEffectNarrative(undefined, ev.toolId, ev.params),
       observedExecution: observedExecutionFromParams(ev.params),
       verificationRequest: null,
@@ -245,6 +255,7 @@ async function verifyToolObservedStepAsync(options: {
     const outcome: StepOutcome = {
       seq: ev.seq,
       toolId: ev.toolId,
+      releaseCritical: registryReleaseCritical(entry),
       intendedEffect,
       observedExecution,
       verificationRequest: null,
@@ -263,6 +274,7 @@ async function verifyToolObservedStepAsync(options: {
   const outcome: StepOutcome = {
     seq: ev.seq,
     toolId: ev.toolId,
+    releaseCritical: registryReleaseCritical(entry),
     intendedEffect,
     observedExecution,
     verificationRequest: exec.verificationRequest,

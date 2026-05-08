@@ -522,6 +522,7 @@
           "required": [
             "seq",
             "toolId",
+            "releaseCritical",
             "intendedEffect",
             "observedExecution",
             "verificationRequest",
@@ -534,6 +535,10 @@
           "properties": {
             "seq": { "type": "integer", "minimum": 0 },
             "toolId": { "type": "string" },
+            "releaseCritical": {
+              "type": "boolean",
+              "description": "True when the tools registry marks this toolId as releaseCritical."
+            },
             "intendedEffect": { "$ref": "#/$defs/intendedEffect" },
             "observedExecution": { "$ref": "#/$defs/observedExecution" },
             "verificationRequest": {

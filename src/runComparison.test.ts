@@ -27,6 +27,7 @@ function sqlRowStep(
   verified: boolean,
 ): StepOutcome {
   return {
+    releaseCritical: false,
     seq,
     toolId,
     intendedEffect: { narrative: "" },
@@ -95,6 +96,7 @@ describe("runComparison", () => {
 
   it("logicalStepKeyFromStep: related_exists matchEq is canonical under permutation", () => {
     const base = {
+      releaseCritical: false,
       seq: 0,
       toolId: "t",
       intendedEffect: { narrative: "" },
@@ -249,6 +251,7 @@ describe("runComparison", () => {
       reasons: [{ code: "ROW_ABSENT", message: "m" }],
     };
     const step: StepOutcome = {
+      releaseCritical: false,
       seq: 0,
       toolId: "t",
       intendedEffect: { narrative: "" },
@@ -291,6 +294,7 @@ describe("runComparison", () => {
 
   it("bucket B null-request multiset diff", () => {
     const nullFail = (seq: number, tool: string): StepOutcome => ({
+      releaseCritical: false,
       seq,
       toolId: tool,
       intendedEffect: { narrative: "" },
@@ -383,6 +387,7 @@ describe("runComparison", () => {
       verificationRunContext: createEmptyVerificationRunContext(),
       steps: [
         {
+          releaseCritical: false,
           seq: 0,
           toolId: "t",
           intendedEffect: { narrative: "" },

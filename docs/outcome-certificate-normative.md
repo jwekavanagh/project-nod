@@ -30,11 +30,12 @@ This document is the **sole product authority** for the **Outcome Certificate**:
 | `runKind` | `contract_sql` (registry-backed), `contract_sql_langgraph_checkpoint_trust` (LangGraph checkpoint trust; v3 NDJSON wire only), or `quick_preview` (inferred). |
 | `checkpointVerdicts` | Optional; present on eligible LangGraph checkpoint trust runs after SQL. Omitted for ineligible LangGraph (A2). |
 | `stateRelation` | `matches_expectations` \| `does_not_match` \| `not_established` — SQL vs expectations only. |
+| **`releaseCriticalVerdict`** | **`trusted`** \| **`not_trusted`** \| **`unknown`** — rollup over **registry `releaseCritical`** steps only (same three labels as global verdict semantics). |
 | `highStakesReliance` | `permitted` \| `prohibited` — may this artifact gate ship / bill / compliance decisions. |
 | `relianceRationale` | One mandatory human string explaining `highStakesReliance`. |
 | `intentSummary` | Stakeholder-safe summary of intended verification scope. |
 | `explanation` | `{ headline, details[] }` with stable `code` + `message` pairs (forensics). |
-| `steps` | Per-step plain language: declared action, expected outcome, observed outcome. |
+| `steps` | Per-step plain language: declared action, expected outcome, observed outcome; each step includes **`seq`**, **`toolId`**, and **`releaseCritical`** (boolean, from tools registry at verify time). Stable automation tuple **(`workflowId` from certificate root, `seq`, `toolId`)**. |
 | `humanReport` | Byte-stable human rendering including the **`=== evidence_completeness ===`** … **`=== end evidence_completeness ===`** anchored block alongside the structural truth summary. |
 | **`evidenceCompleteness`** | **Required.** Canonical convergence object: blocker category (`blockerCategory`), quick rollup signal (`quickSignal`), verified/unverified claims, missing inputs (`missingInputs[]`), summary next actions (`nextActions`), complete failed-check remediation (`remediationItems[]`), and primary conditional rerun path (`rerunPath`). Schema fragment: **`schemas/evidence-completeness-v1.schema.json`**. |
 
