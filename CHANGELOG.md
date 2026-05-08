@@ -1,3 +1,9 @@
+## [7.7.0](https://github.com/jwekavanagh/agentskeptic/compare/v7.6.1...v7.7.0) (2026-05-08)
+
+### Features
+
+* **ci:** decision-grade GitHub Actions visibility (MVP) ([#74](https://github.com/jwekavanagh/agentskeptic/issues/74)) ([fab84f9](https://github.com/jwekavanagh/agentskeptic/commit/fab84f9a2facfedf8436c61d59e9299bbbe29c02))
+
 ## [7.6.1](https://github.com/jwekavanagh/agentskeptic/compare/v7.6.0...v7.6.1) (2026-05-07)
 
 ### Bug Fixes
