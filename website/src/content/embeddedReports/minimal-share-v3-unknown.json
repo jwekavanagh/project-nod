@@ -6,6 +6,7 @@
     "runKind": "contract_sql",
     "stateRelation": "not_established",
     "highStakesReliance": "prohibited",
+    "releaseCriticalVerdict": "unknown",
     "relianceRationale": "Verification could not be completed or could not establish a determinate match (fixture).",
     "intentSummary": "NOT TRUSTED: Verification is incomplete; fixture.",
     "explanation": {

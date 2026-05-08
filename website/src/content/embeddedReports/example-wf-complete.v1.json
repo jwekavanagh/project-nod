@@ -17,6 +17,7 @@
       {
         "seq": 0,
         "toolId": "crm.upsert_contact",
+        "releaseCritical": false,
         "intendedEffect": {
           "narrative": "Upsert contact \"c_ok\" with fields {\"name\":\"Alice\",\"status\":\"active\"}"
         },
@@ -76,6 +77,7 @@
         {
           "seq": 0,
           "toolId": "crm.upsert_contact",
+          "releaseCritical": false,
           "outcomeLabel": "VERIFIED",
           "observations": {
             "evaluatedOrdinal": 1,

@@ -6,6 +6,7 @@
     "runKind": "contract_sql",
     "stateRelation": "matches_expectations",
     "highStakesReliance": "permitted",
+    "releaseCriticalVerdict": "trusted",
     "relianceRationale": "Contract verification completed with matches_expectations; high-stakes reliance permitted per normative table.",
     "intentSummary": "TRUSTED: Fixture trusted summary.",
     "explanation": {
@@ -15,6 +16,7 @@
     "steps": [
       {
         "seq": 0,
+        "releaseCritical": false,
         "toolId": "crm.upsert_contact",
         "declaredAction": "Upsert contact",
         "expectedOutcome": "Row present with required fields",
