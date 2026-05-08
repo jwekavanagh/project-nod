@@ -4,6 +4,7 @@ examples/events.ndjson text eol=lf
 test/fixtures/corpus-negative/** text eol=lf
 test/fixtures/debug-ui-compare/** text eol=lf
 test/fixtures/outcome-ci-surface/** text eol=lf
+test/fixtures/signed-bundle-v2/** text eol=lf
 
 # verification-truth gating surfaces (deterministic bytes on Ubuntu runners)
 .github/actions/** text eol=lf
