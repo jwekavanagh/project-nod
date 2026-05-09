@@ -1,3 +1,9 @@
+## [7.9.3](https://github.com/jwekavanagh/agentskeptic/compare/v7.9.2...v7.9.3) (2026-05-09)
+
+### Bug Fixes
+
+* **ci:** stale error-code paths, OSS pin, and npm script cleanup ([#80](https://github.com/jwekavanagh/agentskeptic/issues/80)) ([aaa5779](https://github.com/jwekavanagh/agentskeptic/commit/aaa57792f605ce28f6d9bd16fd5b35972f08eb68))
+
 ## [7.9.2](https://github.com/jwekavanagh/agentskeptic/compare/v7.9.1...v7.9.2) (2026-05-08)
 
 ### Bug Fixes
