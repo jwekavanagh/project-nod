@@ -27,11 +27,21 @@
 | --- | --- | --- | --- | --- |
 | 1 | step | orders.insert | `STATE_MISMATCH`, `OBJECT_MISSING` | Fix downstream database or service state to match declared expectations, then rerun verify. |
 
-### Coverage snapshot
+### Coverage snapshot (claim counts; not modality coverage)
 
 - checked_claims_count: `1`
 - not_checked_claims_count: `1`
 - missing_inputs_count: `1`
+
+### Witness coverage
+
+- exercised_modalities: `sql`
+- fully_satisfied_modalities: _(none)_
+- not_fully_satisfied_modalities: `sql`
+- support_label: `coverage_incomplete_or_failed`
+
+> `failing_witness_kinds` below is derived only from **failing** reason-code prefixes (legacy GitHub Actions output). It is **not** the same as modalities exercised on trusted runs.
+
 
 - failing_witness_kinds: `object_storage`, `sql`
 

@@ -29,6 +29,13 @@
     "nextActions": [
       { "id": "fix_langgraph_eligibility", "text": "Repair NDJSON capture so checkpoint trust receives schema-valid schemaVersion 3 tool_observed lines for this workflow, then rerun verify." }
     ],
+    "witnessCoverage": {
+      "schemaVersion": 1,
+      "exercisedKinds": [],
+      "fullySatisfiedKinds": [],
+      "notFullySatisfiedKinds": [],
+      "supportLabel": "thin_or_unknown"
+    },
     "rerunReadiness": "fix_inputs_before_rerun",
     "rerunPath": {
       "type": "after_input_fix_verify",

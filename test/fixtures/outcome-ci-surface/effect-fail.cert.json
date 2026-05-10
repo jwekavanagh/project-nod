@@ -36,6 +36,13 @@
     "nextActions": [
       { "id": "rerun_after_storage_fix", "text": "Reupload receipt and rerun verify." }
     ],
+    "witnessCoverage": {
+      "schemaVersion": 1,
+      "exercisedKinds": ["sql", "vector_document"],
+      "fullySatisfiedKinds": ["sql"],
+      "notFullySatisfiedKinds": ["vector_document"],
+      "supportLabel": "coverage_incomplete_or_failed"
+    },
     "rerunReadiness": "ready_after_state_fix",
     "rerunPath": {
       "type": "after_state_fix_verify",

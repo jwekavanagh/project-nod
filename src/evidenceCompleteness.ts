@@ -6,6 +6,8 @@ import type { EvidenceGapPrimary, RemediationDecision, RemediationItem, RerunPat
 import { userPhraseForReasonCode } from "./verificationUserPhrases.js";
 import { redactEvidenceString } from "./redactEvidenceString.js";
 import { classifyWorkflowBlocker, collectWorkflowCodes } from "./workflowFailureSignals.js";
+import { buildWitnessCoverageFromSteps } from "./witnessCoverageRollup.js";
+import type { WitnessCoverageRollupJson } from "./witnessCoverageRollup.js";
 
 export type { EvidenceGapPrimary } from "./types.js";
 
@@ -30,6 +32,8 @@ export type EvidenceCompletenessJson = {
   rerunReadiness?: RerunReadiness;
   rerunPath?: RerunPath;
   remediationItems?: RemediationItem[];
+  /** Contract / LangGraph certificate producers emit rollup; optional for legacy or quick previews. */
+  witnessCoverage?: WitnessCoverageRollupJson;
 };
 
 function capList(lines: string[], max: number, eachMax: number): string[] {
@@ -86,6 +90,7 @@ export function buildEvidenceCompletenessFromWorkflowResult(
     unverifiedClaims: capList(unverified, 24, 160),
     missingInputs,
     nextActions,
+    witnessCoverage: buildWitnessCoverageFromSteps(result.steps),
   };
   if (!(result.status === "complete" && truth.failureAnalysis === null)) {
     out.rerunReadiness = decision.rerunReadiness;
@@ -227,6 +232,7 @@ export function buildEvidenceCompletenessForIneligibleLangGraph(params: {
       meaningfulWhen: "The corrected inputs express the expected state the verifier should check.",
       readinessLabel: "Rerun verify after registry, events, tool parameters, or verification inputs are corrected.",
     },
+    witnessCoverage: buildWitnessCoverageFromSteps([]),
     remediationItems: [
       {
         id: "quick_ingest",

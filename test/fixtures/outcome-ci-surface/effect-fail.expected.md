@@ -28,11 +28,21 @@
 | 2 | effect | effect: receipt_doc | `VECTOR_NOT_FOUND` | Align multi-effect registry coverage or split steps so each effect is verifiable, then rerun verify. |
 | 2 | effect | effect: http_receipt | `HTTP_WITNESS_STATUS_MISMATCH` | Restore read-only HTTP witness connectivity then rerun verify. |
 
-### Coverage snapshot
+### Coverage snapshot (claim counts; not modality coverage)
 
 - checked_claims_count: `0`
 - not_checked_claims_count: `0`
 - missing_inputs_count: `1`
+
+### Witness coverage
+
+- exercised_modalities: `sql`, `vector_document`
+- fully_satisfied_modalities: `sql`
+- not_fully_satisfied_modalities: `vector_document`
+- support_label: `coverage_incomplete_or_failed`
+
+> `failing_witness_kinds` below is derived only from **failing** reason-code prefixes (legacy GitHub Actions output). It is **not** the same as modalities exercised on trusted runs.
+
 
 - failing_witness_kinds: `http_witness`, `vector_document`
 

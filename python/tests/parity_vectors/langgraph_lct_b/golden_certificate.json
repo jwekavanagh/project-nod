@@ -36,7 +36,19 @@
         "id": "none",
         "text": "No further verification action is required for this outcome under the configured rules."
       }
-    ]
+    ],
+    "witnessCoverage": {
+      "schemaVersion": 1,
+      "exercisedKinds": [
+        "sql"
+      ],
+      "fullySatisfiedKinds": [
+        "sql"
+      ],
+      "notFullySatisfiedKinds": [],
+      "supportLabel": "sql_only_contract",
+      "summaryLine": "[SQL-only contract checks satisfied.] modalities_exercised=sql modalities_fully_satisfied=sql modalities_not_fully_satisfied=(none)"
+    }
   },
   "failureSpine": {
     "schemaVersion": 1,

@@ -44,6 +44,13 @@
     "nextActions": [
       { "id": "fix_state", "text": "Reconcile orders table to include id=42, then rerun verify." }
     ],
+    "witnessCoverage": {
+      "schemaVersion": 1,
+      "exercisedKinds": ["sql"],
+      "fullySatisfiedKinds": [],
+      "notFullySatisfiedKinds": ["sql"],
+      "supportLabel": "coverage_incomplete_or_failed"
+    },
     "rerunReadiness": "ready_after_state_fix",
     "rerunPath": {
       "type": "after_state_fix_verify",

@@ -2,6 +2,56 @@
   "$id": "https://agentskeptic.com/schemas/evidence-completeness-v1.schema.json",
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "title": "EvidenceCompletenessV1",
+  "$defs": {
+    "witnessRollupKindString": {
+      "type": "string",
+      "enum": ["sql", "http_witness", "object_storage", "vector_document", "mongo_document", "state_witness"]
+    },
+    "witnessCoverageV1": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schemaVersion",
+        "exercisedKinds",
+        "fullySatisfiedKinds",
+        "notFullySatisfiedKinds",
+        "supportLabel"
+      ],
+      "properties": {
+        "schemaVersion": { "type": "integer", "const": 1 },
+        "exercisedKinds": {
+          "type": "array",
+          "maxItems": 24,
+          "items": { "$ref": "#/$defs/witnessRollupKindString" }
+        },
+        "fullySatisfiedKinds": {
+          "type": "array",
+          "maxItems": 24,
+          "items": { "$ref": "#/$defs/witnessRollupKindString" }
+        },
+        "notFullySatisfiedKinds": {
+          "type": "array",
+          "maxItems": 24,
+          "items": { "$ref": "#/$defs/witnessRollupKindString" }
+        },
+        "supportLabel": {
+          "type": "string",
+          "enum": [
+            "meaningful_multi_witness",
+            "sql_only_contract",
+            "single_non_sql_contract",
+            "thin_or_unknown",
+            "coverage_incomplete_or_failed"
+          ]
+        },
+        "summaryLine": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 320
+        }
+      }
+    }
+  },
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -261,6 +311,9 @@
           "text": { "type": "string", "minLength": 1, "maxLength": 500 }
         }
       }
+    },
+    "witnessCoverage": {
+      "$ref": "#/$defs/witnessCoverageV1"
     }
   }
 }

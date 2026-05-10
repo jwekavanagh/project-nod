@@ -46,6 +46,14 @@
       "meaningfulWhen": "The corrected inputs express the expected state the verifier should check.",
       "readinessLabel": "Rerun verify after registry, events, tool parameters, or verification inputs are corrected."
     },
+    "witnessCoverage": {
+      "schemaVersion": 1,
+      "exercisedKinds": [],
+      "fullySatisfiedKinds": [],
+      "notFullySatisfiedKinds": [],
+      "supportLabel": "thin_or_unknown",
+      "summaryLine": "No verification modalities exercised on captured steps with resolved verification targets."
+    },
     "remediationItems": [
       {
         "id": "quick_ingest",

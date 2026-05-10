@@ -52,14 +52,15 @@ After every composite run, the action writes a single block to **`$GITHUB_STEP_S
 1. Header: `mode`, `cli_exit`, `truth_check_verdict`, `release_critical_truth_check_verdict` (from certificate when parsed), `state_relation`, `high_stakes_reliance`, plus **`### Release-critical gate`** with the same critical verdict for skimmers.
 2. **Failure spine** block from `failureSpine`: `trustDecision`, `summary`, `actionableFailure` (`category`, `severity`, `recommendedAction`, `automationSafe`), `primaryCodes`, `rerunGuidance`, `source`.
 3. **Failing steps** Markdown table built from `evidenceCompleteness.remediationItems` rows with `scope = "step"` or `scope = "effect"` (falls back to `evidenceCompleteness.unverifiedClaims` if remediation enrichment is absent).
-4. **Coverage snapshot** section with certificate-derived counts:
+4. **Coverage snapshot (claim counts; not modality coverage)** with certificate-derived counts:
    - `checked_claims_count` = `evidenceCompleteness.verifiedClaims.length`
    - `not_checked_claims_count` = `evidenceCompleteness.unverifiedClaims.length`
    - `missing_inputs_count` = `evidenceCompleteness.missingInputs.length`
-5. `failing_witness_kinds` line: comma-list derived from reason-code prefixes (`HTTP_WITNESS_*`, `OBJECT_*`, `VECTOR_*`, `MONGO_*`, `STATE_WITNESS_*` → `http_witness`, `object_storage`, `vector_document`, `mongo_document`, `state_witness`; else `sql`).
-6. (LangGraph runs only) `### LangGraph checkpoint verdicts` table from `checkpointVerdicts`.
-7. **Outcome Certificate artifact** pointer (artifact name and file name).
-8. Collapsed `<details>` containing the **last 80 lines** of CLI stderr.
+5. **`### Witness coverage`** summarises **which verifier modalities ran** (`evidenceCompleteness.witnessCoverage` when present: exercised / fully satisfied / not fully satisfied modality strings + `supportLabel`). On certificates from older CLI builds omitting `witnessCoverage`, the summary renders a short **“(witness coverage omitted — rerun with current CLI)”** sentinel. This section answers “what realities were exercised?” including on **trusted** runs.
+6. `failing_witness_kinds` line in the Markdown body: comma-list derived from **failing** reason-code prefixes only (`HTTP_WITNESS_*`, `OBJECT_*`, `VECTOR_*`, `MONGO_*`, `STATE_WITNESS_*` → `http_witness`, `object_storage`, `vector_document`, `mongo_document`, `state_witness`; else mapped to `sql`). **Do not confuse this with modality coverage:** trusted runs intentionally show no failing witness-derived kinds while still listing exercised modalities above.
+7. (LangGraph runs only) `### LangGraph checkpoint verdicts` table from `checkpointVerdicts`.
+8. **Outcome Certificate artifact** pointer (artifact name and file name).
+9. Collapsed `<details>` containing the **last 80 lines** of CLI stderr.
 
 If the CLI stdout did not parse as a valid `schemaVersion: 3` Outcome Certificate (malformed, oversized > 256 KiB, or a CLI error envelope), the summary is replaced by a single **operational** block that points at stderr and (when present) decodes the [CLI error envelope](../schemas/cli-error-envelope.schema.json) into a human-readable spine.
 
@@ -77,7 +78,7 @@ Downstream jobs branch on these without `grep`/`jq`:
 | `release-critical-verdict` | `outcomeCertificate.releaseCriticalVerdict` (`trusted` / `not_trusted` / `unknown`) | non-certificate run |
 | `failing-tool-ids` | comma-separated, sorted, unique tool IDs of failing remediation rows | trusted or non-certificate run |
 | `primary-reason-codes` | comma-separated `failureSpine.primaryCodes` (cap 24, sorted) | non-certificate run |
-| `failing-witness-kinds` | comma-separated witness kinds derived from reason-code prefixes | trusted or non-certificate run |
+| `failing-witness-kinds` | comma-separated witness kinds derived from **failing** reason-code prefixes | **trusted** certificates use an empty output (failure-free); omit on non-certificate run |
 | `recommended-action` | `failureSpine.actionableFailure.recommendedAction` | non-certificate run |
 | `automation-safe` | `"true"` / `"false"` from `failureSpine.actionableFailure.automationSafe` | non-certificate run |
 | `certificate-path` | absolute path to `outcome-certificate.json` on the runner | non-certificate run (no artifact written) |

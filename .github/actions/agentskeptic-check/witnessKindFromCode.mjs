@@ -1,8 +1,7 @@
-// Witness kind taxonomy mirror.
-// Source of truth for the prefix → witness mapping is src/wireReasonCodes.ts
-// (HTTP_WITNESS_*, OBJECT_*, VECTOR_*, MONGO_*, STATE_WITNESS_*).
-// This file is a tiny standalone copy so the composite action stays self-contained
-// when consumed via `uses: OWNER/agentskeptic/.github/actions/agentskeptic-check@ref`.
+// Failure-code-prefix → witness taxonomy (composite action standalone copy).
+// Used only for structured output `failing-witness-kinds` (derived from spine / row codes).
+// Modalities exercised on trusted runs live on `certificate.evidenceCompleteness.witnessCoverage`
+// (see `src/witnessCoverageRollup.ts`; prefix mapping roots in src/wireReasonCodes.ts codes).
 
 export const WITNESS_KIND_SQL = "sql";
 export const WITNESS_KIND_HTTP = "http_witness";

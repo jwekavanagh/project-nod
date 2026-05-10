@@ -150,6 +150,22 @@ test("trusted certificate: writes artifact, populates structured outputs, summar
   compareGolden(normalizePaths(r.outputsRaw, r.artifactDir), golden.outputs);
 });
 
+test("witness coverage sentinel when certificate omits evidenceCompleteness.witnessCoverage", () => {
+  const raw = JSON.parse(readFileSync(join(fixturesDir, "trusted.cert.json"), "utf8"));
+  const { witnessCoverage: _drop, ...ecRest } = raw.evidenceCompleteness;
+  const stripped = JSON.stringify({ ...raw, evidenceCompleteness: ecRest });
+  const tmp = mkdtempSync(join(tmpdir(), "as-omit-wc-"));
+  const stdoutFile = join(tmp, "stripped.cert.json");
+  writeFileSync(stdoutFile, stripped, "utf8");
+
+  const r = runRenderer({ stdoutFile, stderrFile: join(fixturesDir, "trusted.stderr"), verdict: "trusted" });
+  assert.equal(r.rc, 0, r.stderr);
+  assert.ok(
+    /witness coverage omitted/.test(r.summary),
+    `expected omission sentinel when witnessCoverage omitted; summary head was:\n${r.summary.slice(0, 900)}`,
+  );
+});
+
 test("critical-advisory-pass certificate: global mismatch but release-critical rollup trusted", () => {
   const stdoutFile = join(fixturesDir, "critical-advisory-pass.cert.json");
   const stderrFile = join(fixturesDir, "critical-advisory-pass.stderr");

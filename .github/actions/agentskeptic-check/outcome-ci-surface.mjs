@@ -356,13 +356,55 @@ function fmtWitnessKinds(witnessKinds) {
   return `- failing_witness_kinds: ${witnessKinds.map((k) => `\`${k}\``).join(", ")}`;
 }
 
+function fmtCanonicalKindList(arr) {
+  if (!Array.isArray(arr) || arr.length === 0) return "_(none)_";
+  return arr.map((k) => `\`${escapeTableCell(String(k))}\``).join(", ");
+}
+
+/**
+ * Authoritative exercised / satisfied modalities from certificate JSON (Slice 1 SSOT).
+ */
+function fmtWitnessCoverage(cert) {
+  const ec = cert.evidenceCompleteness ?? {};
+  const wc = ec.witnessCoverage;
+  if (!wc || typeof wc !== "object") {
+    return [
+      "### Witness coverage",
+      "",
+      "- _(witness coverage omitted — rerun with current CLI)_",
+      "",
+    ].join("\n");
+  }
+  const exercised = fmtCanonicalKindList(wc.exercisedKinds);
+  const full = fmtCanonicalKindList(wc.fullySatisfiedKinds);
+  const bad = fmtCanonicalKindList(wc.notFullySatisfiedKinds);
+  const label = typeof wc.supportLabel === "string" ? wc.supportLabel : "";
+  const lines = [
+    "### Witness coverage",
+    "",
+    `- exercised_modalities: ${exercised}`,
+    `- fully_satisfied_modalities: ${full}`,
+    `- not_fully_satisfied_modalities: ${bad}`,
+    `- support_label: \`${escapeTableCell(label)}\``,
+  ];
+  if (typeof wc.summaryLine === "string" && wc.summaryLine.length > 0) {
+    lines.push(`- summary: ${oneLine(truncateString(wc.summaryLine, 400))}`);
+  }
+  lines.push(
+    "",
+    "> `failing_witness_kinds` below is derived only from **failing** reason-code prefixes (legacy GitHub Actions output). It is **not** the same as modalities exercised on trusted runs.",
+    "",
+  );
+  return lines.join("\n");
+}
+
 function fmtCoverageSnapshot(cert) {
   const ec = cert.evidenceCompleteness ?? {};
   const checked = Array.isArray(ec.verifiedClaims) ? ec.verifiedClaims.length : 0;
   const notChecked = Array.isArray(ec.unverifiedClaims) ? ec.unverifiedClaims.length : 0;
   const missing = Array.isArray(ec.missingInputs) ? ec.missingInputs.length : 0;
   return [
-    "### Coverage snapshot",
+    "### Coverage snapshot (claim counts; not modality coverage)",
     "",
     `- checked_claims_count: \`${checked}\``,
     `- not_checked_claims_count: \`${notChecked}\``,
@@ -544,6 +586,7 @@ function main() {
     sections.push("", fmtSpineBlock(spine));
     sections.push("", fmtFailingStepsTable(rows));
     sections.push("", fmtCoverageSnapshot(cert));
+    sections.push("", fmtWitnessCoverage(cert));
     sections.push("", fmtWitnessKinds(witnessKinds));
     const cps = fmtCheckpointVerdicts(cert);
     if (cps) sections.push("", cps);

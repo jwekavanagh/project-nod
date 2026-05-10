@@ -51,6 +51,18 @@
         "text": "Align registry JSON with events and database, then rerun verify."
       }
     ],
+    "witnessCoverage": {
+      "schemaVersion": 1,
+      "exercisedKinds": [
+        "sql"
+      ],
+      "fullySatisfiedKinds": [],
+      "notFullySatisfiedKinds": [
+        "sql"
+      ],
+      "supportLabel": "coverage_incomplete_or_failed",
+      "summaryLine": "[One or more modalities incomplete, partial, mismatched, or failed.] modalities_exercised=sql modalities_fully_satisfied= modalities_not_fully_satisfied=sql"
+    },
     "rerunReadiness": "reconcile_state_before_rerun",
     "rerunPath": {
       "type": "after_manual_review_verify",

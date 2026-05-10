@@ -55,7 +55,14 @@
     ],
     "nextActions": [
       { "id": "none", "text": "No further action required." }
-    ]
+    ],
+    "witnessCoverage": {
+      "schemaVersion": 1,
+      "exercisedKinds": ["sql"],
+      "fullySatisfiedKinds": ["sql"],
+      "notFullySatisfiedKinds": [],
+      "supportLabel": "sql_only_contract"
+    }
   },
   "failureSpine": {
     "schemaVersion": 1,

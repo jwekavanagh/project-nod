@@ -26,11 +26,21 @@
 _(no failing steps)_
 
 
-### Coverage snapshot
+### Coverage snapshot (claim counts; not modality coverage)
 
 - checked_claims_count: `0`
 - not_checked_claims_count: `1`
 - missing_inputs_count: `1`
+
+### Witness coverage
+
+- exercised_modalities: _(none)_
+- fully_satisfied_modalities: _(none)_
+- not_fully_satisfied_modalities: _(none)_
+- support_label: `thin_or_unknown`
+
+> `failing_witness_kinds` below is derived only from **failing** reason-code prefixes (legacy GitHub Actions output). It is **not** the same as modalities exercised on trusted runs.
+
 
 - failing_witness_kinds: `sql`
 
