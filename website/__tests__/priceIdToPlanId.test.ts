@@ -4,7 +4,6 @@ import {
   flatPriceIdFromSubscription,
   overagePriceIdToPlanId,
   priceIdToPlanId,
-  primarySubscriptionPriceId,
   stripePriceEnvCandidates,
 } from "@/lib/priceIdToPlanId";
 
@@ -106,13 +105,5 @@ describe("flatPriceIdFromSubscription", () => {
       },
     };
     expect(flatPriceIdFromSubscription(sub)).toBe("price_f_b");
-  });
-});
-
-/** Guard: do not reintroduce items[0]-only for plan mapping. */
-describe("primarySubscriptionPriceId (alias)", () => {
-  it("delegates to flat price resolution", () => {
-    const sub = { items: { data: [{ price: { id: "price_only" } }] } };
-    expect(primarySubscriptionPriceId(sub)).toBe("price_only");
   });
 });

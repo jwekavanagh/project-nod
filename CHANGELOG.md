@@ -81,10 +81,13 @@
 ### Features
 
 * **verify / ci:** optional registry **`releaseCritical`** per tool; Outcome Certificate v3 **`releaseCriticalVerdict`** + per-step **`releaseCritical`**; CLI stderr **`release_critical_truth_check_verdict:`** after **`truth_check_verdict:`**; composite **`fail-on: critical_not_trusted_or_unknown`** and **`release-critical-verdict`** output.
+* **maintenance:** removed unused root dependency **`ts-morph`**; removed deprecated website helper **`primarySubscriptionPriceId`** (use **`flatPriceIdFromSubscription`**); aligned **`examples/github-actions/agentskeptic-check.yml`** **`AGENTSKEPTIC_CI_PACKAGE`** pin to root **`package.json`** version.
 
 ### ⚠ BREAKING CHANGES
 
 * **web / commercial API:** **`GET /api/v1/governance/export`** emits **`GovernanceAuditBundleV3` only (`schemaVersion: 3`)** with **`evidenceSlices`** keyed by **`governance_evidence` ids**. **`GovernanceAuditBundleV2`**, **`decisionEvidenceExport`**, and **`hosted_not_recorded`** are removed from contract output. Persisted **`governance_evidence.certificate_json`** must be Outcome Certificate **v3**: invalid rows or mismatched stored fingerprints (**`certificate_sha256` / `material_truth_sha256`**) yield **HTTP 500** (**`CORRUPTED_EVIDENCE_ROW`**).
+* **`agentskeptic/governanceEvidence`:** removed deprecated **`MaterialTruthV1`** and **`materialTruthProjectionV1`** — use **`MaterialTruthV2`** and **`materialTruthProjectionFromCertificate`**.
+* **shipped `schemas/`:** removed **`material-truth-v1.schema.json`** and the **`material-truth-v1`** AJV validator name — only **`material-truth-v2`** is supported for material-truth validation.
 
 ### Migration
 
