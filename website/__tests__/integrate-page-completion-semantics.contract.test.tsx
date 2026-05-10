@@ -35,7 +35,7 @@ describe("/integrate completion semantics (RTL)", () => {
     expect(h2s.map((h) => h.textContent)).toEqual([
       "First proof: contract truth check",
       "Before you run it",
-      "What a green run proves",
+      "Reading the verdict",
       "Next steps",
     ]);
     const truthPre = within(main).getByTestId("integrate-truth-check-commands");
