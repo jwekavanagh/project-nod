@@ -31,9 +31,6 @@ export type MaterialTruthV2 = {
   checkpointVerdicts: MaterialTruthCheckpointVerdict[];
 };
 
-/** @deprecated Prefer `MaterialTruthV2` / `materialTruthProjectionFromCertificate`. */
-export type MaterialTruthV1 = MaterialTruthV2;
-
 function sortedUniqueStrings(values: string[]): string[] {
   return [...new Set(values)].sort((a, b) => a.localeCompare(b));
 }
@@ -85,11 +82,6 @@ export function canonicalCertificateSha256(certificate: OutcomeCertificateV1): s
 }
 
 export function materialTruthProjectionFromCertificate(certificate: OutcomeCertificateV1): MaterialTruthV2 {
-  return buildMaterialTruthProjectionFromCertificate(certificate);
-}
-
-/** @deprecated Use `materialTruthProjectionFromCertificate`. */
-export function materialTruthProjectionV1(certificate: OutcomeCertificateV1): MaterialTruthV2 {
   return buildMaterialTruthProjectionFromCertificate(certificate);
 }
 

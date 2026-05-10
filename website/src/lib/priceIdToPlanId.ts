@@ -161,12 +161,3 @@ export function flatPriceIdFromSubscription(sub: {
 
   return priceIdAt(0);
 }
-
-/**
- * @deprecated Use `flatPriceIdFromSubscription`; name kept for webhook/subscription call sites.
- */
-export function primarySubscriptionPriceId(
-  sub: Parameters<typeof flatPriceIdFromSubscription>[0],
-): string | null {
-  return flatPriceIdFromSubscription(sub);
-}

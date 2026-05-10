@@ -100,7 +100,6 @@ export type SchemaValidatorName =
   | "local-run-history-index-v1"
   | "trust-decision-record-v1"
   | "trust-certificate-snapshot-v1"
-  | "material-truth-v1"
   | "material-truth-v2"
   | "decision-evidence-bundle-manifest-v1"
   | "decision-evidence-human-layer-v1"
@@ -258,8 +257,6 @@ export function loadSchemaValidator(name: SchemaValidatorName): ValidateFunction
     case "trust-decision-record-v1":
       compileSchemaFile("trust-certificate-snapshot-v1", "trust-certificate-snapshot-v1.schema.json");
       return compileSchemaFile(name, "trust-decision-record-v1.schema.json");
-    case "material-truth-v1":
-      return compileSchemaFile(name, "material-truth-v1.schema.json");
     case "material-truth-v2":
       return compileSchemaFile(name, "material-truth-v2.schema.json");
     case "decision-evidence-bundle-manifest-v1":
