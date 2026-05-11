@@ -310,6 +310,8 @@ test("action.yml declares all structured outputs and the upload-artifact post st
     "agentskeptic-outcome-certificate",
     "if-no-files-found: ignore",
     "if: always()",
+    "enforce-coverage-budget:",
+    "INPUT_ENFORCE_COVERAGE_BUDGET:",
   ]) {
     assert.ok(body.includes(needle), `action.yml is missing: ${needle}`);
   }

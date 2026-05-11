@@ -26,6 +26,13 @@ import {
   formatContractVerifyStderrForStderrLine,
   formatContractVerifyStderrForStderrWrite,
 } from "../decisionEvidenceHumanLayer.js";
+import { baseExitFromStateRelation, resolveFinalExitCode } from "../coverageBudgetExit.js";
+import {
+  evaluateCoverageBudgetPhaseB,
+  writeCoverageBudgetMachineLinesToStderr,
+  type CoverageBudgetEvaluation,
+} from "../coverageBudget.js";
+import { loadCoverageBudgetPolicyPhaseA, type CoverageBudgetPhaseAResult } from "../coverageBudgetPolicy.js";
 import { maybePromptTelemetryAfterFirstOfflineSuccess } from "../telemetry/telemetryOfflineConsentPrompt.js";
 import { printProductActivationTelemetryStatusLineOnce } from "../telemetry/telemetryStatusLine.js";
 import { maybeEmitOssClaimTicketUrlToStderr } from "../telemetry/maybeEmitOssClaimTicketUrl.js";
@@ -150,6 +157,39 @@ export async function runBatchVerifyWithTelemetrySubcommand(
     });
   }
 
+  let budgetPhaseA: CoverageBudgetPhaseAResult = { active: false };
+  try {
+    budgetPhaseA = loadCoverageBudgetPolicyPhaseA({
+      explicitCoverageBudgetPath: parsedBatch.coverageBudgetPathArg,
+      projectPathResolved: parsedBatch.projectPath,
+    });
+  } catch (e) {
+    if (e instanceof TruthLayerError) {
+      writeCliError(e.code, e.message);
+      return exitAfterVerifyCliReceipt({
+        parsedBatch,
+        certificate: null,
+        exitCode: 3,
+        operationalCode: e.code,
+      });
+    }
+    throw e;
+  }
+  if (parsedBatch.enforceCoverageBudget === true && !budgetPhaseA.active) {
+    writeCliError(
+      CLI_OPERATIONAL_CODES.CLI_USAGE,
+      formatOperationalMessage(
+        "coverage-budget: --enforce-coverage-budget requires an active policy (--coverage-budget <path> or agentskeptic/coverage-budget.json beside --project).",
+      ),
+    );
+    return exitAfterVerifyCliReceipt({
+      parsedBatch,
+      certificate: null,
+      exitCode: 3,
+      operationalCode: CLI_OPERATIONAL_CODES.CLI_USAGE,
+    });
+  }
+
   const batchActivationRunId =
     process.env.AGENTSKEPTIC_RUN_ID?.trim() ||
     process.env.WORKFLOW_VERIFIER_RUN_ID?.trim() ||
@@ -252,10 +292,30 @@ export async function runBatchVerifyWithTelemetrySubcommand(
 
   const projectRoot = path.resolve(process.cwd());
 
-  function writeTruthCheckVerdictPrefixIfNeeded(certificate: OutcomeCertificateV1): void {
+  function evaluateBudgetOrNull(certificate: OutcomeCertificateV1): CoverageBudgetEvaluation | null {
+    if (!budgetPhaseA.active) return null;
+    return evaluateCoverageBudgetPhaseB({
+      certificate,
+      policy: budgetPhaseA.policy,
+      policyPath: budgetPhaseA.policyPath,
+    });
+  }
+
+  function writeTruthCheckVerdictPrefixIfNeeded(
+    certificate: OutcomeCertificateV1,
+    budgetEval: CoverageBudgetEvaluation | null,
+  ): void {
     if (!parsedBatch.invokedViaCheck) return;
     process.stderr.write(`truth_check_verdict: ${truthCheckVerdictFromCertificate(certificate)}\n`);
     process.stderr.write(`release_critical_truth_check_verdict: ${certificate.releaseCriticalVerdict}\n`);
+    if (budgetEval !== null) {
+      writeCoverageBudgetMachineLinesToStderr(budgetEval);
+    }
+  }
+
+  function humanBudgetPrefix(budgetEval: CoverageBudgetEvaluation | null): string | undefined {
+    if (parsedBatch.noHumanReport || budgetEval === null) return undefined;
+    return budgetEval.humanBlock;
   }
 
   async function finishCertificateTelemetryAndExit(
@@ -263,6 +323,8 @@ export async function runBatchVerifyWithTelemetrySubcommand(
     workflowResultForStderrHook: WorkflowResult | undefined,
     humanAndShareMode: "afterStandardRunner" | "ineligibleCertificateOnly",
   ): Promise<void> {
+    const budgetEval = evaluateBudgetOrNull(certificate);
+    const hb = humanBudgetPrefix(budgetEval);
     if (humanAndShareMode === "ineligibleCertificateOnly") {
       const shareOrigin = parsedBatch.shareReportOrigin;
       if (shareOrigin !== undefined) {
@@ -284,21 +346,21 @@ export async function runBatchVerifyWithTelemetrySubcommand(
             operationalCode: CLI_OPERATIONAL_CODES.SHARE_REPORT_FAILED,
           });
         }
-        writeTruthCheckVerdictPrefixIfNeeded(certificate);
+        writeTruthCheckVerdictPrefixIfNeeded(certificate, budgetEval);
         if (!parsedBatch.noHumanReport) {
-          console.error(formatContractVerifyStderrForStderrLine(certificate));
+          console.error(formatContractVerifyStderrForStderrLine(certificate, { prefixBeforeHuman: hb }));
         }
       } else if (!parsedBatch.noHumanReport) {
-        writeTruthCheckVerdictPrefixIfNeeded(certificate);
-        process.stderr.write(formatContractVerifyStderrForStderrWrite(certificate));
+        writeTruthCheckVerdictPrefixIfNeeded(certificate, budgetEval);
+        process.stderr.write(formatContractVerifyStderrForStderrWrite(certificate, { prefixBeforeHuman: hb }));
       } else {
-        writeTruthCheckVerdictPrefixIfNeeded(certificate);
+        writeTruthCheckVerdictPrefixIfNeeded(certificate, budgetEval);
       }
     } else if (!parsedBatch.noHumanReport && parsedBatch.shareReportOrigin === undefined) {
-      writeTruthCheckVerdictPrefixIfNeeded(certificate);
-      process.stderr.write(formatContractVerifyStderrForStderrWrite(certificate));
+      writeTruthCheckVerdictPrefixIfNeeded(certificate, budgetEval);
+      process.stderr.write(formatContractVerifyStderrForStderrWrite(certificate, { prefixBeforeHuman: hb }));
     } else if (parsedBatch.noHumanReport && parsedBatch.shareReportOrigin === undefined) {
-      writeTruthCheckVerdictPrefixIfNeeded(certificate);
+      writeTruthCheckVerdictPrefixIfNeeded(certificate, budgetEval);
     }
     const terminalStatus = terminalStatusFromCertificate(certificate);
     await postProductActivationEvent({
@@ -337,7 +399,16 @@ export async function runBatchVerifyWithTelemetrySubcommand(
     if (workflowResultForStderrHook !== undefined) {
       opts.stderrAppendBeforeStdout?.(workflowResultForStderrHook);
     }
-    emitOutcomeCertificateCliAndExitByStateRelation(certificate, verdictCliIoFor(certificate));
+    const baseExit = baseExitFromStateRelation(certificate.stateRelation);
+    const finalExit = resolveFinalExitCode({
+      baseExit,
+      budgetActive: budgetPhaseA.active,
+      budgetVerdict: budgetEval?.verdict ?? null,
+      enforceCoverageBudget: parsedBatch.enforceCoverageBudget === true,
+    });
+    emitOutcomeCertificateCliAndExitByStateRelation(certificate, verdictCliIoFor(certificate), {
+      exitCodeOverride: finalExit,
+    });
   }
 
   let langGraphEligibleLoad: LoadEventsResult | undefined;
@@ -368,6 +439,8 @@ export async function runBatchVerifyWithTelemetrySubcommand(
     const { certificate, workflowResult } = await runStandardVerifyWorkflowCliToTerminalResult({
       shareReportOrigin: parsedBatch.shareReportOrigin,
       truthCheckInvoked: parsedBatch.invokedViaCheck,
+      noHumanReport: parsedBatch.noHumanReport,
+      coverageBudgetPhaseA: budgetPhaseA,
       runVerify: parsedBatch.langgraphCheckpointTrust
         ? undefined
         : () =>

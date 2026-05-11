@@ -42,7 +42,7 @@
   },
   "shareableTerminalDemo": {
     "title": "Bundled terminal proof",
-    "transcript": "### Success (`wf_complete`) — canonical `agentskeptic check`\n\nstderr (first line): truth_check_verdict: trusted\nstdout (Outcome Certificate excerpt): {\"schemaVersion\":3,\"workflowId\":\"wf_complete\",\"runKind\":\"contract_sql\",\"stateRelation\":\"matches_expectations\"}\n\n### Failure (`wf_missing`)\n\nstderr (first line): truth_check_verdict: not_trusted\nHuman report then explains ROW_ABSENT (missing downstream row vs registry expectation).\nstdout (Outcome Certificate excerpt): {\"schemaVersion\":3,\"workflowId\":\"wf_missing\",\"runKind\":\"contract_sql\",\"stateRelation\":\"does_not_match\"}"
+    "transcript": "### Success (`wf_complete`) — canonical `agentskeptic check`\n\nstderr (first lines): truth_check_verdict: trusted, then release_critical_truth_check_verdict: trusted\nstdout (Outcome Certificate excerpt): {\"schemaVersion\":3,\"workflowId\":\"wf_complete\",\"runKind\":\"contract_sql\",\"stateRelation\":\"matches_expectations\"}\n\n### Failure (`wf_missing`)\n\nstderr (first line): truth_check_verdict: not_trusted\nHuman report then explains ROW_ABSENT (missing downstream row vs registry expectation).\nstdout (Outcome Certificate excerpt): {\"schemaVersion\":3,\"workflowId\":\"wf_missing\",\"runKind\":\"contract_sql\",\"stateRelation\":\"does_not_match\"}\n\nOptional coverage budgets: when configured (`--coverage-budget` or `agentskeptic/coverage-budget.json` beside `--project`), stderr adds `coverage_budget_verdict:` and `coverage_budget_detail:` after the two truth lines — see docs/integrate.md § Optional coverage budgets."
   },
   "cliFollowupLines": [
     "Context: {{ACQUISITION_URL}}",

@@ -1,0 +1,41 @@
+{
+  "$id": "https://agentskeptic.com/schemas/coverage-budget-v1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "CoverageBudgetV1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "workflows"],
+  "properties": {
+    "schemaVersion": { "type": "integer", "const": 1 },
+    "workflows": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 64,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["workflowId", "minimumFullySatisfiedKinds"],
+        "properties": {
+          "workflowId": { "type": "string", "minLength": 1, "maxLength": 512 },
+          "minimumFullySatisfiedKinds": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 6,
+            "uniqueItems": true,
+            "items": {
+              "type": "string",
+              "enum": [
+                "sql",
+                "http_witness",
+                "object_storage",
+                "vector_document",
+                "mongo_document",
+                "state_witness"
+              ]
+            }
+          }
+        }
+      }
+    }
+  }
+}

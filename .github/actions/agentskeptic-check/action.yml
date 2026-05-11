@@ -56,6 +56,12 @@ inputs:
     description: Additional CLI arguments appended to the command (shell word-splitting).
     required: false
     default: ""
+  enforce-coverage-budget:
+    description: >-
+      When the string 'true', pass --enforce-coverage-budget to agentskeptic check (v1: ignored for enforce mode).
+      Requires a coverage budget policy (--coverage-budget or agentskeptic/coverage-budget.json with --project).
+    required: false
+    default: "false"
 
 outputs:
   verdict:
@@ -120,6 +126,7 @@ runs:
         INPUT_PACKAGE: ${{ inputs.package }}
         INPUT_SHARE_REPORT_ORIGIN: ${{ inputs.share-report-origin }}
         INPUT_EXTRA_ARGS: ${{ inputs.extra-args }}
+        INPUT_ENFORCE_COVERAGE_BUDGET: ${{ inputs.enforce-coverage-budget }}
       run: bash "$GITHUB_ACTION_PATH/run-action.sh"
 
     # Upload the canonical Outcome Certificate as a downloadable artifact so any

@@ -2,6 +2,19 @@ import path from "node:path";
 import { defineConfig } from "vitest/config";
 
 export default defineConfig({
+  /**
+   * `test:vitest` runs `sync-website-ssot` before Vitest; that pipeline writes `src/generated/*`
+   * and other tracked outputs. Without ignores, Vite's file watcher can treat those writes as
+   * graph-invalidating churn and effectively never settle (observed long sync loops on Windows).
+   */
+  server: {
+    watch: {
+      ignored: [
+        path.resolve(__dirname, "src/generated"),
+        path.resolve(__dirname, "public/contract"),
+      ],
+    },
+  },
   test: {
     environment: "node",
     include: ["__tests__/**/*.test.ts", "__tests__/**/*.test.tsx"],

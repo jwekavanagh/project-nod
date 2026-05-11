@@ -108,7 +108,8 @@ export type SchemaValidatorName =
   | "decision-evidence-attestation-v1"
   | "decision-evidence-next-action-v1"
   | "decision-bundle-validation-v1"
-  | "activation-manifest-v1";
+  | "activation-manifest-v1"
+  | "coverage-budget-v1";
 
 const validatorCache: Partial<Record<SchemaValidatorName, ValidateFunction>> = {};
 
@@ -277,6 +278,8 @@ export function loadSchemaValidator(name: SchemaValidatorName): ValidateFunction
       return compileSchemaFile(name, "decision-bundle-validation-v1.schema.json");
     case "activation-manifest-v1":
       return compileSchemaFile(name, "activation-manifest-v1.schema.json");
+    case "coverage-budget-v1":
+      return compileSchemaFile(name, "coverage-budget-v1.schema.json");
     default: {
       const _exhaustive: never = name;
       return _exhaustive;

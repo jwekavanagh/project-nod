@@ -24,6 +24,7 @@ package="${INPUT_PACKAGE:-agentskeptic@latest}"
 db="${INPUT_DB:-}"
 share_origin="${INPUT_SHARE_REPORT_ORIGIN:-}"
 extra_args="${INPUT_EXTRA_ARGS:-}"
+enforce_coverage_budget="${INPUT_ENFORCE_COVERAGE_BUDGET:-false}"
 
 fatal() {
   echo "::error::$*"
@@ -71,6 +72,9 @@ fi
 if [[ -n "$db" ]]; then cmd+=(--db "$db"); fi
 if [[ "$mode" == "check" && -n "$share_origin" ]]; then
   cmd+=(--share-report-origin "$share_origin")
+fi
+if [[ "$mode" == "check" && "$enforce_coverage_budget" == "true" ]]; then
+  cmd+=(--enforce-coverage-budget)
 fi
 if [[ "$extra_args" =~ [^[:space:]] ]]; then
   read -r -a extras <<<"${extra_args}"

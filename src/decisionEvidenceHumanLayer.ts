@@ -21,13 +21,21 @@ export function buildHumanLayerFileJson(
 /**
  * Batch/contract verify: stderr bytes used with `process.stderr.write`. Ends with newline after footer.
  */
-export function formatContractVerifyStderrForStderrWrite(certificate: OutcomeCertificateV1): string {
-  return `${certificate.humanReport}\n${formatDistributionFooter()}\n`;
+export function formatContractVerifyStderrForStderrWrite(
+  certificate: OutcomeCertificateV1,
+  options?: { prefixBeforeHuman?: string },
+): string {
+  const prefix = options?.prefixBeforeHuman ?? "";
+  return `${prefix}${certificate.humanReport}\n${formatDistributionFooter()}\n`;
 }
 
 /**
  * Batch/contract verify: single line passed to `console.error` / `stderrLine` (no trailing newline after footer block; Node adds one).
  */
-export function formatContractVerifyStderrForStderrLine(certificate: OutcomeCertificateV1): string {
-  return `${certificate.humanReport}\n${formatDistributionFooter()}`;
+export function formatContractVerifyStderrForStderrLine(
+  certificate: OutcomeCertificateV1,
+  options?: { prefixBeforeHuman?: string },
+): string {
+  const prefix = options?.prefixBeforeHuman ?? "";
+  return `${prefix}${certificate.humanReport}\n${formatDistributionFooter()}`;
 }

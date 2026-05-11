@@ -3,8 +3,9 @@
  */
 import { describe, it, beforeEach, afterEach } from "node:test";
 import assert from "node:assert/strict";
-import { readFileSync, unlinkSync, existsSync } from "node:fs";
+import { readFileSync, unlinkSync, existsSync, writeFileSync, mkdirSync, rmSync } from "node:fs";
 import { dirname, join } from "node:path";
+import { tmpdir } from "node:os";
 import { fileURLToPath } from "node:url";
 import { spawnSync } from "node:child_process";
 import { DatabaseSync } from "node:sqlite";
@@ -168,5 +169,88 @@ describe("adoption-validation", () => {
     assert.equal(r.status, 3, r.stderr);
     assert.match(r.stderr, /"code"\s*:/, "operational JSON envelope");
     assert.equal(/truth_check_verdict:/.test(r.stderr), false, "no verdict line on operational failure");
+  });
+
+  it("cli_wf_complete_default_stderr_has_no_coverage_budget_machine_lines", () => {
+    const r = spawnSync(process.execPath, argvCheck("wf_complete"), { encoding: "utf8", cwd: root });
+    assert.equal(r.status, 0, r.stderr);
+    assert.equal(r.stderr.includes("coverage_budget_verdict:"), false);
+  });
+
+  it("coverage_budget_malformed_explicit_path_exits_3_empty_stdout", () => {
+    const dir = join(tmpdir(), `as-bad-bud-${Date.now()}`);
+    mkdirSync(dir, { recursive: true });
+    const bad = join(dir, "bad.json");
+    writeFileSync(bad, "{ not json");
+    try {
+      const r = spawnSync(
+        process.execPath,
+        [...argvCheck("wf_complete"), "--coverage-budget", bad],
+        { encoding: "utf8", cwd: root },
+      );
+      assert.equal(r.status, 3, r.stderr);
+      assert.equal((r.stdout ?? "").trim(), "");
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
+  it("coverage_budget_enforce_without_policy_exits_3_empty_stdout", () => {
+    const r = spawnSync(
+      process.execPath,
+      [...argvCheck("wf_complete"), "--enforce-coverage-budget"],
+      { encoding: "utf8", cwd: root },
+    );
+    assert.equal(r.status, 3, r.stderr);
+    assert.equal((r.stdout ?? "").trim(), "");
+  });
+
+  it("coverage_budget_fail_advisory_exit_0_when_not_enforced", () => {
+    const dir = join(tmpdir(), `as-bud-${Date.now()}`);
+    mkdirSync(dir, { recursive: true });
+    const p = join(dir, "coverage-budget.json");
+    writeFileSync(
+      p,
+      JSON.stringify({
+        schemaVersion: 1,
+        workflows: [{ workflowId: "wf_complete", minimumFullySatisfiedKinds: ["http_witness"] }],
+      }),
+    );
+    try {
+      const r = spawnSync(process.execPath, [...argvCheck("wf_complete"), "--coverage-budget", p], {
+        encoding: "utf8",
+        cwd: root,
+      });
+      assert.equal(r.status, 0, r.stderr);
+      assert.match(r.stderr, /coverage_budget_verdict: fail/);
+      assert.match(r.stderr, /coverage_budget_detail:/);
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
+  it("coverage_budget_enforce_exit_1_on_fail_when_state_matches", () => {
+    const dir = join(tmpdir(), `as-bud-enf-${Date.now()}`);
+    mkdirSync(dir, { recursive: true });
+    const p = join(dir, "coverage-budget.json");
+    writeFileSync(
+      p,
+      JSON.stringify({
+        schemaVersion: 1,
+        workflows: [{ workflowId: "wf_complete", minimumFullySatisfiedKinds: ["http_witness"] }],
+      }),
+    );
+    try {
+      const r = spawnSync(
+        process.execPath,
+        [...argvCheck("wf_complete"), "--coverage-budget", p, "--enforce-coverage-budget"],
+        { encoding: "utf8", cwd: root },
+      );
+      assert.equal(r.status, 1, r.stderr);
+      assert.equal(truthVerdictLine(r.stderr), "truth_check_verdict: trusted");
+      assert.match(r.stderr, /coverage_budget_verdict: fail/);
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
   });
 });

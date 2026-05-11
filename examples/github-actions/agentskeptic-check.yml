@@ -37,7 +37,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       AGENTSKEPTIC_TELEMETRY: "0"
-      AGENTSKEPTIC_CI_PACKAGE: agentskeptic@8.2.0
+      AGENTSKEPTIC_CI_PACKAGE: agentskeptic@8.3.1
       AS_REPO_ROOT: ${{ github.workspace }}/node_modules/agentskeptic
     steps:
       - uses: actions/checkout@v5
@@ -78,6 +78,7 @@ jobs:
       #   share-report-origin: https://agentskeptic.com
       - uses: ./.github/actions/agentskeptic-check
         with:
+          # Optional: enforce-coverage-budget: "true" appends --enforce-coverage-budget (requires active policy file or --coverage-budget; v1: ignored for mode: enforce). Value must be lowercase true — see docs/ambient-ci-distribution.md.
           workflow-id: wf_complete
           project: .
           package: ${{ env.AGENTSKEPTIC_CI_PACKAGE }}

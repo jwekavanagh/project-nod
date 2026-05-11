@@ -1,4 +1,8 @@
 import { formatContractVerifyStderrForStderrLine } from "./decisionEvidenceHumanLayer.js";
+import {
+  evaluateCoverageBudgetPhaseB,
+  writeCoverageBudgetMachineLinesToStderr,
+} from "./coverageBudget.js";
 import { writeSync } from "node:fs";
 import {
   CLI_OPERATIONAL_CODES,
@@ -60,12 +64,18 @@ export type StandardVerifyWorkflowCliIo = {
 
 /**
  * Print Outcome Certificate JSON to stdout and exit by `stateRelation` (same thresholds as legacy workflow status).
+ * When `options.exitCodeOverride` is set, it is used instead of deriving exit from `stateRelation`.
  */
 export function emitOutcomeCertificateCliAndExitByStateRelation(
   certificate: OutcomeCertificateV3,
   io: Pick<StandardVerifyWorkflowCliIo, "consoleLog" | "exit">,
+  options?: { exitCodeOverride?: number },
 ): void {
   io.consoleLog(JSON.stringify(certificate));
+  if (options?.exitCodeOverride !== undefined) {
+    io.exit(options.exitCodeOverride);
+    return;
+  }
   if (certificate.stateRelation === "matches_expectations") io.exit(0);
   if (certificate.stateRelation === "does_not_match") io.exit(1);
   io.exit(2);
@@ -126,6 +136,10 @@ export async function runStandardVerifyWorkflowCliToTerminalResult(options: {
   io?: Partial<StandardVerifyWorkflowCliIo>;
   /** When true, prefix stderr human output with `truth_check_verdict:` (agentskeptic check). */
   truthCheckInvoked?: boolean;
+  /** When set, suppresses anchored human budget block (machine budget lines may still emit). */
+  noHumanReport?: boolean;
+  /** Optional coverage budget policy loaded pre-verify (Phase A). */
+  coverageBudgetPhaseA?: import("./coverageBudgetPolicy.js").CoverageBudgetPhaseAResult;
 }): Promise<{ certificate: OutcomeCertificateV3; workflowResult: WorkflowResult }> {
   const io = { ...defaultIo, ...options.io };
   const writeCliError = (code: string, message: string): void => {
@@ -213,7 +227,24 @@ export async function runStandardVerifyWorkflowCliToTerminalResult(options: {
       io.stderrLine(`truth_check_verdict: ${truthCheckVerdictFromCertificate(certificate)}`);
       io.stderrLine(`release_critical_truth_check_verdict: ${certificate.releaseCriticalVerdict}`);
     }
-    io.stderrLine(formatContractVerifyStderrForStderrLine(certificate));
+    const phaseA = options.coverageBudgetPhaseA;
+    if (options.truthCheckInvoked === true && phaseA?.active) {
+      const ev = evaluateCoverageBudgetPhaseB({
+        certificate,
+        policy: phaseA.policy,
+        policyPath: phaseA.policyPath,
+      });
+      writeCoverageBudgetMachineLinesToStderr(ev);
+      const prefix = options.noHumanReport === true ? undefined : ev.humanBlock;
+      io.stderrLine(
+        formatContractVerifyStderrForStderrLine(
+          certificate,
+          prefix !== undefined ? { prefixBeforeHuman: prefix } : undefined,
+        ),
+      );
+    } else {
+      io.stderrLine(formatContractVerifyStderrForStderrLine(certificate));
+    }
   }
 
   return { certificate, workflowResult };

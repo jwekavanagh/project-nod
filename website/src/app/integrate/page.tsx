@@ -43,7 +43,8 @@ export default function IntegratePage() {
       <p>A successful run gives you:</p>
       <ul>
         <li>
-          <code>stderr</code> beginning with <code>truth_check_verdict:</code>
+          <code>stderr</code> beginning with the two machine lines <code>truth_check_verdict:</code> and{" "}
+          <code>release_critical_truth_check_verdict:</code>
         </li>
         <li>
           <code>stdout</code> containing the Outcome Certificate JSON
@@ -96,13 +97,18 @@ export default function IntegratePage() {
 
       <h2>Reading the verdict</h2>
       <p>
-        On verdict exits, <code>stderr</code> starts with exactly one automation line{" "}
-        <code>truth_check_verdict: trusted|not_trusted|unknown</code> (often followed by a release-critical verdict line—see{" "}
+        On verdict exits, <code>stderr</code> starts with two automation lines —{" "}
+        <code>truth_check_verdict: trusted|not_trusted|unknown</code> and{" "}
+        <code>release_critical_truth_check_verdict: trusted|not_trusted|unknown</code> (see{" "}
         <a href={`${marketing.gitRepositoryUrl}/blob/main/docs/first-truth-check.md`} rel="noopener noreferrer" target="_blank">
           <code>docs/first-truth-check.md</code>
         </a>
-        ). The human-readable report below those lines may include engine phrases for each step; the line above is the
-        decision gate for whether you can rely on the run.
+        ). When an opt-in coverage budget policy is active, two additional machine lines follow the truth lines — see{" "}
+        <a href={`${marketing.gitRepositoryUrl}/blob/main/docs/integrate.md#optional-coverage-budgets`} rel="noopener noreferrer" target="_blank">
+          <code>docs/integrate.md</code> (optional coverage budgets)
+        </a>
+        . The human-readable report below those lines may include engine phrases for each step; the first truth line is the
+        primary gate for whether you can rely on the global workflow outcome.
       </p>
       <table className="integrate-verdict-table" aria-label="Truth check verdict and next action">
         <thead>

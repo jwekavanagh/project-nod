@@ -16,7 +16,7 @@ AgentSkeptic re-checks the stores your agent claims to change, then returns a de
 ```text
 ### Success (`wf_complete`) — canonical `agentskeptic check`
 
-stderr (first line): truth_check_verdict: trusted
+stderr (first lines): truth_check_verdict: trusted, then release_critical_truth_check_verdict: trusted
 stdout (Outcome Certificate excerpt): {"schemaVersion":3,"workflowId":"wf_complete","runKind":"contract_sql","stateRelation":"matches_expectations"}
 
 ### Failure (`wf_missing`)
@@ -24,6 +24,8 @@ stdout (Outcome Certificate excerpt): {"schemaVersion":3,"workflowId":"wf_comple
 stderr (first line): truth_check_verdict: not_trusted
 Human report then explains ROW_ABSENT (missing downstream row vs registry expectation).
 stdout (Outcome Certificate excerpt): {"schemaVersion":3,"workflowId":"wf_missing","runKind":"contract_sql","stateRelation":"does_not_match"}
+
+Optional coverage budgets: when configured (`--coverage-budget` or `agentskeptic/coverage-budget.json` beside `--project`), stderr adds `coverage_budget_verdict:` and `coverage_budget_detail:` after the two truth lines — see docs/integrate.md § Optional coverage budgets.
 ```
 
 [How it works](https://agentskeptic.com/database-truth-vs-traces)
@@ -34,7 +36,7 @@ stdout (Outcome Certificate excerpt): {"schemaVersion":3,"workflowId":"wf_missin
 
 **Start here:** **[`docs/first-truth-check.md`](docs/first-truth-check.md)** — canonical first-run steps (command, inputs, stdout/stderr, CI, Cursor, troubleshooting).
 
-Compare recorded tool activity to downstream state (SQL and, in contract mode, HTTP witnesses, object storage, vectors, Mongo per your registry) and get **Outcome Certificate v3** on stdout (**`schemaVersion: 3`**, **`failureSpine`**, **`evidenceCompleteness`**) plus a **`truth_check_verdict`** line on stderr ([**Trust artifact naming glossary**](docs/outcome-certificate-normative.md#trust-artifact-naming-glossary) explains receipts and decision-bundle `exit.json` naming):
+Compare recorded tool activity to downstream state (SQL and, in contract mode, HTTP witnesses, object storage, vectors, Mongo per your registry) and get **Outcome Certificate v3** on stdout (**`schemaVersion: 3`**, **`failureSpine`**, **`evidenceCompleteness`**) plus **`truth_check_verdict:`** and **`release_critical_truth_check_verdict:`** on stderr ([**Trust artifact naming glossary**](docs/outcome-certificate-normative.md#trust-artifact-naming-glossary) explains receipts and decision-bundle `exit.json` naming). Optional **coverage budgets** append two more machine lines only when a policy is active — **[`docs/integrate.md`](docs/integrate.md#optional-coverage-budgets)**.
 
 ```bash
 npx agentskeptic check --workflow-id wf_example \
@@ -46,7 +48,9 @@ With the conventional layout, **`--registry`** and **`--events`** default to **`
 
 **No license required.** The default `agentskeptic check` path needs no `AGENTSKEPTIC_API_KEY` and no license server; it runs stateless contract verification locally. (Stateful **`agentskeptic enforce`** for baselines, drift, and acceptance is a later opt-in commercial path — see below.)
 
-**Reading the result.** stdout is one **Outcome Certificate v3** line (machine JSON as above). On verdict exits, stderr begins with one of:
+**Reading the result.** stdout is one **Outcome Certificate v3** line (machine JSON as above). On verdict exits, stderr begins with **`truth_check_verdict:`** and **`release_critical_truth_check_verdict:`** (each `trusted`, `not_trusted`, or `unknown`), then the human certificate report. When a coverage budget policy is active, two additional machine lines follow — see **[`docs/integrate.md`](docs/integrate.md#optional-coverage-budgets)**.
+
+The **`truth_check_verdict`** values mean:
 
 ```text
 truth_check_verdict: trusted
@@ -118,7 +122,7 @@ const certificate = await skeptic.check({
 
 ### Python / LangGraph / CrewAI (same truth check)
 
-The default verification contract is unchanged: **`agentskeptic check` semantics**, Outcome Certificate on stdout, and **`truth_check_verdict`** on stderr—whether you invoke the published **npm CLI** alongside your stack or use the **Python SDK / extras** documented in **[`docs/integrate.md`](docs/integrate.md)**. Start here: **`pip install`** and framework notes there, plus **[`examples/python-verification/README.md`](examples/python-verification/README.md)**.
+The default verification contract is unchanged: **`agentskeptic check` semantics**, Outcome Certificate on stdout, and the **`truth_check_verdict:`** / **`release_critical_truth_check_verdict:`** stderr prefix—whether you invoke the published **npm CLI** alongside your stack or use the **Python SDK / extras** documented in **[`docs/integrate.md`](docs/integrate.md)**. Start here: **`pip install`** and framework notes there, plus **[`examples/python-verification/README.md`](examples/python-verification/README.md)**.
 
 See **[`docs/integrate.md`](docs/integrate.md)** (canonical integrator guide — see title in integrate.md) and [`docs/migrate-2.md`](docs/migrate-2.md) for 1.x → 2.0 renames.
 
@@ -178,7 +182,7 @@ This is the fastest way to see **`ROW_ABSENT`** versus **verified** on the same 
 agentskeptic check --workflow-id <id> --events <path> --registry <path> --db <sqlitePath>
 ```
 
-stdout is the Outcome Certificate; stderr begins with `truth_check_verdict: trusted|not_trusted|unknown` plus the human report.
+stdout is the Outcome Certificate; stderr begins with `truth_check_verdict: trusted|not_trusted|unknown` and `release_critical_truth_check_verdict: trusted|not_trusted|unknown`, then the human report (optional coverage budget lines when configured).
 
 **Local feedback loop with run history (advanced):** `agentskeptic loop` wraps the same `check` contract and adds local run history, prior-run comparison, and a single TRUSTED / NOT TRUSTED / UNKNOWN line for tight inner-loop iteration — normative contract: [`docs/local-feedback-loop.md`](docs/local-feedback-loop.md).
 

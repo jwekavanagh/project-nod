@@ -2,7 +2,7 @@
 
 **Shortest first-run path:** **[`first-truth-check.md`](first-truth-check.md)** — one page for the default **`agentskeptic check`** flow, inputs, stdout/stderr, CI, and Cursor. This file remains the **full** integrator SSOT below.
 
-**Start here:** run **one stateless contract truth check** with **`agentskeptic check`** (CLI) or **`AgentSkeptic.check`** (TypeScript) — compare structured tool activity to **downstream state** (SQL plus registry-defined HTTP / object / vector / Mongo checks when configured). The default `check` path needs **no API key and no license server**. Read the **Outcome Certificate** on stdout (**v3**, includes **`failureSpine`**, **`evidenceCompleteness`**, **`releaseCriticalVerdict`**, and per-step **`releaseCritical`**) and the stderr machine lines **`truth_check_verdict:`** then **`release_critical_truth_check_verdict:`** (each `trusted|not_trusted|unknown`) — only the first line’s **`trusted`** means the global workflow can be relied on; the second line governs **release-critical** CI when you opt into **`fail-on: critical_not_trusted_or_unknown`** (see **[`docs/ambient-ci-distribution.md`](ambient-ci-distribution.md)**). To diff **two saved** certificates (semantic posture only, no events), use **`agentskeptic compare certificates --before <prior.json> --after <current.json>`** — see **[`docs/agentskeptic.md`](agentskeptic.md#verification-diff-outcome-certificate-v3)**. Naming collisions between certificate **`schemaVersion: 3`** and other numbered artifacts (**receipts**, **trust snapshots**, **`exit.json`**) are spelled out once in **[Trust artifact naming glossary](outcome-certificate-normative.md#trust-artifact-naming-glossary)**—read that glossary before auditing hosted exports side-by-side with CLI bundles. Optional pre-step: **`agentskeptic quick`** for a cheap **SQL-inference preview** on captured activity (provisional, not audit-final).
+**Start here:** run **one stateless contract truth check** with **`agentskeptic check`** (CLI) or **`AgentSkeptic.check`** (TypeScript) — compare structured tool activity to **downstream state** (SQL plus registry-defined HTTP / object / vector / Mongo checks when configured). The default `check` path needs **no API key and no license server**. Read the **Outcome Certificate** on stdout (**v3**, includes **`failureSpine`**, **`evidenceCompleteness`**, **`releaseCriticalVerdict`**, and per-step **`releaseCritical`**) and the stderr machine lines **`truth_check_verdict:`** then **`release_critical_truth_check_verdict:`** (each `trusted|not_trusted|unknown`) — only the first line’s **`trusted`** means the global workflow can be relied on; the second line governs **release-critical** CI when you opt into **`fail-on: critical_not_trusted_or_unknown`** (see **[`docs/ambient-ci-distribution.md`](ambient-ci-distribution.md)**). Optional **coverage budgets** add two more machine lines only when a policy is active (see **[Optional coverage budgets](#optional-coverage-budgets)**). To diff **two saved** certificates (semantic posture only, no events), use **`agentskeptic compare certificates --before <prior.json> --after <current.json>`** — see **[`docs/agentskeptic.md`](agentskeptic.md#verification-diff-outcome-certificate-v3)**. Naming collisions between certificate **`schemaVersion: 3`** and other numbered artifacts (**receipts**, **trust snapshots**, **`exit.json`**) are spelled out once in **[Trust artifact naming glossary](outcome-certificate-normative.md#trust-artifact-naming-glossary)**—read that glossary before auditing hosted exports side-by-side with CLI bundles. Optional pre-step: **`agentskeptic quick`** for a cheap **SQL-inference preview** on captured activity (provisional, not audit-final).
 
 **Hybrid proof (Postgres):** after `npm run build`, with **`POSTGRES_VERIFICATION_URL`** set, run **`node examples/hybrid-contract-demo.mjs`** — one workflow, one trust line, SQL + local HTTP witness (see [`verification-state-stores.md`](verification-state-stores.md#hybrid-contract-demo)).
 
@@ -62,6 +62,22 @@ On verdict exits, stderr begins with two machine lines in order:
 | `unknown` | Incomplete / not established |
 
 Then the human-readable certificate report (unless `--no-human-report`; the verdict lines are still emitted).
+
+### Optional coverage budgets
+
+<a id="optional-coverage-budgets"></a>
+
+**Activation (`budgetActive`):** set **`--coverage-budget <path>`** to a policy file, **or** use **`--project <root>`** when **`agentskeptic/coverage-budget.json`** exists under that root. Without **`--project`**, the verifier **never** auto-loads a budget file from the working directory.
+
+**Policy:** JSON object with **`schemaVersion: 1`** and **`workflows`** — see **[`schemas/coverage-budget-v1.schema.json`](../schemas/coverage-budget-v1.schema.json)**. Each row lists **`workflowId`** and **`minimumFullySatisfiedKinds`** (subset of verifier modalities). Duplicate **`workflowId`** values in the array are rejected (exit **3**) after schema validation.
+
+**stderr (only when `budgetActive`):** immediately after the two truth lines, **`coverage_budget_verdict: pass|fail|skipped|unevaluable`** then **`coverage_budget_detail:`** followed by one line (no embedded newlines). The **`workflow=`** field is **`encodeURIComponent(certificate.workflowId)`** (decode with **`decodeURIComponent`** when matching to your **`workflowId`** strings).
+
+**Human block:** when the budget feature is on, a **`=== coverage_budget ===`** … **`=== end coverage_budget ===`** section is always emitted (including **`skipped`** / **`unevaluable`**) so operators are not left with machine-only output alone.
+
+**Exit codes:** **`--enforce-coverage-budget`** without **`budgetActive`** → exit **3** (stdout empty). With an active policy, a budget **`fail`** raises exit **1** only when the base truth exit would be **0** and **`--enforce-coverage-budget`** is set; base exits **1** or **2** are unchanged. Invalid policy on disk → exit **3**, stdout empty.
+
+**Commercial `agentskeptic enforce`** (stateful, opt-in drift acceptance) is unchanged: coverage budgets are **out of scope** for that path in v1 (the composite action’s **`enforce-coverage-budget`** gate applies to **`check`** only).
 
 <a id="framework-verification-recipes"></a>
 

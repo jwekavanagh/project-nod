@@ -16,7 +16,7 @@
  */
 import test from "node:test";
 import assert from "node:assert/strict";
-import { mkdtempSync, mkdirSync, readFileSync, writeFileSync, existsSync, statSync } from "node:fs";
+import { mkdtempSync, mkdirSync, readFileSync, readdirSync, writeFileSync, existsSync, statSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { tmpdir } from "node:os";
 import { fileURLToPath } from "node:url";
@@ -122,6 +122,22 @@ function caseGoldens(name) {
     outputs: join(fixturesDir, `${name}.expected.kv`),
   };
 }
+
+/** Fixtures that intentionally include coverage budget machine lines on stderr. */
+const STDERR_FIXTURES_ALLOWING_COVERAGE_BUDGET = new Set([]);
+
+test("stderr fixtures omit coverage_budget machine lines unless explicitly allowlisted", () => {
+  for (const ent of readdirSync(fixturesDir, { withFileTypes: true })) {
+    if (!ent.isFile() || !ent.name.endsWith(".stderr")) continue;
+    if (STDERR_FIXTURES_ALLOWING_COVERAGE_BUDGET.has(ent.name)) continue;
+    const text = readFileSync(join(fixturesDir, ent.name), "utf8");
+    assert.equal(
+      text.includes("coverage_budget_"),
+      false,
+      `${ent.name} must not contain coverage_budget_ unless allowlisted`,
+    );
+  }
+});
 
 // ---------- cert: trusted ----------
 

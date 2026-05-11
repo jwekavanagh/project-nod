@@ -17,6 +17,8 @@ For TypeScript, the same contract is **`await skeptic.check({ … })`** / **`Age
 - **stdout:** one **Outcome Certificate v3** (machine JSON, top-level **`schemaVersion: 3`**, required **`failureSpine`** + **`evidenceCompleteness`**). Artifact naming vs receipts and decision-bundle exits: **[Trust artifact naming glossary](outcome-certificate-normative.md#trust-artifact-naming-glossary)**.
 - **stderr:** **`truth_check_verdict:`** then **`release_critical_truth_check_verdict:`** (each **`trusted`**, **`not_trusted`**, or **`unknown`**) on their **own lines** before the human certificate report (anonymous activation telemetry may print unrelated status lines earlier — CI often sets **`AGENTSKEPTIC_TELEMETRY=0`** to keep stderr minimal).
 
+**Optional coverage budgets:** when **`budgetActive`** (see **[`integrate.md` § Optional coverage budgets](integrate.md#optional-coverage-budgets)**), two additional machine lines **`coverage_budget_verdict:`** and **`coverage_budget_detail:`** follow the truth lines, plus a **`=== coverage_budget ===`** human block. Default runs without a policy file or **`--coverage-budget`** stay at the two-line truth prefix only.
+
 Logs, traces, CI green, wrapper summaries, or agent claims are **not** the source of truth when they disagree with the Outcome Certificate or the verdict line.
 
 When you need **retained files** for CI artifacts, customer review, or audit handoff (beyond stdout/stderr), follow the **three-step evidence ladder** in **[`decision-evidence-bundle.md`](decision-evidence-bundle.md)** (default check → optional `--proof` / `--write-decision-bundle` → optional `--write-run-bundle` for full local proof). The default first run stays exactly as above; bundle flags are opt-in.

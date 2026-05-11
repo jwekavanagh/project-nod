@@ -114,6 +114,12 @@ export type ParsedBatchVerifyCli = {
   decisionNextActionPath: string | undefined;
   /** When true, stderr includes truth_check_verdict for primary product path (agentskeptic check). */
   invokedViaCheck?: boolean;
+  /** Absolute resolved --project root when present. */
+  projectPath?: string;
+  /** Explicit --coverage-budget path (may be relative to cwd). */
+  coverageBudgetPathArg?: string;
+  /** When true, fail exit 1 on budget miss if state exit would be 0 (requires active budget policy). */
+  enforceCoverageBudget?: boolean;
 };
 
 /**
@@ -160,6 +166,12 @@ export function parseBatchVerifyCliArgs(args: string[]): ParsedBatchVerifyCli {
   const decisionNextActionPath = argValue(args, "--decision-next-action");
 
   const projectRoot = process.cwd();
+  const projectRaw = argValue(args, "--project");
+  const projectPath =
+    projectRaw !== undefined && projectRaw.length > 0 ? path.resolve(projectRoot, projectRaw) : undefined;
+  const coverageBudgetPathArg = argValue(args, "--coverage-budget");
+  const enforceCoverageBudget = args.includes("--enforce-coverage-budget");
+
   return {
     workflowId,
     eventsPath,
@@ -177,6 +189,11 @@ export function parseBatchVerifyCliArgs(args: string[]): ParsedBatchVerifyCli {
     decisionAttestationPath,
     decisionNextActionPath,
     invokedViaCheck: args.includes("--internal-invoked-via-check"),
+    ...(projectPath !== undefined ? { projectPath } : {}),
+    ...(coverageBudgetPathArg !== undefined && coverageBudgetPathArg.length > 0 ?
+      { coverageBudgetPathArg }
+    : {}),
+    ...(enforceCoverageBudget ? { enforceCoverageBudget: true } : {}),
   };
 }
 
