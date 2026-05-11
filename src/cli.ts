@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import { randomUUID } from "node:crypto";
-import { readFileSync, statSync, writeSync } from "fs";
+import { existsSync, readFileSync, statSync, writeSync } from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
 import {
@@ -8,6 +8,11 @@ import {
   cliErrorEnvelope,
   formatOperationalMessage,
 } from "./failureCatalog.js";
+import {
+  buildVerificationDiffFromOutcomeCertificates,
+  buildVerificationDiffHumanText,
+  stringifyVerificationDiffCertificate,
+} from "./certificateVerificationDiff.js";
 import { buildRegressionArtifactFromCompareManifest, stringifyRegressionArtifact } from "./regressionArtifact.js";
 import { assertValidRunEventParentGraph, buildExecutionTraceView, formatExecutionTraceText } from "./executionTrace.js";
 import { loadEventsForWorkflow } from "./loadEvents.js";
@@ -56,7 +61,7 @@ import {
 import { PLAN_TRANSITION_WORKFLOW_ID } from "./planTransitionConstants.js";
 import { COMPARE_INPUT_RUN_LEVEL_INCONSISTENT_MESSAGE } from "./runLevelDriftMessages.js";
 import { isV9RunLevelCodesInconsistent } from "./workflowRunLevelConsistency.js";
-import { buildOutcomeCertificateFromWorkflowResult } from "./outcomeCertificate.js";
+import { buildOutcomeCertificateFromWorkflowResult, type OutcomeCertificateV3 } from "./outcomeCertificate.js";
 import { atomicWriteUtf8File } from "./quickVerify/atomicWrite.js";
 import { buildQuickContractEventsNdjson } from "./quickVerify/buildQuickContractEventsNdjson.js";
 import { stableStringify } from "./quickVerify/canonicalJson.js";
@@ -248,6 +253,9 @@ Exit codes:
 
   agentskeptic compare --manifest <compare-run-manifest.json>
   Compare runs from a manifest (workflow results + events paths; see docs/regression-artifact-normative.md).
+
+  agentskeptic compare certificates --before <prior.json> --after <current.json>
+  Compare two saved Outcome Certificate v3 JSON files (semantic projection only; see docs/agentskeptic.md).
 
   agentskeptic validate-registry --registry <path>
   agentskeptic validate-registry --registry <path> --events <path> --workflow-id <id>
@@ -553,6 +561,12 @@ function usageCompare(): string {
 
   Manifest schema: schemas/compare-run-manifest-v1.schema.json.
   Success: stdout is UTF-8 RegressionArtifactV1 JSON (sorted keys); stderr is artifact.humanText only.
+
+  agentskeptic compare certificates --before <prior.json> --after <current.json>
+
+  Validates both inputs as Outcome Certificate v3 (schemas/outcome-certificate-v3.schema.json).
+  Success: stdout is UTF-8 VerificationDiffCertificateV1 JSON (sorted keys); stderr is multi-line human text (not JSON).
+  Do not combine this form with --manifest.
 
 Exit codes:
   0  comparison succeeded
@@ -1222,9 +1236,119 @@ function runCompareSubcommand(args: string[]): void {
     process.exit(0);
   }
 
-  const manifestPath = argValue(args, "--manifest");
-  if (!manifestPath) {
-    writeCliError(CLI_OPERATIONAL_CODES.COMPARE_USAGE, "compare requires --manifest <path>.");
+  const certSubcommand = args[0] === "certificates";
+  const tail = certSubcommand ? args.slice(1) : args;
+
+  const beforePath = argValue(tail, "--before");
+  const afterPath = argValue(tail, "--after");
+  const manifestPath = argValue(certSubcommand ? tail : args, "--manifest");
+
+  const certPairRequested = beforePath !== undefined || afterPath !== undefined;
+
+  if (certPairRequested && !certSubcommand) {
+    writeCliError(
+      CLI_OPERATIONAL_CODES.COMPARE_USAGE,
+      "Outcome certificate compare requires: agentskeptic compare certificates --before <path> --after <path>.",
+    );
+    process.exit(3);
+  }
+
+  if (certSubcommand) {
+    if (manifestPath !== undefined) {
+      writeCliError(
+        CLI_OPERATIONAL_CODES.COMPARE_USAGE,
+        "Do not combine `compare certificates` with --manifest.",
+      );
+      process.exit(3);
+    }
+    if (beforePath === undefined || afterPath === undefined) {
+      writeCliError(
+        CLI_OPERATIONAL_CODES.COMPARE_USAGE,
+        "compare certificates requires both --before <path> and --after <path>.",
+      );
+      process.exit(3);
+    }
+
+    const validateOutcome = loadSchemaValidator("outcome-certificate-v3");
+    const absBefore = path.resolve(beforePath);
+    const absAfter = path.resolve(afterPath);
+
+    let rawPrior: string;
+    let rawCurrent: string;
+    try {
+      if (!existsSync(absBefore)) {
+        throw new Error(`prior file not found: ${absBefore}`);
+      }
+      if (!existsSync(absAfter)) {
+        throw new Error(`current file not found: ${absAfter}`);
+      }
+      rawPrior = readFileSync(absBefore, "utf8");
+      rawCurrent = readFileSync(absAfter, "utf8");
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : String(e);
+      writeCliError(CLI_OPERATIONAL_CODES.COMPARE_INPUT_READ_FAILED, formatOperationalMessage(msg));
+      process.exit(3);
+    }
+
+    let prior: unknown;
+    let current: unknown;
+    try {
+      prior = JSON.parse(rawPrior) as unknown;
+    } catch (e) {
+      const m = e instanceof Error ? e.message : String(e);
+      writeCliError(CLI_OPERATIONAL_CODES.COMPARE_INPUT_JSON_SYNTAX, `prior: ${m}`);
+      process.exit(3);
+    }
+    try {
+      current = JSON.parse(rawCurrent) as unknown;
+    } catch (e) {
+      const m = e instanceof Error ? e.message : String(e);
+      writeCliError(CLI_OPERATIONAL_CODES.COMPARE_INPUT_JSON_SYNTAX, `current: ${m}`);
+      process.exit(3);
+    }
+
+    if (!validateOutcome(prior)) {
+      writeCliError(
+        CLI_OPERATIONAL_CODES.COMPARE_INPUT_SCHEMA_INVALID,
+        `prior: ${JSON.stringify(validateOutcome.errors ?? [])}`,
+      );
+      process.exit(3);
+    }
+    if (!validateOutcome(current)) {
+      writeCliError(
+        CLI_OPERATIONAL_CODES.COMPARE_INPUT_SCHEMA_INVALID,
+        `current: ${JSON.stringify(validateOutcome.errors ?? [])}`,
+      );
+      process.exit(3);
+    }
+
+    let diff;
+    try {
+      diff = buildVerificationDiffFromOutcomeCertificates(
+        prior as OutcomeCertificateV3,
+        current as OutcomeCertificateV3,
+      );
+    } catch (e) {
+      if (e instanceof TruthLayerError) {
+        writeCliError(e.code, e.message);
+        process.exit(3);
+      }
+      const msg = e instanceof Error ? e.message : String(e);
+      writeCliError(CLI_OPERATIONAL_CODES.INTERNAL_ERROR, formatOperationalMessage(msg));
+      process.exit(3);
+    }
+
+    const human = buildVerificationDiffHumanText(diff);
+    process.stderr.write(human.endsWith("\n") ? human : `${human}\n`);
+    process.stdout.write(`${stringifyVerificationDiffCertificate(diff)}\n`);
+    process.exit(0);
+  }
+
+  if (manifestPath === undefined) {
+    writeCliError(
+      CLI_OPERATIONAL_CODES.COMPARE_USAGE,
+      "compare requires either --manifest <path> or `compare certificates --before … --after …`.",
+    );
     process.exit(3);
   }
 

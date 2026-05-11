@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 3,
+  "workflowId": "wf_fixture_diff",
+  "runKind": "contract_sql",
+  "stateRelation": "matches_expectations",
+  "highStakesReliance": "permitted",
+  "releaseCriticalVerdict": "trusted",
+  "relianceRationale": "Fixture A before: reliance.",
+  "intentSummary": "Fixture A before intent.",
+  "explanation": {
+    "headline": "Fixture A before OK.",
+    "details": [{ "code": "FIXTURE", "message": "Before detail." }]
+  },
+  "steps": [],
+  "humanReport": "fixture A before human report.",
+  "evidenceCompleteness": {
+    "schemaVersion": 1,
+    "blockerCategory": "none",
+    "quickSignal": "na",
+    "verifiedClaims": ["fixture"],
+    "unverifiedClaims": [],
+    "missingInputs": [],
+    "nextActions": [{ "id": "fixture_next", "text": "Next." }]
+  },
+  "failureSpine": {
+    "schemaVersion": 1,
+    "trustDecision": "safe",
+    "summary": "Fixture safe.",
+    "actionableFailure": {
+      "category": "unclassified",
+      "severity": "low",
+      "recommendedAction": "none",
+      "automationSafe": true
+    },
+    "primaryCodes": ["FIXTURE"],
+    "rerunGuidance": "None.",
+    "source": "workflow"
+  }
+}

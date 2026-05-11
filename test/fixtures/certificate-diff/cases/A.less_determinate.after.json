@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 3,
+  "workflowId": "wf_fixture_diff",
+  "runKind": "contract_sql",
+  "stateRelation": "not_established",
+  "highStakesReliance": "permitted",
+  "releaseCriticalVerdict": "trusted",
+  "relianceRationale": "Fixture A after reliance.",
+  "intentSummary": "Fixture A after intent.",
+  "explanation": {
+    "headline": "Fixture A after unclear.",
+    "details": [{ "code": "FIXTURE", "message": "After detail." }]
+  },
+  "steps": [],
+  "humanReport": "fixture A after human report.",
+  "evidenceCompleteness": {
+    "schemaVersion": 1,
+    "blockerCategory": "none",
+    "quickSignal": "na",
+    "verifiedClaims": ["fixture"],
+    "unverifiedClaims": [],
+    "missingInputs": [],
+    "nextActions": [{ "id": "fixture_next", "text": "Next." }]
+  },
+  "failureSpine": {
+    "schemaVersion": 1,
+    "trustDecision": "unknown",
+    "summary": "Fixture unknown.",
+    "actionableFailure": {
+      "category": "ambiguous",
+      "severity": "low",
+      "recommendedAction": "manual_review",
+      "automationSafe": false
+    },
+    "primaryCodes": ["FIXTURE"],
+    "rerunGuidance": "Investigate fixture.",
+    "source": "workflow"
+  }
+}

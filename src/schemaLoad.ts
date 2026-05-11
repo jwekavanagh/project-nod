@@ -91,6 +91,7 @@ export type SchemaValidatorName =
   | "outcome-certificate-v1"
   | "outcome-certificate-v2"
   | "outcome-certificate-v3"
+  | "verification-diff-certificate-v1"
   | "failure-spine-v1"
   | "compare-run-manifest-v1"
   | "regression-artifact-v1"
@@ -202,6 +203,9 @@ export function loadSchemaValidator(name: SchemaValidatorName): ValidateFunction
       ensureWorkflowTruthForWireRefs();
       compileSchemaFile("failure-spine-v1", "failure-spine-v1.schema.json");
       return compileSchemaFile(name, "outcome-certificate-v3.schema.json");
+    case "verification-diff-certificate-v1":
+      compileSchemaFile("evidence-completeness-v1", "evidence-completeness-v1.schema.json");
+      return compileSchemaFile(name, "verification-diff-certificate-v1.schema.json");
     case "quick-verify-report":
       compileSchemaFile("evidence-completeness-v1", "evidence-completeness-v1.schema.json");
       ensureWorkflowEmittedDependencies();

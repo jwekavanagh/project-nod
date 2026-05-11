@@ -43,6 +43,16 @@ Full verdict and stderr contract: [`docs/first-truth-check.md`](docs/first-truth
 2. Emit observations via the canonical SDK emitter, then append emitted rows to the gate buffer. Optionally mirror the same JSON lines to **`agentskeptic/events.ndjson`** for CI replay.
 3. On the code path **before** irreversible work you control (ship, bill, ticket close), call **`await gate.assertSafeForIrreversibleAction()`** so **unsafe** trust (or required emissions that never reached the gate) blocks **that** branch — it is not a substitute for wiring the gate everywhere it matters, and outcomes can still be **`unknown`** when **`highStakesReliance`** is not **`permitted`** (see [`docs/outcome-certificate-normative.md`](docs/outcome-certificate-normative.md)).
 
+### Compare two saved Outcome Certificates (semantic diff)
+
+To compare **trust posture** between two saved **`schemaVersion: 3`** Outcome Certificate JSON files (no workflow payloads or event streams):
+
+```bash
+npx agentskeptic compare certificates --before ./prior-outcome.json --after ./current-outcome.json
+```
+
+**Stdout** is **`VerificationDiffCertificateV1`** ([`schemas/verification-diff-certificate-v1.schema.json`](schemas/verification-diff-certificate-v1.schema.json)); **stderr** is human-readable text (not JSON). Multi-run **structural** regression compare still uses **`agentskeptic compare --manifest`** ([`docs/regression-artifact-normative.md`](docs/regression-artifact-normative.md)). Full CLI contract: **[`docs/agentskeptic.md`](docs/agentskeptic.md#verification-diff-outcome-certificate-v3)**.
+
 ### Install
 
 ```bash
