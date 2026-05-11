@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 3,
+  "workflowId": "wf_fixture_diff",
+  "runKind": "contract_sql",
+  "stateRelation": "does_not_match",
+  "highStakesReliance": "prohibited",
+  "releaseCriticalVerdict": "not_trusted",
+  "relianceRationale": "Fixture C after.",
+  "intentSummary": "Fixture C after NOT TRUSTED.",
+  "explanation": {
+    "headline": "Bad.",
+    "details": [{ "code": "FIXTURE", "message": "Mismatch." }]
+  },
+  "steps": [],
+  "humanReport": "fixture C after.",
+  "evidenceCompleteness": {
+    "schemaVersion": 1,
+    "blockerCategory": "state_mismatch",
+    "quickSignal": "sql_ran_failed",
+    "verifiedClaims": [],
+    "unverifiedClaims": ["x"],
+    "missingInputs": [{ "code": "X", "hint": "hint" }],
+    "nextActions": [{ "id": "fixture_fix", "text": "Fix." }]
+  },
+  "failureSpine": {
+    "schemaVersion": 1,
+    "trustDecision": "unsafe",
+    "summary": "Unsafe.",
+    "actionableFailure": {
+      "category": "ambiguous",
+      "severity": "high",
+      "recommendedAction": "manual_review",
+      "automationSafe": false
+    },
+    "primaryCodes": ["X"],
+    "rerunGuidance": "Review.",
+    "source": "workflow"
+  }
+}

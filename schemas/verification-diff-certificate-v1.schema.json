@@ -1,0 +1,229 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://agentskeptic.com/schemas/verification-diff-certificate-v1.schema.json",
+  "title": "VerificationDiffCertificateV1",
+  "type": "object",
+  "additionalProperties": false,
+  "$defs": {
+    "evidenceProj": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["blockerCategory", "supportLabel"],
+      "properties": {
+        "blockerCategory": {
+          "$ref": "./evidence-completeness-v1.schema.json#/properties/blockerCategory"
+        },
+        "supportLabel": {
+          "oneOf": [
+            {
+              "$ref": "./evidence-completeness-v1.schema.json#/$defs/witnessCoverageV1/properties/supportLabel"
+            },
+            { "type": "null" }
+          ]
+        }
+      }
+    },
+    "certificateFace": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["certificateSha256", "runKind", "stateRelation", "releaseCriticalVerdict", "highStakesReliance"],
+      "properties": {
+        "certificateSha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "runKind": {
+          "type": "string",
+          "enum": ["contract_sql", "contract_sql_langgraph_checkpoint_trust", "quick_preview"]
+        },
+        "stateRelation": {
+          "type": "string",
+          "enum": ["matches_expectations", "does_not_match", "not_established"]
+        },
+        "releaseCriticalVerdict": {
+          "type": "string",
+          "enum": ["trusted", "not_trusted", "unknown"]
+        },
+        "highStakesReliance": {
+          "type": "string",
+          "enum": ["permitted", "prohibited"]
+        }
+      }
+    },
+    "pairChanged": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["prior", "current", "changed"],
+      "properties": {
+        "prior": {},
+        "current": {},
+        "changed": { "type": "boolean" }
+      }
+    },
+    "stateRelationPair": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["prior", "current", "changed"],
+      "properties": {
+        "prior": {
+          "type": "string",
+          "enum": ["matches_expectations", "does_not_match", "not_established"]
+        },
+        "current": {
+          "type": "string",
+          "enum": ["matches_expectations", "does_not_match", "not_established"]
+        },
+        "changed": { "type": "boolean" }
+      }
+    },
+    "verdictPair": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["prior", "current", "changed"],
+      "properties": {
+        "prior": {
+          "type": "string",
+          "enum": ["trusted", "not_trusted", "unknown"]
+        },
+        "current": {
+          "type": "string",
+          "enum": ["trusted", "not_trusted", "unknown"]
+        },
+        "changed": { "type": "boolean" }
+      }
+    },
+    "reliancePair": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["prior", "current", "changed"],
+      "properties": {
+        "prior": {
+          "type": "string",
+          "enum": ["permitted", "prohibited"]
+        },
+        "current": {
+          "type": "string",
+          "enum": ["permitted", "prohibited"]
+        },
+        "changed": { "type": "boolean" }
+      }
+    },
+    "runKindPair": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["prior", "current", "changed"],
+      "properties": {
+        "prior": {
+          "type": "string",
+          "enum": ["contract_sql", "contract_sql_langgraph_checkpoint_trust", "quick_preview"]
+        },
+        "current": {
+          "type": "string",
+          "enum": ["contract_sql", "contract_sql_langgraph_checkpoint_trust", "quick_preview"]
+        },
+        "changed": { "type": "boolean" }
+      }
+    },
+    "determinacyBlock": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["priorClass", "currentClass", "priorRank", "currentRank"],
+      "properties": {
+        "priorClass": {
+          "type": "string",
+          "enum": ["established_positive", "established_negative", "not_established"]
+        },
+        "currentClass": {
+          "type": "string",
+          "enum": ["established_positive", "established_negative", "not_established"]
+        },
+        "priorRank": { "type": "integer", "enum": [0, 1, 2] },
+        "currentRank": { "type": "integer", "enum": [0, 1, 2] }
+      }
+    },
+    "limitsBlock": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["certificateOnly", "noEvents", "noStepStructuralDiff"],
+      "properties": {
+        "certificateOnly": { "type": "boolean", "const": true },
+        "noEvents": { "type": "boolean", "const": true },
+        "noStepStructuralDiff": { "type": "boolean", "const": true }
+      }
+    },
+    "nextStepHintBlock": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["command", "docAnchor"],
+      "properties": {
+        "command": {
+          "type": "string",
+          "const": "agentskeptic compare --manifest <compare-run-manifest.json>"
+        },
+        "docAnchor": {
+          "type": "string",
+          "const": "docs/agentskeptic.md#cross-run-comparison-normative"
+        }
+      }
+    }
+  },
+  "required": [
+    "$schema",
+    "schemaVersion",
+    "comparisonKind",
+    "workflowId",
+    "prior",
+    "current",
+    "stateRelation",
+    "releaseCriticalVerdict",
+    "highStakesReliance",
+    "runKind",
+    "evidenceCompletenessProjection",
+    "completenessChanged",
+    "determinacy",
+    "lessDeterminate",
+    "postureMovement",
+    "headline",
+    "recommendedNextAction",
+    "limits",
+    "nextStepHint"
+  ],
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "const": "https://agentskeptic.com/schemas/verification-diff-certificate-v1.schema.json"
+    },
+    "schemaVersion": { "type": "integer", "const": 1 },
+    "comparisonKind": {
+      "type": "string",
+      "const": "outcome_certificate_v3_semantic"
+    },
+    "workflowId": { "type": "string", "minLength": 1 },
+    "prior": { "$ref": "#/$defs/certificateFace" },
+    "current": { "$ref": "#/$defs/certificateFace" },
+    "stateRelation": { "$ref": "#/$defs/stateRelationPair" },
+    "releaseCriticalVerdict": { "$ref": "#/$defs/verdictPair" },
+    "highStakesReliance": { "$ref": "#/$defs/reliancePair" },
+    "runKind": { "$ref": "#/$defs/runKindPair" },
+    "evidenceCompletenessProjection": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["prior", "current"],
+      "properties": {
+        "prior": { "$ref": "#/$defs/evidenceProj" },
+        "current": { "$ref": "#/$defs/evidenceProj" }
+      }
+    },
+    "completenessChanged": { "type": "boolean" },
+    "determinacy": { "$ref": "#/$defs/determinacyBlock" },
+    "lessDeterminate": { "type": "boolean" },
+    "postureMovement": {
+      "type": "string",
+      "enum": ["improved", "weakened", "unchanged", "less_determinate", "drifted"]
+    },
+    "headline": { "type": "string", "minLength": 1, "maxLength": 512 },
+    "recommendedNextAction": { "type": "string", "minLength": 1, "maxLength": 2048 },
+    "limits": { "$ref": "#/$defs/limitsBlock" },
+    "nextStepHint": { "$ref": "#/$defs/nextStepHintBlock" }
+  }
+}

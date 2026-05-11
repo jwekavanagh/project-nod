@@ -120,14 +120,17 @@ process.on("SIGINT", () => {
   process.exit(130);
 });
 
-for (let i = 0; i < 40; i++) {
+const readinessAttempts = Number(process.env.AGENTSKEPTIC_WEBSITE_READINESS_ATTEMPTS ?? "120");
+const readinessMs = Number(process.env.AGENTSKEPTIC_WEBSITE_READINESS_DELAY_MS ?? "500");
+
+for (let i = 0; i < readinessAttempts; i++) {
   if (await httpOk(`${base}/`)) break;
-  if (i === 39) {
+  if (i === readinessAttempts - 1) {
     console.error("website-holistic-gate: readiness timeout waiting for GET /");
     shutdown();
     process.exit(3);
   }
-  await delay(250);
+  await delay(readinessMs);
 }
 
 for (const p of ["/", "/pricing", "/security"]) {

@@ -91,6 +91,18 @@ This subsection maps **workflow-level verdict** and **auditable run records** ac
 
 **Regression artifact and compare I/O (normative, single source):** [`docs/regression-artifact-normative.md`](regression-artifact-normative.md) — **`RegressionArtifactV1`** on CLI stdout / Debug **`POST /api/compare`**, manifest shape, certificate digest, **`narrativeHtml`**, and error codes. The artifact embeds a full **`RunComparisonReport`** as **`verification`**; pairwise verification math and **`run-comparison-report`** v4 **remain** the structural SSOT for that embedded object.
 
+### Verification diff certificate (Outcome Certificate v3 only) {#verification-diff-outcome-certificate-v3}
+
+**Purpose:** Compare two saved [**Outcome Certificate v3**](../schemas/outcome-certificate-v3.schema.json) JSON files **without** workflow results, NDJSON events, or step-structural diff. The emitted artifact is **`VerificationDiffCertificateV1`** ([`schemas/verification-diff-certificate-v1.schema.json`](../schemas/verification-diff-certificate-v1.schema.json)): semantic projection (state relation, release-critical verdict, high-stakes reliance, run kind, evidence completeness fingerprint) plus a stable **`postureMovement`** classification (`improved` \| `weakened` \| `unchanged` \| `less_determinate` \| `drifted`).
+
+**CLI:** `agentskeptic compare certificates --before <prior.json> --after <current.json>`. **Success:** stderr is multi-line human text (first line `verification_diff_certificate: …`; not JSON); stdout is **one** UTF-8 JSON object with sorted keys validating **`verification-diff-certificate-v1`**. **Operational failure:** exit **3**, empty stdout, exactly one **`cli-error-envelope`** line on stderr; reuses **`COMPARE_USAGE`**, **`COMPARE_INPUT_READ_FAILED`**, **`COMPARE_INPUT_JSON_SYNTAX`**, **`COMPARE_INPUT_SCHEMA_INVALID`** (messages prefixed with **`prior:`** / **`current:`** where applicable), **`COMPARE_WORKFLOW_ID_MISMATCH`** (when **`workflowId`** differs, message includes **`before=`** and **`after=`** ids). Do **not** combine this form with **`--manifest`**.
+
+**Contrast:** Multi-run **structural** regression compare remains **`agentskeptic compare --manifest …`** → **`RegressionArtifactV1`** (same normative doc as above).
+
+**Implementation:** `src/certificateVerificationDiff.ts` — **`buildVerificationDiffFromOutcomeCertificates`**, **`stringifyVerificationDiffCertificate`**, **`buildVerificationDiffHumanText`**. **Proof:** `src/certificateVerificationDiff.test.ts`, `src/compareCertificatesCli.test.ts`, `test/evidence-diff-enum-consistency.test.ts`.
+
+**v1.1 deferral:** HTTP **`POST /api/compare-certificates`** and Debug UI wiring for certificate-only diff are **out of scope** for the initial CLI + kernel release (no `debugServer` compare endpoint for this artifact in v1).
+
 | Acceptance theme | Where it appears in the product |
 |------------------|----------------------------------|
 | **9.1** Multiple workflow results in one compare | `buildRunComparisonReport` over ordered normalized **`WorkflowResult[]`** (length ≥ 2); CLI **`compare --manifest`**, HTTP **`POST /api/compare`**, artifact wraps report. Proof: `src/compare.acceptance.test.ts` **`AC_9_1_multi_run_compare_emits_schema_v4`**. |
@@ -292,7 +304,7 @@ Exit codes match batch verify (**0** / **1** / **2** / **3**). Operational codes
 
 | Module | Role |
 |--------|------|
-| `schemaLoad.ts` | AJV 2020-12 validators for event line, execution trace view, registry, workflow engine/result, **stdout v15** + **frozen v9** workflow result, truth report, compare-input (engine v8 / v9 / stdout v15 **`oneOf`**), **`cli-error-envelope`**, **`run-comparison-report`**, **`regression-artifact-v1`**, **`compare-run-manifest-v1`**, **`agent-run-record-v1`**, **`agent-run-record-v2`**, **`workflow-result-signature`**, **`plan-validation-core`** |
+| `schemaLoad.ts` | AJV 2020-12 validators for event line, execution trace view, registry, workflow engine/result, **stdout v15** + **frozen v9** workflow result, truth report, compare-input (engine v8 / v9 / stdout v15 **`oneOf`**), **`cli-error-envelope`**, **`run-comparison-report`**, **`regression-artifact-v1`**, **`verification-diff-certificate-v1`**, **`outcome-certificate-v3`**, **`compare-run-manifest-v1`**, **`agent-run-record-v1`**, **`agent-run-record-v2`**, **`workflow-result-signature`**, **`plan-validation-core`** |
 | `failureCatalog.ts` | Stable run-level literals, `formatOperationalMessage`, CLI error envelope helpers |
 | `cliOperationalCodes.ts` | Compare/corpus operational codes such as `COMPARE_INPUT_RUN_LEVEL_INCONSISTENT`, `WORKFLOW_RESULT_RUN_LEVEL_CODES_MISMATCH` |
 | `runLevelDriftMessages.ts` | Fixed `message` strings for v9 `runLevelCodes` / `runLevelReasons` drift (SSOT for CLI stderr and corpus errors) |
@@ -323,11 +335,12 @@ Exit codes match batch verify (**0** / **1** / **2** / **3**). Operational codes
 | `workflowResultNormalize.ts` | `normalizeToEmittedWorkflowResult`, `workflowEngineResultFromEmitted` (compare ingress: engine **v8** / frozen **v9** / stdout **v15**; strip legacy **`runLevelCodes`**; inject empty **`verificationRunContext`** where needed) |
 | `runComparison.ts` | `buildRunComparisonReport`, `logicalStepKeyFromStep`, `recurrenceSignature`; cross-run comparison (embedded under **`RegressionArtifactV1.verification`**) |
 | `regressionArtifact.ts` | `buildRegressionArtifactFromCompareManifest`, `buildRegressionArtifactFromDebugCorpus`, `stringifyRegressionArtifact` — **RegressionArtifactV1** for CLI and Debug; **`humanText`** / **`narrativeHtml`** |
+| `certificateVerificationDiff.ts` | **Certificate-only** semantic diff: **`buildVerificationDiffFromOutcomeCertificates`**, **`stringifyVerificationDiffCertificate`**, **`buildVerificationDiffHumanText`** (no events / workflow / trace imports) |
 | `compareRunManifest.ts` | `loadCompareRunManifest` — compare-run manifest v1 + **`certificateProfile`** invariants |
 | `verificationPolicy.ts` | `VerificationPolicy` normalization/validation; `executeVerificationWithPolicySync` / `executeVerificationWithPolicyAsync` (strong vs eventual polling; `sql_row` / `sql_effects` / `sql_row_absent` / `sql_relational`); `PolicyReconcileContext.reconcileRowAbsent`; `createSqlitePolicyContext` |
 | `executionTrace.ts` | `assertValidRunEventParentGraph`, `buildExecutionTraceView`, `formatExecutionTraceText`; `traceStepKind` derivation and `backwardPaths` |
 | `pipeline.ts` | Orchestration: `runLogicalStepsVerification` (internal), **`verifyRunStateFromEvents`**, async `verifyWorkflow`, sync `verifyToolObservedStep`; default `truthReport` / `logStep` |
-| `cli.ts` | CLI entry: verify (**optional **`--write-run-bundle <dir>`** / **`--sign-ed25519-private-key`**), **`verify-bundle-signature`**, `compare`, `execution-trace`, `validate-registry`, **`funnel-anon`**, **`debug`**, **`plan-transition`** |
+| `cli.ts` | CLI entry: verify (**optional **`--write-run-bundle <dir>`** / **`--sign-ed25519-private-key`**), **`verify-bundle-signature`**, **`compare`** (manifest **or** **`compare certificates`**), `execution-trace`, `validate-registry`, **`funnel-anon`**, **`debug`**, **`plan-transition`** |
 | `debugCorpus.ts` | Debug Console corpus layout: enumerate `<corpusRoot>/<runId>/`, load outcomes (**`ok`** / **`error`**), path safety, mandatory **`agent-run.json`** manifest with SHA-256 bindings |
 | `debugFocus.ts` | Pure **`buildFocusTargets`**: maps **`workflowTruthReport.failureAnalysis.evidence`** to trace navigation targets (tested golden vectors) |
 | `debugPatterns.ts` | **`buildCorpusPatterns`**: histograms + **`recurrenceSignature`** aggregation; optional pairwise recurrence when **`workflowId`** filter set (cap **50** runs) |
@@ -1476,13 +1489,16 @@ For each run index `i`, build the **set** of `recurrenceSignature` values from *
 
 ### Success and failure I/O (compare subcommand)
 
-**Success:** Write **`humanText`** to **stderr** (one block; trailing newline normalized by the implementation), then **one** JSON object to **stdout** (**`RegressionArtifactV1`**, schema **`regression-artifact-v1`**). The embedded report **`verification`** is the **`RunComparisonReport`**. Exit **0**.
+**Success (manifest compare):** Write **`humanText`** to **stderr** (one block; trailing newline normalized by the implementation), then **one** JSON object to **stdout** (**`RegressionArtifactV1`**, schema **`regression-artifact-v1`**). The embedded report **`verification`** is the **`RunComparisonReport`**. Exit **0**.
+
+**Success (`compare certificates`):** Write multi-line human text to **stderr** (not JSON; see [Verification diff certificate](#verification-diff-outcome-certificate-v3)), then **one** JSON object to **stdout** (**`VerificationDiffCertificateV1`**, schema **`verification-diff-certificate-v1`**). Exit **0**.
 
 **Operational failure:** **No** JSON on **stdout** (stdout empty). **Stderr** is **exactly one** JSON line: the same **`execution_truth_layer_error`** envelope as [CLI operational errors](#cli-operational-errors), with a **`COMPARE_*`** code. Exit **3**.
 
 ### Cross-run comparison: implementation bindings (normative)
 
-- **CLI:** `agentskeptic compare --manifest <compare-run-manifest.json>`. The manifest lists ordered runs, **`baseDirectory`**, and **`certificateProfile`**; each run has **`workflowResult`** and **`events`** paths. **Normative I/O and manifest semantics:** [`regression-artifact-normative.md`](regression-artifact-normative.md).
+- **CLI (manifest):** `agentskeptic compare --manifest <compare-run-manifest.json>`. The manifest lists ordered runs, **`baseDirectory`**, and **`certificateProfile`**; each run has **`workflowResult`** and **`events`** paths. **Normative I/O and manifest semantics:** [`regression-artifact-normative.md`](regression-artifact-normative.md).
+- **CLI (certificates):** `agentskeptic compare certificates --before <prior.json> --after <current.json>` — **Outcome Certificate v3** semantic diff only; see [Verification diff certificate](#verification-diff-outcome-certificate-v3).
 - **`displayLabel`:** Opaque per-run label from the manifest.
 - **Failure envelope:** Same shape and rules as § CLI operational errors; compare-specific codes include manifest/events/regression build failures (see `cliOperationalCodes` / `failureCatalog`).
 - **Schema:** `schemas/regression-artifact-v1.schema.json` validates stdout on success; the embedded `verification` object validates as **`run-comparison-report`**.

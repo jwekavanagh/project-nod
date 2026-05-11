@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 3,
+  "workflowId": "wf_fixture_diff",
+  "runKind": "contract_sql",
+  "stateRelation": "does_not_match",
+  "highStakesReliance": "prohibited",
+  "releaseCriticalVerdict": "not_trusted",
+  "relianceRationale": "Fixture B before mismatch.",
+  "intentSummary": "Fixture B before NOT TRUSTED.",
+  "explanation": {
+    "headline": "Mismatch.",
+    "details": [{ "code": "FIXTURE_ROW", "message": "Row missing." }]
+  },
+  "steps": [],
+  "humanReport": "fixture B before human.",
+  "evidenceCompleteness": {
+    "schemaVersion": 1,
+    "blockerCategory": "state_mismatch",
+    "quickSignal": "sql_ran_failed",
+    "verifiedClaims": [],
+    "unverifiedClaims": ["fixture step"],
+    "missingInputs": [{ "code": "X", "hint": "hint" }],
+    "nextActions": [{ "id": "fixture_fix", "text": "Fix state." }]
+  },
+  "failureSpine": {
+    "schemaVersion": 1,
+    "trustDecision": "unsafe",
+    "summary": "Unsafe mismatch.",
+    "actionableFailure": {
+      "category": "ambiguous",
+      "severity": "high",
+      "recommendedAction": "manual_review",
+      "automationSafe": false
+    },
+    "primaryCodes": ["FIXTURE_ROW"],
+    "rerunGuidance": "Reconcile.",
+    "source": "workflow"
+  }
+}

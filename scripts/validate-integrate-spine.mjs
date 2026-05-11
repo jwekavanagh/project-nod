@@ -14,6 +14,43 @@ import { DatabaseSync } from "node:sqlite";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const root = resolve(__dirname, "..");
+
+/**
+ * Windows often returns EBUSY / EPERM / ENOTEMPTY for recursive `rmSync` immediately
+ * after a Git Bash child exits; retry with a short sync backoff so local CI is stable.
+ *
+ * @param {import("node:fs").PathLike} target
+ * @param {import("node:fs").RmOptions} [options]
+ */
+function rmSyncRobust(target, options) {
+  const maxAttempts = process.platform === "win32" ? 14 : 4;
+  let lastErr;
+  for (let attempt = 0; attempt < maxAttempts; attempt++) {
+    try {
+      rmSync(target, options);
+      return;
+    } catch (e) {
+      lastErr = e;
+      const code = e && typeof e === "object" && "code" in e ? /** @type {NodeJS.ErrnoException} */ (e).code : "";
+      const retryable =
+        code === "EBUSY" || code === "EPERM" || code === "ENOTEMPTY" || code === "EACCES";
+      if (attempt < maxAttempts - 1 && retryable) {
+        const ms = 80 + attempt * 70;
+        try {
+          const b = new SharedArrayBuffer(4);
+          const v = new Int32Array(b);
+          Atomics.wait(v, 0, 0, ms);
+        } catch {
+          /* ignore */
+        }
+        continue;
+      }
+      throw e;
+    }
+  }
+  throw lastErr;
+}
+
 const templatePath = join(root, "scripts", "templates", "integrate-activation-shell.bash");
 const verdictPath = join(root, "artifacts", "generated", "integrate-spine-validation-verdict.json");
 const examplesIntegrateDir = join(root, "examples", "integrate-your-db");
@@ -184,7 +221,7 @@ function casePositive() {
     }
     outPack = join(tmpdir(), `integrate-spine-pack-${Date.now()}-${process.pid}`);
     if (existsSync(outPack)) {
-      rmSync(outPack, { recursive: true, force: true });
+      rmSyncRobust(outPack, { recursive: true, force: true });
     }
     const b = spawnSync(process.execPath, [cliPath, "activate", "--input", bootstrapInput, "--db", dbPath, "--out", outPack], {
       cwd: root,
@@ -197,13 +234,13 @@ function casePositive() {
     assertNonBundled(join(outPack, "events.ndjson"), join(outPack, "tools.json"), dbPath);
   } finally {
     try {
-      rmSync(workDir, { recursive: true, force: true });
+      rmSyncRobust(workDir, { recursive: true, force: true });
     } catch {
       /* ignore */
     }
     if (outPack) {
       try {
-        rmSync(outPack, { recursive: true, force: true });
+        rmSyncRobust(outPack, { recursive: true, force: true });
       } catch {
         /* ignore */
       }
@@ -220,15 +257,15 @@ function caseMismatch() {
   db.close();
   const outPack = join(tmpdir(), `integrate-spine-badpack-${Date.now()}-${process.pid}`);
   if (existsSync(outPack)) {
-    rmSync(outPack, { recursive: true, force: true });
+    rmSyncRobust(outPack, { recursive: true, force: true });
   }
     const b = spawnSync(process.execPath, [cliPath, "activate", "--input", bootstrapInput, "--db", badDb, "--out", outPack], {
     cwd: root,
     encoding: "utf8",
     maxBuffer: 20 * 1024 * 1024,
   });
-  rmSync(outPack, { recursive: true, force: true });
-  rmSync(badDb, { force: true });
+  rmSyncRobust(outPack, { recursive: true, force: true });
+  rmSyncRobust(badDb, { force: true });
   if (b.status === 0) {
     fail("mismatch case: expected bootstrap to fail on DB missing contract row, got exit 0");
   }
@@ -238,7 +275,7 @@ function caseMissingEnv() {
   const workDir = mkdtempSync(join(tmpdir(), "integrate-spine-missing-"));
   const gitUrl = pathToFileURL(join(root, ".git")).href;
   const r = runFullSpine(workDir, { INTEGRATE_SPINE_GIT_URL: gitUrl });
-  rmSync(workDir, { recursive: true, force: true });
+  rmSyncRobust(workDir, { recursive: true, force: true });
   if (r.status === 0) {
     fail("missing AGENTSKEPTIC_VERIFY_DB: expected non-zero exit after demo");
   }

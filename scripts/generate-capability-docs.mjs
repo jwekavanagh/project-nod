@@ -27,11 +27,13 @@ console.log(check ? "capability docs check: OK" : "capability docs generated");
 function syncSection(filePath, content, checkMode) {
   const start = "<!-- GENERATED_CAPABILITY_MATRIX_START -->";
   const end = "<!-- GENERATED_CAPABILITY_MATRIX_END -->";
-  const original = readFileSync(filePath, "utf8");
+  const rawOriginal = readFileSync(filePath, "utf8");
+  const original = rawOriginal.replace(/\r\n/g, "\n");
   if (!original.includes(start) || !original.includes(end)) {
     throw new Error(`missing generated markers in ${filePath}`);
   }
-  const next = `${original.slice(0, original.indexOf(start) + start.length)}\n\n${content}\n${original.slice(original.indexOf(end))}`;
+  const normalizedContent = content.replace(/\r\n/g, "\n");
+  const next = `${original.slice(0, original.indexOf(start) + start.length)}\n\n${normalizedContent}\n${original.slice(original.indexOf(end))}`;
   if (checkMode) {
     if (original !== next) throw new Error(`docs drift detected: ${filePath}`);
     return;
