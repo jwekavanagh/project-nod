@@ -1,3 +1,9 @@
+## [8.2.0](https://github.com/jwekavanagh/agentskeptic/compare/v8.1.0...v8.2.0) (2026-05-11)
+
+### Features
+
+* **cli:** compare certificates semantic verification diff ([#84](https://github.com/jwekavanagh/agentskeptic/issues/84)) ([75db30e](https://github.com/jwekavanagh/agentskeptic/commit/75db30e3c8b0416b7d614d06f1c2d1ce6608e910))
+
 ## [8.1.0](https://github.com/jwekavanagh/agentskeptic/compare/v8.0.1...v8.1.0) (2026-05-10)
 
 ### Features
