@@ -8,7 +8,8 @@
 # - `governance_drift_pr` — pull-request steady check against the hosted baseline (no create/accept flags).
 # - `governance_accept_dispatch` — manual dispatch to record drift acceptance; you must copy
 #   `expected_projection_hash` and `lifecycle_state_version` from the drift job GitHub summary or
-#   from composite outputs (`agentskeptic-governance-*`) into the workflow_dispatch form fields.
+#   from composite outputs (`agentskeptic-governance-*`) into the workflow_dispatch form fields, and supply
+#   governed acceptance audit fields (`acceptance_reason`, `acceptance_owner`; optional review-by and evidence links JSON).
 # Ambient discovery (job summary): set `AS_REPO_ROOT` to `node_modules/agentskeptic` after install;
 # see docs/ambient-ci-distribution.md for the composite visibility contract.
 # This file triggers on `examples/**` changes; adjust paths when vendoring into another repo.
@@ -44,6 +45,30 @@ on:
         type: string
         required: false
         default: ""
+      acceptance_reason:
+        type: string
+        required: false
+        default: ""
+        description: >-
+          Required for accept_drift — operator justification (maps to AGENTSKEPTIC_ACCEPT_REASON).
+      acceptance_owner:
+        type: string
+        required: false
+        default: ""
+        description: >-
+          Required for accept_drift — owner identity / email (maps to AGENTSKEPTIC_ACCEPT_OWNER).
+      acceptance_review_by:
+        type: string
+        required: false
+        default: ""
+        description: >-
+          Optional ISO-8601 instant strictly in the future when dispatch runs (maps to AGENTSKEPTIC_ACCEPT_REVIEW_BY).
+      acceptance_evidence_links_json:
+        type: string
+        required: false
+        default: "[]"
+        description: >-
+          Optional JSON array of HTTPS URL strings (maps to AGENTSKEPTIC_ACCEPT_EVIDENCE_LINKS).
   pull_request:
     paths:
       - "examples/**"
@@ -200,6 +225,10 @@ jobs:
       AS_REPO_ROOT: ${{ github.workspace }}/node_modules/agentskeptic
       AGENTSKEPTIC_ENFORCE_EXPECTED_PROJECTION_HASH: ${{ github.event.inputs.expected_projection_hash }}
       AGENTSKEPTIC_ENFORCE_LIFECYCLE_STATE_VERSION: ${{ github.event.inputs.lifecycle_state_version }}
+      AGENTSKEPTIC_ACCEPT_REASON: ${{ github.event.inputs.acceptance_reason }}
+      AGENTSKEPTIC_ACCEPT_OWNER: ${{ github.event.inputs.acceptance_owner }}
+      AGENTSKEPTIC_ACCEPT_REVIEW_BY: ${{ github.event.inputs.acceptance_review_by }}
+      AGENTSKEPTIC_ACCEPT_EVIDENCE_LINKS: ${{ github.event.inputs.acceptance_evidence_links_json }}
     steps:
       - uses: actions/checkout@v5
 

@@ -34,6 +34,7 @@ If your team needs baseline management, drift detection, and explicit change acc
    - `agentskeptic enforce --workflow-id ... --events ... --registry ... --db ...`
 3. **Accept intended change**
    - `agentskeptic enforce --workflow-id ... --events ... --registry ... --db ... --accept-drift`
+   - Requires environment pins **`AGENTSKEPTIC_ENFORCE_EXPECTED_PROJECTION_HASH`**, **`AGENTSKEPTIC_ENFORCE_LIFECYCLE_STATE_VERSION`**, **`AGENTSKEPTIC_ACCEPT_REASON`**, and **`AGENTSKEPTIC_ACCEPT_OWNER`** (optional **`AGENTSKEPTIC_ACCEPT_REVIEW_BY`**, **`AGENTSKEPTIC_ACCEPT_EVIDENCE_LINKS`** as JSON array string).
 
 ## Exit behavior
 
@@ -44,7 +45,7 @@ If your team needs baseline management, drift detection, and explicit change acc
 
 ## GitHub Actions: governance job summary (`mode: enforce`)
 
-When the composite action runs with **`mode: enforce`**, [`outcome-ci-surface.mjs`](../.github/actions/agentskeptic-check/outcome-ci-surface.mjs) appends a **Governance** block to `$GITHUB_STEP_SUMMARY` and writes eight fixed **`GITHUB_OUTPUT`** keys (sorted in goldens under `test/fixtures/outcome-ci-surface/`):
+When the composite action runs with **`mode: enforce`**, [`outcome-ci-surface.mjs`](../.github/actions/agentskeptic-check/outcome-ci-surface.mjs) appends a **Governance** block to `$GITHUB_STEP_SUMMARY` and writes nine fixed **`GITHUB_OUTPUT`** keys (sorted in goldens under `test/fixtures/outcome-ci-surface/`):
 
 | Output key | Role |
 |------------|------|
@@ -56,10 +57,11 @@ When the composite action runs with **`mode: enforce`**, [`outcome-ci-surface.mj
 | `agentskeptic-governance-expected-projection-hash-for-accept` | Accept pin from the envelope, or empty |
 | `agentskeptic-governance-next-action` | First line of hosted `next_action`, or a fixed literal for malformed/unknown-inner/oversized rows |
 | `agentskeptic-governance-accept-available` | `true` only when a non-empty accept pin is present on the envelope |
+| `agentskeptic-governance-pass-kind` | Hosted `pass_kind` on trusted **200** `POST /check` completions (`baseline_match` or `governed_acceptance_active`); empty when absent |
 
 Certificate-mode outputs (`state-relation`, `trust-decision`, …) remain **empty** on the enforce governance path. **Rebaseline** (`ENFORCE_BASELINE_REBASE_REQUIRED`, HTTP non-2xx before stdout is written) is explained here and in migration notes in [`docs/governance.md`](governance.md); it does not produce a governance stdout row.
 
-Copy [`examples/github-actions/agentskeptic-commercial.yml`](../examples/github-actions/agentskeptic-commercial.yml) for a three-job layout: baseline dispatch, PR drift check, and optional accept dispatch with `AGENTSKEPTIC_ENFORCE_*` env pins.
+Copy [`examples/github-actions/agentskeptic-commercial.yml`](../examples/github-actions/agentskeptic-commercial.yml) for a three-job layout: baseline dispatch, PR drift check, and optional accept dispatch with `AGENTSKEPTIC_ENFORCE_*` env pins plus **`AGENTSKEPTIC_ACCEPT_REASON`** and **`AGENTSKEPTIC_ACCEPT_OWNER`** for governed accept.
 
 ## Notes
 

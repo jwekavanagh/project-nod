@@ -3,7 +3,7 @@ import { unauthorized } from "next/navigation";
 import { auth } from "@/auth";
 import { desc, eq } from "drizzle-orm";
 import { db } from "@/db/client";
-import { enforcementBaselines, enforcementEvents, enforcementLifecycle, governanceEvidence } from "@/db/schema";
+import { enforcementBaselines, enforcementEvents, enforcementLifecycle, governanceAcceptance, governanceEvidence } from "@/db/schema";
 import { relianceClassFromRunKind } from "@/lib/governanceDisplay";
 
 export const dynamic = "force-dynamic";
@@ -37,6 +37,7 @@ export default async function GovernancePage() {
       needsRebaseline: enforcementBaselines.needsRebaseline,
       updatedAt: enforcementBaselines.updatedAt,
       baselineEvidenceId: enforcementBaselines.baselineEvidenceId,
+      activeAcceptanceId: enforcementBaselines.activeAcceptanceId,
       evidenceRunId: governanceEvidence.runId,
       evidenceCertificateSha256: governanceEvidence.certificateSha256,
       evidenceMaterialTruthSha256: governanceEvidence.materialTruthSha256,
@@ -53,6 +54,13 @@ export default async function GovernancePage() {
     .where(eq(enforcementEvents.userId, session.user.id))
     .orderBy(desc(enforcementEvents.createdAt))
     .limit(200);
+
+  const acceptances = await db
+    .select()
+    .from(governanceAcceptance)
+    .where(eq(governanceAcceptance.userId, session.user.id))
+    .orderBy(desc(governanceAcceptance.createdAt))
+    .limit(50);
 
   return (
     <main>
@@ -99,12 +107,68 @@ export default async function GovernancePage() {
             <div><strong>baseline_run_kind:</strong> {runKind}</div>
             <div><strong>reliance_class:</strong> {relianceClassFromRunKind(runKindForReliance)}</div>
             <div><strong>needs_rebaseline:</strong> {b.needsRebaseline ? "yes" : "no"}</div>
+            <div>
+              <strong>active_governed_acceptance_id:</strong> {b.activeAcceptanceId ?? "—"}
+            </div>
             <div className="u-mt-half">
               <Link href={`/api/v1/governance/export?workflow_id=${encodeURIComponent(b.workflowId)}`}>
                 Export governance JSON
               </Link>
             </div>
           </div>
+          );
+        })}
+      </div>
+      <div className="card u-mb-1">
+        <h2>Governed acceptances</h2>
+        {acceptances.length === 0 ? <p>No governed drift acceptances recorded yet.</p> : null}
+        {acceptances.map((a) => {
+          const links = Array.isArray(a.evidenceLinks)
+            ? (a.evidenceLinks as unknown[]).filter((x): x is string => typeof x === "string")
+            : [];
+          return (
+            <div key={a.id} className="u-mb-1">
+              <div>
+                <strong>acceptance_id:</strong> {a.id}
+              </div>
+              <div>
+                <strong>workflow_id:</strong> {a.workflowId}
+              </div>
+              <div>
+                <strong>acceptance_reason:</strong> {a.acceptanceReason}
+              </div>
+              <div>
+                <strong>acceptance_owner:</strong> {a.acceptanceOwner}
+              </div>
+              <div>
+                <strong>accepted_material_truth_sha256:</strong> {a.acceptedMaterialTruthSha256}
+              </div>
+              {a.exceptionReviewBy ? (
+                <div>
+                  <strong>exception_review_by:</strong> {a.exceptionReviewBy.toISOString()}
+                </div>
+              ) : null}
+              {links.length > 0 ? (
+                <div>
+                  <strong>evidence_links:</strong>{" "}
+                  {links.map((href) => (
+                    <span key={href} className="u-mr-half">
+                      <a href={href} rel="noreferrer noopener" target="_blank">
+                        {href}
+                      </a>
+                    </span>
+                  ))}
+                </div>
+              ) : null}
+              <div>
+                <strong>created_at:</strong> {a.createdAt.toISOString()}
+              </div>
+              <div className="u-mt-half">
+                <Link href={`/api/v1/governance/export?workflow_id=${encodeURIComponent(a.workflowId)}`}>
+                  Export governance JSON
+                </Link>
+              </div>
+            </div>
           );
         })}
       </div>

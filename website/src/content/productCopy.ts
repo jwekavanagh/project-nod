@@ -70,6 +70,7 @@ export type ConversionSpineCtaLabel =
   | "See a passed run"
   | "Run on sample data in 5 minutes"
   | "Run first verification"
+  | "Try paste verification"
   | "Start free"
   | "Continue to checkout"
   | "Sign in to continue"
@@ -292,6 +293,7 @@ export const conversionSpine = {
     "See a passed run",
     "Run on sample data in 5 minutes",
     "Run first verification",
+    "Try paste verification",
     "Start free",
     "Continue to checkout",
     "Sign in to continue",
@@ -301,7 +303,7 @@ export const conversionSpine = {
   dominantByRoute: {
     "/": "Run the missing-write demo",
     "/database-truth-vs-traces": "See a failed run",
-    "/integrate": "Run first verification",
+    "/integrate": "Try paste verification",
     "/pricing": "Start free",
     "/guides": "Run first verification",
     "/guides/[slug]": "Run first verification",

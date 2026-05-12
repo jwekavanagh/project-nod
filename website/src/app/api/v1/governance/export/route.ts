@@ -8,6 +8,7 @@ import {
   enforcementEvents,
   enforcementFsmTransition,
   enforcementLifecycle,
+  governanceAcceptance,
   governanceEvidence,
 } from "@/db/schema";
 import { buildEvidenceSlicesMap } from "@/lib/governanceEvidenceSlices";
@@ -54,6 +55,37 @@ export async function GET(req: NextRequest) {
     )
     .orderBy(asc(enforcementFsmTransition.createdAt), asc(enforcementFsmTransition.id));
 
+  const acceptanceIdSet = new Set<string>();
+  for (const t of fsmTransitions) {
+    const m = t.metadata as Record<string, unknown> | null;
+    if (!m) continue;
+    const raw = m.acceptance_id ?? m.governed_acceptance_id;
+    if (typeof raw === "string" && raw.length > 0) acceptanceIdSet.add(raw);
+  }
+  let acceptanceById = new Map<string, (typeof governanceAcceptance.$inferSelect)>();
+  if (acceptanceIdSet.size > 0) {
+    const accRows = await db
+      .select()
+      .from(governanceAcceptance)
+      .where(
+        and(
+          eq(governanceAcceptance.userId, session.user.id),
+          eq(governanceAcceptance.workflowId, workflowId),
+          inArray(governanceAcceptance.id, [...acceptanceIdSet]),
+        ),
+      );
+    acceptanceById = new Map(accRows.map((r) => [r.id, r]));
+  }
+  const fsmTransitionsWithAcceptance = fsmTransitions.map((t) => {
+    const m = t.metadata as Record<string, unknown> | null;
+    const raw = m ? (m.acceptance_id ?? m.governed_acceptance_id) : undefined;
+    const aid = typeof raw === "string" && raw.length > 0 ? raw : null;
+    return {
+      ...t,
+      governedAcceptance: aid ? acceptanceById.get(aid) ?? null : null,
+    };
+  });
+
   const verificationDecisions = await db
     .select()
     .from(enforcementDecision)
@@ -65,6 +97,7 @@ export async function GET(req: NextRequest) {
       id: enforcementBaselines.id,
       projectionHash: enforcementBaselines.projectionHash,
       baselineEvidenceId: enforcementBaselines.baselineEvidenceId,
+      activeAcceptanceId: enforcementBaselines.activeAcceptanceId,
       needsRebaseline: enforcementBaselines.needsRebaseline,
       createdAt: enforcementBaselines.createdAt,
       updatedAt: enforcementBaselines.updatedAt,
@@ -177,7 +210,7 @@ export async function GET(req: NextRequest) {
           lastFsmTransitionId: lifecycle.lastTransitionId,
         }
       : null,
-    fsmTransitions,
+    fsmTransitions: fsmTransitionsWithAcceptance,
     verificationDecisions,
     baseline: baselinePayload,
     events: eventRows.map((e) => ({

@@ -381,6 +381,8 @@ describe("enforcement state lifecycle", () => {
           expected_projection_hash: dj.expected_projection_hash_for_accept,
           lifecycle_state_version: dj.lifecycle_state_version,
           outcome_certificate: v1.outcome_certificate,
+          acceptance_reason: "integration test drift accept",
+          acceptance_owner: "enforcement-state.integration.test",
         }),
       }),
     );
@@ -443,6 +445,8 @@ describe("enforcement API entitlement and quota semantics", () => {
         expected_projection_hash: "x",
         lifecycle_state_version: 1,
         outcome_certificate: ent.outcome_certificate,
+        acceptance_reason: "should not reach paid path",
+        acceptance_owner: "starter-test@example.com",
       }),
     });
     for (const fn of [createBaseline, check]) {

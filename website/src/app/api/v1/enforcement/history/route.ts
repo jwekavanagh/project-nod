@@ -1,7 +1,7 @@
 import { NextRequest } from "next/server";
 import { activationJson, activationReserveDeny } from "@/lib/activationHttp";
 import { authenticateApiKey, requireScopes } from "@/lib/apiKeyAuthGateway";
-import { listEnforcementHistory } from "@/lib/enforcementState";
+import { listEnforcementHistory, listGovernanceAcceptances } from "@/lib/enforcementState";
 
 export async function GET(req: NextRequest) {
   const authn = await authenticateApiKey(req);
@@ -21,11 +21,18 @@ export async function GET(req: NextRequest) {
   const parsedLimit = limitRaw ? Number(limitRaw) : undefined;
   const limit = parsedLimit !== undefined && Number.isFinite(parsedLimit) ? parsedLimit : undefined;
 
-  const events = await listEnforcementHistory({
-    userId: authn.principal.userId,
-    workflowId,
-    limit: limit === undefined ? undefined : Math.trunc(limit),
-  });
-  return activationJson(req, { schema_version: 1, workflow_id: workflowId, events }, 200);
+  const [events, acceptances] = await Promise.all([
+    listEnforcementHistory({
+      userId: authn.principal.userId,
+      workflowId,
+      limit: limit === undefined ? undefined : Math.trunc(limit),
+    }),
+    listGovernanceAcceptances({
+      userId: authn.principal.userId,
+      workflowId,
+      limit: limit === undefined ? undefined : Math.trunc(limit),
+    }),
+  ]);
+  return activationJson(req, { schema_version: 1, workflow_id: workflowId, events, acceptances }, 200);
 }
 

@@ -204,6 +204,25 @@ export const governanceEvidence = pgTable("governance_evidence", {
   createdAt: timestamp("created_at", { withTimezone: true, mode: "date" }).notNull().defaultNow(),
 });
 
+/** Immutable governed drift-acceptance record (reason, owner, optional review-by, optional evidence links). */
+export const governanceAcceptance = pgTable("governance_acceptance", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  userId: text("user_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  workflowId: text("workflow_id").notNull(),
+  runId: text("run_id").notNull(),
+  evidenceId: uuid("evidence_id")
+    .notNull()
+    .references(() => governanceEvidence.id, { onDelete: "restrict" }),
+  acceptanceReason: text("acceptance_reason").notNull(),
+  acceptanceOwner: text("acceptance_owner").notNull(),
+  evidenceLinks: jsonb("evidence_links"),
+  exceptionReviewBy: timestamp("exception_review_by", { withTimezone: true, mode: "date" }),
+  acceptedMaterialTruthSha256: text("accepted_material_truth_sha256").notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true, mode: "date" }).notNull().defaultNow(),
+});
+
 /** Stateful CI enforcement baseline per (user, workflow). */
 export const enforcementBaselines = pgTable(
   "enforcement_baseline",
@@ -216,6 +235,9 @@ export const enforcementBaselines = pgTable(
     projectionHash: text("projection_hash").notNull(),
     projection: jsonb("projection").notNull(),
     baselineEvidenceId: uuid("baseline_evidence_id").references(() => governanceEvidence.id, { onDelete: "set null" }),
+    activeAcceptanceId: uuid("active_acceptance_id").references(() => governanceAcceptance.id, {
+      onDelete: "set null",
+    }),
     needsRebaseline: boolean("needs_rebaseline").notNull().default(false),
     acceptedByKeyId: text("accepted_by_key_id"),
     createdAt: timestamp("created_at", { withTimezone: true, mode: "date" }).notNull().defaultNow(),

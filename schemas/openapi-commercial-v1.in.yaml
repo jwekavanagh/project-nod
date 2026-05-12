@@ -598,7 +598,7 @@ components:
           type: string
     EnforcementFsmEnvelopeV2:
       type: object
-      description: Hosted enforcement lifecycle response envelope for POST /check | /baselines | /accept (schema_version 2 on responses; distinct from evidence ingestion schema_version 3).
+      description: Hosted enforcement lifecycle response envelope for POST /check | /baselines | /accept (schema_version 2 on responses; distinct from evidence ingestion schema_version 3). On trusted HTTP 200 POST /check completions, `pass_kind` classifies baseline trust; `next_action` is human guidance only (not a stable automation contract).
       required: [schema_version, code]
       properties:
         schema_version:
@@ -608,12 +608,30 @@ components:
           type: string
         quota_enforced_via_reserve:
           type: boolean
+        pass_kind:
+          type: string
+          enum: [baseline_match, governed_acceptance_active]
+          description: >-
+            Present only when HTTP status is 200 and decision_state is decision_trusted. Value governed_acceptance_active
+            only for the single RERUN_PASS certification check while an active governed acceptance pointer existed; otherwise baseline_match.
+        governed_acceptance_id:
+          type: string
+          format: uuid
+          description: Present if and only if pass_kind is governed_acceptance_active (same transaction clears the baseline pointer).
+        acceptance_id:
+          type: string
+          format: uuid
+          description: Present on successful POST /accept (durable governance_acceptance row identifier).
       additionalProperties: true
     EnforcementAcceptEvidenceRequestV3:
       allOf:
         - $ref: "#/components/schemas/EnforcementEvidenceRequestV3"
         - type: object
-          required: [expected_projection_hash, lifecycle_state_version]
+          required:
+            - expected_projection_hash
+            - lifecycle_state_version
+            - acceptance_reason
+            - acceptance_owner
           properties:
             expected_projection_hash:
               type: string
@@ -621,9 +639,30 @@ components:
             lifecycle_state_version:
               type: integer
               description: Optimistic concurrency token; must match lifecycle_state_version from the prior response.
+            acceptance_reason:
+              type: string
+              minLength: 1
+              description: Non-empty operator justification for drift acceptance (audit trail).
+            acceptance_owner:
+              type: string
+              minLength: 1
+              description: Non-empty owner identity (email or stable handle) for drift acceptance (audit trail).
+            evidence_links:
+              type: array
+              maxItems: 8
+              items:
+                type: string
+                maxLength: 2048
+              description: Optional HTTPS-only evidence URLs (tickets, dashboards); each entry must parse as https URL.
+            exception_review_by:
+              type: string
+              format: date-time
+              description: >-
+                Optional ISO-8601 / RFC3339 instant strictly after server `now` at parse time. When elapsed before the
+                post-accept certification POST /check, the next check returns 409 ENFORCE_BASELINE_REBASE_REQUIRED and clears the active acceptance pointer.
     EnforcementHistoryResponse:
       type: object
-      required: [schema_version, workflow_id, events]
+      required: [schema_version, workflow_id, events, acceptances]
       properties:
         schema_version:
           type: integer
@@ -632,6 +671,12 @@ components:
           type: string
         events:
           type: array
+          items:
+            type: object
+            additionalProperties: true
+        acceptances:
+          type: array
+          description: Governed drift acceptance rows for this workflow (newest first within limit).
           items:
             type: object
             additionalProperties: true
@@ -812,6 +857,7 @@ components:
           additionalProperties: true
         fsmTransitions:
           type: array
+          description: FSM transition ledger rows; items may include nested governedAcceptance when transition metadata references a governance_acceptance id.
           items:
             type: object
             additionalProperties: true

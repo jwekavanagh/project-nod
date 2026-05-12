@@ -72,13 +72,13 @@ export default function IntegratePage() {
         {p.truthCheckCommand}
       </MarketingCodeBlock>
       <p className="home-cta-row">
-        <a
+        <Link
           className="btn"
-          href="#integrate-truth-check-commands"
+          href="/verify"
           data-cta-priority={conversionSpine.ctaPriorityPrimaryValue}
         >
           {conversionSpine.dominantByRoute["/integrate"]}
-        </a>
+        </Link>
       </p>
 
       <h2>Before you run it</h2>
