@@ -21,7 +21,7 @@
 #   workspace's local `node_modules/agentskeptic`, which is the linked OSS build.
 #   This keeps the smoke deterministic on PRs without secrets.
 #
-# Permissions: contents: read only. actions/upload-artifact@v4 and
+# Permissions: contents: read only. actions/upload-artifact@v7 and
 # actions/download-artifact@v4 authenticate via ACTIONS_RUNTIME_TOKEN, not
 # GITHUB_TOKEN, so no `actions: read|write` scope is required. Successful
 # `download-artifact@v4` of the named artifact is itself proof the artifact
@@ -129,7 +129,7 @@ jobs:
 
       - name: Upload certificate SHA-256
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: agentskeptic-outcome-certificate-sha256
           path: ${{ runner.temp }}/cert.sha256
