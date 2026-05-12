@@ -126,6 +126,6 @@
   },
   "homepageCopy": {
     "valueProposition": "AgentSkeptic compares agent claims with real downstream state — databases, APIs, object stores, and vector stores — and returns a clear verdict. Read-only, deterministic, and CI-friendly.",
-    "mechanismWorksWith": "Postgres, SQLite, MongoDB, S3, HTTP APIs, vector stores, and other queryable systems — full registry contract verification covers witness kinds documented in verification-state-stores.md; quick mode stays SQL-focused."
+    "mechanismWorksWith": "Postgres, SQLite, MySQL, MongoDB, S3, HTTP APIs, vector stores, and other queryable systems — full registry contract verification covers witness kinds documented in verification-state-stores.md; quick mode stays SQL-focused."
   }
 }
