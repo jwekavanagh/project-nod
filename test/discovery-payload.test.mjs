@@ -273,6 +273,10 @@ test("examples/github-actions/agentskeptic-commercial.yml governance workflow co
     "github.event_name == 'workflow_dispatch' && github.event.inputs.governance_job == 'accept_drift'",
   );
   assert.deepEqual(Object.keys(doc.on.workflow_dispatch.inputs).sort(), [
+    "acceptance_evidence_links_json",
+    "acceptance_owner",
+    "acceptance_reason",
+    "acceptance_review_by",
     "expected_projection_hash",
     "governance_job",
     "lifecycle_state_version",
