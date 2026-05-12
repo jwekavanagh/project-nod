@@ -6,10 +6,16 @@
 
 ## [8.3.1](https://github.com/jwekavanagh/agentskeptic/compare/v8.3.0...v8.3.1) (2026-05-11)
 
+### ⚠ BREAKING CHANGES (hosted commercial API + CLI accept)
+
+* **`POST /api/v1/enforcement/accept`** requires **`acceptance_reason`** and **`acceptance_owner`** (optional **`evidence_links`**, **`exception_review_by`**). Older clients omitting these fields receive **400**.
+* **`agentskeptic enforce --accept-drift`** requires **`AGENTSKEPTIC_ACCEPT_REASON`** and **`AGENTSKEPTIC_ACCEPT_OWNER`** (optional **`AGENTSKEPTIC_ACCEPT_REVIEW_BY`**, **`AGENTSKEPTIC_ACCEPT_EVIDENCE_LINKS`** JSON array string).
+
 ### Features
 
 * **cli:** opt-in **coverage budgets** — validate a policy file in **Phase A** (before verify), evaluate witness modality coverage against the Outcome Certificate in **Phase B**, and emit **`coverage_budget_verdict:`** / **`coverage_budget_detail:`** plus a **`=== coverage_budget ===`** human block only when a policy is active (`--coverage-budget <path>` or committed **`agentskeptic/coverage-budget.json`** beside **`--project`**). Default stderr for runs without an active policy stays the existing two-line truth prefix. **`--enforce-coverage-budget`** fails fast with exit **3** when no policy is active; when active, a budget **fail** can raise the CLI exit from **0** to **1** on an otherwise trusted run. Schema: **`schemas/coverage-budget-v1.schema.json`**. Integrator SSOT: **[`docs/ambient-ci-distribution.md`](docs/ambient-ci-distribution.md)**.
 * **ci:** composite input **`enforce-coverage-budget`** forwards **`--enforce-coverage-budget`** only when the value is the string **`true`** (case-sensitive); **`agentskeptic enforce`** ignores this input in v1.
+* **web / commercial:** governed drift acceptance persistence (**`governance_acceptance`**), baseline **`active_acceptance_id`**, optional review-by expiry (**409 `ENFORCE_BASELINE_REBASE_REQUIRED`**), **`pass_kind` / `governed_acceptance_id`** on the certification **`RERUN_PASS`** **200** **`POST /check`**, history **`acceptances`**, export **`governedAcceptance`** nesting on FSM transitions, account governance UI section, **`agentskeptic-governance-pass-kind`** GitHub Actions output, and DB allowance for **`trust_decision_blocked`** funnel events.
 
 ## [8.3.0](https://github.com/jwekavanagh/agentskeptic/compare/v8.2.0...v8.3.0) (2026-05-11)
 

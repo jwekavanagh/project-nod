@@ -499,6 +499,7 @@ const GOVERNANCE_OUTPUT_KEYS = [
   "agentskeptic-governance-lifecycle-state",
   "agentskeptic-governance-lifecycle-state-version",
   "agentskeptic-governance-next-action",
+  "agentskeptic-governance-pass-kind",
   "agentskeptic-governance-result-status",
   "agentskeptic-governance-step",
 ].sort((a, b) => a.localeCompare(b));
@@ -766,6 +767,7 @@ function buildGovernanceOutputMap(resolved, stderrText) {
 
   const fl = firstLineOfNextAction(inner);
   m["agentskeptic-governance-next-action"] = fl || smallestNextActionForStep(step);
+  m["agentskeptic-governance-pass-kind"] = typeof inner.pass_kind === "string" ? inner.pass_kind : "";
 
   return m;
 }

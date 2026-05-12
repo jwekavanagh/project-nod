@@ -7,6 +7,7 @@ import {
   enforcementEvents,
   enforcementFsmTransition,
   enforcementLifecycle,
+  governanceAcceptance,
   trustDecisionReceipts,
 } from "@/db/schema";
 import type { EnforcementAcceptEvidenceInput, EnforcementEvidenceInput } from "@/lib/enforcementState";
@@ -37,6 +38,7 @@ async function upsertBaselineTx(
     projectionHash: string;
     projection: unknown;
     baselineEvidenceId?: string;
+    activeAcceptanceId?: string | null;
     needsRebaseline?: boolean;
   },
 ): Promise<void> {
@@ -52,6 +54,7 @@ async function upsertBaselineTx(
       projectionHash: input.projectionHash,
       projection: input.projection as Record<string, unknown>,
       baselineEvidenceId: input.baselineEvidenceId ?? null,
+      activeAcceptanceId: input.activeAcceptanceId ?? null,
       needsRebaseline: input.needsRebaseline ?? false,
       acceptedByKeyId: input.keyId,
     });
@@ -63,6 +66,7 @@ async function upsertBaselineTx(
       projectionHash: input.projectionHash,
       projection: input.projection as Record<string, unknown>,
       baselineEvidenceId: input.baselineEvidenceId ?? null,
+      ...(input.activeAcceptanceId !== undefined ? { activeAcceptanceId: input.activeAcceptanceId } : {}),
       needsRebaseline: input.needsRebaseline ?? false,
       acceptedByKeyId: input.keyId,
       updatedAt: new Date(),
@@ -214,8 +218,11 @@ export async function executeFsmCheck(params: {
     materialTruth: Record<string, unknown>;
   };
   evidenceId: string;
+  /** Test-only clock injection for governed acceptance review windows. */
+  now?: Date;
 }) {
   const { principal, body, verified, evidenceId } = params;
+  const now = params.now ?? new Date();
   return await db.transaction(async (tx) => {
     const baseline = await tx
       .select()
@@ -223,6 +230,40 @@ export async function executeFsmCheck(params: {
       .where(and(eq(enforcementBaselines.userId, principal.userId), eq(enforcementBaselines.workflowId, body.workflow_id)))
       .limit(1);
     const baselineRow = baseline[0] ?? null;
+
+    if (baselineRow?.activeAcceptanceId) {
+      const accRows = await tx
+        .select({
+          id: governanceAcceptance.id,
+          exceptionReviewBy: governanceAcceptance.exceptionReviewBy,
+        })
+        .from(governanceAcceptance)
+        .where(eq(governanceAcceptance.id, baselineRow.activeAcceptanceId))
+        .limit(1);
+      const acc = accRows[0];
+      if (acc?.exceptionReviewBy && now.getTime() >= acc.exceptionReviewBy.getTime()) {
+        await tx
+          .update(enforcementBaselines)
+          .set({
+            needsRebaseline: true,
+            activeAcceptanceId: null,
+            updatedAt: new Date(),
+          })
+          .where(eq(enforcementBaselines.id, baselineRow.id));
+        return {
+          httpStatus: 409 as const,
+          payload: {
+            schema_version: 2,
+            code: "ENFORCE_BASELINE_REBASE_REQUIRED" as const,
+            message:
+              "Baseline must be recreated with evidence-native enforce before drift checks can run.",
+          },
+        };
+      }
+    }
+
+    const pointerAtCheckStart = baselineRow?.activeAcceptanceId ?? null;
+
     const lifeRowStart = await ensureLifecycleRow(tx, principal.userId, body.workflow_id, !!baselineRow);
 
     const precondition = evaluateCheckPreconditions({
@@ -291,6 +332,20 @@ export async function executeFsmCheck(params: {
       trustBlockFingerprintSha256: trustFp ?? null,
     });
 
+    const transitionMetadata: Record<string, unknown> = {
+      attempt_id: attemptId,
+      decision_reason_code: evalResult.decisionReasonCode,
+      run_kind: body.outcome_certificate.runKind,
+    };
+    if (
+      evalResult.httpStatus === 200 &&
+      decisionStateDb === "decision_trusted" &&
+      evalResult.decisionReasonCode === "RERUN_PASS" &&
+      pointerAtCheckStart
+    ) {
+      transitionMetadata.governed_acceptance_id = pointerAtCheckStart;
+    }
+
     const [transitionRow] = await tx
       .insert(enforcementFsmTransition)
       .values({
@@ -304,11 +359,7 @@ export async function executeFsmCheck(params: {
         expectedProjectionHash: baselineRow?.projectionHash ?? null,
         actualProjectionHash: verified.materialTruthSha256,
         evidenceId,
-        metadata: {
-          attempt_id: attemptId,
-          decision_reason_code: evalResult.decisionReasonCode,
-          run_kind: body.outcome_certificate.runKind,
-        },
+        metadata: transitionMetadata,
       })
       .returning({ id: enforcementFsmTransition.id });
 
@@ -333,6 +384,20 @@ export async function executeFsmCheck(params: {
       throw new Error("lifecycle optimistic lock conflict on enforcement check");
     }
 
+    const checkEventMetadata: Record<string, unknown> = {
+      certificate_sha256: verified.certificateSha256,
+      run_kind: body.outcome_certificate.runKind,
+      attempt_id: attemptId,
+    };
+    if (
+      evalResult.decisionReasonCode === "RERUN_PASS" &&
+      decisionStateDb === "decision_trusted" &&
+      evalResult.httpStatus === 200 &&
+      pointerAtCheckStart
+    ) {
+      checkEventMetadata.governed_acceptance_id = pointerAtCheckStart;
+    }
+
     await appendEnforcementEventTx(tx, {
       userId: principal.userId,
       workflowId: body.workflow_id,
@@ -344,12 +409,21 @@ export async function executeFsmCheck(params: {
       expectedProjectionHash: baselineRow?.projectionHash ?? null,
       actualProjectionHash: verified.materialTruthSha256,
       evidenceId,
-      metadata: {
-        certificate_sha256: verified.certificateSha256,
-        run_kind: body.outcome_certificate.runKind,
-        attempt_id: attemptId,
-      },
+      metadata: checkEventMetadata,
     });
+
+    if (
+      baselineRow &&
+      evalResult.httpStatus === 200 &&
+      decisionStateDb === "decision_trusted" &&
+      evalResult.decisionReasonCode === "RERUN_PASS" &&
+      pointerAtCheckStart
+    ) {
+      await tx
+        .update(enforcementBaselines)
+        .set({ activeAcceptanceId: null, updatedAt: new Date() })
+        .where(eq(enforcementBaselines.id, baselineRow.id));
+    }
 
     const expectAccept =
       lifecycleAfter === "action_required" && evalResult.pendingAcceptProjectionHash
@@ -387,6 +461,17 @@ export async function executeFsmCheck(params: {
             actual_projection_hash: verified.materialTruthSha256,
             next_action: evalResult.nextAction,
             quota_enforced_via_reserve: true,
+            ...(evalResult.httpStatus === 200 && decisionStateDb === "decision_trusted"
+              ? {
+                  pass_kind:
+                    evalResult.decisionReasonCode === "RERUN_PASS" && pointerAtCheckStart
+                      ? ("governed_acceptance_active" as const)
+                      : ("baseline_match" as const),
+                  ...(evalResult.decisionReasonCode === "RERUN_PASS" && pointerAtCheckStart
+                    ? { governed_acceptance_id: pointerAtCheckStart }
+                    : {}),
+                }
+              : {}),
           };
 
     return { httpStatus: evalResult.httpStatus, payload: basePayload };
@@ -436,6 +521,7 @@ export async function executeFsmCreateBaseline(params: {
       projectionHash: verified.materialTruthSha256,
       projection: verified.materialTruth,
       baselineEvidenceId: evidenceId,
+      activeAcceptanceId: null,
       needsRebaseline: false,
     });
 
@@ -574,6 +660,21 @@ export async function executeFsmAcceptDrift(params: {
 
     const nextVersion = lifeRow.stateVersion + 1;
 
+    const [acceptanceRow] = await tx
+      .insert(governanceAcceptance)
+      .values({
+        userId: principal.userId,
+        workflowId: body.workflow_id,
+        runId: body.run_id,
+        evidenceId,
+        acceptanceReason: body.acceptance_reason,
+        acceptanceOwner: body.acceptance_owner,
+        evidenceLinks: body.evidence_links?.length ? body.evidence_links : null,
+        exceptionReviewBy: body.exception_review_by ?? null,
+        acceptedMaterialTruthSha256: verified.materialTruthSha256,
+      })
+      .returning({ id: governanceAcceptance.id });
+
     await upsertBaselineTx(tx, {
       userId: principal.userId,
       keyId: principal.keyId,
@@ -581,6 +682,7 @@ export async function executeFsmAcceptDrift(params: {
       projectionHash: verified.materialTruthSha256,
       projection: verified.materialTruth,
       baselineEvidenceId: evidenceId,
+      activeAcceptanceId: acceptanceRow!.id,
       needsRebaseline: false,
     });
 
@@ -600,6 +702,7 @@ export async function executeFsmAcceptDrift(params: {
         metadata: {
           certificate_sha256: verified.certificateSha256,
           run_kind: body.outcome_certificate.runKind,
+          acceptance_id: acceptanceRow!.id,
         },
       })
       .returning({ id: enforcementFsmTransition.id });
@@ -636,6 +739,7 @@ export async function executeFsmAcceptDrift(params: {
       metadata: {
         certificate_sha256: verified.certificateSha256,
         run_kind: body.outcome_certificate.runKind,
+        acceptance_id: acceptanceRow!.id,
       },
     });
 
@@ -651,6 +755,7 @@ export async function executeFsmAcceptDrift(params: {
         workflow_id: body.workflow_id,
         run_id: body.run_id,
         accepted_projection_hash: verified.materialTruthSha256,
+        acceptance_id: acceptanceRow!.id,
         next_action: acceptEv.nextAction,
         quota_enforced_via_reserve: true,
       },

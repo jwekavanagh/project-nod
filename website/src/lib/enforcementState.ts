@@ -7,7 +7,7 @@ import {
 } from "agentskeptic/governanceEvidence";
 import { loadSchemaValidator } from "agentskeptic/schemaLoad";
 import { db } from "@/db/client";
-import { enforcementBaselines, enforcementEvents, governanceEvidence } from "@/db/schema";
+import { enforcementBaselines, enforcementEvents, governanceAcceptance, governanceEvidence } from "@/db/schema";
 
 export type EnforcementEvidenceInput = {
   schema_version: 3;
@@ -22,6 +22,10 @@ export type EnforcementEvidenceInput = {
 export type EnforcementAcceptEvidenceInput = EnforcementEvidenceInput & {
   expected_projection_hash: string;
   lifecycle_state_version: number;
+  acceptance_reason: string;
+  acceptance_owner: string;
+  evidence_links?: string[];
+  exception_review_by?: Date;
 };
 
 export type ParseGovernanceEvidenceResult =
@@ -90,7 +94,69 @@ export function parseGovernanceEvidenceInput(body: unknown): ParseGovernanceEvid
   };
 }
 
-export function parseAcceptEvidenceInput(body: unknown): ParseAcceptEvidenceResult {
+const MAX_GOVERNED_EVIDENCE_LINKS = 8;
+const MAX_GOVERNED_EVIDENCE_URL_LEN = 2048;
+
+function parseEvidenceLinks(raw: unknown): { ok: true; links: string[] } | { ok: false; message: string } {
+  if (raw === undefined || raw === null) {
+    return { ok: true, links: [] };
+  }
+  if (!Array.isArray(raw)) {
+    return { ok: false, message: "evidence_links must be an array of HTTPS URLs." };
+  }
+  if (raw.length > MAX_GOVERNED_EVIDENCE_LINKS) {
+    return { ok: false, message: `evidence_links must have at most ${String(MAX_GOVERNED_EVIDENCE_LINKS)} entries.` };
+  }
+  const links: string[] = [];
+  for (const item of raw) {
+    if (typeof item !== "string") {
+      return { ok: false, message: "evidence_links must be an array of HTTPS URLs." };
+    }
+    const u = item.trim();
+    if (!u) {
+      return { ok: false, message: "evidence_links entries must be non-empty HTTPS URL strings." };
+    }
+    if (u.length > MAX_GOVERNED_EVIDENCE_URL_LEN) {
+      return { ok: false, message: `evidence_links URL exceeds ${String(MAX_GOVERNED_EVIDENCE_URL_LEN)} characters.` };
+    }
+    try {
+      const parsed = new URL(u);
+      if (parsed.protocol !== "https:") {
+        return { ok: false, message: "evidence_links URLs must use https scheme." };
+      }
+    } catch {
+      return { ok: false, message: "evidence_links must be an array of HTTPS URLs." };
+    }
+    links.push(u);
+  }
+  return { ok: true, links };
+}
+
+function parseExceptionReviewBy(
+  raw: unknown,
+  nowMs: number,
+): { ok: true; date?: Date } | { ok: false; message: string } {
+  if (raw === undefined || raw === null || (typeof raw === "string" && !raw.trim())) {
+    return { ok: true, date: undefined };
+  }
+  const s = typeof raw === "string" ? raw.trim() : "";
+  if (!s) {
+    return { ok: false, message: "exception_review_by must be a valid ISO-8601 timestamp." };
+  }
+  const d = new Date(s);
+  if (!Number.isFinite(d.getTime())) {
+    return { ok: false, message: "exception_review_by must be a valid ISO-8601 timestamp." };
+  }
+  if (d.getTime() <= nowMs) {
+    return { ok: false, message: "exception_review_by must be strictly in the future." };
+  }
+  return { ok: true, date: d };
+}
+
+export function parseAcceptEvidenceInput(
+  body: unknown,
+  options?: { now?: Date },
+): ParseAcceptEvidenceResult {
   const base = parseGovernanceEvidenceInput(body);
   if (!base.ok) return base;
   const b = body as Record<string, unknown>;
@@ -109,12 +175,35 @@ export function parseAcceptEvidenceInput(body: unknown): ParseAcceptEvidenceResu
         "Missing governance evidence fields or accept requirements: expected_projection_hash and lifecycle_state_version.",
     };
   }
+
+  const acceptance_reason =
+    typeof b.acceptance_reason === "string" ? b.acceptance_reason.trim() : "";
+  const acceptance_owner =
+    typeof b.acceptance_owner === "string" ? b.acceptance_owner.trim() : "";
+  if (!acceptance_reason) {
+    return { ok: false, message: "Missing acceptance_reason." };
+  }
+  if (!acceptance_owner) {
+    return { ok: false, message: "Missing acceptance_owner." };
+  }
+
+  const linksParsed = parseEvidenceLinks(b.evidence_links);
+  if (!linksParsed.ok) return linksParsed;
+
+  const nowMs = (options?.now ?? new Date()).getTime();
+  const reviewParsed = parseExceptionReviewBy(b.exception_review_by, nowMs);
+  if (!reviewParsed.ok) return reviewParsed;
+
   return {
     ok: true,
     input: {
       ...base.input,
       expected_projection_hash: expected,
       lifecycle_state_version,
+      acceptance_reason,
+      acceptance_owner,
+      ...(linksParsed.links.length > 0 ? { evidence_links: linksParsed.links } : {}),
+      ...(reviewParsed.date !== undefined ? { exception_review_by: reviewParsed.date } : {}),
     },
   };
 }
@@ -165,6 +254,7 @@ export async function upsertBaseline(input: {
   projectionHash: string;
   projection: unknown;
   baselineEvidenceId?: string;
+  activeAcceptanceId?: string | null;
   needsRebaseline?: boolean;
 }): Promise<void> {
   const existing = await db
@@ -179,6 +269,7 @@ export async function upsertBaseline(input: {
       projectionHash: input.projectionHash,
       projection: input.projection as Record<string, unknown>,
       baselineEvidenceId: input.baselineEvidenceId ?? null,
+      activeAcceptanceId: input.activeAcceptanceId ?? null,
       needsRebaseline: input.needsRebaseline ?? false,
       acceptedByKeyId: input.keyId,
     });
@@ -190,6 +281,7 @@ export async function upsertBaseline(input: {
       projectionHash: input.projectionHash,
       projection: input.projection as Record<string, unknown>,
       baselineEvidenceId: input.baselineEvidenceId ?? null,
+      ...(input.activeAcceptanceId !== undefined ? { activeAcceptanceId: input.activeAcceptanceId } : {}),
       needsRebaseline: input.needsRebaseline ?? false,
       acceptedByKeyId: input.keyId,
       updatedAt: new Date(),
@@ -234,6 +326,20 @@ export async function appendEnforcementEvent(input: {
     evidenceId: input.evidenceId ?? null,
     metadata: input.metadata ?? null,
   });
+}
+
+export async function listGovernanceAcceptances(input: {
+  userId: string;
+  workflowId: string;
+  limit?: number;
+}): Promise<Array<typeof governanceAcceptance.$inferSelect>> {
+  const n = Math.max(1, Math.min(200, input.limit ?? 50));
+  return await db
+    .select()
+    .from(governanceAcceptance)
+    .where(and(eq(governanceAcceptance.userId, input.userId), eq(governanceAcceptance.workflowId, input.workflowId)))
+    .orderBy(desc(governanceAcceptance.createdAt))
+    .limit(n);
 }
 
 export async function listEnforcementHistory(input: {

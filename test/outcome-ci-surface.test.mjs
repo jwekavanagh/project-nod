@@ -8,8 +8,8 @@
  * Goldens are stored as `*.expected.md` and `*.expected.kv` next to each
  * fixture. The artifact dir is normalized to `<ARTIFACT_DIR>` before compare.
  *
- * Enforce mode: twelve bundles under `test/fixtures/outcome-ci-surface/enforce-*`
- * (eleven operator_step values; `MALFORMED_ENVELOPE` has outer + unknown-inner).
+ * Enforce mode: thirteen bundles under `test/fixtures/outcome-ci-surface/enforce-*`
+ * (twelve operator_step values; `MALFORMED_ENVELOPE` has outer + unknown-inner).
  *
  * Refresh goldens (only when intentionally changing the contract):
  *   AS_RENDER_GOLDEN_REFRESH=1 node --test test/outcome-ci-surface.test.mjs
@@ -356,6 +356,7 @@ const ENFORCE_GOLDEN_CASES = [
   ["enforce-drift-pinned", "4"],
   ["enforce-drift-no-pin", "4"],
   ["enforce-rerun-pass", "0"],
+  ["enforce-governed-pass", "0"],
   ["enforce-rerun-fail", "4"],
   ["enforce-baseline-created", "0"],
   ["enforce-accept-recorded", "0"],

@@ -62,6 +62,66 @@ async function postEnforcementState(
   return postEnforcementJson({ path, payload, apiKey });
 }
 
+/**
+ * Mutates `payload` with hosted accept-drift fields from environment (also used by contract tests).
+ * @throws TruthLayerError when required env is missing or evidence links JSON is invalid.
+ */
+export function applyAcceptDriftEnvToPayload(payload: Record<string, unknown>, env: NodeJS.ProcessEnv): void {
+  const expected =
+    env.AGENTSKEPTIC_ENFORCE_EXPECTED_PROJECTION_HASH?.trim() ||
+    env.WORKFLOW_VERIFIER_ENFORCE_EXPECTED_PROJECTION_HASH?.trim();
+  const verRaw =
+    env.AGENTSKEPTIC_ENFORCE_LIFECYCLE_STATE_VERSION?.trim() ||
+    env.WORKFLOW_VERIFIER_ENFORCE_LIFECYCLE_STATE_VERSION?.trim();
+  const lifecycle_state_version =
+    verRaw !== undefined && verRaw !== "" ? Number.parseInt(verRaw, 10) : NaN;
+  if (!expected || !Number.isInteger(lifecycle_state_version)) {
+    throw new TruthLayerError(
+      CLI_OPERATIONAL_CODES.ENFORCE_USAGE,
+      "For --accept-drift, set AGENTSKEPTIC_ENFORCE_EXPECTED_PROJECTION_HASH and AGENTSKEPTIC_ENFORCE_LIFECYCLE_STATE_VERSION from the prior hosted enforce POST /check response (fields expected_projection_hash_for_accept and lifecycle_state_version).",
+    );
+  }
+  const acceptance_reason =
+    env.AGENTSKEPTIC_ACCEPT_REASON?.trim() || env.WORKFLOW_VERIFIER_ACCEPT_REASON?.trim();
+  const acceptance_owner =
+    env.AGENTSKEPTIC_ACCEPT_OWNER?.trim() || env.WORKFLOW_VERIFIER_ACCEPT_OWNER?.trim();
+  if (!acceptance_reason || !acceptance_owner) {
+    throw new TruthLayerError(
+      CLI_OPERATIONAL_CODES.ENFORCE_USAGE,
+      "For --accept-drift, set AGENTSKEPTIC_ACCEPT_REASON and AGENTSKEPTIC_ACCEPT_OWNER (required governed acceptance audit fields for POST /api/v1/enforcement/accept).",
+    );
+  }
+  payload.expected_projection_hash = expected;
+  payload.lifecycle_state_version = lifecycle_state_version;
+  payload.acceptance_reason = acceptance_reason;
+  payload.acceptance_owner = acceptance_owner;
+
+  const reviewBy = env.AGENTSKEPTIC_ACCEPT_REVIEW_BY?.trim();
+  if (reviewBy) {
+    payload.exception_review_by = reviewBy;
+  }
+
+  const linksRaw = env.AGENTSKEPTIC_ACCEPT_EVIDENCE_LINKS?.trim();
+  if (linksRaw) {
+    let parsed: unknown;
+    try {
+      parsed = JSON.parse(linksRaw) as unknown;
+    } catch {
+      throw new TruthLayerError(
+        CLI_OPERATIONAL_CODES.ENFORCE_USAGE,
+        "AGENTSKEPTIC_ACCEPT_EVIDENCE_LINKS must be valid JSON (array of HTTPS URL strings).",
+      );
+    }
+    if (!Array.isArray(parsed) || !parsed.every((x) => typeof x === "string")) {
+      throw new TruthLayerError(
+        CLI_OPERATIONAL_CODES.ENFORCE_USAGE,
+        "AGENTSKEPTIC_ACCEPT_EVIDENCE_LINKS must be a JSON array of URL strings.",
+      );
+    }
+    payload.evidence_links = parsed;
+  }
+}
+
 function writeOperationalErr(code: string, message: string): void {
   console.error(cliErrorEnvelope(code, formatOperationalMessage(message)));
 }
@@ -152,22 +212,7 @@ export async function runStatefulEnforce(args: string[]): Promise<void> {
     };
 
     if (mode === "accept-drift") {
-      const expected =
-        process.env.AGENTSKEPTIC_ENFORCE_EXPECTED_PROJECTION_HASH?.trim() ||
-        process.env.WORKFLOW_VERIFIER_ENFORCE_EXPECTED_PROJECTION_HASH?.trim();
-      const verRaw =
-        process.env.AGENTSKEPTIC_ENFORCE_LIFECYCLE_STATE_VERSION?.trim() ||
-        process.env.WORKFLOW_VERIFIER_ENFORCE_LIFECYCLE_STATE_VERSION?.trim();
-      const lifecycle_state_version =
-        verRaw !== undefined && verRaw !== "" ? Number.parseInt(verRaw, 10) : NaN;
-      if (!expected || !Number.isInteger(lifecycle_state_version)) {
-        throw new TruthLayerError(
-          CLI_OPERATIONAL_CODES.ENFORCE_USAGE,
-          "For --accept-drift, set AGENTSKEPTIC_ENFORCE_EXPECTED_PROJECTION_HASH and AGENTSKEPTIC_ENFORCE_LIFECYCLE_STATE_VERSION from the prior hosted enforce POST /check response (fields expected_projection_hash_for_accept and lifecycle_state_version).",
-        );
-      }
-      payload.expected_projection_hash = expected;
-      payload.lifecycle_state_version = lifecycle_state_version;
+      applyAcceptDriftEnvToPayload(payload, process.env);
     }
 
     const route =

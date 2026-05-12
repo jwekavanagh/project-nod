@@ -293,12 +293,27 @@ export interface components {
             material_truth_sha256: string;
             certificate_sha256: string;
         };
-        /** @description Hosted enforcement lifecycle response envelope for POST /check | /baselines | /accept (schema_version 2 on responses; distinct from evidence ingestion schema_version 3). */
+        /** @description Hosted enforcement lifecycle response envelope for POST /check | /baselines | /accept (schema_version 2 on responses; distinct from evidence ingestion schema_version 3). On trusted HTTP 200 POST /check completions, `pass_kind` classifies baseline trust; `next_action` is human guidance only (not a stable automation contract). */
         EnforcementFsmEnvelopeV2: {
             /** @constant */
             schema_version: 2;
             code: string;
             quota_enforced_via_reserve?: boolean;
+            /**
+             * @description Present only when HTTP status is 200 and decision_state is decision_trusted. Value governed_acceptance_active only for the single RERUN_PASS certification check while an active governed acceptance pointer existed; otherwise baseline_match.
+             * @enum {string}
+             */
+            pass_kind?: "baseline_match" | "governed_acceptance_active";
+            /**
+             * Format: uuid
+             * @description Present if and only if pass_kind is governed_acceptance_active (same transaction clears the baseline pointer).
+             */
+            governed_acceptance_id?: string;
+            /**
+             * Format: uuid
+             * @description Present on successful POST /accept (durable governance_acceptance row identifier).
+             */
+            acceptance_id?: string;
         } & {
             [key: string]: unknown;
         };
@@ -307,12 +322,27 @@ export interface components {
             expected_projection_hash: string;
             /** @description Optimistic concurrency token; must match lifecycle_state_version from the prior response. */
             lifecycle_state_version: number;
+            /** @description Non-empty operator justification for drift acceptance (audit trail). */
+            acceptance_reason: string;
+            /** @description Non-empty owner identity (email or stable handle) for drift acceptance (audit trail). */
+            acceptance_owner: string;
+            /** @description Optional HTTPS-only evidence URLs (tickets, dashboards); each entry must parse as https URL. */
+            evidence_links?: string[];
+            /**
+             * Format: date-time
+             * @description Optional ISO-8601 / RFC3339 instant strictly after server `now` at parse time. When elapsed before the post-accept certification POST /check, the next check returns 409 ENFORCE_BASELINE_REBASE_REQUIRED and clears the active acceptance pointer.
+             */
+            exception_review_by?: string;
         };
         EnforcementHistoryResponse: {
             /** @constant */
             schema_version: 1;
             workflow_id: string;
             events: {
+                [key: string]: unknown;
+            }[];
+            /** @description Governed drift acceptance rows for this workflow (newest first within limit). */
+            acceptances: {
                 [key: string]: unknown;
             }[];
         };
@@ -401,6 +431,7 @@ export interface components {
             lifecycle: {
                 [key: string]: unknown;
             } | null;
+            /** @description FSM transition ledger rows; items may include nested governedAcceptance when transition metadata references a governance_acceptance id. */
             fsmTransitions: {
                 [key: string]: unknown;
             }[];
