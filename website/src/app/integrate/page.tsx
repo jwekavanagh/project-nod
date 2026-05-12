@@ -2,6 +2,11 @@ import { MarketingCodeBlock } from "@/components/marketing/MarketingCodeBlock";
 import { MarketingPageHeader } from "@/components/marketing/MarketingPageHeader";
 import { MarketingPageShell } from "@/components/marketing/MarketingPageShell";
 import marketing from "@/lib/marketing";
+import {
+  INTEGRATE_DOC_REL_AMBIENT_CI,
+  INTEGRATE_DOC_REL_COVERAGE_BUDGETS,
+  IntegrateAdoptionLadderSections,
+} from "@/content/integrateAdoptionCopy";
 import { conversionSpine } from "@/content/productCopy";
 import { siteMetadata } from "@/content/siteMetadata";
 import { indexableGuideCanonical } from "@/lib/indexableGuides";
@@ -24,6 +29,7 @@ export const metadata: Metadata = {
 
 export default function IntegratePage() {
   const p = marketing.integratePage;
+  const githubBlob = (rel: string) => `${marketing.gitRepositoryUrl}/blob/main/${rel}`;
   return (
     <MarketingPageShell variant="documentProse" data-testid="integrate-page">
       <MarketingPageHeader
@@ -34,6 +40,11 @@ export default function IntegratePage() {
             <p className="lede">Get a deterministic verdict before you ship, bill, or hand off to customers.</p>
           </>
         }
+      />
+
+      <IntegrateAdoptionLadderSections
+        coverageBudgetsHref={githubBlob(INTEGRATE_DOC_REL_COVERAGE_BUDGETS)}
+        ambientCiHref={githubBlob(INTEGRATE_DOC_REL_AMBIENT_CI)}
       />
 
       <h2 id="first-truth-check">First proof: contract truth check</h2>
