@@ -28,6 +28,16 @@ const whatToDoNext = `## What to do next
 - Review [\`/pricing\`](/pricing) for metering, API keys, and plan caps before widening production use.
 - Review [\`/security\`](/security) before you grant database credentials to verification.`;
 
+/** Paid governance activation first; then the shared evaluation spine. */
+const whatToDoNextCiEnforcement = `## What to do next
+
+- **Stateful CI governance:** confirm a paid plan and create an API key at [\`/pricing\`](/pricing) and [\`/account\`](/account); baselines, events, and export live at [\`/account/governance\`](/account/governance).
+- Follow the mechanical first-proof path on [\`/integrate\`](/integrate) with your prepared database.
+- Browse adjacent guides on [\`/guides\`](/guides) when you need deeper scenarios.
+- Compare bundled outcomes at [\`/examples/wf-complete\`](/examples/wf-complete) and [\`/examples/wf-missing\`](/examples/wf-missing).
+- Read the acquisition narrative at [\`/database-truth-vs-traces\`](/database-truth-vs-traces) when traces are not enough as proof for buyers.
+- Review [\`/security\`](/security) before you grant database credentials to verification.`;
+
 const surfaces = [
   {
     doc: "docs/commercial.md",
@@ -51,13 +61,14 @@ evaluatorLens: false
     begin: "<!-- buyer-surface-ci-enforcement-metering:begin -->",
     end: "<!-- buyer-surface-ci-enforcement-metering:end -->",
     slug: "buyer-ci-enforcement-metering",
+    whatToDoNext: whatToDoNextCiEnforcement,
     frontmatter: `---
 surfaceKind: guide
 guideJob: problem
-title: Buyer — CI enforcement and metering — AgentSkeptic
-description: On-site summary of lock pinning, enforce gating, and reserve metering for CI pipelines using AgentSkeptic.
-intent: Teams wiring CI who need the same metering facts as docs/ci-enforcement.md without leaving the marketing site.
-valueProposition: You see how output-lock and expect-lock relate to OSS versus commercial builds and the license reserve API.
+title: Buyer — CI enforcement and governance — AgentSkeptic
+description: On-site summary of stateful baseline, drift, acceptance, metering, and reserve for paid CI enforcement with AgentSkeptic.
+intent: Teams adopting paid enforce who need the governance ladder and activation paths without reading the full CI SSOT first.
+valueProposition: You see how check differs from enforce, the baseline-to-export ladder, reserve metering, and which site paths to use next.
 primaryCta: integrate
 route: /guides/buyer-ci-enforcement-metering
 evaluatorLens: false
@@ -87,7 +98,8 @@ mkdirSync(outDir, { recursive: true });
 
 for (const s of surfaces) {
   const fenceBody = extractFence(s.doc, s.begin, s.end);
-  const md = `${s.frontmatter}\n\n${fenceBody}\n\n${whatToDoNext}\n`;
+  const footer = s.whatToDoNext ?? whatToDoNext;
+  const md = `${s.frontmatter}\n\n${fenceBody}\n\n${footer}\n`;
   const outPath = join(outDir, `${s.slug}.md`);
   writeFileSync(outPath, md, "utf8");
   console.log(`Wrote ${outPath}`);

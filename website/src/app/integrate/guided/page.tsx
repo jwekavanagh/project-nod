@@ -2,6 +2,7 @@
 
 import { MarketingCodeBlock } from "@/components/marketing/MarketingCodeBlock";
 import { MarketingPageShell } from "@/components/marketing/MarketingPageShell";
+import { governanceOnboardingHrefList, GOVERNANCE_ONBOARDING_LINK_LABELS } from "@/lib/governanceOnboardingLinks";
 import Link from "next/link";
 import { useCallback, useMemo, useState } from "react";
 import marketing from "@/lib/marketing";
@@ -92,10 +93,12 @@ function copyToClipboard(text: string): void {
   void navigator.clipboard.writeText(text);
 }
 
-const ENFORCE_DOC_HREF = "https://github.com/jwekavanagh/agentskeptic/blob/main/docs/agentskeptic.md";
-
 export default function IntegrateGuidedPage() {
   const p = marketing.integratePage;
+  const governanceHrefs = useMemo(
+    () => governanceOnboardingHrefList(marketing.gitRepositoryUrl),
+    [],
+  );
   const quickOneLine = useMemo(
     () => p.quickVerifyCommand.replace(/\\\n/g, " ").replace(/\s+/g, " ").trim(),
     [p.quickVerifyCommand],
@@ -182,8 +185,9 @@ export default function IntegrateGuidedPage() {
         <strong>automation-facing trust lines</strong> <code>truth_check_verdict: trusted|not_trusted|unknown</code> and{" "}
         <code>release_critical_truth_check_verdict: trusted|not_trusted|unknown</code> are emitted by{" "}
         <code>agentskeptic check</code> on stderr — the default first truth path and CI contract. Optional coverage budgets
-        add <code>coverage_budget_verdict</code> / <code>coverage_budget_detail</code> only when a policy is active. The form
-        below drafts registry input; Formalize builds toward <code>check</code>-grade replay + enforcement.
+        add <code>coverage_budget_verdict</code> / <code>coverage_budget_detail</code> only when a policy is active. Hosted
+        baselines and drift acceptance use <code>agentskeptic enforce</code> in CI once you adopt stateful governance. The
+        form below drafts registry input; Formalize builds toward <code>check</code>-grade replay + enforcement.
       </p>
       <p className="lede muted">
         <Link href="/integrate">Back to Get started</Link> ·{" "}
@@ -217,14 +221,31 @@ export default function IntegrateGuidedPage() {
             events when a human decision depends on the artifact.
           </li>
           <li>
-            <strong>Repeatable verification / CI gate:</strong> use <code>agentskeptic enforce</code> for lifecycle
-            baselines in CI — see{" "}
-            <a href={ENFORCE_DOC_HREF} rel="noopener noreferrer" target="_blank">
-              docs/agentskeptic.md (enforce)
-            </a>
-            .
+            <strong>Paid CI governance:</strong> when you need hosted baselines, drift checks, and pinned acceptance in
+            CI, follow the ordered path under <strong>Paid CI governance</strong> below (after a paid plan and API
+            key).
           </li>
         </ol>
+        <section
+          data-testid="integrate-guided-governance-bridge"
+          aria-label="Paid CI governance"
+          className="u-mt-1"
+        >
+          <h3 className="u-mb-half">Paid CI governance</h3>
+          <ol className="lede" data-testid="integrate-guided-governance-steps">
+            {governanceHrefs.map((href, i) => (
+              <li key={href}>
+                {href.startsWith("http") ? (
+                  <a href={href} rel="noopener noreferrer" target="_blank">
+                    {GOVERNANCE_ONBOARDING_LINK_LABELS[i]}
+                  </a>
+                ) : (
+                  <Link href={href}>{GOVERNANCE_ONBOARDING_LINK_LABELS[i]}</Link>
+                )}
+              </li>
+            ))}
+          </ol>
+        </section>
       </section>
 
       {unavailable && (

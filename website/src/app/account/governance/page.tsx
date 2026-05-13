@@ -1,10 +1,12 @@
 import Link from "next/link";
 import { unauthorized } from "next/navigation";
 import { auth } from "@/auth";
-import { desc, eq } from "drizzle-orm";
 import { db } from "@/db/client";
 import { enforcementBaselines, enforcementEvents, enforcementLifecycle, governanceAcceptance, governanceEvidence } from "@/db/schema";
 import { relianceClassFromRunKind } from "@/lib/governanceDisplay";
+import { governanceOnboardingHrefList, GOVERNANCE_ONBOARDING_LINK_LABELS } from "@/lib/governanceOnboardingLinks";
+import marketing from "@/lib/marketing";
+import { desc, eq } from "drizzle-orm";
 
 export const dynamic = "force-dynamic";
 
@@ -12,6 +14,32 @@ function relianceClassFromMetadata(metadata: unknown): "provisional" | "eligible
   if (!metadata || typeof metadata !== "object") return "eligible";
   const m = metadata as Record<string, unknown>;
   return m.reliance_class === "provisional" ? "provisional" : "eligible";
+}
+
+function GovernanceEmptyOnboarding() {
+  const hrefs = governanceOnboardingHrefList(marketing.gitRepositoryUrl);
+  return (
+    <section data-testid="governance-onboarding-empty" className="u-mb-1">
+      <h2>Get started with CI governance</h2>
+      <p className="u-mb-1">
+        Paid stateful enforcement uses baselines, drift checks, pinned acceptance, and exportable evidence—not portable
+        lock files as CI authority.
+      </p>
+      <ol data-testid="governance-onboarding-steps">
+        {hrefs.map((href, i) => (
+          <li key={href}>
+            {href.startsWith("http") ? (
+              <a href={href} rel="noopener noreferrer" target="_blank">
+                {GOVERNANCE_ONBOARDING_LINK_LABELS[i]}
+              </a>
+            ) : (
+              <Link href={href}>{GOVERNANCE_ONBOARDING_LINK_LABELS[i]}</Link>
+            )}
+          </li>
+        ))}
+      </ol>
+    </section>
+  );
 }
 
 export default async function GovernancePage() {
@@ -76,7 +104,12 @@ export default async function GovernancePage() {
       </p>
       <div className="card u-mb-1">
         <h2>Baselines</h2>
-        {baselines.length === 0 ? <p>No baselines yet.</p> : null}
+        {baselines.length === 0 ? (
+          <>
+            <GovernanceEmptyOnboarding />
+            <p>No baselines yet.</p>
+          </>
+        ) : null}
         {baselines.map((b) => {
           const lc = lifecycleByWorkflow.get(b.workflowId);
           const certJson = b.evidenceCertificateJson as Record<string, unknown> | null | undefined;
