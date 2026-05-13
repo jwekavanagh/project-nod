@@ -24,7 +24,7 @@
 # Permissions: contents: read only. actions/upload-artifact@v7 and
 # actions/download-artifact@v8 authenticate via ACTIONS_RUNTIME_TOKEN, not
 # GITHUB_TOKEN, so no `actions: read|write` scope is required. Successful
-# `download-artifact@v4` of the named artifact is itself proof the artifact
+# `download-artifact@v8` of the named artifact is itself proof the artifact
 # existed under that name.
 name: Composite action smoke
 
