@@ -1,3 +1,9 @@
+## [8.6.1](https://github.com/jwekavanagh/agentskeptic/compare/v8.6.0...v8.6.1) (2026-05-13)
+
+### Bug Fixes
+
+* **deps:** bump actions/download-artifact from 4 to 8 ([#89](https://github.com/jwekavanagh/agentskeptic/issues/89)) ([1e7c8c2](https://github.com/jwekavanagh/agentskeptic/commit/1e7c8c2c9614badd172a58f0a917e69e833cab0f))
+
 ## [8.6.0](https://github.com/jwekavanagh/agentskeptic/compare/v8.5.1...v8.6.0) (2026-05-12)
 
 ### Features
