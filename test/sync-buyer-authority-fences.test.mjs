@@ -37,6 +37,19 @@ test("CI enforcement buyer fence has required heading", () => {
   assert.match(inner, /## CI enforcement and metering/);
 });
 
+test("CI enforcement buyer fence has governance ladder summary linking to Stateful workflow", () => {
+  const c = readFileSync(join(root, "docs", "ci-enforcement.md"), "utf8");
+  const inner = fenceInner(
+    c,
+    "<!-- buyer-surface-ci-enforcement-metering:begin -->",
+    "<!-- buyer-surface-ci-enforcement-metering:end -->",
+  );
+  assert.match(inner, /## Stateful governance ladder \(buyer summary\)/);
+  assert.match(inner, /#stateful-workflow/);
+  const afterFence = c.slice(c.indexOf("<!-- buyer-surface-ci-enforcement-metering:end -->"));
+  assert.match(afterFence, /^[\s\S]*\n## Stateful workflow/m);
+});
+
 test("verification product SSOT buyer fence has required heading", () => {
   const c = readFileSync(join(root, "docs", "verification-product.md"), "utf8");
   const inner = fenceInner(

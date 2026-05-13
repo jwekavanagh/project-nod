@@ -12,7 +12,11 @@ describe("buyer authority surfaces (synced markdown)", () => {
     },
     {
       file: "buyer-ci-enforcement-metering.md",
-      requiredHeadings: ["## CI enforcement and metering", "## What to do next"],
+      requiredHeadings: [
+        "## CI enforcement and metering",
+        "## Stateful governance ladder (buyer summary)",
+        "## What to do next",
+      ],
     },
     {
       file: "buyer-trust-production-implications.md",

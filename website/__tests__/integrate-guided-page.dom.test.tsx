@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 
 import IntegrateGuidedPage from "@/app/integrate/guided/page";
+import { governanceOnboardingHrefList } from "@/lib/governanceOnboardingLinks";
 import marketing from "@/lib/marketing";
 import { cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
@@ -18,14 +19,24 @@ describe("/integrate/guided (RTL)", () => {
     vi.unstubAllGlobals();
   });
 
-  it("shows static graduation before submit with check, enforce, and Formalize", () => {
+  it("shows static graduation before submit with check, Formalize, and paid governance path", () => {
     render(<IntegrateGuidedPage />);
     const main = screen.getByTestId("integrate-guided-page");
     expect(within(main).getByTestId("integrate-guided-graduation")).toBeTruthy();
     const t = main.textContent ?? "";
     expect(t).toContain("Formalize");
     expect(t).toContain("agentskeptic check");
-    expect(t).toContain("agentskeptic enforce");
+    expect(t).toContain("Paid CI governance");
+  });
+
+  it("paid governance bridge lists six ordered hrefs under graduation", () => {
+    render(<IntegrateGuidedPage />);
+    const grad = screen.getByTestId("integrate-guided-graduation");
+    const list = within(grad).getByTestId("integrate-guided-governance-steps");
+    const anchors = within(list).getAllByRole("link");
+    expect(anchors).toHaveLength(6);
+    const expected = governanceOnboardingHrefList(marketing.gitRepositoryUrl);
+    expect(anchors.map((a) => a.getAttribute("href"))).toEqual(expected);
   });
 
   it("POSTs registry-draft and shows tools, ndjson, and command; 404 shows operator hint", async () => {

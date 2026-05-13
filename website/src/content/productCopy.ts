@@ -839,7 +839,7 @@ export const productCopy = {
     "/guides/ci-green-missing-database-side-effect": "Green CI while the side-effect row is still missing.",
     "/guides/first-run-verification": "Clone to crossing: run first-run verify on your own database.",
     "/guides/buyer-commercial-boundary": "Paid versus OSS boundaries and the evaluation path on this site.",
-    "/guides/buyer-ci-enforcement-metering": "Locks, enforce, and reserve metering for CI pipelines.",
+    "/guides/buyer-ci-enforcement-metering": "Stateful CI governance: baseline, drift, acceptance, metering, and reserve.",
     "/guides/buyer-trust-production-implications": "What a green verdict means before you rely on it in production.",
   } as const satisfies Readonly<Record<string, string>>,
 
