@@ -1,3 +1,9 @@
+## [8.8.0](https://github.com/jwekavanagh/agentskeptic/compare/v8.7.0...v8.8.0) (2026-05-13)
+
+### Features
+
+* **decision-bundle:** self-verifying v2 manifest with fingerprints and optional Ed25519 signature ([#94](https://github.com/jwekavanagh/agentskeptic/issues/94)) ([ee06591](https://github.com/jwekavanagh/agentskeptic/commit/ee065919f3af57262da3962df82acc20f34fbe3c))
+
 ## Unreleased
 
 ### Features
