@@ -22,9 +22,9 @@
 #   This keeps the smoke deterministic on PRs without secrets.
 #
 # Permissions: contents: read only. actions/upload-artifact@v7 and
-# actions/download-artifact@v4 authenticate via ACTIONS_RUNTIME_TOKEN, not
+# actions/download-artifact@v8 authenticate via ACTIONS_RUNTIME_TOKEN, not
 # GITHUB_TOKEN, so no `actions: read|write` scope is required. Successful
-# `download-artifact@v4` of the named artifact is itself proof the artifact
+# `download-artifact@v8` of the named artifact is itself proof the artifact
 # existed under that name.
 name: Composite action smoke
 
@@ -141,12 +141,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Download certificate
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: agentskeptic-outcome-certificate
           path: cert
       - name: Download SHA-256
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: agentskeptic-outcome-certificate-sha256
           path: sha
