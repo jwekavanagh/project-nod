@@ -26,6 +26,7 @@ export function runRepoPolicyAndApiGuards() {
       "node scripts/assert-v4-copy-invariants.mjs && " +
       "node scripts/assert-no-browser-open-in-kernel.mjs && " +
       "node scripts/align-esbuild-kit-lock-nested.mjs && " +
+      "node scripts/align-next-postcss-lock-nested.mjs && " +
       "node scripts/assert-version-integrity.mjs && " +
       "node scripts/assert-dependency-security-pins.mjs && " +
       "node scripts/assert-no-legacy-verify-surface.mjs && " +
