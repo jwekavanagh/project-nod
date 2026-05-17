@@ -1,3 +1,9 @@
+## [8.8.1](https://github.com/jwekavanagh/agentskeptic/compare/v8.8.0...v8.8.1) (2026-05-17)
+
+### Bug Fixes
+
+* **deps:** align Next nested postcss to 8.5.10 (GHSA-qx2v-qp2m-jg93) ([#95](https://github.com/jwekavanagh/agentskeptic/issues/95)) ([2a50b0d](https://github.com/jwekavanagh/agentskeptic/commit/2a50b0d8d944b271abb3a8285936cac0cd54355d))
+
 ## [8.8.0](https://github.com/jwekavanagh/agentskeptic/compare/v8.7.0...v8.8.0) (2026-05-13)
 
 ### Features
