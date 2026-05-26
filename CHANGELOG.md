@@ -1,3 +1,9 @@
+## [8.8.3](https://github.com/jwekavanagh/agentskeptic/compare/v8.8.2...v8.8.3) (2026-05-26)
+
+### Bug Fixes
+
+* **deps:** pin puppeteer-core ws to 8.20.1 (CVE-2026-45736) ([bd2793e](https://github.com/jwekavanagh/agentskeptic/commit/bd2793e0157c7851358120ae83747e75b9a2f902))
+
 ## [8.8.2](https://github.com/jwekavanagh/agentskeptic/compare/v8.8.1...v8.8.2) (2026-05-24)
 
 ### Bug Fixes
